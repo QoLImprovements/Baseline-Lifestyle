@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createDefaultDartsProfile } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-engine.mjs';
-import { createDartsRenderers } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-renderers.js';
+import { createDefaultDartsProfile } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-engine.mjs';
+import { createDartsRenderers } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-renderers.js';
 
 function build(){
   const profile=createDefaultDartsProfile();

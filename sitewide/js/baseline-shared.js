@@ -271,7 +271,7 @@
     'baseline-psychology.html':'/baseline-psychology/system',
     'baseline-badminton-session.html':'/baseline-badminton-session/system',
     'baseline-fitness.html':'/baseline-fitness/system',
-    'baseline-games-hub.html':'/baseline-games-hub/games-hub'
+    'baseline-recreation.html':'/baseline-recreation/system'
   });
   function routePageFileFromPath(pathname){
     const path = String(pathname || '').toLowerCase();
@@ -282,7 +282,7 @@
     if(/\/baseline-psychology(?:\/|$)/.test(path)) return 'baseline-psychology.html';
     if(/\/baseline-badminton-session(?:\/|$)/.test(path)) return 'baseline-badminton-session.html';
     if(/\/baseline-fitness(?:\/|$)/.test(path)) return 'baseline-fitness.html';
-    if(/\/baseline-games-hub(?:\/|$)/.test(path)) return 'baseline-games-hub.html';
+    if(/\/baseline-recreation(?:\/|$)/.test(path)) return 'baseline-recreation.html';
     return (path.split('/').pop() || 'index.html').toLowerCase();
   }
   function cleanRouteConfigForCurrentPage(){ return BASELINE_CLEAN_PAGE_ROUTES[routePageFileFromPath(location.pathname || '')] || null; }
@@ -357,7 +357,7 @@
     const stripped = href.split('#')[0].split('?')[0].replace(/^\/+/, '');
     const targetFile = (stripped.split('/').pop() || '').toLowerCase();
     if(label === 'home' || href === '/' || href === './' || href === '.' || targetFile === '' || targetFile === 'home.html' || targetFile === 'index.html') return '/home/1';
-    if(/baseline-games-hub(?:\.html)?(?:#tab=hub)?$/i.test(href)) return '/baseline-games-hub/games-hub';
+    if(/baseline-recreation(?:\.html)?(?:#tab=system)?$/i.test(href)) return '/baseline-recreation/system';
     return BASELINE_CLEAN_PAGE_LINKS[targetFile] || href;
   }
 
@@ -5892,7 +5892,7 @@ function buildControls(recipeEl){
         ['baseline-natural-skincare.html', 'Baseline Personal Care'],
         ['baseline-fitness.html', 'Baseline Fitness'],
         ['baseline-badminton-session.html', 'Baseline Badminton Session'],
-        ['baseline-games-hub.html', 'Baseline Games Hub']
+        ['baseline-recreation.html', 'Baseline Recreation']
       ].forEach(([href, label])=>{
         const a = document.createElement('a');
         a.href = normalisePageHref(href, label);
@@ -6250,7 +6250,7 @@ function buildControls(recipeEl){
         ['/baseline-natural-skincare/system','Baseline Personal Care'],
         ['/baseline-fitness/system','Baseline Fitness'],
         ['/baseline-badminton-session/system','Baseline Badminton Session'],
-        ['/baseline-games-hub/games-hub','Baseline Games Hub']
+        ['/baseline-recreation/system','Baseline Recreation']
       ];
       const currentFile = routePageFileFromPath(location.pathname || '');
       const out = [];

@@ -6,7 +6,7 @@ import {
   DARTS_LEGACY_STORAGE_KEY,
   loadDartsProfile,
   persistDartsProfile
-} from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-storage.js';
+} from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-storage.js';
 
 function memoryStorage(initial={}){
   const data=new Map(Object.entries(initial));

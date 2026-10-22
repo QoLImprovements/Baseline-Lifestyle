@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const dartsPath = new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused.js', import.meta.url);
-const dartsTimingPath = new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-timing.js', import.meta.url);
-const badmintonPath = new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js', import.meta.url);
-const badmintonTimingPath = new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-timing.js', import.meta.url);
-const sharedTimingPath = new URL('../systems/baseline-games-hub/js/focused-game-timing.js', import.meta.url);
+const dartsPath = new URL('../systems/baseline-recreation/games/darts-focused/js/darts-focused.js', import.meta.url);
+const dartsTimingPath = new URL('../systems/baseline-recreation/games/darts-focused/js/darts-focused-timing.js', import.meta.url);
+const badmintonPath = new URL('../systems/baseline-recreation/games/badminton-focused/js/badminton-focused.js', import.meta.url);
+const badmintonTimingPath = new URL('../systems/baseline-recreation/games/badminton-focused/js/badminton-focused-timing.js', import.meta.url);
+const sharedTimingPath = new URL('../systems/baseline-recreation/js/focused-game-timing.js', import.meta.url);
 const darts = fs.readFileSync(dartsPath,'utf8');
 const dartsTiming = fs.readFileSync(dartsTimingPath,'utf8');
 const badminton = fs.readFileSync(badmintonPath,'utf8');
@@ -41,7 +41,7 @@ test('Badminton delayed and auto-next callbacks cannot cross selected-game sessi
 
 
 test('Ninja Training invalidates delayed shuriken hits when leaving the training scene', () => {
-  const ninja = fs.readFileSync(new URL('../systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js', import.meta.url),'utf8');
+  const ninja = fs.readFileSync(new URL('../systems/baseline-recreation/games/baseline-realm/ninja-training/js/ninja-training-runtime.js', import.meta.url),'utf8');
   assert.match(ninja,/let ninjaShurikenVolleyToken = 0/);
   assert.match(ninja,/const volleyToken = \+\+ninjaShurikenVolleyToken/);
   assert.match(ninja,/volleyToken !== ninjaShurikenVolleyToken \|\| realmView !== 'training'/);

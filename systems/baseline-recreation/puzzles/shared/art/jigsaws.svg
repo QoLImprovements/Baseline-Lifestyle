@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+  <title id="title">Jigsaws</title>
+  <desc id="desc">Four interlocking jigsaw pieces in the Baseline Recreation indigo style.</desc>
+  <defs>
+    <linearGradient id="b" x2="1" y2="1"><stop stop-color="#080D22"/><stop offset="1" stop-color="#526BC2"/></linearGradient>
+  </defs>
+  <rect width="240" height="240" rx="34" fill="url(#b)"/>
+  <g fill="#8CA7FF" stroke="#F2F5FF" stroke-width="5" stroke-linejoin="round">
+    <path d="M34 38h66v18c0 7 6 12 13 12s13-5 13-12V38h24v62h-18c-7 0-12 6-12 13s5 13 12 13h18v24H88v-18c0-7-6-12-13-12s-13 5-13 12v18H34V88h18c7 0 12-6 12-13s-5-13-12-13H34Z"/>
+    <path d="M150 38h56v62h-18c-7 0-12 6-12 13s5 13 12 13h18v80h-62v-18c0-7-6-12-13-12s-13 5-13 12v18H62v-56h18c7 0 12-6 12-13s-5-13-12-13H62v-24h62V82c0-7 6-12 13-12s13 5 13 12Z" opacity=".74"/>
+  </g>
+  <path d="M34 38h172v168H34Z" fill="none" stroke="rgba(8,13,34,.45)" stroke-width="3" rx="18"/>
+</svg>

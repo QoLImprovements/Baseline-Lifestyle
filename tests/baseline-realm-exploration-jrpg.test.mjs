@@ -5,7 +5,7 @@ import test from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const realm = path.join(root, 'systems/baseline-games-hub/games/baseline-realm/exploration');
+const realm = path.join(root, 'systems/baseline-recreation/games/baseline-realm/exploration');
 const read = (relative) => fs.readFileSync(path.join(realm, relative), 'utf8');
 
 const data = read('data/meridian-grove.js');

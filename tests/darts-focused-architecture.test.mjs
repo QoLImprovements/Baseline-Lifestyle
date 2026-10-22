@@ -2,26 +2,26 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-import { GAME_IDS, validateRouteText, remainingAfterHit } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-engine.mjs';
+import { GAME_IDS, validateRouteText, remainingAfterHit } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-engine.mjs';
 import {
   GAMES,
   TIER_DEFINITIONS,
   CHECKOUT_SCENARIOS,
   RECOVERY_SCENARIOS,
   DECISION_QUESTION_POOLS
-} from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-content.js';
-import { panelHtml } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-ui.js';
-import { boardSvg } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-board.js';
+} from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-content.js';
+import { panelHtml } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-ui.js';
+import { boardSvg } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-board.js';
 
-const runtime=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused.js',import.meta.url),'utf8');
-const decisionSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-decision.js',import.meta.url),'utf8');
-const rendererSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-renderers.js',import.meta.url),'utf8');
-const actionSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-actions.js',import.meta.url),'utf8');
-const decisionActionSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-decision-actions.js',import.meta.url),'utf8');
-const stateSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-state.js',import.meta.url),'utf8');
-const shellSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-shell.js',import.meta.url),'utf8');
-const uiSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-ui.js',import.meta.url),'utf8');
-const eventsSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-events.js',import.meta.url),'utf8');
+const runtime=fs.readFileSync(new URL('../systems/baseline-recreation/games/darts-focused/js/darts-focused.js',import.meta.url),'utf8');
+const decisionSource=fs.readFileSync(new URL('../systems/baseline-recreation/games/darts-focused/js/darts-focused-decision.js',import.meta.url),'utf8');
+const rendererSource=fs.readFileSync(new URL('../systems/baseline-recreation/games/darts-focused/js/darts-focused-renderers.js',import.meta.url),'utf8');
+const actionSource=fs.readFileSync(new URL('../systems/baseline-recreation/games/darts-focused/js/darts-focused-actions.js',import.meta.url),'utf8');
+const decisionActionSource=fs.readFileSync(new URL('../systems/baseline-recreation/games/darts-focused/js/darts-focused-decision-actions.js',import.meta.url),'utf8');
+const stateSource=fs.readFileSync(new URL('../systems/baseline-recreation/games/darts-focused/js/darts-focused-state.js',import.meta.url),'utf8');
+const shellSource=fs.readFileSync(new URL('../systems/baseline-recreation/games/darts-focused/js/darts-focused-shell.js',import.meta.url),'utf8');
+const uiSource=fs.readFileSync(new URL('../systems/baseline-recreation/games/darts-focused/js/darts-focused-ui.js',import.meta.url),'utf8');
+const eventsSource=fs.readFileSync(new URL('../systems/baseline-recreation/games/darts-focused/js/darts-focused-events.js',import.meta.url),'utf8');
 
 test('Darts content authority exposes the canonical ten games and three tiers',()=>{
   assert.deepEqual(GAMES.map(game=>game.id),GAME_IDS);
@@ -155,7 +155,7 @@ test('Darts controller delegates canonical state construction to state factory',
 });
 
 
-test('Darts controller delegates Games Hub shell behavior',()=>{
+test('Darts controller delegates Recreation shell behavior',()=>{
   assert.match(runtime,/from '\.\/darts-focused-shell\.js'/);
   assert.match(runtime,/createDartsShell\(/);
   assert.doesNotMatch(runtime,/function ensureStylesheet|function openHowToPlay|function openPanel|function closePanel|function toggleFullscreen/);
@@ -168,7 +168,7 @@ test('Darts controller delegates DOM event routing to event authority',()=>{
   assert.doesNotMatch(runtime,/function handleClick|function handleChange|function handleKeydown/);
 });
 
-test('Darts event authority does not intercept the Games Hub overview opener',()=>{
+test('Darts event authority does not intercept the Recreation overview opener',()=>{
   assert.doesNotMatch(eventsSource,/data-open-darts-focused/);
   assert.doesNotMatch(eventsSource,/openPanel,/);
   assert.match(eventsSource,/data-close-darts-focused/);
@@ -182,7 +182,7 @@ test('Darts public API retains Realm contribution access after modularisation',(
 });
 
 
-test('Darts leaves Games Hub overview-row rendering to the core authority',()=>{
+test('Darts leaves Recreation overview-row rendering to the core authority',()=>{
   assert.match(runtime,/ensureStylesheet\(\); ensurePanel\(\);/);
   assert.doesNotMatch(runtime,/ensureOverviewEntry|queueOverviewSync|installObserver|MutationObserver/);
   assert.doesNotMatch(shellSource,/overviewEntryHtml|ensureOverviewEntry|queueOverviewSync|data-darts-entry/);

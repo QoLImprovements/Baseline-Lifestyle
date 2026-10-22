@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-import { GAMES, TIERS, ZONES, ZONE_COORDS } from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-config.js';
-import { choicePools, purposes, pickBadmintonScenario } from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-scenarios.js';
+import { GAMES, TIERS, ZONES, ZONE_COORDS } from '../systems/baseline-recreation/games/badminton-focused/js/badminton-focused-config.js';
+import { choicePools, purposes, pickBadmintonScenario } from '../systems/baseline-recreation/games/badminton-focused/js/badminton-focused-scenarios.js';
 
-const runtime=fs.readFileSync(new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js',import.meta.url),'utf8');
+const runtime=fs.readFileSync(new URL('../systems/baseline-recreation/games/badminton-focused/js/badminton-focused.js',import.meta.url),'utf8');
 
 test('Badminton configuration exposes one stable identity for all 15 games',()=>{
   assert.equal(GAMES.length,15);
@@ -101,12 +101,12 @@ test('Badminton controller delegates generic markup to the UI authority',()=>{
 });
 
 
-test('Badminton leaves Games Hub overview-row rendering to the core authority',()=>{
+test('Badminton leaves Recreation overview-row rendering to the core authority',()=>{
   assert.doesNotMatch(runtime,/overviewHtml|ensureOverviewEntry|installObserver|MutationObserver|listObserver|overviewSyncQueued/);
 });
 
 
-test('Badminton controller does not intercept the Games Hub overview opener',()=>{
+test('Badminton controller does not intercept the Recreation overview opener',()=>{
   const clickHandler=runtime.slice(runtime.indexOf('function handleClick'),runtime.indexOf('function handleKey'));
   assert.doesNotMatch(clickHandler,/data-open-badminton-focused/);
   assert.match(clickHandler,/data-close-badminton-focused/);

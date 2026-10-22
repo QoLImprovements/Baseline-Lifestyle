@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en" data-app="recreation">
+<head>
+<!-- HTML-OWN-FOLDER-RULES-REFERENCE-20260609
+Rules for this HTML file:
+rules/recreation-system-rules.md
+
+These Markdown rules are a human reference point, not live runtime config.
+-->
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Baseline Recreation</title>
+<meta name="theme-color" content="#080D22"/>
+<style>html[data-app="recreation"],body[data-app="recreation"]{margin:0;min-height:100%;color:#F2F5FF;background:#080D22;background-image:linear-gradient(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%);}</style>
+<script id="baseline-games-route-state">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-recreation\/games-hub\/puzzles\/?$/i.test(p)?"puzzles":(/^\/baseline-recreation\/games-hub\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm)\/?$/i.test(p)?"games":"hub"));document.documentElement.setAttribute("data-initial-section",t)}catch(_e){}}()</script>
+<meta name="description" content="Browser-based focus, number, word, darts, and adventure training games.">
+<link rel="canonical" href="https://baselinelifestyle.org/baseline-recreation/system">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Baseline Recreation">
+<meta property="og:description" content="Browser-based focus, number, word, darts, and adventure training games.">
+<meta property="og:url" content="https://baselinelifestyle.org/baseline-recreation/system">
+<link href="/sitewide/css/baseline-themes.css?v=SITEWIDE_THEMES_CSS_20261021_1" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_SHARED_CSS_20261021_1" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_HEADER_CSS_20261021_1" rel="stylesheet"/>
+
+
+
+
+
+
+
+<link href="/systems/baseline-recreation/css/baseline-recreation.css?v=GAME_SAVE_ICON_AUDIO_20261018_1" rel="stylesheet"/>
+
+
+<link href="/sitewide/css/baseline-protected-access.css?v=PROTECTED_ACCESS_CSS_20261021_1" rel="stylesheet" data-protected-access-style="true"/>
+<link href="/sitewide/css/baseline-protected-key-placement.css?v=PROTECTED_KEY_CSS_20261021_1" rel="stylesheet" data-protected-key-placement="true"/>
+<link href="/sitewide/css/baseline-ui-fixes.css?v=SITEWIDE_UI_FIXES_20261021_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
+<link href="/systems/baseline-recreation/css/recreation-theme.css?v=G01_INDIGO_CIRCUIT_20260801_3" rel="stylesheet" data-recreation-theme="true"/>
+<link href="/systems/baseline-recreation/puzzles/shared/css/puzzles-library.css?v=NONREALM_COHERENCE_20261018_1" rel="stylesheet"/>
+<link href="/systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css?v=CROSSNUMBER_SCALE_AUTONEXT_20261018_1" rel="stylesheet"/>
+<link href="/systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=JIGSAW_PROGRESS_TABS_20261019_1" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
+<!-- Baseline Realm canonical presentation. Shared shell first, destination owners next, mobile geometry last. -->
+<link href="/systems/baseline-recreation/css/mobile-touch-targets.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-games-mobile-touch="true"/>
+<link href="/systems/baseline-recreation/games/baseline-realm/shared/css/realm-shell.css?v=REALM_BASECAMP_FUNCTIONAL_20261018_2" rel="stylesheet" data-realm-shell="true"/>
+<link href="/systems/baseline-recreation/games/baseline-realm/basecamp/css/basecamp.css?v=REALM_BASECAMP_FUNCTIONAL_20261018_2" rel="stylesheet" data-realm-style="basecamp"/>
+<link href="/systems/baseline-recreation/games/baseline-realm/exploration/css/exploration-jrpg.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-style="exploration"/>
+<link href="/systems/baseline-recreation/games/baseline-realm/ninja-training/css/ninja-training.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-style="ninja-training"/>
+<link href="/systems/baseline-recreation/games/baseline-realm/shared/css/realm-mobile.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-mobile="true"/>
+<link href="/systems/baseline-recreation/css/non-realm-game-refinement.css?v=PAIRS_FLIP_GRID_20261019_1" rel="stylesheet" data-nonrealm-game-refinement="true"/>
+<link href="/systems/baseline-recreation/css/games-music.css?v=GAMES_MUSIC_STATIC_STYLES_20261020_1" rel="stylesheet" data-games-music-style="true"/>
+</head>
+<body data-app="recreation" data-page="baseline-recreation">
+<div class="bl-homebar" role="navigation" aria-label="BaselineLifestyle">
+  <div class="bl-homebar-inner">
+    <div class="bl-pages-dd">
+  <button class="bl-mini-btn bl-pages-btn" id="bl-pages-toggle" type="button" aria-haspopup="menu" aria-expanded="false">Baseline Recreation &#9662;</button>
+  <div class="bl-pages-menu" role="menu" hidden>
+    <a class="bl-pages-link" role="menuitem" href="/home/1">Home</a>
+    <a class="bl-pages-link" role="menuitem" href="/baseline-food-approach/system">Baseline Food Approach</a>
+    <a class="bl-pages-link" role="menuitem" href="/baseline-massage/system">Baseline Massage</a>
+    <a class="bl-pages-link" role="menuitem" href="/baseline-natural-skincare/system">Baseline Personal Care</a>
+    <a class="bl-pages-link" role="menuitem" href="/baseline-fitness/system">Baseline Fitness</a>
+    <a class="bl-pages-link" role="menuitem" href="/baseline-badminton-session/system">Baseline Badminton Session</a>
+    <a class="bl-pages-link" role="menuitem" href="/baseline-recreation/system" aria-current="page">Baseline Recreation</a>
+  </div>
+</div>
+  <button id="blProtectedKey" class="bl-protected-key" type="button" aria-haspopup="dialog" aria-controls="blProtectedAccessOverlay" aria-expanded="false" aria-label="Open protected sections" title="Protected sections"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg></button><div class="bl-homebar-right" aria-label="Site controls"><button id="bl-beats-toggle" class="bl-mini-btn" type="button" aria-label="Binaural" aria-expanded="false"><span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2v-.2a6 6 0 0 0-12 0v.2h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7a3 3 0 0 1-3-3v-5z"></path></svg></span><span class="bl-btn-label">Binaural</span></button><button id="bl-auth-toggle" class="bl-mini-btn" type="button" aria-label="Account" aria-expanded="false"><span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 12.2a4.4 4.4 0 1 0 0-8.8 4.4 4.4 0 0 0 0 8.8z"></path><path d="M4.8 21a7.2 7.2 0 0 1 14.4 0H4.8z"></path></svg></span><span class="bl-btn-label">Account</span></button></div>
+  </div>
+</div>
+<div class="bl-scroll">
+<header class="hero" id="top">
+  <div class="hero-inner">
+    <div>
+      <div class="title" role="heading" aria-level="1">Baseline Recreation</div>
+      <div class="subtitle">A focused games space for restorative play, account-bound progress, gentle challenge, and linked progression.</div>
+    </div>
+  </div>
+  <nav class="tabs" aria-label="Baseline Recreation tabs">
+    <button class="tab" aria-selected="true" data-target="system">Recreation</button>
+    <button class="tab" aria-selected="false" data-target="games">Games</button>
+    <button class="tab" aria-selected="false" data-target="puzzles">Puzzles</button>
+  </nav><script id="baseline-games-route-state-nav">!function(){try{var t=document.documentElement.getAttribute("data-initial-section")||"hub",n=document.currentScript.previousElementSibling;n.querySelectorAll(".tab[data-target]").forEach(function(b){b.setAttribute("aria-selected",b.getAttribute("data-target")===t?"true":"false")})}catch(_e){}}()</script>
+</header>
+<main class="wrap">
+  <section class="section active" id="system">
+    <div class="grid">
+      <section class="card">
+        <div class="header-row">
+          <div>
+            <h2>Account State</h2>
+            <p class="note">Games are playable without signing in, but long-term save state is tied to your account.</p>
+          </div>
+        </div>
+        <div class="summary-box" id="authStateNote"></div>
+      </section>
+      <section class="card">
+        <div class="system-summary-grid">
+          <div class="summary-box bank-box" id="bankSummary"></div>
+          <div>
+            <h2>Game Summary</h2>
+            <p class="note">Game progress feeds a bounded bonus profile for Baseline Realm, keeping play connected without making any single game mandatory.</p>
+            <div class="game-summary-stack" id="gamesSummaryWrap"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+
+
+  <section class="section" id="puzzles">
+    <div class="grid">
+      <section class="card" id="puzzlesOverviewCard">
+        <div class="header-row">
+          <div>
+            <h2>Puzzles</h2>
+            <p class="note">Choose a puzzle type. Each type opens its own library, so more puzzle formats can be added without crowding this page.</p>
+          </div>
+        </div>
+        <div class="puzzle-library-list" id="puzzlesList" aria-label="Puzzle types"></div>
+      </section>
+
+      <section class="card" id="jigsawsPanel" hidden>
+        <div class="puzzle-library-toolbar">
+          <div class="header-row">
+            <div>
+              <h2>Jigsaws</h2>
+              <p class="note">Choose a collection and artwork, then select the piece count inside the jigsaw.</p>
+            </div>
+          </div>
+          <button class="action secondary" data-puzzles-back="overview" type="button">Back To Puzzles</button>
+        </div>
+        <div class="puzzle-library-list" id="jigsawsList" aria-label="Jigsaw library"></div>
+      </section>
+
+      <section class="card puzzle-library-card" id="crossnumberPanel" hidden>
+        <div class="puzzle-library-toolbar">
+          <div class="header-row">
+            <div>
+              <h2>Crossnumber</h2>
+              <p class="note">Place number tiles into interlocking arithmetic equations so every horizontal and vertical calculation balances.</p>
+            </div>
+          </div>
+          <button class="action secondary" data-puzzles-back="overview" type="button">Back To Puzzles</button>
+        </div>
+
+        <article class="crossnumber-shell" id="crossnumberGame" aria-labelledby="crossnumberTitle">
+          <h3 class="visually-hidden" id="crossnumberTitle">Crossnumber</h3>
+
+          <details class="game-info-details crossnumber-game-info" data-game-info="crossnumber">
+            <summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
+            <div class="progress-shell progress-shell--trackcoin">
+              <div class="xp-row">
+                <div>
+                  <div class="trackcoin-level-title" data-crossnumber-level>Level - 1</div>
+                  <div class="xp-bar"><div class="xp-fill" data-crossnumber-xp-fill></div></div>
+                  <div class="trackcoin-xp-meta-row"><span class="inline-note" data-crossnumber-xp-meta>0 / 60 XP</span></div>
+                </div>
+              </div>
+              <div class="stat-pills trackcoin-stat-pills">
+                <div class="stat-pill">Unspent Skills <span data-crossnumber-skill-points>1</span></div>
+                <div class="stat-pill">Bank <span data-crossnumber-bank-value>0</span></div>
+                <div class="stat-pill">Tier <span data-crossnumber-tier-label>Starter</span></div>
+                <div class="stat-pill stat-pill--clean">Clean Streak <span data-crossnumber-clean-streak>0</span></div>
+                <div class="stat-pill stat-pill--clean">Clean Bonus <span data-crossnumber-clean-bonus>+0%</span></div>
+              </div>
+            </div>
+          </details>
+
+          <div class="game-toggle-row trackcoin-tab-row crossnumber-tab-row" aria-label="Crossnumber panels">
+            <button class="action ghost game-toggle-btn is-active" data-crossnumber-panel="crossnumberGamePanel" aria-expanded="true" type="button">Game</button>
+            <button class="action ghost game-toggle-btn" data-crossnumber-panel="crossnumberSkillPanel" aria-expanded="false" type="button">Skills</button>
+            <button class="action ghost game-toggle-btn" data-crossnumber-panel="crossnumberTierPanel" aria-expanded="false" type="button">Tiers</button>
+            <button class="action ghost game-toggle-btn" data-crossnumber-panel="crossnumberProgressPanel" aria-expanded="false" type="button">Progress</button>
+          </div>
+
+          <div class="game-panel-stack crossnumber-panel-stack">
+            <section class="card game-card game-play-root crossnumber-game-panel" id="crossnumberGamePanel" data-game-play-root="crossnumber" aria-label="Crossnumber board">
+              <div class="crossnumber-round-toolbar">
+                <div class="crossnumber-round-stats">
+                  <span>Layout <strong data-crossnumber-seed>—</strong></span>
+                  <span>Mistakes <strong data-crossnumber-mistakes>0</strong></span>
+                  <span>Hints <strong data-crossnumber-hints>1 / 1</strong></span>
+                  <span>Time <strong data-crossnumber-timer>00:00</strong></span>
+                  <span>Score <strong data-crossnumber-score>0</strong></span>
+                </div>
+                <div class="crossnumber-actions" aria-label="Crossnumber controls">
+                  <button class="action ghost" type="button" data-crossnumber-action="sort">Sort Tiles</button>
+                  <button class="action ghost" type="button" data-crossnumber-action="undo">Undo</button>
+                  <button class="action secondary" type="button" data-crossnumber-action="hint">Hint</button>
+                  <button class="action ghost auto-next-toggle" type="button" data-auto-next-toggle="crossnumber" aria-pressed="false">Auto-Next Game: Off</button>
+                  <button class="action" type="button" data-crossnumber-action="new">New Layout</button>
+                </div>
+              </div>
+
+              <div class="crossnumber-play-layout">
+                <div class="crossnumber-board-column">
+                  <div class="crossnumber-board-scroll">
+                    <div class="crossnumber-board" data-crossnumber-board></div>
+                  </div>
+                  <div class="crossnumber-status-row">
+                    <div class="crossnumber-status" data-crossnumber-status>Place the number tiles so every equation balances.</div>
+                    <div class="crossnumber-help">Select a number on the right, then choose an open answer space. You can also drag a number directly onto the grid.</div>
+                  </div>
+                </div>
+
+                <aside class="crossnumber-bank-panel" aria-label="Number tiles">
+                  <div class="crossnumber-bank-head">
+                    <strong>Numbers</strong>
+                    <span data-crossnumber-bank-count>0 remaining</span>
+                  </div>
+                  <div class="crossnumber-bank" data-crossnumber-bank aria-label="Available number tiles"></div>
+                  <p class="crossnumber-bank-help">The number bank stays beside the puzzle on larger screens so the answers remain visible while you work.</p>
+                </aside>
+              </div>
+
+              <div class="crossnumber-complete" data-crossnumber-complete aria-hidden="true" role="status">
+                <strong>Crossnumber complete.</strong>
+                <span>Time <b data-crossnumber-complete-time>00:00</b> · Score <b data-crossnumber-complete-score>0</b></span>
+                <span data-crossnumber-complete-reward></span>
+              </div>
+            </section>
+
+            <section class="card game-card crossnumber-subpanel" id="crossnumberSkillPanel" hidden>
+              <div class="skill-head">
+                <div><h3>Crossnumber Skill Tree</h3><p class="note">Spend one point per level gained.</p></div>
+                <div class="inline-note">Skills improve puzzle support, rewards and linked reasoning.</div>
+              </div>
+              <div class="crossnumber-skill-grid" data-crossnumber-skills></div>
+            </section>
+
+            <section class="card game-card crossnumber-subpanel" id="crossnumberTierPanel" hidden>
+              <div class="game-toolbar">
+                <div><h3>Tiers</h3><p class="note">Higher tiers increase equation-network complexity, operators and rewards. Choose a tier here; the puzzle itself stays uncluttered.</p></div>
+              </div>
+              <div class="crossnumber-tier-list board-tier-list tier-list" data-crossnumber-tiers></div>
+            </section>
+
+            <section class="card game-card crossnumber-subpanel" id="crossnumberProgressPanel" hidden>
+              <div class="game-toolbar">
+                <div><h3>Progress</h3><p class="note">Crossnumber levels, streaks and saved progression follow the same Recreation structure as the other games.</p></div>
+              </div>
+              <div class="crossnumber-progress-stats" data-crossnumber-stats></div>
+              <div class="summary-box crossnumber-realm-card" data-crossnumber-realm></div>
+            </section>
+          </div>
+        </article>
+      </section>
+
+      <section class="card puzzle-library-card" id="jigsawPlayerCard" hidden>
+        <div class="puzzle-library-toolbar">
+          <div class="header-row">
+            <div>
+              <h2>Jigsaw</h2>
+              <p class="note">Build the selected artwork piece by piece.</p>
+            </div>
+          </div>
+          <button class="action secondary" data-puzzles-back="jigsaws" type="button">Back To Jigsaws</button>
+        </div>
+        <article id="weightCoherencePuzzle" aria-labelledby="weightCoherenceTitle">
+          <div class="weight-coherence-intro">
+            <img class="weight-coherence-art" id="weightCoherenceArt" src="/systems/baseline-recreation/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.png?v=WEIGHT_OF_COHERENCE_FULL_20261016_2" alt="The Weight of Coherence — a symbolic person holding an unfinished structure amid green, red and blue light."/>
+            <div class="weight-coherence-copy">
+              <h3 id="weightCoherenceTitle">The Weight of Coherence</h3>
+              <p id="weightCoherenceDescription">The unfinished structure is not complete, yet it must still be carried forward. Its strength depends on different parts remaining in relationship rather than pulling apart. The weight lies in sustaining that integrity while continuing to build.</p>
+            </div>
+          </div>
+
+          <div class="game-toggle-row trackcoin-tab-row jigsaw-tab-row" id="weightCoherenceTabRow" aria-label="Jigsaw panels">
+            <button class="action ghost game-toggle-btn is-active" data-jigsaw-panel="game" aria-expanded="true" type="button">Game</button>
+            <button class="action ghost game-toggle-btn" data-jigsaw-panel="progress" aria-expanded="false" type="button">Progress</button>
+          </div>
+
+          <div class="game-live-xp jigsaw-live-xp" id="weightCoherenceLiveXp" data-live-xp="jigsaw" aria-label="Current Jigsaw experience"></div>
+
+          <section class="card game-card jigsaw-progress-panel" id="weightCoherenceProgressPanel" hidden aria-label="Jigsaw progress">
+            <div class="game-toolbar">
+              <div>
+                <h3>Jigsaw Progress</h3>
+                <p class="note">Experience, completions and the passive Baseline Realm contribution. Jigsaws have no tier or skill tree.</p>
+              </div>
+            </div>
+            <div id="weightCoherenceProgress"></div>
+          </section>
+
+          <div class="weight-coherence-launch-row">
+            <div class="weight-coherence-launch-copy">
+              <strong id="weightCoherenceSelectionLabel">100 pieces selected</strong>
+              <span class="inline-note">Piece count and restart controls are kept in Puzzle Settings.</span>
+            </div>
+            <div class="weight-coherence-launch-actions">
+              <button class="action ghost weight-coherence-icon-action weight-coherence-settings-trigger" id="weightCoherenceSetupSettingsBtn" type="button" aria-label="Open puzzle settings" aria-controls="weightCoherenceSettingsDialog" aria-expanded="false" title="Puzzle settings">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 2.8h4.6l.6 2.3c.5.2 1 .5 1.5.9l2.2-.7 2.3 4-1.7 1.6c.1.4.1.8.1 1.2s0 .8-.1 1.2l1.7 1.6-2.3 4-2.2-.7c-.5.4-1 .7-1.5.9l-.6 2.3H9.7l-.6-2.3c-.5-.2-1-.5-1.5-.9l-2.2.7-2.3-4 1.7-1.6a7.4 7.4 0 0 1 0-2.4L3.1 9.3l2.3-4 2.2.7c.5-.4 1-.7 1.5-.9l.6-2.3Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+              </button>
+              <button class="action" id="weightCoherenceStartBtn" type="button">Start Puzzle</button>
+            </div>
+          </div>
+
+          <dialog class="weight-coherence-settings-dialog" id="weightCoherenceSettingsDialog" aria-labelledby="weightCoherenceSettingsTitle">
+            <form method="dialog" class="weight-coherence-settings-card">
+              <div class="weight-coherence-settings-head">
+                <div>
+                  <h3 id="weightCoherenceSettingsTitle">Puzzle Settings</h3>
+                  <span class="inline-note">Choose the piece count used for the next puzzle.</span>
+                </div>
+                <button class="action ghost weight-coherence-icon-action weight-coherence-settings-close" value="close" aria-label="Close puzzle settings" title="Close settings" type="submit">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+              </div>
+              <div class="weight-coherence-settings-section">
+                <strong>Pieces</strong>
+                <div class="weight-coherence-difficulty-row" role="radiogroup" aria-label="Jigsaw piece count">
+                  <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="50" role="radio" aria-checked="false" type="button">50</button>
+                  <button class="action ghost weight-coherence-difficulty is-active" data-jigsaw-difficulty="100" role="radio" aria-checked="true" type="button">100</button>
+                  <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="500" role="radio" aria-checked="false" type="button">500</button>
+                  <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="1000" role="radio" aria-checked="false" type="button">1,000</button>
+                </div>
+                <span class="inline-note">100 pieces is the balanced default. Larger puzzles use smaller paged trays on mobile to keep rendering stable.</span>
+              </div>
+              <div class="weight-coherence-settings-actions">
+                <button class="action ghost" id="weightCoherenceResetBtn" type="button" disabled>Restart Puzzle</button>
+              </div>
+            </form>
+          </dialog>
+
+          <div class="weight-coherence-workspace" id="weightCoherenceWorkspace" hidden>
+            <div class="weight-coherence-toolbar">
+              <div class="weight-coherence-stats">
+                <div class="stat-pill">Difficulty <span id="weightCoherenceDifficultyLabel">100 pieces</span></div>
+                <div class="stat-pill">Placed <span id="weightCoherencePlaced">0 / 100</span></div>
+                <div class="stat-pill">Time <span id="weightCoherenceTimer">00:00</span></div>
+              </div>
+              <div class="weight-coherence-actions" aria-label="Puzzle controls">
+                <div class="weight-coherence-zoom-actions" role="group" aria-label="Inspection zoom">
+                  <button class="action ghost weight-coherence-zoom-step" id="weightCoherenceZoomOutBtn" type="button" aria-label="Decrease inspection zoom from 200%" title="Decrease inspection zoom from 200%">−</button>
+                  <span class="action ghost weight-coherence-icon-action weight-coherence-zoom-indicator" id="weightCoherenceZoomBtn" role="img" aria-keyshortcuts="Z" aria-label="Zoom hotkey Z. Current magnification 200 percent." title="Z zoom · current magnification 200%">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m14.5 14.5 5 5"/></svg>
+                    <kbd class="weight-coherence-hotkey">Z</kbd>
+                  </span>
+                  <button class="action ghost weight-coherence-zoom-step" id="weightCoherenceZoomInBtn" type="button" aria-label="Increase inspection zoom from 200%" title="Increase inspection zoom from 200%">+</button>
+                </div>
+                <button class="action ghost weight-coherence-icon-action" id="weightCoherencePreviewBtn" type="button" aria-pressed="false" aria-keyshortcuts="G" aria-label="Show guide (G)" title="Show guide · G">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.7 12s3.4-5.5 9.3-5.5S21.3 12 21.3 12 17.9 17.5 12 17.5 2.7 12 2.7 12Z"/><circle cx="12" cy="12" r="2.7"/></svg>
+                  <kbd class="weight-coherence-hotkey">G</kbd>
+                </button>
+                <button class="action ghost weight-coherence-icon-action" id="weightCoherenceViewBtn" type="button" aria-pressed="false" aria-keyshortcuts="V" aria-label="View full artwork (V)" title="View full artwork · V">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m5 17 4.2-4.2 3.1 3.1 2.2-2.2L19 17"/></svg>
+                  <kbd class="weight-coherence-hotkey">V</kbd>
+                </button>
+                <button class="action ghost weight-coherence-icon-action" id="weightCoherenceShuffleBtn" type="button" aria-keyshortcuts="S" aria-label="Shuffle tray (S)" title="Shuffle tray · S">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3.2c4.8 0 5.6 10 9.6 10H20"/><path d="M17 14l3 3-3 3M4 17h3.2c1.8 0 2.9-1.4 3.8-3M13 9c1-1.3 2-2 3.8-2H20"/><path d="M17 4l3 3-3 3"/></svg>
+                  <kbd class="weight-coherence-hotkey">S</kbd>
+                </button>
+                <button class="action ghost weight-coherence-icon-action" id="weightCoherenceFullscreenBtn" type="button" aria-pressed="false" aria-keyshortcuts="F" aria-label="Enter full screen (F)" title="Full screen · F">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v4M16 4h4v4M20 16v4h-4M8 20H4v-4"/></svg>
+                  <kbd class="weight-coherence-hotkey">F</kbd>
+                </button>
+                <button class="action ghost weight-coherence-icon-action weight-coherence-info-action" id="weightCoherenceHelpBtn" type="button" aria-label="How to play and hotkeys" aria-controls="weightCoherenceHelpDialog" aria-expanded="false" title="How to play & hotkeys">
+                  <span class="weight-coherence-info-glyph" aria-hidden="true">i</span>
+                </button>
+                <button class="action ghost weight-coherence-icon-action weight-coherence-settings-trigger" id="weightCoherenceToolbarSettingsBtn" type="button" aria-label="Open puzzle settings" aria-controls="weightCoherenceSettingsDialog" aria-expanded="false" title="Puzzle settings">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 2.8h4.6l.6 2.3c.5.2 1 .5 1.5.9l2.2-.7 2.3 4-1.7 1.6c.1.4.1.8.1 1.2s0 .8-.1 1.2l1.7 1.6-2.3 4-2.2-.7c-.5.4-1 .7-1.5.9l-.6 2.3H9.7l-.6-2.3c-.5-.2-1-.5-1.5-.9l-2.2.7-2.3-4 1.7-1.6a7.4 7.4 0 0 1 0-2.4L3.1 9.3l2.3-4 2.2.7c.5-.4 1-.7 1.5-.9l.6-2.3Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <dialog class="weight-coherence-settings-dialog weight-coherence-help-dialog" id="weightCoherenceHelpDialog" aria-labelledby="weightCoherenceHelpTitle">
+              <form method="dialog" class="weight-coherence-settings-card">
+                <div class="weight-coherence-settings-head">
+                  <div>
+                    <h3 id="weightCoherenceHelpTitle">How to play & hotkeys</h3>
+                    <span class="inline-note">The controls below remain available while you inspect the puzzle. Zoom also works while View is on.</span>
+                  </div>
+                  <button class="action ghost weight-coherence-icon-action weight-coherence-settings-close" value="close" aria-label="Close jigsaw help" title="Close help" type="submit">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                  </button>
+                </div>
+                <div class="weight-coherence-help-section">
+                  <strong>Playing</strong>
+                  <p>Drag pieces from the Main Tray or Sort trays onto the jigsaw. Correct pieces lock into place; a wrong drop leaves the piece available to try again. Drag pieces into Sort 1–4 to organise them, or back into the Main Tray.</p>
+                </div>
+                <div class="weight-coherence-help-grid" aria-label="Jigsaw hotkeys">
+                  <div class="weight-coherence-help-row"><kbd>Z</kbd><div><strong>Zoom</strong><span>Hover a tray piece and press Z to enlarge the entire jigsaw piece above the workspace while its tray card stays fixed. Hold Z over the jigsaw for the circular board magnifier; release Z to close it. Zoom works on the board and tray pieces while View is enabled.</span></div></div>
+                  <div class="weight-coherence-help-row"><kbd>− / +</kbd><div><strong>Magnification</strong><span>Set one inspection level from 200% to 1000%. Tray-piece Zoom enlarges the complete irregular piece without enlarging its tray card; board Zoom continues to use the circular magnifier.</span></div></div>
+                  <div class="weight-coherence-help-row"><kbd>V</kbd><div><strong>View</strong><span>Toggle the full-colour artwork. Piece movement pauses while View is on, but Zoom remains available.</span></div></div>
+                  <div class="weight-coherence-help-row"><kbd>G</kbd><div><strong>Guide</strong><span>Toggle the artwork guide on a white background at 50% opacity.</span></div></div>
+                  <div class="weight-coherence-help-row"><kbd>S</kbd><div><strong>Shuffle</strong><span>Shuffle the remaining pieces in the Main Tray.</span></div></div>
+                  <div class="weight-coherence-help-row"><kbd>F</kbd><div><strong>Full screen</strong><span>Enter or exit the dedicated jigsaw workspace.</span></div></div>
+                  <div class="weight-coherence-help-row"><kbd>← / →</kbd><div><strong>Tray pages</strong><span>Move to the previous or next Main Tray page.</span></div></div>
+                </div>
+                <div class="weight-coherence-help-section">
+                  <strong>Touch</strong>
+                  <p>On supported touch devices, use two fingers on the board for temporary pinch inspection zoom.</p>
+                </div>
+              </form>
+            </dialog>
+
+            <div class="weight-coherence-rotate-notice" id="weightCoherenceRotateNotice" role="status" aria-live="polite" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M3.5 9.5A9 9 0 0 1 8 4.2M3.5 9.5 3 5.8M3.5 9.5 7.2 9"/></svg>
+              <strong>Rotate your phone to landscape</strong>
+              <span>Mobile jigsaw full screen is designed for landscape so the board and trays fit without the portrait scrolling problems.</span>
+            </div>
+
+            <div class="weight-coherence-stage">
+              <aside class="weight-coherence-sort-column weight-coherence-sort-column--left" aria-label="Sorting trays 1 and 2">
+                <section class="weight-coherence-sort-shell">
+                  <div class="weight-coherence-sort-head"><span>Sort 1</span><span class="inline-note" data-sort-count="0">0</span></div>
+                  <div class="weight-coherence-sort-tray" data-jigsaw-sort-tray="0" aria-label="Sorting tray 1"></div>
+                </section>
+                <section class="weight-coherence-sort-shell">
+                  <div class="weight-coherence-sort-head"><span>Sort 2</span><span class="inline-note" data-sort-count="1">0</span></div>
+                  <div class="weight-coherence-sort-tray" data-jigsaw-sort-tray="1" aria-label="Sorting tray 2"></div>
+                </section>
+              </aside>
+
+              <div class="weight-coherence-board-shell">
+                <div class="weight-coherence-board-wrap">
+                  <canvas id="weightCoherenceBoard" width="1122" height="1402" tabindex="-1" aria-label="The Weight of Coherence jigsaw board"></canvas>
+                  <div class="weight-coherence-completion" id="weightCoherenceCompletion" hidden></div>
+                </div>
+                <div class="weight-coherence-status inline-note" id="weightCoherenceStatus" aria-live="polite"></div>
+              </div>
+
+              <aside class="weight-coherence-sort-column weight-coherence-sort-column--right" aria-label="Sorting trays 3 and 4">
+                <section class="weight-coherence-sort-shell">
+                  <div class="weight-coherence-sort-head"><span>Sort 3</span><span class="inline-note" data-sort-count="2">0</span></div>
+                  <div class="weight-coherence-sort-tray" data-jigsaw-sort-tray="2" aria-label="Sorting tray 3"></div>
+                </section>
+                <section class="weight-coherence-sort-shell">
+                  <div class="weight-coherence-sort-head"><span>Sort 4</span><span class="inline-note" data-sort-count="3">0</span></div>
+                  <div class="weight-coherence-sort-tray" data-jigsaw-sort-tray="3" aria-label="Sorting tray 4"></div>
+                </section>
+              </aside>
+            </div>
+
+            <div class="weight-coherence-tray-shell">
+              <div class="weight-coherence-tray-head">
+                <span class="inline-note" id="weightCoherenceTrayMeta">Choose a piece count and start the puzzle.</span>
+                <div class="weight-coherence-tray-nav">
+                  <button class="action ghost" id="weightCoherencePrevBtn" type="button" aria-keyshortcuts="ArrowLeft" title="Previous tray · Left arrow" disabled>Previous Tray [←]</button>
+                  <button class="action ghost" id="weightCoherenceNextBtn" type="button" aria-keyshortcuts="ArrowRight" title="Next tray · Right arrow" disabled>Next Tray [→]</button>
+                </div>
+              </div>
+              <div class="weight-coherence-tray" id="weightCoherenceTray" aria-label="Unplaced jigsaw pieces"></div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+  </section>
+
+  <!-- GAME-FOLDER-RULES-REFERENCE-20260615
+  Individual game reference folders live under:
+  games/pairs/rules/
+  games/detect-the-word/rules/
+  games/make-the-number/rules/
+  games/track-the-coin/rules/
+  games/rule-shift/rules/
+  games/baseline-realm/rules/
+
+  These Markdown rules are human reference documents, not live runtime config.
+  Current game runtime remains in this Recreation HTML/JS/CSS unless a separate extraction is explicitly requested.
+  -->
+  <section class="section" id="games">
+    <div class="grid">
+      <section class="card" id="gamesOverviewCard">
+        <div class="header-row">
+          <div>
+            <h2>Games</h2>
+            <p class="note">Select a game from the list. The game screen stays hidden until the list entry itself is chosen.</p>
+          </div>
+        </div>
+        <div class="games-list" id="gamesList"></div>
+      </section>
+
+            <section class="card game-panel" id="pairsPanel">
+        <div class="game-shell">
+          <div class="game-header">
+            <div>
+              <h2>Pairs</h2>
+              <p class="note">Choose a board tier, then press Start New Game when you are ready. The panel system now mirrors Track the Coin so the game state is cleaner and easier to scan.</p>
+            </div>
+            <div class="link-actions">
+              <button class="action secondary" data-select-game="" type="button">Back To Games Overview</button>
+            </div>
+          </div>
+          <details class="game-info-details" data-game-info="pairs"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
+<div class="progress-shell progress-shell--trackcoin">
+            <div class="xp-row">
+              <div>
+                <div class="trackcoin-level-title" id="pairsLevelHeading">Level - 1</div>
+                <div class="xp-bar"><div class="xp-fill" id="pairsXpFill"></div></div>
+                <div class="trackcoin-xp-meta-row"><span class="inline-note" id="pairsXpMeta">0 / 60 XP</span></div>
+              </div>
+            </div>
+            <div class="stat-pills trackcoin-stat-pills">
+              <div class="stat-pill">Unspent Skills <span id="pairsSkillPointsValue">0</span></div>
+              <div class="stat-pill">Boards Cleared <span id="pairsBoardsClearedValue">0</span></div>
+              <div class="stat-pill">Games Played <span id="pairsGamesPlayedValue">0</span></div>
+              <div class="stat-pill">Streak <span id="pairsStreakValue">0</span></div>
+              <div class="stat-pill stat-pill--clean">Clean Streak <span id="pairsCleanStreakValue">0</span></div>
+              <div class="stat-pill stat-pill--clean">Clean Bonus <span id="pairsCleanBonusValue">+0%</span></div>
+            </div>
+          </div>
+</details>
+          <div class="game-toggle-row trackcoin-tab-row">
+            <button class="action ghost game-toggle-btn is-active" data-pairs-panel="pairsGameCard" type="button">Game</button>
+            <button class="action ghost game-toggle-btn" data-pairs-panel="pairsSkillCard" type="button">Skills</button>
+            <button class="action ghost game-toggle-btn" data-pairs-panel="pairsTierCard" type="button">Tiers</button>
+            <button class="action ghost game-toggle-btn" data-pairs-panel="pairsProgressCard" type="button">Progress</button>
+          </div>
+          <div class="game-panel-stack">
+            <section class="card game-card game-play-root" id="pairsGameCard" data-game-play-root="pairs">
+              <div class="game-toolbar">
+                <div class="stat-pills">
+                  <div class="stat-pill">Tier <span id="pairsTierNameValue">Starter</span></div>
+                  <div class="stat-pill">Moves <span id="pairsMovesValue">0</span></div>
+                  <div class="stat-pill">Matched <span id="pairsMatchedValue">0</span></div>
+                  <div class="stat-pill">Round Bank <span id="pairsRoundBankValue">0</span></div>
+                </div>
+                <div class="game-toolbar-spacer" aria-hidden="true"></div>
+              </div>
+              <div class="board-wrap game-play-window" data-game-play-window="pairs">
+                <div class="summary-box round-status-card" id="pairsRoundSummary"></div>
+                <div class="board-grid game-play-surface" id="pairsBoard" data-game-play-surface="pairs"></div>
+              </div>
+              <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newPairsBoardBtn" data-action="start-pairs" type="button">Start New Game</button><button class="action ghost" id="pairsHintBtn" type="button" disabled>Use Hint</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="pairs" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+            </section>
+            <section class="card game-card" id="pairsSkillCard" hidden>
+              <div class="skill-tree open" id="pairsSkillTree">
+                <div class="skill-head"><h3>Pairs Skill Tree</h3><div class="inline-note">Spend one point per level gained.</div></div>
+                <div class="grid-two" id="pairsSkillTreeGrid"></div>
+              </div>
+              <div class="summary-box" id="pairsSkillSummary"></div>
+            </section>
+            <section class="card game-card" id="pairsTierCard" hidden>
+              <div><h3>Board Tiers</h3><p class="note">More complex boards provide greater rewards.</p></div>
+              <div class="board-tier-list" id="pairsTierSelectList"></div>
+              <div class="summary-box"><strong>Deduction rule</strong><span class="inline-note">Each physical card may be selected once without breaking clean status. A mismatch only breaks clean status when at least one selected card has been chosen before; Bank loss requires both mismatched cards to have been chosen before.</span></div>
+            </section>
+            <section class="card game-card" id="pairsProgressCard" hidden>
+              <div><h3>Pairs Progress</h3><p class="note">Structured progression summary for the current save.</p></div>
+              <div class="trackcoin-stats game-progress-stats" id="pairsStats"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+      <section class="card game-panel" id="detectwordPanel">
+        <div class="game-shell">
+          <div class="game-header">
+            <div>
+              <h2>Detect The Word</h2>
+              <p class="note">Choose a letter tier, start a round, and submit guesses with the button or the Enter key. The layout now follows the same one-card-open structure used in Track the Coin.</p>
+            </div>
+            <div class="link-actions">
+              <button class="action secondary" data-select-game="" type="button">Back To Games Overview</button>
+            </div>
+          </div>
+          <details class="game-info-details" data-game-info="detectword"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
+<div class="progress-shell progress-shell--trackcoin">
+            <div class="xp-row">
+              <div>
+                <div class="trackcoin-level-title" id="wordLevelHeading">Level - 1</div>
+                <div class="xp-bar"><div class="xp-fill" id="wordXpFill"></div></div>
+                <div class="trackcoin-xp-meta-row"><span class="inline-note" id="wordXpMeta">0 / 60 XP</span></div>
+              </div>
+            </div>
+            <div class="stat-pills trackcoin-stat-pills">
+              <div class="stat-pill">Unspent Skills <span id="wordSkillPointsValue">0</span></div>
+              <div class="stat-pill">Words Solved <span id="wordSolvedValue">0</span></div>
+              <div class="stat-pill">Current Streak <span id="wordStreakValue">0</span></div>
+              <div class="stat-pill">Best Streak <span id="wordBestStreakValue">0</span></div>
+              <div class="stat-pill stat-pill--clean">Clean Streak <span id="wordCleanStreakValue">0</span></div>
+              <div class="stat-pill stat-pill--clean">Clean Bonus <span id="wordCleanBonusValue">+0%</span></div>
+            </div>
+          </div>
+</details>
+          <div class="game-toggle-row trackcoin-tab-row">
+            <button class="action ghost game-toggle-btn is-active" data-word-panel="wordGameCard" type="button">Game</button>
+            <button class="action ghost game-toggle-btn" data-word-panel="wordSkillCard" type="button">Skills</button>
+            <button class="action ghost game-toggle-btn" data-word-panel="wordTierCard" type="button">Tiers</button>
+            <button class="action ghost game-toggle-btn" data-word-panel="wordProgressCard" type="button">Progress</button>
+          </div>
+          <div class="game-panel-stack">
+            <section class="card game-card game-play-root" id="wordGameCard" data-game-play-root="detectword">
+              <div class="game-toolbar">
+                <div class="stat-pills">
+                  <div class="stat-pill">Tier <span id="wordTierNameValue">3 Letters</span></div>
+                  <div class="stat-pill">Guesses <span id="wordGuessesValue">0 / 6</span></div>
+                  <div class="stat-pill">Round Bank <span id="wordRoundBankValue">0</span></div>
+                </div>
+                <div class="game-toolbar-spacer" aria-hidden="true"></div>
+              </div>
+              <div class="board-wrap game-play-window" data-game-play-window="detectword">
+                <div class="summary-box round-status-card" id="wordRoundSummary"></div>
+                <div class="stack game-play-surface" id="wordBoard" data-game-play-surface="detectword"></div>
+              </div>
+              <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newWordRoundBtn" data-action="start-word" type="button">Start New Game</button><button class="action ghost desktop-keypad-toggle" data-desktop-keypad-toggle="detectword" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="detectword" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+            </section>
+            <section class="card game-card" id="wordSkillCard" hidden>
+              <div class="skill-tree open" id="wordSkillTree">
+                <div class="skill-head"><h3>Detect The Word Skill Tree</h3><div class="inline-note">Spend one point per level gained.</div></div>
+                <div class="grid-two" id="wordSkillTreeGrid"></div>
+              </div>
+              <div class="summary-box" id="wordSkillSummary"></div>
+            </section>
+            <section class="card game-card" id="wordTierCard" hidden>
+              <div><h3>Letter Tiers</h3><p class="note">Longer words bring stronger rewards and harder pattern resolution.</p></div>
+              <div class="board-tier-list" id="wordTierSelectList"></div>
+            </section>
+            <section class="card game-card" id="wordProgressCard" hidden>
+              <div><h3>Detect The Word Progress</h3><p class="note">Structured progression summary for the current save.</p></div>
+              <div class="trackcoin-stats game-progress-stats" id="wordStats"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+      <section class="card game-panel" id="make24Panel">
+        <div class="game-shell">
+          <div class="game-header">
+            <div>
+              <h2>Make The Number</h2>
+              <p class="note">Use all shown numbers exactly once with +, -, ×, ÷, and brackets to hit the current target number. Each tier has a larger puzzle pool and harder target-number bands.</p>
+            </div>
+            <div class="link-actions">
+              <button class="action secondary" data-select-game="" type="button">Back To Games Overview</button>
+            </div>
+          </div>
+          <details class="game-info-details" data-game-info="make24"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
+<div class="progress-shell progress-shell--trackcoin">
+            <div class="xp-row">
+              <div>
+                <div class="trackcoin-level-title" id="make24LevelHeading">Level - 1</div>
+                <div class="xp-bar"><div class="xp-fill" id="make24XpFill"></div></div>
+                <div class="trackcoin-xp-meta-row"><span class="inline-note" id="make24XpMeta">0 / 60 XP</span></div>
+              </div>
+            </div>
+            <div class="stat-pills trackcoin-stat-pills">
+              <div class="stat-pill">Unspent Skills <span id="make24SkillPointsValue">0</span></div>
+              <div class="stat-pill">Puzzles Solved <span id="make24SolvedValue">0</span></div>
+              <div class="stat-pill">Runs Played <span id="make24GamesPlayedValue">0</span></div>
+              <div class="stat-pill stat-pill--clean">Clean Streak <span id="make24CleanStreakValue">0</span></div>
+              <div class="stat-pill stat-pill--clean">Clean Bonus <span id="make24CleanBonusValue">+0%</span></div>
+            </div>
+          </div>
+</details>
+          <div class="game-toggle-row trackcoin-tab-row">
+            <button class="action ghost game-toggle-btn is-active" data-make24-panel="make24GameCard" type="button">Game</button>
+            <button class="action ghost game-toggle-btn" data-make24-panel="make24SkillCard" type="button">Skills</button>
+            <button class="action ghost game-toggle-btn" data-make24-panel="make24TierCard" type="button">Tiers</button>
+            <button class="action ghost game-toggle-btn" data-make24-panel="make24ProgressCard" type="button">Progress</button>
+          </div>
+          <div class="game-panel-stack">
+            <section class="card game-card game-play-root" id="make24GameCard" data-game-play-root="make24">
+              <div class="game-toolbar">
+                <div class="stat-pills">
+                  <div class="stat-pill">Tier <span id="make24TierNameValue">Starter</span></div>
+                  <div class="stat-pill">Target <span id="make24TargetValue">—</span></div>
+                  <div class="stat-pill">Mistakes <span id="make24MistakesValue">0</span></div>
+                  <div class="stat-pill">Round Bank <span id="make24RoundBankValue">0</span></div>
+                </div>
+                <div class="game-toolbar-spacer" aria-hidden="true"></div>
+              </div>
+              <div class="board-wrap game-play-window" data-game-play-window="make24">
+                <div class="summary-box round-status-card" id="make24RoundSummary"></div>
+                <div class="stack game-play-surface" id="make24Board" data-game-play-surface="make24"></div>
+              </div>
+              <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newMake24Btn" data-action="start-make24" type="button">Start New Game</button><button class="action ghost desktop-keypad-toggle" data-desktop-keypad-toggle="make24" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="make24" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+            </section>
+            <section class="card game-card" id="make24SkillCard" hidden>
+              <div class="skill-tree open" id="make24SkillTree">
+                <div class="skill-head"><h3>Make The Number Skill Tree</h3><div class="inline-note">Spend one point per level gained.</div></div>
+                <div class="grid-two" id="make24SkillTreeGrid"></div>
+              </div>
+              <div class="summary-box" id="make24SkillSummary"></div>
+            </section>
+            <section class="card game-card" id="make24TierCard" hidden>
+              <div><h3>Number Tiers</h3><p class="note">Higher tiers widen the number range, vary the target, and increase puzzle difficulty.</p></div>
+              <div class="board-tier-list" id="make24TierSelectList"></div>
+            </section>
+            <section class="card game-card" id="make24ProgressCard" hidden>
+              <div><h3>Make The Number Progress</h3><p class="note">Structured progression summary for the current save.</p></div>
+              <div class="trackcoin-stats game-progress-stats" id="make24Stats"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+<section class="card game-panel" id="trackcoinPanel">
+        <div class="game-shell">
+          <div class="game-header">
+            <div>
+              <h2>Track the Coin</h2>
+              <p class="note">Watch the coin, follow the shuffle, and build steady progression through tiers, skills, and clean-win bonuses.</p>
+            </div>
+            <div class="link-actions">
+              <button class="action secondary" data-select-game="" type="button">Back To Games Overview</button>
+            </div>
+          </div>
+          <details class="game-info-details" data-game-info="trackcoin"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
+<div class="progress-shell progress-shell--trackcoin">
+            <div class="trackcoin-level-title" id="trackCoinLevelHeading">Level - 1</div>
+            <div class="xp-bar"><div class="xp-fill" id="trackCoinXpFill"></div></div>
+            <div class="trackcoin-xp-meta-row"><span class="inline-note" id="trackCoinXpMeta">0 / 60 XP</span></div>
+            <div class="stat-pills trackcoin-stat-pills">
+              <div class="stat-pill">Unspent Skills <span id="trackCoinSkillPointsValue">0</span></div>
+              <div class="stat-pill">Coins <span id="trackCoinCoinsValue">0</span></div>
+              <div class="stat-pill">Tier <span id="trackCoinTierValue">Tier 1</span></div>
+              <div class="stat-pill">Unlocked Tier <span id="trackCoinUnlockedTierValue">Tier 1</span></div>
+              <div class="stat-pill">Streak <span id="trackCoinStreakValue">0</span></div>
+              <div class="stat-pill">Streak Bonus <span id="trackCoinStreakBonusValue">+0%</span></div>
+              <div class="stat-pill stat-pill--clean">Clean Streak <span id="trackCoinCleanStreakValue">0</span></div>
+              <div class="stat-pill stat-pill--clean">Clean Bonus <span id="trackCoinCleanBonusValue">+0%</span></div>
+            </div>
+          </div>
+</details>
+          <div class="game-toggle-row trackcoin-tab-row">
+            <button class="action ghost game-toggle-btn is-active" id="trackCoinGameToggleBtn" data-trackcoin-panel="trackCoinGamePanel" aria-expanded="true" type="button">Game</button>
+            <button class="action ghost game-toggle-btn" id="trackCoinSkillToggleBtn" data-trackcoin-panel="trackCoinSkillPanel" aria-expanded="false" type="button">Skills</button>
+            <button class="action ghost game-toggle-btn" id="trackCoinTierToggleBtn" data-trackcoin-panel="trackCoinTierPanel" aria-expanded="false" type="button">Tiers</button>
+            <button class="action ghost game-toggle-btn" id="trackCoinProgressToggleBtn" data-trackcoin-panel="trackCoinProgressPanel" aria-expanded="false" type="button">Progress</button>
+          </div>
+          <div class="game-panel-stack">
+            <section class="card game-card game-play-root" id="trackCoinGamePanel" data-game-play-root="trackcoin">
+              <div class="game-toolbar">
+                <div>
+                  <h3>Track the Coin</h3>
+                  <p class="note">Watch the coin, follow the shuffle, then choose the correct cup.</p>
+                </div>
+                <div class="game-toolbar-spacer" aria-hidden="true"></div>
+              </div>
+              <div class="trackcoin-board game-play-surface" id="trackCoinBoard" data-game-play-surface="trackcoin"></div>
+              <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newTrackCoinRoundBtn" data-action="start-trackcoin" type="button">Start New Game</button><button class="action ghost" id="replayTrackCoinShuffleBtn" data-action="replay-trackcoin" type="button" hidden>Replay Last Shuffle</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="trackcoin" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+            </section>
+            <section class="card game-card" id="trackCoinSkillPanel" hidden>
+              <div class="skill-head"><h3>Track the Coin Skill Tree</h3><div class="inline-note">Spend one point per level gained.</div></div>
+              <div class="grid-two" id="trackCoinSkillTreeGrid"></div>
+              <div class="summary-box" id="trackCoinSkillSummary"></div>
+            </section>
+            <section class="card game-card" id="trackCoinTierPanel" hidden>
+              <div class="game-toolbar">
+                <div><h3>Tiers</h3><p class="note">Higher tiers increase shuffle complexity while keeping progression readable.</p></div>
+              </div>
+              <div class="board-tier-list tier-list" id="trackCoinTierSelectList"></div>
+            </section>
+            <section class="card game-card" id="trackCoinProgressPanel" hidden>
+              <div class="game-toolbar">
+                <div><h3>Progress</h3><p class="note">Track the Coin levels, grants skills, and contributes a passive bonus to Baseline Realm.</p></div>
+              </div>
+              <div class="trackcoin-stats" id="trackCoinStats"></div>
+              <div class="summary-box"><strong>Pace unlock path</strong><span class="inline-note" id="trackCoinRpgState">Track the Coin has not yet reached the RPG unlock threshold.</span></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+
+      <section class="card game-panel" id="ruleshiftPanel">
+        <div class="game-shell">
+          <div class="game-header">
+            <div>
+              <h2>Rule Shift</h2>
+              <p class="note">Read the current rule, choose the matching card, and adapt when the instruction changes. This trains flexible attention, impulse control, and rule switching.</p>
+            </div>
+            <div class="link-actions">
+              <button class="action secondary" data-select-game="" type="button">Back To Games Overview</button>
+            </div>
+          </div>
+          <details class="game-info-details" data-game-info="ruleshift"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
+            <div class="progress-shell progress-shell--ruleshift">
+              <div class="xp-row">
+                <div>
+                  <div class="trackcoin-level-title" id="ruleShiftLevelHeading">Level - 1</div>
+                  <div class="xp-bar"><div class="xp-fill" id="ruleShiftXpFill"></div></div>
+                  <div class="trackcoin-xp-meta-row"><span class="inline-note" id="ruleShiftXpMeta">0 / 60 XP</span></div>
+                </div>
+              </div>
+              <div class="stat-pills">
+                <div class="stat-pill">Unspent Skills <span id="ruleShiftSkillPointsValue">0</span></div>
+                <div class="stat-pill">Bank <span id="ruleShiftBankValue">0</span></div>
+                <div class="stat-pill">Tier <span id="ruleShiftTierValue">Starter</span></div>
+                <div class="stat-pill">Streak <span id="ruleShiftStreakValue">0</span></div>
+                <div class="stat-pill">Best <span id="ruleShiftBestStreakValue">0</span></div>
+                <div class="stat-pill stat-pill--clean">Clean Streak <span id="ruleShiftCleanStreakValue">0</span></div>
+                <div class="stat-pill stat-pill--clean">Clean Bonus <span id="ruleShiftCleanBonusValue">+0%</span></div>
+              </div>
+            </div>
+          </details>
+          <div class="game-toggle-row">
+            <button class="action ghost game-toggle-btn is-active" data-ruleshift-panel="ruleShiftGameCard" type="button">Game</button>
+            <button class="action ghost game-toggle-btn" data-ruleshift-panel="ruleShiftSkillCard" type="button">Skills</button>
+            <button class="action ghost game-toggle-btn" data-ruleshift-panel="ruleShiftTierCard" type="button">Tiers</button>
+            <button class="action ghost game-toggle-btn" data-ruleshift-panel="ruleShiftProgressCard" type="button">Progress</button>
+          </div>
+          <div class="game-panel-stack">
+            <section class="card game-card game-play-root" id="ruleShiftGameCard" data-game-play-root="ruleshift">
+              <div class="game-toolbar">
+                <div class="stat-pills">
+                  <div class="stat-pill">Tier <span id="ruleShiftTierNameValue">Starter</span></div>
+                  <div class="stat-pill">Round <span id="ruleShiftRoundValue">0 / 8</span></div>
+                  <div class="stat-pill">Mistakes <span id="ruleShiftMistakesValue">0</span></div>
+                  <div class="stat-pill">Round Bank <span id="ruleShiftRoundBankValue">0</span></div>
+                </div>
+                <div class="game-toolbar-spacer" aria-hidden="true"></div>
+              </div>
+              <div class="board-wrap game-play-window" data-game-play-window="ruleshift">
+                <div class="summary-box round-status-card" id="ruleShiftRoundSummary"></div>
+                <div class="ruleshift-board game-play-surface" id="ruleShiftBoard" data-game-play-surface="ruleshift"></div>
+              </div>
+              <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newRuleShiftBtn" data-action="start-ruleshift" type="button">Start New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="ruleshift" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+            </section>
+            <section class="card game-card" id="ruleShiftSkillCard" hidden>
+              <div class="skill-head"><h3>Rule Shift Skill Tree</h3><div class="inline-note">Spend one point per level gained.</div></div>
+              <div class="grid-two" id="ruleShiftSkillTreeGrid"></div>
+              <div class="summary-box" id="ruleShiftSkillSummary"></div>
+            </section>
+            <section class="card game-card" id="ruleShiftTierCard" hidden>
+              <div><h3>Rule Shift Tiers</h3><p class="note">Higher tiers add opposite rules, mixed rules, more cards, and longer runs.</p></div>
+              <div class="board-tier-list" id="ruleShiftTierSelectList"></div>
+            </section>
+            <section class="card game-card" id="ruleShiftProgressCard" hidden>
+              <div><h3>Rule Shift Progress</h3><p class="note">Structured progression summary for the current save.</p></div>
+              <div class="trackcoin-stats game-progress-stats" id="ruleShiftStats"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+            <section class="game-panel" id="ninjaPanel">
+  <article class="card realm-shell-card">
+  <div class="game-shell realm-shell">
+    <div class="realm-game-mount" id="ninjaGameCard"><div class="realm-window" id="realmWindow" tabindex="0"><div class="realm-scene-frame game-play-root game-play-surface is-basecamp-view" id="realmSceneFrame" data-game-play-root="ninja" data-game-play-surface="ninja" data-realm-view="basecamp">
+      <div class="realm-orientation-gate" role="dialog" aria-modal="true" aria-label="Landscape orientation required"><div class="realm-orientation-gate__panel"><div class="realm-orientation-gate__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-rotate"></use></svg></div><strong>Landscape required</strong><span>Rotate your device sideways. Baseline Realm is a landscape-only game.</span></div></div>
+      <div class="ninja-scene" id="ninjaScene" hidden aria-hidden="true"><div class="ninja-scene__layer ninja-scene__layer--a"></div><div class="ninja-scene__layer ninja-scene__layer--b"></div><div class="ninja-forest-layer ninja-forest-layer--foreground" aria-hidden="true"></div><div class="ninja-scene__lane"></div><div class="ninja-scene__runner" id="ninjaRunnerWrap"><span class="ninja-runtime-sprite ninja-runtime-sprite--runner" aria-hidden="true"></span></div><div class="ninja-scene__enemy" id="ninjaEnemyWrap" data-enemy-kind="scout"><span class="ninja-runtime-sprite ninja-runtime-sprite--enemy" aria-hidden="true"></span></div><div class="ninja-hit-flash" id="ninjaHitFlash" aria-hidden="true"></div><div class="ninja-shuriken-layer" id="ninjaShurikenLayer" aria-hidden="true"></div></div>
+      <header class="realm-command-banner" id="realmCommandBanner">
+        <div class="realm-command-banner__status">
+          <div class="realm-top-strip realm-top-strip--training" id="realmTrainingBar" hidden><div class="realm-route-meta"><strong id="ninjaSceneStageName">Forest Path</strong><span id="ninjaRunStateValue">Training route active</span></div><div class="realm-bar-divider"></div><div class="realm-top-strip__meta" id="ninjaXpMeta">Level 1 - Experience 0 / 60</div><div class="xp-bar"><div class="xp-fill" id="ninjaXpFill"></div></div></div>
+          <div class="realm-top-strip realm-top-strip--camp" id="realmBasecampBar"><div class="realm-route-meta"><strong>BASECAMP</strong></div></div><div class="realm-top-strip realm-top-strip--workshop" id="realmWorkshopBar" hidden><div class="realm-route-meta"><strong id="realmWorkshopTitle">Workshop</strong><span id="realmWorkshopSubtitle">Choose a workstation</span></div></div>
+          <div class="realm-top-strip realm-top-strip--exploration" id="realmExplorationBar" hidden><div class="realm-route-meta"><strong>EXPLORATION</strong></div></div>
+        </div>
+        <div class="realm-shared-status" id="realmSharedStatus" aria-label="Realm resources"><div class="realm-coin-readout"><span class="realm-coin-mark" aria-hidden="true"></span><span class="realm-coin-copy"><small>Coins</small><strong id="realmCoinsValue">0</strong></span></div></div>
+        <div class="realm-enemy-status" id="realmCommandEnemyStatus" hidden aria-hidden="true"><div class="realm-enemy-status__name" id="ninjaEnemyLabel">Forest Scout</div><div class="realm-meter" aria-label="Enemy health"><div class="realm-meter__fill" id="ninjaEnemyHpFill"></div><div class="realm-meter__text" id="ninjaSceneHpValue">0 / 0</div></div></div>
+        <nav class="realm-utility" aria-label="Realm controls"><button class="realm-fab" id="realmInventoryBtn" type="button" aria-expanded="false" aria-controls="realmInventoryPanel"><span class="realm-fab__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-inventory"></use></svg></span><span class="realm-fab__label">Inventory</span></button><button class="realm-fab" id="realmSettingsBtn" type="button" aria-expanded="false" aria-controls="realmSettingsPanel"><span class="realm-fab__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-settings"></use></svg></span><span class="realm-fab__label">Settings</span></button><button class="realm-fab" id="realmFullscreenBtn" type="button" aria-pressed="false"><span class="realm-fab__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-fullscreen"></use></svg></span><span class="realm-fab__label">Full Screen<span class="realm-hotkey-hint"> [F]</span></span></button></nav>
+      </header>
+      <button class="realm-home-action" data-realm-view="basecamp" id="realmBasecampBtn" type="button" hidden aria-hidden="true"><span class="realm-fab__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-camp"></use></svg></span><span class="realm-fab__label">Return to Basecamp<span class="realm-hotkey-hint"> [B]</span></span></button>
+      <button class="realm-context-action" data-realm-drawer="toggle" id="realmMenuBtn" type="button" aria-pressed="false"><span class="realm-fab__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-management"></use></svg></span><span class="realm-fab__label">Management<span class="realm-hotkey-hint"> [M]</span></span></button>
+      <div class="realm-training-hud" id="realmTrainingHud" hidden aria-hidden="true"><div class="realm-action-dock"><button class="realm-combat-btn realm-combat-btn--dash" id="ninjaManualStrikeBtn" type="button"><span class="realm-combat-btn__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-dash-cut"></use></svg></span><span class="realm-combat-btn__copy"><strong>Dash Cut [D]</strong><small>Immediate strike</small></span></button><button class="realm-combat-btn realm-combat-btn--shuriken" id="ninjaShurikenBtn" type="button" style="--cooldown-progress:100%"><span class="realm-combat-btn__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-shuriken"></use></svg></span><span class="realm-combat-btn__copy"><strong>Shuriken [S]</strong><small id="ninjaShurikenCooldownText">Ready</small></span></button></div><div class="realm-offline-toast" id="ninjaOfflineToast" hidden>Idle system ready.</div></div>
+      <aside class="realm-drawer" id="realmPanelDrawer" hidden><div class="realm-drawer__head"><div><h4 id="realmDrawerTitle">Management</h4><p class="note" id="realmDrawerNote" hidden></p></div><button class="realm-close-btn" data-realm-drawer="close" type="button" aria-label="Close panel">×</button></div><div class="realm-tab-row" id="realmTrainingTabRow"><button class="realm-tab-btn is-active" data-realm-tab="upgrades" type="button">Upgrades</button><button class="realm-tab-btn" data-realm-tab="spirit" type="button">Spirit Shop</button><button class="realm-tab-btn" data-realm-tab="skills" type="button">Skills</button><button class="realm-tab-btn" data-realm-tab="bonuses" type="button">Bonuses</button><button class="realm-tab-btn" data-realm-tab="rebirth" type="button">Rebirth</button><button class="realm-tab-btn" data-realm-tab="stats" type="button">Stats</button></div><div class="realm-tab-row" id="realmBasecampTabRow" hidden><button class="realm-tab-btn" data-realm-tab="settlement" type="button">Settlement</button><button class="realm-tab-btn" data-realm-tab="workshop" type="button">Workshop</button><button class="realm-tab-btn" data-realm-tab="stores" type="button">Stores</button><button class="realm-tab-btn" data-realm-tab="expeditions" type="button">Expeditions</button></div><section class="realm-drawer-pane" id="realmDrawerUpgrades"><div class="ninja-upgrades" id="ninjaUpgradesList"></div></section><section class="realm-drawer-pane" id="realmDrawerSpirit" hidden><div class="summary-box"><strong>Spirit available</strong><span class="inline-note">Current Spirit: <span id="realmSpiritShopBalance">0</span></span></div><div class="realm-spirit-grid" id="realmSpiritShopList"></div></section><section class="realm-drawer-pane" id="realmDrawerSkills" hidden><div class="realm-dash-note"><div class="trackcoin-stat-card"><strong>Dash Cut</strong><span class="inline-note">Immediate manual strike from the action dock or by pressing D.</span></div><div class="trackcoin-stat-card"><strong>Shuriken Volley</strong><span class="inline-note">Manual only. Press S to throw 10 shuriken over 3 seconds. Each hit deals 50% of Dash Cut damage. Cooldown: 15 seconds.</span></div><div class="trackcoin-stat-card"><strong>Idle Tempo</strong><span class="inline-note">Offline efficiency feeds progress while away from the screen.</span></div></div></section><section class="realm-drawer-pane" id="realmDrawerBonuses" hidden><div class="bonus-list" id="ninjaBonusesList"></div><div class="trait-list" id="ninjaTraitsList"></div></section><section class="realm-drawer-pane" id="realmDrawerRebirth" hidden><div class="summary-box" id="ninjaPrestigeSummary"></div><button class="action" id="ninjaPrestigeBtn" type="button">Rebirth for Spirit</button></section><section class="realm-drawer-pane" id="realmDrawerStats" hidden><div class="realm-stats-grid"><div class="realm-stat-chip"><strong>Level</strong><span id="ninjaLevelValue">1</span></div><div class="realm-stat-chip"><strong>Stage</strong><span id="ninjaStageValue">1</span></div><div class="realm-stat-chip"><strong>Spirit</strong><span id="ninjaSpiritValue">0</span></div><div class="realm-stat-chip"><strong>DPS</strong><span id="ninjaDpsValue">0</span></div><div class="realm-stat-chip"><strong>Offline Rate</strong><span id="ninjaOfflineRateValue">0</span></div><div class="realm-stat-chip"><strong>Bosses Defeated</strong><span id="ninjaBossesValue">0</span></div><div class="realm-stat-chip stat-pill--clean"><strong>Clean Streak</strong><span id="ninjaCleanStreakValue">0</span></div><div class="realm-stat-chip stat-pill--clean"><strong>Clean Bonus</strong><span id="ninjaCleanBonusValue">+0%</span></div><div class="realm-stat-chip"><strong>Highest Stage</strong><span id="ninjaHighestStageValue">1</span></div><div class="realm-stat-chip"><strong>Enemy Type</strong><span id="ninjaEnemyTypeValue">Forest Scout</span></div><div class="realm-stat-chip"><strong>Latest Offline Update</strong><span id="ninjaOfflineMessage">Idle system ready.</span></div></div></section><section class="realm-drawer-pane" id="realmDrawerSettlement" hidden></section><section class="realm-drawer-pane" id="realmDrawerWorkshop" hidden></section><section class="realm-drawer-pane" id="realmDrawerStores" hidden></section><section class="realm-drawer-pane" id="realmDrawerExpeditions" hidden></section></aside>
+      <section class="realm-basecamp-screen" id="realmBasecampScreen" role="navigation" aria-label="Baseline Realm destinations" aria-hidden="false">
+        <button class="realm-location-button" id="realmCampNinjaBtn" data-basecamp-landmark="ninja-training" data-realm-view="training" type="button" aria-label="Ninja Training: Training route"><span class="realm-location-caption" aria-hidden="true"><span class="realm-location-button__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-training"></use></svg></span><span class="realm-location-button__copy">Ninja Training</span><small>Training route</small></span></button>
+        <button class="realm-location-button" id="realmCampExplorationBtn" data-basecamp-landmark="exploration" data-realm-view="exploration" type="button" aria-label="Exploration: Maps and encounters"><span class="realm-location-caption" aria-hidden="true"><span class="realm-location-button__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-exploration"></use></svg></span><span class="realm-location-button__copy">Exploration</span><small>Maps and encounters</small></span></button>
+        <button class="realm-location-button" id="realmCampWorkshopBtn" data-basecamp-landmark="workshop" data-realm-view="workshop" data-workshop-category="blacksmith" type="button" aria-label="Workshop: Forge, tailor, brew and build"><span class="realm-location-caption" aria-hidden="true"><span class="realm-location-button__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-workshop"></use></svg></span><span class="realm-location-button__copy">Workshop</span><small>Forge, tailor, brew and build</small></span></button>
+        <button class="realm-location-button" id="realmCampCalorieEscapeBtn" data-basecamp-landmark="calorie-escape" data-realm-view="calorie-escape" type="button" aria-label="Calorie Escape: Movement route"><span class="realm-location-caption" aria-hidden="true"><span class="realm-location-button__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-calorie"></use></svg></span><span class="realm-location-button__copy">Calorie Escape</span><small>Movement route</small></span></button>
+        <button class="realm-location-button" id="realmCampTacticalBtn" data-basecamp-landmark="tactical-operations" data-realm-view="tactical-operations" type="button" aria-label="Tactical Operations: Operations table"><span class="realm-location-caption" aria-hidden="true"><span class="realm-location-button__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-tactical"></use></svg></span><span class="realm-location-button__copy">Tactical Operations</span><small>Operations table</small></span></button>
+        <button class="realm-location-button" id="realmCampStorageBtn" data-basecamp-landmark="storage" type="button" aria-label="Storehouse: Shared inventory"><span class="realm-location-caption" aria-hidden="true"><span class="realm-location-button__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-storage"></use></svg></span><span class="realm-location-button__copy">Storehouse</span><small>Shared inventory</small></span></button>
+        <button class="realm-location-button" id="realmCampMerchantBtn" data-basecamp-landmark="merchant" type="button" aria-label="Merchant Post: Supplies and exchange"><span class="realm-location-caption" aria-hidden="true"><span class="realm-location-button__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-merchant"></use></svg></span><span class="realm-location-button__copy">Merchant Post</span><small>Supplies and exchange</small></span></button>
+        <button class="realm-location-button" id="realmCampRestBtn" data-basecamp-landmark="campfire-rest" type="button" aria-label="Campfire & Rest: Recovery point"><span class="realm-location-caption" aria-hidden="true"><span class="realm-location-button__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-campfire"></use></svg></span><span class="realm-location-button__copy">Campfire & Rest</span><small>Recovery point</small></span></button>
+        <button class="realm-location-button" id="realmCampCookingBtn" data-basecamp-landmark="cooking" data-realm-view="workshop" data-workshop-category="cooking" type="button" aria-label="Cooking: Meals and route support"><span class="realm-location-caption" aria-hidden="true"><span class="realm-location-button__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-cooking"></use></svg></span><span class="realm-location-button__copy">Cooking</span><small>Meals and route support</small></span></button>
+        <button class="realm-location-button" id="realmCampPartyBtn" data-basecamp-landmark="party-preparation" type="button" aria-label="Party Preparation: Ready the party"><span class="realm-location-caption" aria-hidden="true"><span class="realm-location-button__icon"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1#icon-party"></use></svg></span><span class="realm-location-button__copy">Party Preparation</span><small>Ready the party</small></span></button>
+      </section>
+      <section class="realm-workshop-screen" id="realmWorkshopScreen" hidden aria-label="Workshop and Cooking interior"></section>
+      <section class="realm-exploration-screen" id="realmExplorationScreen" hidden aria-label="Exploration"></section>
+    </div></div></div><section class="card game-card" id="ninjaUpgradesCard" hidden></section><section class="card game-card" id="ninjaBonusesCard" hidden></section><section class="card game-card" id="ninjaPrestigeCard" hidden></section></div></article></section>
+  </div>
+</section>
+</main>
+</div>
+<script src="/sitewide/js/baseline-protected-access.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
+<script src="/sitewide/js/baseline-api.js?v=SITEWIDE_API_JS_20261021_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_JS_20261021_1"></script><script src="/sitewide/js/baseline-shared.js?v=SITEWIDE_SHARED_JS_20261021_1"></script>
+<script src="/systems/baseline-recreation/js/games-registry.js?v=NONREALM_COHERENCE_20261018_1"></script>
+<script src="/systems/baseline-recreation/js/games-progression.js?v=GAMES_PROGRESSION_AUTHORITY_20261021_1"></script>
+<script src="/systems/baseline-recreation/js/games-core-config.js?v=GAMES_CORE_CONFIG_AUTHORITY_20261021_1"></script>
+<script src="/systems/baseline-recreation/js/pairs-engine.js?v=PAIRS_ENGINE_AUTHORITY_20261022_1"></script>
+<script src="/systems/baseline-recreation/js/games-profile-rules.js?v=GAMES_PROFILE_RULES_AUTHORITY_20261021_1"></script>
+<script src="/systems/baseline-recreation/js/make-number-engine.js?v=MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1"></script>
+<script src="/systems/baseline-recreation/js/detect-word-engine.js?v=DETECT_WORD_ENGINE_AUTHORITY_20261021_1"></script>
+<script src="/systems/baseline-recreation/js/baseline-recreation-guard.js?v=SERVER_SAVE_COVERAGE_20261018_1"></script>
+<script src="/systems/baseline-recreation/js/games-help-modal.js?v=GAMES_HELP_MODAL_AUTHORITY_20261022_1"></script>
+<script src="/systems/baseline-recreation/js/baseline-recreation-core.js?v=PAIRS_ENGINE_AUTHORITY_20261022_1"></script>
+<script src="/systems/baseline-recreation/js/games-music.js?v=PUZZLE_MUSIC_20261019_1"></script>
+<script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-registry.js?v=MOVED_ALONG_CORRECTED_HAND_20261019_1"></script>
+<script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-library.js?v=PUZZLE_MUSIC_20261019_1"></script>
+<script src="/systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js?v=NONREALM_COHERENCE_20261018_1"></script>
+<script src="/systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=JIGSAW_PROGRESS_TABS_20261019_1"></script>
+<!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Hub or another game. -->
+<script type="module" src="/systems/baseline-recreation/games/block-grid/js/block-grid.js?v=PUZZLE_MUSIC_20261019_1"></script>
+<script type="module" src="/systems/baseline-recreation/games/colour-sort/js/colour-sort.js?v=PUZZLE_MUSIC_20261019_1"></script>
+<script type="module" src="/systems/baseline-recreation/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4"></script>
+<script type="module" src="/systems/baseline-recreation/games/badminton-focused/js/badminton-focused.js?v=BADMINTON_FOCUSED_REFINED_20260707_2"></script>
+<script type="module" src="/systems/baseline-recreation/games/baseline-realm/shared/js/realm-entry.js?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1"></script>
+<script type="module" src="/systems/baseline-recreation/js/baseline-recreation.js?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1"></script>
+</body>
+</html>

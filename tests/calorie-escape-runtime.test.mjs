@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
-import { calorieEscapeModules } from '../systems/baseline-games-hub/games/baseline-realm/calorie-escape/js/calorie-escape-game.js';
-import { controls } from '../systems/baseline-games-hub/games/baseline-realm/calorie-escape/js/controls.js';
+import { calorieEscapeModules } from '../systems/baseline-recreation/games/baseline-realm/calorie-escape/js/calorie-escape-game.js';
+import { controls } from '../systems/baseline-recreation/games/baseline-realm/calorie-escape/js/controls.js';
 
-const scene=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/calorie-escape/js/calorie-escape-scene.js','utf8');
-const shell=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/calorie-escape/js/game-shell.js','utf8');
-const css=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/calorie-escape.css','utf8');
+const scene=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/calorie-escape/js/calorie-escape-scene.js','utf8');
+const shell=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/calorie-escape/js/game-shell.js','utf8');
+const css=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/calorie-escape/css/calorie-escape.css','utf8');
 
 test('Calorie Escape runtime graph loads',()=>{
  assert.equal(typeof calorieEscapeModules.setup,'function');

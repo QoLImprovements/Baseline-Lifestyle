@@ -18,7 +18,7 @@ test('primary production routes load without runtime errors', async ({ page }) =
     ['/baseline-massage/system', 'massage'],
     ['/baseline-natural-skincare/system', 'skin'],
     ['/baseline-fitness/system', 'fitness'],
-    ['/baseline-games-hub/games-hub', 'games'],
+    ['/baseline-recreation/system', 'games'],
     ['/baseline-badminton-session/system', 'badminton']
   ];
 
@@ -90,16 +90,16 @@ test('canonical clean route families can be requested directly for browser refre
     '/baseline-fitness/my-routine/plan/cardio',
     '/baseline-fitness/my-routine/plan/other',
     '/baseline-fitness/my-routine/plan/sports',
-    '/baseline-games-hub/games-hub',
-    '/baseline-games-hub/games-hub/games-list',
-    '/baseline-games-hub/games-hub/pairs',
-    '/baseline-games-hub/games-hub/detect-the-word',
-    '/baseline-games-hub/games-hub/make-the-number',
-    '/baseline-games-hub/games-hub/track-the-coin',
-    '/baseline-games-hub/games-hub/rule-shift',
-    '/baseline-games-hub/games-hub/darts-focused',
-    '/baseline-games-hub/games-hub/badminton-focused',
-    '/baseline-games-hub/games-hub/baseline-realm'
+    '/baseline-recreation/system',
+    '/baseline-recreation/games',
+    '/baseline-recreation/games/pairs',
+    '/baseline-recreation/games/detect-the-word',
+    '/baseline-recreation/games/make-the-number',
+    '/baseline-recreation/games/track-the-coin',
+    '/baseline-recreation/games/rule-shift',
+    '/baseline-recreation/games/darts-focused',
+    '/baseline-recreation/games/badminton-focused',
+    '/baseline-recreation/games/baseline-realm'
   ];
 
   for (const pathname of routes) {
@@ -122,7 +122,7 @@ test('clean routes paint the exact tab before external application JavaScript ru
     ['/baseline-natural-skincare/my-routine/summary', 'routine'],
     ['/baseline-massage/planner', 'planner'],
     ['/baseline-badminton-session/session-history', 'history'],
-    ['/baseline-games-hub/games-hub/games-list', 'games']
+    ['/baseline-recreation/games', 'games']
   ];
 
   for (const [pathname, target] of routes) {
@@ -324,9 +324,9 @@ const topLevelHistoryCases = [
     section:'history'
   },
   {
-    name:'Games Hub',
-    start:'/baseline-games-hub/games-hub',
-    target:'/baseline-games-hub/games-hub/games-list',
+    name:'Recreation',
+    start:'/baseline-recreation/system',
+    target:'/baseline-recreation/games',
     tab:'games',
     section:'games'
   }
@@ -661,7 +661,7 @@ test('Fitness saves a generated plan and reloads it through the account API', as
   await expect(page.locator('#myPlanSavedWrap .calisthenics-saved-plan-summary')).toContainText('Progress: 0/2');
 });
 
-test('Games Hub restores account progress and keeps a game playable', async ({ page }) => {
+test('Recreation restores account progress and keeps a game playable', async ({ page }) => {
   const profiles = {
     pairs: { app: 'pairs', level: 4, xp: 0, bank: 25, boardsCleared: 7, gamesPlayed: 7, currentStreak: 0, bestStreak: 2, cleanWinStreak: 0, skillPoints: 0, skills: {} },
     make24: { app: 'make24', level: 1, xp: 0, bank: 0, puzzlesSolved: 0, gamesPlayed: 0, currentStreak: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {} },
@@ -671,19 +671,19 @@ test('Games Hub restores account progress and keeps a game playable', async ({ p
     ninja: { app: 'ninja', level: 3, xp: 10, coins: 250, spirit: 12, stage: 4, highestStage: 4, enemyHp: 50, totalKills: 2, currentStreak: 0, bestStreak: 1, cleanWinStreak: 0, bossesDefeated: 0, totalCoinsEarned: 250, upgrades: {}, spiritShop: {} }
   };
 
-  await page.route('**/systems/baseline-games-hub/api/games_data.php**', async (route) => {
+  await page.route('**/systems/baseline-recreation/api/games_data.php**', async (route) => {
     if (route.request().method() === 'GET') return fulfillJson(route, { ok: true, authed: true, profiles });
     const payload = route.request().postDataJSON();
     if (payload.action === 'save' && payload.app && payload.profile) profiles[payload.app] = payload.profile;
     return fulfillJson(route, { ok: true, authed: true, profiles });
   });
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**', (route) => {
+  await page.route('**/systems/baseline-recreation/api/games_profile.php**', (route) => {
     const app = new URL(route.request().url()).searchParams.get('app') || 'pairs';
     return fulfillJson(route, { ok: true, app, profile: profiles[app] || { app, level: 1 } });
   });
 
-  await page.goto('/baseline-games-hub/games-hub', { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => globalThis.BASELINE_GAMES_HUB_CORE_READY === true);
+  await page.goto('/baseline-recreation/system', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => globalThis.BASELINE_RECREATION_CORE_READY === true);
   await page.getByRole('button', { name: 'Games', exact: true }).click();
   await expect(page.locator('[data-select-game="pairs"]:visible').first()).toContainText('Level 4 · 7 cleared');
   await expect(page.locator('[data-select-game="ninja"]:visible').first()).toContainText('Level 3 · Stage 4');

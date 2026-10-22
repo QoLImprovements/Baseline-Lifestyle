@@ -22,7 +22,7 @@ The following live Hostinger routes returned HTTP 200:
 - `/baseline-fitness/my-body/profile`
 - `/baseline-massage/system`
 - `/baseline-badminton-session/system`
-- `/baseline-games-hub/games-hub`
-- `/baseline-games-hub/games-hub/games-list`
+- `/baseline-recreation/system`
+- `/baseline-recreation/games`
 
 This record marks the final live-production acceptance smoke as complete after Sections 3 and 4 were merged.

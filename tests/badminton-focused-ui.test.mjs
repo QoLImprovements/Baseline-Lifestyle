@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { GAMES, ZONES } from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-config.js';
+import { GAMES, ZONES } from '../systems/baseline-recreation/games/badminton-focused/js/badminton-focused-config.js';
 import {
   escapeHtml,
   panelHtml,
@@ -10,9 +10,9 @@ import {
   nextButton,
   zoneButtons,
   resetScene
-} from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-ui.js';
+} from '../systems/baseline-recreation/games/badminton-focused/js/badminton-focused-ui.js';
 
-test('Badminton UI authority builds the complete Games Hub shell from config',()=>{
+test('Badminton UI authority builds the complete Recreation shell from config',()=>{
   const html=panelHtml({
     games:GAMES,
     selectedId:'read-racket',

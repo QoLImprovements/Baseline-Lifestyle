@@ -8,7 +8,7 @@ const PORT = Number(process.env.PORT || 4173);
 const HOST = process.env.HOST || '127.0.0.1';
 const CACHE_EPOCH = '20260630_14';
 const CACHE_COOKIE = `baseline_games_runtime_epoch=${CACHE_EPOCH}`;
-const GAME_DATA_PATH = '/systems/baseline-games-hub/api/games_data.php';
+const GAME_DATA_PATH = '/systems/baseline-recreation/api/games_data.php';
 const FAVOURITES_PATH = '/sitewide/api/favourites.php';
 const gameProfiles = new Map();
 
@@ -30,7 +30,7 @@ const CONTENT_TYPES = Object.freeze({
   '.php': 'text/plain; charset=utf-8'
 });
 
-const HUB_ROUTE = /^\/baseline-games-hub\/games-hub(?:\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|badminton-focused|baseline-realm))?\/?$/;
+const HUB_ROUTE = /^\/baseline-recreation\/games-hub(?:\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|badminton-focused|baseline-realm))?\/?$/;
 
 /* Keep this route table aligned with the public Apache clean-route contract.
    Playwright must be able to refresh a virtual route directly; otherwise a
@@ -73,7 +73,7 @@ const DEFAULT_REDIRECTS = new Map([
   ['/baseline-natural-skincare', '/baseline-natural-skincare/system'],
   ['/baseline-badminton-session', '/baseline-badminton-session/system'],
   ['/baseline-fitness', '/baseline-fitness/system'],
-  ['/baseline-games-hub', '/baseline-games-hub/games-hub']
+  ['/baseline-recreation', '/baseline-recreation/system']
 ]);
 
 function safePathname(rawPathname) {
@@ -85,7 +85,7 @@ function safePathname(rawPathname) {
 }
 
 function mapPath(pathname) {
-  if (HUB_ROUTE.test(pathname)) return '/systems/baseline-games-hub/baseline-games-hub.html';
+  if (HUB_ROUTE.test(pathname)) return '/systems/baseline-recreation/baseline-recreation.html';
 
   for (const [pattern, target] of STATIC_ROUTE_RULES) {
     if (pattern.test(pathname)) return target;

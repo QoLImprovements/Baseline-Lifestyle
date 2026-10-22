@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const enginePath=new URL('../systems/baseline-games-hub/js/pairs-engine.js',import.meta.url);
-const corePath=new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js',import.meta.url);
-const htmlPath=new URL('../systems/baseline-games-hub/baseline-games-hub.html',import.meta.url);
+const enginePath=new URL('../systems/baseline-recreation/js/pairs-engine.js',import.meta.url);
+const corePath=new URL('../systems/baseline-recreation/js/baseline-recreation-core.js',import.meta.url);
+const htmlPath=new URL('../systems/baseline-recreation/baseline-recreation.html',import.meta.url);
 
 function loadEngine(){
   const sandbox={window:{}};
@@ -70,7 +70,7 @@ test('Pairs reward calculation preserves skill and streak multipliers',()=>{
   );
 });
 
-test('Games Hub core delegates Pairs pure logic to the engine authority',()=>{
+test('Recreation core delegates Pairs pure logic to the engine authority',()=>{
   const core=fs.readFileSync(corePath,'utf8');
   const source=fs.readFileSync(enginePath,'utf8');
   const html=fs.readFileSync(htmlPath,'utf8');
@@ -85,8 +85,8 @@ test('Games Hub core delegates Pairs pure logic to the engine authority',()=>{
   assert.doesNotMatch(source,/document\.|fetch\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB/);
   assert.doesNotMatch(source,/addEventListener|createElement|innerHTML|classList|history\./);
 
-  const configIndex=html.indexOf('/systems/baseline-games-hub/js/games-core-config.js');
-  const engineIndex=html.indexOf('/systems/baseline-games-hub/js/pairs-engine.js?v=PAIRS_ENGINE_AUTHORITY_20261022_1');
-  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=PAIRS_ENGINE_AUTHORITY_20261022_1');
+  const configIndex=html.indexOf('/systems/baseline-recreation/js/games-core-config.js');
+  const engineIndex=html.indexOf('/systems/baseline-recreation/js/pairs-engine.js?v=PAIRS_ENGINE_AUTHORITY_20261022_1');
+  const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js?v=PAIRS_ENGINE_AUTHORITY_20261022_1');
   assert.ok(configIndex>=0 && engineIndex>configIndex && coreIndex>engineIndex);
 });

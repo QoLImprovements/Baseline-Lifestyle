@@ -8,7 +8,7 @@ const publicPages = [
   'systems/baseline-psychology/baseline-psychology.html',
   'systems/baseline-fitness/baseline-fitness.html',
   'systems/baseline-badminton-session/baseline-badminton-session.html',
-  'systems/baseline-games-hub/baseline-games-hub.html',
+  'systems/baseline-recreation/baseline-recreation.html',
   'systems/baseline-massage/baseline-massage.html'
 ];
 

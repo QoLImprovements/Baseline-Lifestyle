@@ -58,7 +58,7 @@
       "classification": "guest-local-game-save",
       "decision": "keep-local-for-guests-never-promote",
       "target": "Users/{paddedUserId}/Games/badminton-focused.json",
-      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Games Hub sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
+      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Recreation sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
     },
     {
       "id": "darts-focused-game",
@@ -73,7 +73,7 @@
       "classification": "guest-local-game-save",
       "decision": "keep-local-for-guests-never-promote",
       "target": "Users/{paddedUserId}/Games/darts-focused.json",
-      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Games Hub sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
+      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Recreation sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
     },
     {
       "id": "games-auto-next-preference",
@@ -99,7 +99,7 @@
       "classification": "guest-local-game-save",
       "decision": "keep-local-for-guests-never-promote",
       "target": null,
-      "cutoverRule": "The aggregate browser profiles remain guest/local progress only. Signed-in Games Hub sessions use account game resources and ignore this browser aggregate. Never split, offer or promote it into authenticated account progress."
+      "cutoverRule": "The aggregate browser profiles remain guest/local progress only. Signed-in Recreation sessions use account game resources and ignore this browser aggregate. Never split, offer or promote it into authenticated account progress."
     },
     {
       "id": "games-legacy-import-owner",
@@ -110,7 +110,7 @@
       "classification": "retired-migration-metadata",
       "decision": "delete-on-authenticated-load",
       "target": null,
-      "cutoverRule": "Retired metadata from the former Games Hub browser-import flow. It contains no game progress and is deleted when authenticated account authority is established; it must never bind or enable import candidates."
+      "cutoverRule": "Retired metadata from the former Recreation browser-import flow. It contains no game progress and is deleted when authenticated account authority is established; it must never bind or enable import candidates."
     },
     {
       "id": "trackcoin-game",
@@ -123,7 +123,7 @@
       "classification": "guest-local-game-save",
       "decision": "keep-local-for-guests-never-promote",
       "target": "Users/{paddedUserId}/Games/track-coin.json",
-      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Games Hub sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
+      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Recreation sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
     },
     {
       "id": "recipe-title-index",
@@ -173,7 +173,7 @@
       "classification": "guest-local-game-save",
       "decision": "keep-local-for-guests-never-promote",
       "target": "Users/{paddedUserId}/Games/meridian-grove.json",
-      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Games Hub sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
+      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Recreation sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
     },
     {
       "id": "skincare-routine-local-cache",

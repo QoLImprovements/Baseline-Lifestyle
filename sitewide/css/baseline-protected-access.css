@@ -22,7 +22,7 @@ body[data-app]{
 body[data-app="food"],
 body[data-app="badminton"],
 body[data-app="fitness"],
-body[data-app="games"]{
+body[data-app="recreation"]{
   --protected-key-bg:var(--header-gradient,var(--page-bg));
 }
 body[data-app="skin"]{--protected-key-bg:var(--skin-page-gradient,var(--header-gradient,var(--page-bg)))}

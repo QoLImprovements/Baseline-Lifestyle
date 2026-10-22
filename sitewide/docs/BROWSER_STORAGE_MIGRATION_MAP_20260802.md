@@ -39,7 +39,7 @@ SQLite remains the controlled migration source for legacy application records wh
 | `meridiangrove` / `meridian-grove` | `meridian-grove.json` |
 | `badmintonfocused` / `badminton-focused` | `badminton-focused.json` |
 
-The Games Hub guest-profile bundle is split by recognised game ID through this map. A physical file is created only for recognised saveable progress.
+The Recreation guest-profile bundle is split by recognised game ID through this map. A physical file is created only for recognised saveable progress.
 
 ## Fitness
 
@@ -94,11 +94,11 @@ Legacy or guest game content is never silently promoted into authenticated state
 - Meridian Grove exploration key `baseline.realm.exploration.jrpg.v1` → `Games/meridian-grove.json`.
 - Tactical Operations v1/v2 → `Games/baseline-realm.json#tacticalOperations`.
 - Badminton Focused `__bl_badminton_focused_v1__` → `Games/badminton-focused.json`.
-- recognised Games Hub guest-profile entries → their canonical physical files.
+- recognised Recreation guest-profile entries → their canonical physical files.
 
 Physical legacy candidates are bound to the reviewing account where required. All authenticated server mutations use expected revisions and stop on conflict.
 
-Games auto-next and Games Hub view/navigation state are not progression data and remain local/session state as classified by the executable map.
+Games auto-next and Recreation view/navigation state are not progression data and remain local/session state as classified by the executable map.
 
 ## Shared Badminton
 

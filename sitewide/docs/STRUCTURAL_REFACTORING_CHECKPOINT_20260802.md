@@ -11,9 +11,9 @@ Generated food-library datasets are excluded because their size is data volume r
 | Runtime area | Approximate size | Main concern |
 | --- | ---: | --- |
 | `sitewide/js/baseline-shared.js` | 275 KB | navigation, recipes, authentication, favourites, Binaural controls and shared interface behaviour are coupled |
-| `systems/baseline-games-hub/js/baseline-games-hub-core.js` | 244 KB | interface control, profile progression and persistence coordination are coupled |
+| `systems/baseline-recreation/js/baseline-recreation-core.js` | 244 KB | interface control, profile progression and persistence coordination are coupled |
 | `systems/baseline-badminton-session/js/baseline-badminton-session.js` | 229 KB | session planning, ratings, rendering and server-state coordination are coupled |
-| `systems/baseline-games-hub/css/baseline-games-hub.css` | 268 KB | multiple established game and hub surfaces share one stylesheet authority |
+| `systems/baseline-recreation/css/baseline-recreation.css` | 268 KB | multiple established game and hub surfaces share one stylesheet authority |
 | `sitewide/css/baseline-recipes.css` | 140 KB | recipe presentation, controls and responsive rules share one stylesheet authority |
 
 ## Increment 1: private environment boundary
@@ -33,7 +33,7 @@ This boundary is intentionally narrow:
 1. Add focused regression tests before each extraction.
 2. Continue separating the API bootstrap into configuration, HTTP/JSON, session/authentication and database/schema responsibilities.
 3. Separate pure route/state and API-client helpers from the shared site controller before moving interface rendering.
-4. Extract pure Games Hub profile/progression rules before changing its interface controller.
+4. Extract pure Recreation profile/progression rules before changing its interface controller.
 5. Extract pure Badminton ratings and planning rules before changing rendering or shared-state coordination.
 6. Split large stylesheets only along existing page/component boundaries; do not change the visual design during a structural split.
 

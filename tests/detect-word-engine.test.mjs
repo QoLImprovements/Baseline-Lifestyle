@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const configPath=new URL('../systems/baseline-games-hub/js/games-core-config.js',import.meta.url);
-const enginePath=new URL('../systems/baseline-games-hub/js/detect-word-engine.js',import.meta.url);
-const corePath=new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js',import.meta.url);
-const htmlPath=new URL('../systems/baseline-games-hub/baseline-games-hub.html',import.meta.url);
+const configPath=new URL('../systems/baseline-recreation/js/games-core-config.js',import.meta.url);
+const enginePath=new URL('../systems/baseline-recreation/js/detect-word-engine.js',import.meta.url);
+const corePath=new URL('../systems/baseline-recreation/js/baseline-recreation-core.js',import.meta.url);
+const htmlPath=new URL('../systems/baseline-recreation/baseline-recreation.html',import.meta.url);
 
 function loadEngine(random=()=>0){
   const sandbox={window:{},Math};
@@ -16,10 +16,10 @@ function loadEngine(random=()=>0){
   return {
     factory,
     engine:factory.create({
-      wordBank:sandbox.window.BASELINE_GAMES_HUB_CORE_CONFIG.WORD_BANK,
+      wordBank:sandbox.window.BASELINE_GAMES_CORE_CONFIG.WORD_BANK,
       random
     }),
-    wordBank:sandbox.window.BASELINE_GAMES_HUB_CORE_CONFIG.WORD_BANK
+    wordBank:sandbox.window.BASELINE_GAMES_CORE_CONFIG.WORD_BANK
   };
 }
 
@@ -78,7 +78,7 @@ test('Detect The Word reward and keypad knowledge rules are preserved',()=>{
   assert.equal(knowledge.c,'correct');
 });
 
-test('Games Hub core delegates Detect The Word engine logic to one authority',()=>{
+test('Recreation core delegates Detect The Word engine logic to one authority',()=>{
   const core=fs.readFileSync(corePath,'utf8');
   const source=fs.readFileSync(enginePath,'utf8');
   const html=fs.readFileSync(htmlPath,'utf8');
@@ -96,8 +96,8 @@ test('Games Hub core delegates Detect The Word engine logic to one authority',()
   assert.doesNotMatch(source,/document\.|fetch\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB|BaselineGameStorage/);
   assert.doesNotMatch(source,/addEventListener|createElement|innerHTML|classList|history\./);
 
-  const configIndex=html.indexOf('/systems/baseline-games-hub/js/games-core-config.js');
-  const engineIndex=html.indexOf('/systems/baseline-games-hub/js/detect-word-engine.js?v=DETECT_WORD_ENGINE_AUTHORITY_20261021_1');
-  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=DETECT_WORD_ENGINE_AUTHORITY_20261021_1');
+  const configIndex=html.indexOf('/systems/baseline-recreation/js/games-core-config.js');
+  const engineIndex=html.indexOf('/systems/baseline-recreation/js/detect-word-engine.js?v=DETECT_WORD_ENGINE_AUTHORITY_20261021_1');
+  const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js?v=DETECT_WORD_ENGINE_AUTHORITY_20261021_1');
   assert.ok(configIndex>=0 && engineIndex>configIndex && coreIndex>engineIndex);
 });

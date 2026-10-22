@@ -18,7 +18,7 @@ The audited snapshot contains 17,342 tracked files and approximately 56.1 MB of 
 |---|---|---|
 | `sitewide/` | shared shell, account UI, navigation, common APIs and voice utilities | SQLite and browser caches |
 | Fitness | plans, sessions, achievements, body/profile UI, workout runtime | SQLite for authenticated plans/results; some local browser progress/profile data |
-| Games Hub | game launch/runtime and individual game profiles | SQLite whole-profile JSON for authenticated users; guest browser/memory profiles |
+| Recreation | game launch/runtime and individual game profiles | SQLite whole-profile JSON for authenticated users; guest browser/memory profiles |
 | Badminton Session | shared players, courts, matches, results and rating state | one SQLite JSON row named `global` |
 | Food Approach | food library and diet log | static library plus browser diet log |
 | Account/favourites/binaural/voice | identity and user preferences | normalized SQLite tables |

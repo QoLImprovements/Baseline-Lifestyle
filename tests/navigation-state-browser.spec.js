@@ -9,14 +9,14 @@ async function stubGames(page){
   const profileFor=(app)=>app==='ninja'
     ? {app:'ninja',coins:0,spirit:0,level:1,xp:0,stage:1,enemyHp:50,highestStage:1,totalKills:0,currentStreak:0,bestStreak:0,cleanWinStreak:0,bossesDefeated:0,totalCoinsEarned:0,prestigeCount:0,prestigeEarnedTotal:0,upgrades:{},spiritShop:{},lastSeenAt:Date.now(),bonusCache:{},offlineSummary:''}
     : {app,level:1,xp:0,bank:0,coins:0,skillPoints:1,skills:{}};
-  await page.route('**/systems/baseline-games-hub/api/games_data.php**',async route=>{
+  await page.route('**/systems/baseline-recreation/api/games_data.php**',async route=>{
     const request=route.request(); let body={}; try{body=request.postDataJSON();}catch(_e){}
     if(request.method()==='GET') return fulfillJson(route,{ok:true,profiles});
     if(body.app&&body.profile) profiles[body.app]=body.profile;
     if(body.action==='migrate_missing') Object.assign(profiles,body.profiles||{});
     return fulfillJson(route,{ok:true,app:body.app||'',profile:body.app?profiles[body.app]||null:null,profiles});
   });
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**',async route=>{
+  await page.route('**/systems/baseline-recreation/api/games_profile.php**',async route=>{
     const url=new URL(route.request().url()); const app=url.searchParams.get('app')||'pairs';
     if(!profiles[app]) profiles[app]=profileFor(app);
     return fulfillJson(route,{ok:true,app,profile:profiles[app]});
@@ -65,7 +65,7 @@ test('Massage planner mode survives refresh and history',async({page})=>{
 
 test('Puzzles exact non-default jigsaw survives refresh Back and Forward',async({page})=>{
   await stubGames(page);
-  await page.goto('/baseline-games-hub/games-hub/puzzles',{waitUntil:'domcontentloaded'});
+  await page.goto('/baseline-recreation/puzzles',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
   await page.locator('[data-puzzle-type="jigsaws"]').click();
   await expect(page).toHaveURL(/[?&]puzzle=jigsaws/);
@@ -89,11 +89,11 @@ test('Puzzles exact non-default jigsaw survives refresh Back and Forward',async(
 
 test('every registered jigsaw restores its rendered selection after a real refresh',async({page})=>{
   await stubGames(page);
-  await page.goto('/baseline-games-hub/games-hub/puzzles',{waitUntil:'domcontentloaded'});
+  await page.goto('/baseline-recreation/puzzles',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesRegistry?.jigsaws?.length));
   const jigsaws=await page.evaluate(()=>globalThis.BaselinePuzzlesRegistry.jigsaws.map(item=>({id:item.id,title:item.title})));
   for(const item of jigsaws){
-    await page.goto('/baseline-games-hub/games-hub/puzzles?puzzle=jigsaws&jigsaw='+encodeURIComponent(item.id),{waitUntil:'domcontentloaded'});
+    await page.goto('/baseline-recreation/puzzles?puzzle=jigsaws&jigsaw='+encodeURIComponent(item.id),{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.documentElement.hasAttribute('data-weight-of-coherence-jigsaw'));
     await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',item.id);
     await expect(page.locator('#weightCoherenceTitle')).toHaveText(item.title);
@@ -106,13 +106,13 @@ test('every registered jigsaw restores its rendered selection after a real refre
 
 test('Puzzles Jigsaws and Crossnumber views survive refresh',async({page})=>{
   await stubGames(page);
-  await page.goto('/baseline-games-hub/games-hub/puzzles?puzzle=jigsaws',{waitUntil:'domcontentloaded'});
+  await page.goto('/baseline-recreation/puzzles?puzzle=jigsaws',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary.getView())).toBe('jigsaws');
   await page.reload({waitUntil:'domcontentloaded'});
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('jigsaws');
 
-  await page.goto('/baseline-games-hub/games-hub/puzzles?puzzle=crossnumber',{waitUntil:'domcontentloaded'});
+  await page.goto('/baseline-recreation/puzzles?puzzle=crossnumber',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary.getView())).toBe('crossnumber');
   await page.reload({waitUntil:'domcontentloaded'});
@@ -152,26 +152,26 @@ test('Badminton Game Plan subviews survive refresh',async({page})=>{
   await expect(page.locator('[data-gameplan-tab="attendance"]')).toHaveAttribute('aria-selected','true');
 });
 
-test('Games Hub inner panels survive refresh',async({page})=>{
+test('Recreation inner panels survive refresh',async({page})=>{
   await stubGames(page);
-  await page.goto('/baseline-games-hub/games-hub/pairs',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>globalThis.BASELINE_GAMES_HUB_CORE_READY===true);
+  await page.goto('/baseline-recreation/games/pairs',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
   await page.locator('[data-pairs-panel="pairsSkillCard"]').first().click();
   await expect(page).toHaveURL(/[?&]panel=pairsSkillCard/);
   await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>globalThis.BASELINE_GAMES_HUB_CORE_READY===true);
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
   await expect(page.locator('#pairsSkillCard')).toBeVisible();
 });
 
 test('Block Grid and Colour Sort nested tabs survive refresh',async({page})=>{
   await stubGames(page);
-  await page.goto('/baseline-games-hub/games-hub/block-grid',{waitUntil:'domcontentloaded'});
+  await page.goto('/baseline-recreation/games/block-grid',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselineBlockGrid));
   await page.locator('[data-block-tab="modes"]').click();
   await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('#blockGridModesCard')).toBeVisible();
 
-  await page.goto('/baseline-games-hub/games-hub/colour-sort',{waitUntil:'domcontentloaded'});
+  await page.goto('/baseline-recreation/games/colour-sort',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselineColourSort));
   await page.locator('[data-colour-tab="levels"]').click();
   await page.reload({waitUntil:'domcontentloaded'});
@@ -180,7 +180,7 @@ test('Block Grid and Colour Sort nested tabs survive refresh',async({page})=>{
 
 test('Baseline Realm exact scene survives refresh',async({page})=>{
   await stubGames(page);
-  await page.goto('/baseline-games-hub/games-hub/baseline-realm?scene=ninja-training',{waitUntil:'domcontentloaded'});
+  await page.goto('/baseline-recreation/games/baseline-realm?scene=ninja-training',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselineRealmHost?.sceneRouter));
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('ninja-training');
   await page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.navigate('workshop'));

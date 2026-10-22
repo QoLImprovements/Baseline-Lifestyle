@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const core = fs.readFileSync(new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js', import.meta.url),'utf8');
+const core = fs.readFileSync(new URL('../systems/baseline-recreation/js/baseline-recreation-core.js', import.meta.url),'utf8');
 
 function extractFunction(name,nextName){
   const start=core.indexOf('function '+name+'(');

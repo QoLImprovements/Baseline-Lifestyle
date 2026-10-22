@@ -6,9 +6,9 @@ import {
   moveUnit, basicAttack, useAreaAbility, endTurn, checkVictory, nextMissionId, isBlocked,
   tacticalStateSnapshot, applyTacticalAction, simulateTacticalActions,
   MISSION_TYPES, MISSION_ORDER, MISSION_DEFINITIONS
-} from '../systems/baseline-games-hub/games/baseline-realm/tactical-operations/js/tactical-operations-engine.mjs';
+} from '../systems/baseline-recreation/games/baseline-realm/tactical-operations/js/tactical-operations-engine.mjs';
 
-const tacticalSceneSource=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/tactical-operations/js/tactical-operations-scene.js','utf8');
+const tacticalSceneSource=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/tactical-operations/js/tactical-operations-scene.js','utf8');
 
 test('Tactical Operations always exposes a direct Basecamp escape path',()=>{
   assert.match(tacticalSceneSource,/data-action="exit">Return to Basecamp/);

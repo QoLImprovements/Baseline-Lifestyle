@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 
-const html = fs.readFileSync('systems/baseline-games-hub/baseline-games-hub.html', 'utf8');
-const css = fs.readFileSync('systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css', 'utf8');
-const js = fs.readFileSync('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js', 'utf8');
+const html = fs.readFileSync('systems/baseline-recreation/baseline-recreation.html', 'utf8');
+const css = fs.readFileSync('systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css', 'utf8');
+const js = fs.readFileSync('systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js', 'utf8');
 
 test('Weight of Coherence keeps a muted board normally and uses white behind the 50% guide', () => {
   assert.match(js, /the-weight-of-coherence\.png\?v=WEIGHT_OF_COHERENCE_FULL_20261016_2/);

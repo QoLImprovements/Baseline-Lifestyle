@@ -1,9 +1,9 @@
 const { test, expect } = require('@playwright/test');
 
-const PATH='/baseline-games-hub/games-hub';
+const PATH='/baseline-recreation/system';
 
 async function stubProfiles(page){
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**',async route=>{
+  await page.route('**/systems/baseline-recreation/api/games_profile.php**',async route=>{
     const app=new URL(route.request().url()).searchParams.get('app')||'pairs';
     const profile=app==='ninja'
       ? {app:'ninja',coins:100,spirit:3,level:2,xp:0,stage:1,enemyHp:100,highestStage:1,upgrades:{},spiritShop:{}}
@@ -13,7 +13,7 @@ async function stubProfiles(page){
 }
 
 async function openDarts(page){
-  await page.waitForFunction(()=>globalThis.BASELINE_GAMES_HUB_CORE_READY===true);
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
   await page.getByRole('button',{name:'Games',exact:true}).click();
   await expect(page.locator('#games')).toHaveClass(/active/);
   await page.waitForFunction(()=>Boolean(globalThis.DartsFocusedGames));

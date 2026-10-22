@@ -548,8 +548,8 @@ html[data-app="fitness"],
 body[data-app="fitness"],
 html[data-app="massage"],
 body[data-app="massage"],
-html[data-app="games"],
-body[data-app="games"]{
+html[data-app="recreation"],
+body[data-app="recreation"]{
   background: var(--page-bg);
   background-attachment: fixed;
   background-size: 100% 100%;
@@ -561,8 +561,8 @@ body[data-app="games"]{
 /* -----------------------------
    GAMES HUB
 -------------------------------- */
-html[data-app="games"],
-body[data-app="games"]{
+html[data-app="recreation"],
+body[data-app="recreation"]{
   --games-teal-deep:#080D22;
   --games-teal:#1E2759;
   --games-teal-soft:#4656A6;

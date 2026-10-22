@@ -2,27 +2,27 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 
-import { RealmAccessibilityService } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-accessibility-service.js';
-import { RealmAssetLoader } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-asset-loader.js';
-import { RealmAudioService } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-audio-service.js';
-import { RealmGamepadProvider } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-gamepad-provider.js';
-import { RealmInventoryService } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-inventory-service.js';
-import { createDefaultRealmSave, REALM_SAVE_VERSION } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-model.js';
-import { RealmPerformanceMonitor } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-performance.js';
-import { RealmSaveAdapter, realmSaveKeys } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-save-adapter.js';
-import { RealmStateService } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-state-service.js';
-import { RealmWorkshopService } from '../systems/baseline-games-hub/games/baseline-realm/workshop/js/workshop-service.js';
+import { RealmAccessibilityService } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-accessibility-service.js';
+import { RealmAssetLoader } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-asset-loader.js';
+import { RealmAudioService } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-audio-service.js';
+import { RealmGamepadProvider } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-gamepad-provider.js';
+import { RealmInventoryService } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-inventory-service.js';
+import { createDefaultRealmSave, REALM_SAVE_VERSION } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-model.js';
+import { RealmPerformanceMonitor } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-performance.js';
+import { RealmSaveAdapter, realmSaveKeys } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-save-adapter.js';
+import { RealmStateService } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-state-service.js';
+import { RealmWorkshopService } from '../systems/baseline-recreation/games/baseline-realm/workshop/js/workshop-service.js';
 
 const lazyScenesSource = fs.readFileSync(
-  new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js', import.meta.url),
+  new URL('../systems/baseline-recreation/games/baseline-realm/shared/js/realm-lazy-scenes.js', import.meta.url),
   'utf8'
 );
 const inputBindingsSource = fs.readFileSync(
-  new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-bindings.js', import.meta.url),
+  new URL('../systems/baseline-recreation/games/baseline-realm/shared/js/realm-input-bindings.js', import.meta.url),
   'utf8'
 );
 const realmEntrySource = fs.readFileSync(
-  new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js', import.meta.url),
+  new URL('../systems/baseline-recreation/games/baseline-realm/shared/js/realm-entry.js', import.meta.url),
   'utf8'
 );
 
@@ -135,9 +135,9 @@ test('asset preload reports progress and continues after optional failure', asyn
     imageFactory: () => ({ set src(value) { queueMicrotask(() => this.onload?.(value)); } })
   });
   const report = await loader.preload([
-    { type: 'text', path: '/systems/baseline-games-hub/games/baseline-realm/shared/data/ok.txt' },
-    { type: 'text', path: '/systems/baseline-games-hub/games/baseline-realm/shared/data/missing.txt' },
-    { type: 'image', path: '/systems/baseline-games-hub/games/baseline-realm/game-art/test.svg' }
+    { type: 'text', path: '/systems/baseline-recreation/games/baseline-realm/shared/data/ok.txt' },
+    { type: 'text', path: '/systems/baseline-recreation/games/baseline-realm/shared/data/missing.txt' },
+    { type: 'image', path: '/systems/baseline-recreation/games/baseline-realm/game-art/test.svg' }
   ], { onProgress: (detail) => progress.push(detail), continueOnError: true });
   assert.equal(report.loaded, 2);
   assert.equal(report.failed, 1);
@@ -191,6 +191,6 @@ test('audio, reduced motion and performance budgets expose deterministic shared 
 test('legacy Ninja profile is normalised before the combat runtime is created', () => {
   const normaliseIndex = realmEntrySource.indexOf("syncProfileRealm(activeProfile(), { mirrorGuest:false })");
   const runtimeIndex = realmEntrySource.indexOf('runtime = createNinjaTrainingRuntime({');
-  assert.ok(normaliseIndex >= 0, 'Realm entry must normalise the Games Hub Ninja profile');
+  assert.ok(normaliseIndex >= 0, 'Realm entry must normalise the Recreation Ninja profile');
   assert.ok(runtimeIndex > normaliseIndex, 'profile normalisation must happen before Ninja runtime creation');
 });

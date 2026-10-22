@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createBadmintonTimerManager } from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-timing.js';
+import { createBadmintonTimerManager } from '../systems/baseline-recreation/games/badminton-focused/js/badminton-focused-timing.js';
 
 function harness({auto=true}={}){
   let gameId='wait-contact';

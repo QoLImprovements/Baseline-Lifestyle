@@ -1,9 +1,9 @@
 const { test, expect } = require('@playwright/test');
 
-const PATH = '/systems/baseline-games-hub/baseline-games-hub.html';
+const PATH = '/systems/baseline-recreation/baseline-recreation.html';
 
 async function openRealm(page) {
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**', async route => {
+  await page.route('**/systems/baseline-recreation/api/games_profile.php**', async route => {
     const request = route.request();
     const url = new URL(request.url());
     const app = url.searchParams.get('app') || 'ninja';

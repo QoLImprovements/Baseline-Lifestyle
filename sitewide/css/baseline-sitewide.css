@@ -1297,63 +1297,63 @@ body[data-app="fitness"] .mini-chip{
   color:var(--ink)!important;
 }
 
-body[data-app="games"] .card,
-body[data-app="games"] .summary-box,
-body[data-app="games"] .progress-shell,
-body[data-app="games"] .skill-item,
-body[data-app="games"] .empty-box,
-body[data-app="games"] .game-row,
-body[data-app="games"] .tier-btn,
-body[data-app="games"] .formula-box,
-body[data-app="games"] .word-box,
-body[data-app="games"] .ninja-box,
-body[data-app="games"] .solution-box,
-body[data-app="games"] .clue-bar,
-body[data-app="games"] .upgrade-item,
-body[data-app="games"] .bonus-item,
-body[data-app="games"] .game-summary-details,
-body[data-app="games"] .game-summary-body,
-body[data-app="games"] .realm-window,
-body[data-app="games"] .realm-drawer,
-body[data-app="games"] .realm-spirit-card,
-body[data-app="games"] .realm-stat-chip,
-body[data-app="games"] .trackcoin-stat-card,
-body[data-app="games"] .realm-manage-card,
-body[data-app="games"] .realm-enemy-status,
-body[data-app="games"] .realm-exploration-overlay,
-body[data-app="games"] .ninja-scene__overlay{
+body[data-app="recreation"] .card,
+body[data-app="recreation"] .summary-box,
+body[data-app="recreation"] .progress-shell,
+body[data-app="recreation"] .skill-item,
+body[data-app="recreation"] .empty-box,
+body[data-app="recreation"] .game-row,
+body[data-app="recreation"] .tier-btn,
+body[data-app="recreation"] .formula-box,
+body[data-app="recreation"] .word-box,
+body[data-app="recreation"] .ninja-box,
+body[data-app="recreation"] .solution-box,
+body[data-app="recreation"] .clue-bar,
+body[data-app="recreation"] .upgrade-item,
+body[data-app="recreation"] .bonus-item,
+body[data-app="recreation"] .game-summary-details,
+body[data-app="recreation"] .game-summary-body,
+body[data-app="recreation"] .realm-window,
+body[data-app="recreation"] .realm-drawer,
+body[data-app="recreation"] .realm-spirit-card,
+body[data-app="recreation"] .realm-stat-chip,
+body[data-app="recreation"] .trackcoin-stat-card,
+body[data-app="recreation"] .realm-manage-card,
+body[data-app="recreation"] .realm-enemy-status,
+body[data-app="recreation"] .realm-exploration-overlay,
+body[data-app="recreation"] .ninja-scene__overlay{
   background:var(--card-bg)!important;
   background-color:var(--card-bg)!important;
   border-color:var(--border)!important;
   color:var(--ink)!important;
   backdrop-filter:none!important;
 }
-body[data-app="games"] .action,
-body[data-app="games"] .action.secondary,
-body[data-app="games"] .action.ghost,
-body[data-app="games"] .tab,
-body[data-app="games"] .stat-pill,
-body[data-app="games"] .trait-chip,
-body[data-app="games"] .realm-tab-btn,
-body[data-app="games"] .realm-mini-action,
-body[data-app="games"] .game-toggle-btn{
+body[data-app="recreation"] .action,
+body[data-app="recreation"] .action.secondary,
+body[data-app="recreation"] .action.ghost,
+body[data-app="recreation"] .tab,
+body[data-app="recreation"] .stat-pill,
+body[data-app="recreation"] .trait-chip,
+body[data-app="recreation"] .realm-tab-btn,
+body[data-app="recreation"] .realm-mini-action,
+body[data-app="recreation"] .game-toggle-btn{
   background:var(--showall-bg)!important;
   background-color:var(--showall-bg)!important;
   border-color:var(--showall-border)!important;
   color:var(--accent-2)!important;
 }
-body[data-app="games"] .text-input,
-body[data-app="games"] input,
-body[data-app="games"] select,
-body[data-app="games"] textarea{
+body[data-app="recreation"] .text-input,
+body[data-app="recreation"] input,
+body[data-app="recreation"] select,
+body[data-app="recreation"] textarea{
   background:var(--filter-bg)!important;
   background-color:var(--filter-bg)!important;
   border-color:var(--border-2)!important;
   color:var(--ink)!important;
 }
-body[data-app="games"] .number-chip,
-body[data-app="games"] .letter-cell,
-body[data-app="games"] .game-summary-details summary{
+body[data-app="recreation"] .number-chip,
+body[data-app="recreation"] .letter-cell,
+body[data-app="recreation"] .game-summary-details summary{
   background:var(--filter-bg)!important;
   background-color:var(--filter-bg)!important;
   border-color:var(--border)!important;
@@ -1390,52 +1390,52 @@ body[data-app="fitness"] textarea{
   border-color:var(--border-2)!important;
   color:var(--ink)!important;
 }
-body[data-app="games"] .card,
-body[data-app="games"] .summary-box,
-body[data-app="games"] .progress-shell,
-body[data-app="games"] .skill-item,
-body[data-app="games"] .empty-box,
-body[data-app="games"] .game-row,
-body[data-app="games"] .game-board-card,
-body[data-app="games"] .game-side-card,
-body[data-app="games"] .game-card,
-body[data-app="games"] .game-subpanel-grid > *,
-body[data-app="games"] .trackcoin-stat-card,
-body[data-app="games"] .realm-spirit-card,
-body[data-app="games"] .realm-drawer,
-body[data-app="games"] .realm-overlay-screen,
-body[data-app="games"] .word-box,
-body[data-app="games"] .formula-box,
-body[data-app="games"] .game-summary-details,
-body[data-app="games"] .upgrade-item,
-body[data-app="games"] .bonus-item,
-body[data-app="games"] .realm-stat-chip,
-body[data-app="games"] .realm-manage-card{
+body[data-app="recreation"] .card,
+body[data-app="recreation"] .summary-box,
+body[data-app="recreation"] .progress-shell,
+body[data-app="recreation"] .skill-item,
+body[data-app="recreation"] .empty-box,
+body[data-app="recreation"] .game-row,
+body[data-app="recreation"] .game-board-card,
+body[data-app="recreation"] .game-side-card,
+body[data-app="recreation"] .game-card,
+body[data-app="recreation"] .game-subpanel-grid > *,
+body[data-app="recreation"] .trackcoin-stat-card,
+body[data-app="recreation"] .realm-spirit-card,
+body[data-app="recreation"] .realm-drawer,
+body[data-app="recreation"] .realm-overlay-screen,
+body[data-app="recreation"] .word-box,
+body[data-app="recreation"] .formula-box,
+body[data-app="recreation"] .game-summary-details,
+body[data-app="recreation"] .upgrade-item,
+body[data-app="recreation"] .bonus-item,
+body[data-app="recreation"] .realm-stat-chip,
+body[data-app="recreation"] .realm-manage-card{
   background:var(--card-bg)!important;
   border-color:var(--border)!important;
   color:var(--ink)!important;
   backdrop-filter:none!important;
 }
-body[data-app="games"] input,
-body[data-app="games"] select,
-body[data-app="games"] textarea,
-body[data-app="games"] .text-input{
+body[data-app="recreation"] input,
+body[data-app="recreation"] select,
+body[data-app="recreation"] textarea,
+body[data-app="recreation"] .text-input{
   background:var(--filter-bg)!important;
   border-color:var(--border-2)!important;
   color:var(--ink)!important;
 }
-body[data-app="games"] .tab,
-body[data-app="games"] .action,
-body[data-app="games"] .action.secondary,
-body[data-app="games"] .action.ghost,
-body[data-app="games"] .stat-pill,
-body[data-app="games"] .tier-btn,
-body[data-app="games"] .realm-mini-action,
-body[data-app="games"] .realm-close-btn,
-body[data-app="games"] .realm-tab-btn,
-body[data-app="games"] .trait-chip,
-body[data-app="games"] .clue-bar,
-body[data-app="games"] .solution-box{
+body[data-app="recreation"] .tab,
+body[data-app="recreation"] .action,
+body[data-app="recreation"] .action.secondary,
+body[data-app="recreation"] .action.ghost,
+body[data-app="recreation"] .stat-pill,
+body[data-app="recreation"] .tier-btn,
+body[data-app="recreation"] .realm-mini-action,
+body[data-app="recreation"] .realm-close-btn,
+body[data-app="recreation"] .realm-tab-btn,
+body[data-app="recreation"] .trait-chip,
+body[data-app="recreation"] .clue-bar,
+body[data-app="recreation"] .solution-box{
   background:var(--showall-bg)!important;
   border-color:var(--showall-border)!important;
   color:var(--accent-2)!important;
@@ -1685,7 +1685,7 @@ body[data-app="badminton"]{
   --bl-slider-thumb-solid:#f08b2f;
   --bl-slider-border-solid:#2c123f;
 }
-body[data-app="games"]{
+body[data-app="recreation"]{
   --bl-surface-card-solid:#1A244D;
   --bl-surface-recipe-card-solid:#1A244D;
   --bl-surface-panel-solid:#1A244D;
@@ -2295,7 +2295,7 @@ html body[data-app="badminton"] #bl-beats-flyout.bl-flyout input[type="number"]{
 
 /* BASELINE-BINAURAL-GLOBAL-PANEL-SIZE-LOCK-20260527
    Global Binaural panel geometry lock.
-   Uses the Games Hub compact flyout as the template and applies the same
+   Uses the Recreation compact flyout as the template and applies the same
    width/card/content geometry across all pages. Colours and sliders remain
    governed by the existing page theme rules above. */
 :root{
@@ -2570,9 +2570,9 @@ html body[data-app] .bl-select-menu *{
 
 
 /* BASELINE-GAMES-FLYOUT-G01-INDIGO-AUTHORITY-20260801
-   Dominant source of truth for Games Hub Account + Binaural flyouts.
+   Dominant source of truth for Recreation Account + Binaural flyouts.
    These flyouts are shared banner UI, so their colour authority belongs here, not in a page rescue layer. */
-body[data-app="games"]{
+body[data-app="recreation"]{
   --bl-flyout-bg-image:linear-gradient(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%)!important;
   --bl-flyout-bg-color:#1E2759!important;
   --bl-flyout-control-bg-image:linear-gradient(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%)!important;
@@ -2595,30 +2595,30 @@ body[data-app="games"]{
   --bl-dropdown-active-solid:#526BC2!important;
   --bl-dropdown-ink:#F2F5FF!important;
 }
-body[data-app="games"] #bl-auth-flyout .card,
-body[data-app="games"] #bl-beats-flyout .card{
+body[data-app="recreation"] #bl-auth-flyout .card,
+body[data-app="recreation"] #bl-beats-flyout .card{
   background-image:var(--bl-flyout-bg-image)!important;
   background-color:var(--bl-flyout-bg-color)!important;
   color:#F2F5FF!important;
   -webkit-text-fill-color:#F2F5FF!important;
   border-color:rgba(140,167,255,.62)!important;
 }
-body[data-app="games"] #bl-auth-flyout .bl-auth-switch,
-body[data-app="games"] #bl-auth-flyout .bl-auth-form .bl-mini-btn,
-body[data-app="games"] #bl-auth-flyout .bl-auth-form button,
-body[data-app="games"] #bl-beats-flyout .bl-mini-btn,
-body[data-app="games"] #bl-beats-flyout button{
+body[data-app="recreation"] #bl-auth-flyout .bl-auth-switch,
+body[data-app="recreation"] #bl-auth-flyout .bl-auth-form .bl-mini-btn,
+body[data-app="recreation"] #bl-auth-flyout .bl-auth-form button,
+body[data-app="recreation"] #bl-beats-flyout .bl-mini-btn,
+body[data-app="recreation"] #bl-beats-flyout button{
   background-image:var(--bl-flyout-control-bg-image)!important;
   background-color:var(--bl-flyout-control-bg-color)!important;
   color:#F2F5FF!important;
   -webkit-text-fill-color:#F2F5FF!important;
   border-color:rgba(140,167,255,.62)!important;
 }
-body[data-app="games"] #bl-auth-flyout .bl-auth-input-shell,
-body[data-app="games"] #bl-auth-flyout .bl-auth-form input,
-body[data-app="games"] #bl-beats-flyout input:not([type="range"]),
-body[data-app="games"] #bl-beats-flyout select,
-body[data-app="games"] #bl-beats-flyout .bl-select-btn{
+body[data-app="recreation"] #bl-auth-flyout .bl-auth-input-shell,
+body[data-app="recreation"] #bl-auth-flyout .bl-auth-form input,
+body[data-app="recreation"] #bl-beats-flyout input:not([type="range"]),
+body[data-app="recreation"] #bl-beats-flyout select,
+body[data-app="recreation"] #bl-beats-flyout .bl-select-btn{
   background-image:none!important;
   background-color:var(--bl-flyout-field-bg)!important;
   color:var(--bl-flyout-field-ink)!important;
@@ -2626,9 +2626,9 @@ body[data-app="games"] #bl-beats-flyout .bl-select-btn{
   caret-color:var(--bl-flyout-field-ink)!important;
   border-color:rgba(140,167,255,.62)!important;
 }
-body[data-app="games"] #bl-auth-flyout input:-webkit-autofill,
-body[data-app="games"] #bl-auth-flyout input:-webkit-autofill:hover,
-body[data-app="games"] #bl-auth-flyout input:-webkit-autofill:focus{
+body[data-app="recreation"] #bl-auth-flyout input:-webkit-autofill,
+body[data-app="recreation"] #bl-auth-flyout input:-webkit-autofill:hover,
+body[data-app="recreation"] #bl-auth-flyout input:-webkit-autofill:focus{
   -webkit-text-fill-color:#F2F5FF!important;
   box-shadow:0 0 0 1000px #1A244D inset!important;
   -webkit-box-shadow:0 0 0 1000px #1A244D inset!important;
@@ -2741,7 +2741,7 @@ body[data-app="fitness"]{
   --bl-info-panel-muted:rgba(255,255,255,.76);
   --bl-info-accent:#b11226;
 }
-body[data-app="games"]{
+body[data-app="recreation"]{
   --bl-info-button-bg:#1E2759;
   --bl-info-button-ink:#F2F5FF;
   --bl-info-button-border:#8CA7FF;

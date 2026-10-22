@@ -26,8 +26,8 @@ test('every approved persistence surface has a file-backed path', () => {
     'sitewide/api/favourites.php',
     'sitewide/api/binaural.php',
     'sitewide/api/voice_settings.php',
-    'systems/baseline-games-hub/api/games_data.php',
-    'systems/baseline-games-hub/api/games_profile.php',
+    'systems/baseline-recreation/api/games_data.php',
+    'systems/baseline-recreation/api/games_profile.php',
     'systems/baseline-fitness/api/get_plan.php',
     'systems/baseline-fitness/api/save_plan.php',
     'systems/baseline-fitness/api/plan_update.php',
@@ -47,7 +47,7 @@ test('every approved persistence surface has a file-backed path', () => {
 });
 
 test('games remain physically isolated and hub settings never become a save file', () => {
-  const games = read('systems/baseline-games-hub/api/games_data.php');
+  const games = read('systems/baseline-recreation/api/games_data.php');
   const paths = read('sitewide/api/saved_data.php');
   for(const file of ['baseline-realm.json','pairs.json','detect-word.json','make-24.json','track-coin.json','rule-shift.json','darts-focused.json','meridian-grove.json','badminton-focused.json']){
     assert.ok(paths.includes(`'${file}'`), `${file} missing`);

@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { GAME_IDS, createDefaultDartsProfile } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-engine.mjs';
-import { TIER_DEFINITIONS } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-content.js';
+import { GAME_IDS, createDefaultDartsProfile } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-engine.mjs';
+import { TIER_DEFINITIONS } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-content.js';
 import {
   dartsProgressSummaryHtml,
   renderDartsTierControls,
   syncDartsActiveControls
-} from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-progress.js';
+} from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-progress.js';
 
 function fakeElement(){
   return {

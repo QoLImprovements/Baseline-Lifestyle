@@ -233,7 +233,7 @@ Passed checks:
 - Phase 3 first-half Node/PHP contract verification: passed;
 - Phase 3 second-half Node verification: passed;
 - full migration/cutover contract suite: passed;
-- Games Hub unit coverage: the combined shared-host run hit the host's Node thread/process ceiling, but both affected test files passed individually and the remaining 77 tests had already passed;
+- Recreation unit coverage: the combined shared-host run hit the host's Node thread/process ceiling, but both affected test files passed individually and the remaining 77 tests had already passed;
 - PHP syntax lint: 97 PHP files checked, no failures;
 - `test:saved-data-php`: passed.
 

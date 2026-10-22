@@ -5,13 +5,13 @@ import test from 'node:test';
 
 const read = relative => fs.readFileSync(relative, 'utf8');
 
-const html = read('systems/baseline-games-hub/baseline-games-hub.html');
-const registry = read('systems/baseline-games-hub/puzzles/shared/js/puzzles-registry.js');
-const library = read('systems/baseline-games-hub/puzzles/shared/js/puzzles-library.js');
-const player = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
-const core = read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
-const playerCss = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css');
-const libraryCss = read('systems/baseline-games-hub/puzzles/shared/css/puzzles-library.css');
+const html = read('systems/baseline-recreation/baseline-recreation.html');
+const registry = read('systems/baseline-recreation/puzzles/shared/js/puzzles-registry.js');
+const library = read('systems/baseline-recreation/puzzles/shared/js/puzzles-library.js');
+const player = read('systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
+const core = read('systems/baseline-recreation/js/baseline-recreation-core.js');
+const playerCss = read('systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css');
+const libraryCss = read('systems/baseline-recreation/puzzles/shared/css/puzzles-library.css');
 
 test('Puzzles opens as a type library with Jigsaws as a nested selection', () => {
   assert.match(html, /id="puzzlesOverviewCard"/);
@@ -50,14 +50,14 @@ test('Jigsaws are grouped into Symbolic and Animals collections with all four ar
   assert.match(registry, /the-unheard-signal\.png\?v=THE_UNHEARD_SIGNAL_FULL_20261017_1/);
   assert.match(registry, /meta:'4 jigsaws available'/);
 
-  const symbolicArt = fs.readFileSync('systems/baseline-games-hub/puzzles/the-unheard-signal/art/the-unheard-signal.png');
+  const symbolicArt = fs.readFileSync('systems/baseline-recreation/puzzles/the-unheard-signal/art/the-unheard-signal.png');
   assert.equal(symbolicArt.length, 2600964);
   assert.equal(symbolicArt.subarray(1,4).toString('ascii'), 'PNG');
   assert.equal(crypto.createHash('sha256').update(symbolicArt).digest('hex'), '5a803c828d9c76af21c0cd73f47014417d9de72eaa85711e6c833814da52fabf');
 
   for (const path of [
-    'systems/baseline-games-hub/puzzles/black-panther/art/black-panther.webp',
-    'systems/baseline-games-hub/puzzles/bear/art/bear.webp'
+    'systems/baseline-recreation/puzzles/black-panther/art/black-panther.webp',
+    'systems/baseline-recreation/puzzles/bear/art/bear.webp'
   ]) {
     const art = fs.readFileSync(path);
     assert.ok(art.length > 50000);
@@ -67,7 +67,7 @@ test('Jigsaws are grouped into Symbolic and Animals collections with all four ar
 });
 
 
-test('Puzzles and Jigsaws use the indigo Games Hub visual language', () => {
+test('Puzzles and Jigsaws use the indigo Recreation visual language', () => {
   assert.match(libraryCss, /background:linear-gradient\(145deg,rgba\(11,17,48,.96\)/);
   assert.match(libraryCss, /color:#F2F5FF/);
   assert.match(libraryCss, /color:rgba\(242,245,255,.78\)/);
@@ -115,8 +115,8 @@ test('reopening the active jigsaw cannot erase already placed pieces', () => {
 });
 
 test('symbolic and animal jigsaws have dedicated server save profiles', () => {
-  const guard = read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
-  const api = read('systems/baseline-games-hub/api/games_data.php');
+  const guard = read('systems/baseline-recreation/js/baseline-recreation-guard.js');
+  const api = read('systems/baseline-recreation/api/games_data.php');
   const saved = read('sitewide/api/saved_data.php');
   for (const app of ['unheardsignal','pantherjigsaw','bearjigsaw']) {
     for (const source of [guard, api]) assert.ok(source.includes(`'${app}'`));
@@ -127,6 +127,6 @@ test('symbolic and animal jigsaws have dedicated server save profiles', () => {
 });
 
 test('Jigsaws type uses a neutral jigsaw icon rather than choosing one puzzle artwork', () => {
-  assert.match(registry, /preview:'\/systems\/baseline-games-hub\/puzzles\/shared\/art\/jigsaws\.svg\?v=JIGSAWS_ICON_20261018_1'/);
-  assert.doesNotMatch(registry, /id:'jigsaws'[\s\S]{0,300}preview:'\/systems\/baseline-games-hub\/puzzles\/the-weight-of-coherence\/art\//);
+  assert.match(registry, /preview:'\/systems\/baseline-recreation\/puzzles\/shared\/art\/jigsaws\.svg\?v=JIGSAWS_ICON_20261018_1'/);
+  assert.doesNotMatch(registry, /id:'jigsaws'[\s\S]{0,300}preview:'\/systems\/baseline-recreation\/puzzles\/the-weight-of-coherence\/art\//);
 });

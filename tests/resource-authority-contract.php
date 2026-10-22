@@ -11,7 +11,7 @@ $_SERVER['DOCUMENT_ROOT'] = $base . '/public_html';
 
 require_once dirname(__DIR__) . '/sitewide/api/account_resource.php';
 require_once dirname(__DIR__) . '/systems/baseline-fitness/api/fitness_resource.php';
-require_once dirname(__DIR__) . '/systems/baseline-games-hub/api/game_profile_rules.php';
+require_once dirname(__DIR__) . '/systems/baseline-recreation/api/game_profile_rules.php';
 
 function bl_resource_test_assert(bool $condition, string $message): void {
   if(!$condition) throw new RuntimeException($message);

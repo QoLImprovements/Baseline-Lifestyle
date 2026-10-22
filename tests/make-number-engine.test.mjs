@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const configPath=new URL('../systems/baseline-games-hub/js/games-core-config.js',import.meta.url);
-const enginePath=new URL('../systems/baseline-games-hub/js/make-number-engine.js',import.meta.url);
-const corePath=new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js',import.meta.url);
-const htmlPath=new URL('../systems/baseline-games-hub/baseline-games-hub.html',import.meta.url);
+const configPath=new URL('../systems/baseline-recreation/js/games-core-config.js',import.meta.url);
+const enginePath=new URL('../systems/baseline-recreation/js/make-number-engine.js',import.meta.url);
+const corePath=new URL('../systems/baseline-recreation/js/baseline-recreation-core.js',import.meta.url);
+const htmlPath=new URL('../systems/baseline-recreation/baseline-recreation.html',import.meta.url);
 
 function loadEngine(){
   const sandbox={window:{}};
@@ -15,8 +15,8 @@ function loadEngine(){
   const factory=sandbox.window.BASELINE_MAKE_NUMBER_ENGINE;
   return {
     factory,
-    engine:factory.create({tiers:sandbox.window.BASELINE_GAMES_HUB_CORE_CONFIG.MAKE24_TIERS}),
-    tiers:sandbox.window.BASELINE_GAMES_HUB_CORE_CONFIG.MAKE24_TIERS
+    engine:factory.create({tiers:sandbox.window.BASELINE_GAMES_CORE_CONFIG.MAKE24_TIERS}),
+    tiers:sandbox.window.BASELINE_GAMES_CORE_CONFIG.MAKE24_TIERS
   };
 }
 
@@ -62,7 +62,7 @@ test('dead Make The Number legacy table and scoring gates are retired',()=>{
   }
 });
 
-test('Games Hub core delegates Make The Number deterministic logic to one pure engine',()=>{
+test('Recreation core delegates Make The Number deterministic logic to one pure engine',()=>{
   const core=fs.readFileSync(corePath,'utf8');
   const source=fs.readFileSync(enginePath,'utf8');
   const html=fs.readFileSync(htmlPath,'utf8');
@@ -79,8 +79,8 @@ test('Games Hub core delegates Make The Number deterministic logic to one pure e
   assert.doesNotMatch(source,/document\.|fetch\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB|BaselineGameStorage/);
   assert.doesNotMatch(source,/addEventListener|createElement|innerHTML|classList|history\.|Math\.random/);
 
-  const profileIndex=html.indexOf('/systems/baseline-games-hub/js/games-profile-rules.js');
-  const engineIndex=html.indexOf('/systems/baseline-games-hub/js/make-number-engine.js?v=MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1');
-  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js');
+  const profileIndex=html.indexOf('/systems/baseline-recreation/js/games-profile-rules.js');
+  const engineIndex=html.indexOf('/systems/baseline-recreation/js/make-number-engine.js?v=MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1');
+  const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js');
   assert.ok(profileIndex>=0 && engineIndex>profileIndex && coreIndex>engineIndex);
 });

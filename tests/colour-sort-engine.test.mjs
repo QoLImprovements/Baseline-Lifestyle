@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   LEVELS, initialBottles, pourAmount, applyPour, isSolved, validateLevel, findSolution, isBottleComplete
-} from '../systems/baseline-games-hub/games/colour-sort/js/colour-sort-engine.mjs';
+} from '../systems/baseline-recreation/games/colour-sort/js/colour-sort-engine.mjs';
 
 test('every authored colour-sort level has exactly four units of each colour', () => {
   assert.equal(LEVELS.length, 19);

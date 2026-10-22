@@ -9,7 +9,7 @@ const systemNames = [
   'baseline-badminton-session',
   'baseline-fitness',
   'baseline-food-approach',
-  'baseline-games-hub',
+  'baseline-recreation',
   'baseline-massage',
   'baseline-natural-skincare',
   'baseline-psychology'
@@ -36,7 +36,7 @@ test('runtime systems have one canonical owner and no root shadow folders', () =
   for (const file of walk(path.join(root, 'docs'))) {
     assert.match(file, /\.md$/i, `docs must remain documentation-only: ${path.relative(root,file)}`);
   }
-  assert.equal(fs.existsSync(path.join(root, 'systems/baseline-games-hub/games')), true);
+  assert.equal(fs.existsSync(path.join(root, 'systems/baseline-recreation/games')), true);
   assert.deepEqual(
     fs.readdirSync(path.join(root, 'systems'), { withFileTypes:true })
       .filter((entry) => entry.isDirectory())
@@ -121,7 +121,7 @@ test('large page styling is owned by canonical system stylesheets', () => {
   const expectations = [
     ['baseline-fitness', '/systems/baseline-fitness/css/baseline-fitness.css'],
     ['baseline-food-approach', '/systems/baseline-food-approach/css/baseline-food-approach.css'],
-    ['baseline-games-hub', '/systems/baseline-games-hub/css/baseline-games-hub.css'],
+    ['baseline-recreation', '/systems/baseline-recreation/css/baseline-recreation.css'],
     ['baseline-massage', '/systems/baseline-massage/css/baseline-massage.css'],
     ['baseline-natural-skincare', '/systems/baseline-natural-skincare/css/baseline-natural-skincare.css'],
     ['baseline-psychology', '/systems/baseline-psychology/css/baseline-psychology.css']
@@ -175,7 +175,7 @@ test('primary pages expose canonical discovery metadata and a level-one heading'
     ['index.html', 'https://baselinelifestyle.org/home/1'],
     ...systemNames.map((system) => [
       path.join('systems', system, `${system}.html`),
-      `https://baselinelifestyle.org/${system}/${system === 'baseline-games-hub' ? 'games-hub' : 'system'}`
+      `https://baselinelifestyle.org/${system}/${system === 'baseline-recreation' ? 'games-hub' : 'system'}`
     ])
   ];
 
@@ -195,7 +195,7 @@ test('database schemas are versioned instead of rebuilt on every API request', (
   assert.equal(database.includes('bl_ensure_schema($pdo);'), false);
 
   const fitnessSchema = fs.readFileSync(path.join(root, 'systems/baseline-fitness/api/schema.php'), 'utf8');
-  const gamesSchema = fs.readFileSync(path.join(root, 'systems/baseline-games-hub/api/schema.php'), 'utf8');
+  const gamesSchema = fs.readFileSync(path.join(root, 'systems/baseline-recreation/api/schema.php'), 'utf8');
   const badmintonApi = fs.readFileSync(path.join(root, 'systems/baseline-badminton-session/api/badminton_session.php'), 'utf8');
   assert.ok(fitnessSchema.includes("bl_apply_schema_migration($db, 'fitness', 1"));
   assert.ok(gamesSchema.includes("bl_apply_schema_migration($db, 'games_hub', 1"));
@@ -214,7 +214,7 @@ test('home index uses one six-strip system layout with the agreed order and copy
     ['Baseline Personal Care', 'Natural products and recipes for the body and appearance.'],
     ['Baseline Fitness', 'Structured physical training covering calisthenics, cardio, flexibility and sport.'],
     ['Baseline Badminton Session', 'Organised play with generated matchups and alterations prioritising balanced competition.'],
-    ['Baseline Games Hub', 'Dedicated space for restoration, cognitive challenge and linked progression.']
+    ['Baseline Recreation', 'Dedicated space for restoration, cognitive challenge and linked progression.']
   ];
 
   let previous = -1;
@@ -252,7 +252,7 @@ test('primary entry pages use one version key per static CSS and JavaScript asse
     'systems/baseline-psychology/baseline-psychology.html',
     'systems/baseline-badminton-session/baseline-badminton-session.html',
     'systems/baseline-fitness/baseline-fitness.html',
-    'systems/baseline-games-hub/baseline-games-hub.html',
+    'systems/baseline-recreation/baseline-recreation.html',
     'systems/charity-shop/charity-shop.php'
   ];
 
@@ -416,7 +416,7 @@ test('primary entrypoints use one cache key per shared static asset', () => {
     'systems/baseline-psychology/baseline-psychology.html',
     'systems/baseline-fitness/baseline-fitness.html',
     'systems/baseline-badminton-session/baseline-badminton-session.html',
-    'systems/baseline-games-hub/baseline-games-hub.html',
+    'systems/baseline-recreation/baseline-recreation.html',
     'systems/charity-shop/charity-shop.php'
   ];
   const expected = new Map([

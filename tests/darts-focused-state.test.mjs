@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createDartsStateFactory } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-state.js';
+import { createDartsStateFactory } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-state.js';
 
 function factory(){
   return createDartsStateFactory({

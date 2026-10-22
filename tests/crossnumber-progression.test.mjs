@@ -9,14 +9,14 @@ const here=path.dirname(fileURLToPath(import.meta.url));
 const root=process.env.BASELINE_REPO_ROOT?path.resolve(process.env.BASELINE_REPO_ROOT):path.resolve(here,'..');
 const read=relative=>fs.readFileSync(path.join(root,relative),'utf8');
 
-const crossnumber=read('systems/baseline-games-hub/puzzles/crossnumber/js/crossnumber.js');
-const css=read('systems/baseline-games-hub/puzzles/crossnumber/css/crossnumber.css');
-const html=read('systems/baseline-games-hub/baseline-games-hub.html');
-const registry=read('systems/baseline-games-hub/js/games-registry.js');
-const gamesData=read('systems/baseline-games-hub/api/games_data.php');
+const crossnumber=read('systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js');
+const css=read('systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css');
+const html=read('systems/baseline-recreation/baseline-recreation.html');
+const registry=read('systems/baseline-recreation/js/games-registry.js');
+const gamesData=read('systems/baseline-recreation/api/games_data.php');
 const savedData=read('sitewide/api/saved_data.php');
-const realmRuntime=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js');
-const core=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
+const realmRuntime=read('systems/baseline-recreation/games/baseline-realm/ninja-training/js/ninja-training-runtime.js');
+const core=read('systems/baseline-recreation/js/baseline-recreation-core.js');
 
 function loadGenerator(){
   const cut=crossnumber.indexOf("  refs.bank.addEventListener('click'");
@@ -86,7 +86,7 @@ test('procedural generator produces many valid layouts at every tier',()=>{
   }
 });
 
-test('Crossnumber inherits the Games Hub Indigo Circuit palette instead of owning a competing palette',()=>{
+test('Crossnumber inherits the Recreation Indigo Circuit palette instead of owning a competing palette',()=>{
   ['--g01-deep','--g01-mid','--g01-centre','--g01-active','--g01-focus','--g01-card','--g01-ink','--g01-muted'].forEach(token=>{
     assert.ok(css.includes('var('+token),token);
   });
@@ -94,7 +94,7 @@ test('Crossnumber inherits the Games Hub Indigo Circuit palette instead of ownin
   assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_(?:PROGRESSION|COHERENT_UI|SCALE_AUTONEXT)_/);
 });
 
-test('Crossnumber follows the Games Hub single-panel navigation contract',()=>{
+test('Crossnumber follows the Recreation single-panel navigation contract',()=>{
   assert.match(html,/data-game-info="crossnumber"/);
   ['crossnumberGamePanel','crossnumberSkillPanel','crossnumberTierPanel','crossnumberProgressPanel'].forEach(id=>{
     assert.match(html,new RegExp('data-crossnumber-panel="'+id+'"'));
