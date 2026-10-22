@@ -90,6 +90,12 @@ test('jigsaw library cards do not repeat the universal piece-count choices', () 
   assert.match(library, /completed<\/span>/);
 });
 
+test('jigsaw library does not persist a last-opened selection highlight', () => {
+  assert.doesNotMatch(library, /is-selected/);
+  assert.doesNotMatch(libraryCss, /\.puzzle-library-row-wrap\.is-selected/);
+  assert.match(library, /if\(view!=='player'\) activeJigsaw='';/);
+});
+
 test('library blurbs and opened-puzzle descriptions are deliberately distinct', () => {
   assert.match(registry, /libraryDescription:'Holding an unfinished structure together under competing forces/);
   assert.match(registry, /description:'The unfinished structure is not complete/);
