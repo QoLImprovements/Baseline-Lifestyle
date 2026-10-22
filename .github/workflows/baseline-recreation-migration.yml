@@ -1,0 +1,34 @@
+name: Baseline Recreation Migration
+
+on:
+  push:
+    branches:
+      - baseline-recreation-migration-20261022
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: "!contains(github.event.head_commit.message, 'Apply Baseline Recreation bulk migration')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out migration branch
+        uses: actions/checkout@v4
+        with:
+          ref: baseline-recreation-migration-20261022
+          fetch-depth: 0
+
+      - name: Apply bulk migration
+        run: node tools/migrate-baseline-recreation-20261022.mjs
+
+      - name: Commit migrated tree
+        run: |
+          rm -f .github/workflows/baseline-recreation-migration.yml
+          rm -f tools/migrate-baseline-recreation-20261022.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Apply Baseline Recreation bulk migration"
+          git push origin HEAD:baseline-recreation-migration-20261022
