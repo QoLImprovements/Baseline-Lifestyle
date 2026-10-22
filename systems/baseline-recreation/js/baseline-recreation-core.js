@@ -18,7 +18,7 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
   const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
   const REGISTERED_OVERVIEW_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.overviewGames === 'function' ? GAME_REGISTRY.overviewGames() : [];
   const GAMES_HELP_MODAL = window.BaselineGamesHelpModal || null;
-  if(!GAMES_HELP_MODAL || typeof GAMES_HELP_MODAL.open !== 'function' || typeof GAMES_HELP_MODAL.close !== 'function') throw new Error('games_hub_modal_authority_missing');
+  if(!GAMES_HELP_MODAL || typeof GAMES_HELP_MODAL.open !== 'function' || typeof GAMES_HELP_MODAL.close !== 'function') throw new Error('games_help_modal_authority_missing');
   const PROGRESSION_RULES = window.BASELINE_GAMES_PROGRESSION || null;
   if(!PROGRESSION_RULES) throw new Error('games_progression_authority_missing');
   const xpNeededForLevel = PROGRESSION_RULES.xpNeededForLevel;
@@ -1335,7 +1335,7 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
       if(selectedGame && historyMode === 'push') pushRecreationGameEntry();
       else syncHashState(historyMode);
     }
-    /* Do not auto-scroll when selecting hub tabs or game rows. Explicit callers such as auto-next can still request focus/scroll. */
+    /* Do not auto-scroll when selecting Recreation tabs or game rows. Explicit callers such as auto-next can still request focus/scroll. */
   }
 
   function setExclusivePanel(openId, panelIds, buttonAttr, readyButtonValue){
