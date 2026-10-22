@@ -49,7 +49,7 @@ test('Weight of Coherence uses the muted Recreation medium board and a 50% guide
 
   assert.match(source, /BOARD_BASE = recreationCssValue\('--recreation-panel','#6E2C44'\)/);
   assert.match(source, /GUIDE_OPACITY = 0\.50/);
-  assert.match(source, /ctx\.fillStyle=BOARD_BASE/);
+  assert.match(source, /ctx\.fillStyle=guideOn\?'#FFFFFF':BOARD_BASE/);
   assert.match(source, /ctx\.globalAlpha=GUIDE_OPACITY/);
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*background:var\(--recreation-panel\)/);
   assert.doesNotMatch(source, /rgba\(130,150,208,\.62\)/);
@@ -148,14 +148,14 @@ test('Block Grid and Colour Sort follow the Core Games presentation contract', (
   assert.match(block, /data-game-info="blockgrid"/);
   assert.match(block, /<span>Game Info<\/span><span class="inline-note">Level \/ XP \/ stats<\/span>/);
   assert.match(block, /function renderGameInfo\(\)/);
-  assert.match(block, /onOpen:\(\) => \{ render\(\); \}/);
+  assert.match(block, /onOpen:\(\) => \{[^}]*selectGame\?\.\('block-grid'\); render\(\); setTab\(blockTabFromLocation\(\), 'none'\); \}/);
   assert.doesNotMatch(block, /function ensureRun\(/);
   assert.match(block, />Start New Game<\/button>/);
 
   assert.match(colour, /data-game-info="coloursort"/);
   assert.match(colour, /<span>Game Info<\/span><span class="inline-note">Level \/ XP \/ stats<\/span>/);
   assert.match(colour, /function renderGameInfo\(\)/);
-  assert.match(colour, /onOpen:\(\) => \{ render\(\); \}/);
+  assert.match(colour, /onOpen:\(\) => \{[^}]*selectGame\?\.\('colour-sort'\); render\(\); setTab\(colourTabFromLocation\(\), 'none'\); \}/);
   assert.doesNotMatch(colour, /function ensurePuzzle\(/);
   assert.match(colour, />Start New Game<\/button>/);
   assert.match(colour, /startLevel\(profile\.selectedLevel\)/);
