@@ -1343,6 +1343,11 @@
       }
     }
     if(state && state.kind === 'tab' && state.tabId){
+      // The homepage has no tab-route identity. Keep its URL at the site root
+      // instead of synthesising the legacy #tab=system hash.
+      if(routePageFileFromPath(location.pathname || '') === 'index.html'){
+        return '/' + String(location.search || '');
+      }
       const cleanUrl = cleanUrlWithOptionalFilter(state.tabId, state.recipeFilter || '');
       if(cleanUrl) return cleanUrl;
     }
