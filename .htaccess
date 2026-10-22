@@ -29,11 +29,11 @@ FileETag None
   ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>
 
-# One-time cache upgrade for every public Games Hub route and the physical fallback path.
+# One-time cache upgrade for every public Baseline Recreation route and the physical fallback path.
 # The epoch cookie prevents Clear-Site-Data from running on every later visit.
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteCond %{REQUEST_URI} ^/(?:baseline-games-hub/games-hub(?:/.*)?|systems/baseline-games-hub/baseline-games-hub\.html)/?$ [NC]
+  RewriteCond %{REQUEST_URI} ^/(?:baseline-recreation(?:/.*)?|systems/baseline-recreation/baseline-recreation\.html)/?$ [NC]
   RewriteCond %{HTTP_COOKIE} !(^|;\s*)baseline_games_runtime_epoch=20260629_3(?:;|$) [NC]
   RewriteRule ^ - [E=baseline_games_cache_upgrade:1]
 </IfModule>
@@ -119,7 +119,8 @@ Options -Indexes
   # Legacy root CSS compatibility.
   RewriteRule ^css/baseline-badminton-session\.css$ systems/baseline-badminton-session/css/baseline-badminton-session.css [L,QSA]
   RewriteRule ^css/baseline-diet-log\.css$ systems/baseline-food-approach/css/baseline-diet-log.css [L,QSA]
-  RewriteRule ^css/baseline-games-hub\.css$ systems/baseline-games-hub/css/baseline-games-hub.css [L,QSA]
+  RewriteRule ^css/baseline-games-hub\.css$ systems/baseline-recreation/css/baseline-recreation.css [L,QSA]
+  RewriteRule ^css/baseline-recreation\.css$ systems/baseline-recreation/css/baseline-recreation.css [L,QSA]
   RewriteRule ^css/(.*)$ sitewide/css/$1 [L,QSA]
 
   # Legacy root JS compatibility.
@@ -127,7 +128,8 @@ Options -Indexes
   RewriteRule ^js/baseline-diet-food-library\.js$ systems/baseline-food-approach/js/baseline-diet-food-library.js [L,QSA]
   RewriteRule ^js/baseline-diet-log\.js$ systems/baseline-food-approach/js/baseline-diet-log.js [L,QSA]
   RewriteRule ^js/baseline-fitness-app\.js$ systems/baseline-fitness/js/baseline-fitness-app.js [L,QSA]
-  RewriteRule ^js/baseline-games-hub\.js$ systems/baseline-games-hub/js/baseline-games-hub.js [L,QSA]
+  RewriteRule ^js/baseline-games-hub\.js$ systems/baseline-recreation/js/baseline-recreation.js [L,QSA]
+  RewriteRule ^js/baseline-recreation\.js$ systems/baseline-recreation/js/baseline-recreation.js [L,QSA]
   RewriteRule ^js/(.*)$ sitewide/js/$1 [L,QSA]
 
   # Legacy API and game-art compatibility.
@@ -147,12 +149,12 @@ Options -Indexes
   RewriteRule ^sitewide/api/update_session\.php$ systems/baseline-fitness/api/update_session.php [L,QSA]
   RewriteRule ^api/badminton_logins\.php$ systems/baseline-badminton-session/api/badminton_logins.php [L,QSA]
   RewriteRule ^api/badminton_session\.php$ systems/baseline-badminton-session/api/badminton_session.php [L,QSA]
-  RewriteRule ^api/games_profile\.php$ systems/baseline-games-hub/api/games_profile.php [L,QSA]
+  RewriteRule ^api/games_profile\.php$ systems/baseline-recreation/api/games_profile.php [L,QSA]
   RewriteRule ^sitewide/api/badminton_logins\.php$ systems/baseline-badminton-session/api/badminton_logins.php [L,QSA]
   RewriteRule ^sitewide/api/badminton_session\.php$ systems/baseline-badminton-session/api/badminton_session.php [L,QSA]
-  RewriteRule ^sitewide/api/games_profile\.php$ systems/baseline-games-hub/api/games_profile.php [L,QSA]
+  RewriteRule ^sitewide/api/games_profile\.php$ systems/baseline-recreation/api/games_profile.php [L,QSA]
   RewriteRule ^api/(.*)$ sitewide/api/$1 [L,QSA]
-  RewriteRule ^game-art/(.*)$ systems/baseline-games-hub/games/baseline-realm/game-art/$1 [L,QSA]
+  RewriteRule ^game-art/(.*)$ systems/baseline-recreation/games/baseline-realm/game-art/$1 [L,QSA]
 </IfModule>
 
 # BASELINE-PHASE-2-REDIRECT-LOOP-FIX-20260607
@@ -192,7 +194,8 @@ Options -Indexes
   RewriteRule ^baseline-fitness\.html$ /baseline-fitness/system [R=302,L]
 
   RewriteCond %{THE_REQUEST} \s/+baseline-games-hub\.html[?\s] [NC]
-  RewriteRule ^baseline-games-hub\.html$ /baseline-games-hub/games-hub [R=302,L]
+  RewriteRule ^baseline-games-hub\.html$ /baseline-recreation/system [R=301,L]
+  RewriteRule ^baseline-recreation\.html$ /baseline-recreation/system [R=302,L]
 </IfModule>
 
 # BASELINE-SKINCARE-LEGACY-RECIPE-CANONICAL-20261006
@@ -253,7 +256,8 @@ Options -Indexes
   RewriteRule ^baseline-psychology/?$ /baseline-psychology/system [R=302,L]
   RewriteRule ^baseline-badminton-session/?$ /baseline-badminton-session/system [R=302,L]
   RewriteRule ^baseline-fitness/?$ /baseline-fitness/system [R=302,L]
-  RewriteRule ^baseline-games-hub/?$ /baseline-games-hub/games-hub [R=302,L]
+  RewriteRule ^baseline-recreation/?$ /baseline-recreation/system [R=302,L]
+  RewriteRule ^baseline-games-hub/?$ /baseline-recreation/system [R=301,L,NE]
 
   # If a browser ever creates a bad nested static-file URL, recover to the clean route.
   # THE_REQUEST prevents internal Phase 2 rewrites from being redirected again.
@@ -272,7 +276,9 @@ Options -Indexes
   RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-fitness\.html[?\s] [NC]
   RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-fitness\.html$ /baseline-fitness/system [R=302,L]
   RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-games-hub\.html[?\s] [NC]
-  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-games-hub\.html$ /baseline-games-hub/games-hub [R=302,L]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-games-hub\.html$ /baseline-recreation/system [R=301,L]
+  RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-recreation\.html[?\s] [NC]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-recreation\.html$ /baseline-recreation/system [R=302,L]
 
   # Assets requested from clean-route folders resolve to the real root folders.
   RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/(css|js|game-art|api)/(.*)$ $1/$2 [L,QSA]
@@ -326,9 +332,28 @@ Options -Indexes
   RewriteRule ^baseline-fitness/my-plan/(completed|future)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
   RewriteRule ^baseline-fitness/my-body/(profile|services)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
 
-  # Baseline Games Hub hierarchy.
-  RewriteRule ^baseline-games-hub/games-hub/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
-  RewriteRule ^baseline-games-hub/games-hub/(games-list|puzzles|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm)/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
+  # Baseline Recreation canonical hierarchy.
+  # Legacy Games Hub public URLs are compatibility redirects only.
+  RewriteRule ^baseline-games-hub/games-hub/games-list/?$ /baseline-recreation/games [R=301,L,NE]
+  RewriteRule ^baseline-games-hub/games-hub/puzzles/?$ /baseline-recreation/puzzles [R=301,L,NE]
+  RewriteRule ^baseline-games-hub/games-hub/(pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm)/?$ /baseline-recreation/games/$1 [R=301,L,NE]
+  RewriteRule ^baseline-games-hub(?:/games-hub)?/?$ /baseline-recreation/system [R=301,L,NE]
+
+  RewriteRule ^baseline-recreation/(system|games|puzzles)/?$ systems/baseline-recreation/baseline-recreation.html [L,QSA]
+  RewriteRule ^baseline-recreation/games/(pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm)/?$ systems/baseline-recreation/baseline-recreation.html [L,QSA]
+  RewriteRule ^baseline-recreation/puzzles/(jigsaws|crossnumber)/?$ systems/baseline-recreation/baseline-recreation.html [L,QSA]
+  RewriteRule ^baseline-recreation/puzzles/jigsaws/[^/]+/?$ systems/baseline-recreation/baseline-recreation.html [L,QSA]
+
+  # Legacy physical paths map to the migrated physical hierarchy.
+  RewriteRule ^systems/baseline-games-hub/baseline-games-hub\.html$ /baseline-recreation/system [R=301,L,NE]
+  RewriteRule ^systems/baseline-games-hub/css/baseline-games-hub\.css$ /systems/baseline-recreation/css/baseline-recreation.css [R=301,L,NE]
+  RewriteRule ^systems/baseline-games-hub/css/games-hub-theme\.css$ /systems/baseline-recreation/css/recreation-theme.css [R=301,L,NE]
+  RewriteRule ^systems/baseline-games-hub/js/baseline-games-hub-core\.js$ /systems/baseline-recreation/js/baseline-recreation-core.js [R=301,L,NE]
+  RewriteRule ^systems/baseline-games-hub/js/baseline-games-hub-guard\.js$ /systems/baseline-recreation/js/baseline-recreation-guard.js [R=301,L,NE]
+  RewriteRule ^systems/baseline-games-hub/js/baseline-games-hub-v14\.js$ /systems/baseline-recreation/js/baseline-recreation-loader.js [R=301,L,NE]
+  RewriteRule ^systems/baseline-games-hub/js/baseline-games-hub\.js$ /systems/baseline-recreation/js/baseline-recreation.js [R=301,L,NE]
+  RewriteRule ^systems/baseline-games-hub/js/games-hub-modal\.js$ /systems/baseline-recreation/js/games-help-modal.js [R=301,L,NE]
+  RewriteRule ^systems/baseline-games-hub/(.*)$ /systems/baseline-recreation/$1 [R=301,L,NE]
 </IfModule>
 
 # BASELINE-MY-ROUTINE-CLEAN-ROUTES-20260810
