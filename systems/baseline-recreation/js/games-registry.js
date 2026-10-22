@@ -44,6 +44,7 @@
     'weightcoherence',
     'unheardsignal',
     'tearswithoutwitness',
+    'movedalong',
     'pantherjigsaw',
     'bearjigsaw',
     'foxjigsaw',
