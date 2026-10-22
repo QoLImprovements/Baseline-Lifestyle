@@ -1143,7 +1143,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
     if(app==='trackcoin') writeTrackCoinStorage(profile);
     const authority=serverStorageAuthority();
     if(authority?.saveProfile){
-      authority.saveProfile(app,profile);
+      const hasActiveRound=profile.activeRound!==null && profile.activeRound!==undefined;
+      authority.saveProfile(app,profile,{immediate:hasActiveRound,keepalive:hasActiveRound});
       return;
     }
     if(!authState.authed || location.protocol==='file:') return;
