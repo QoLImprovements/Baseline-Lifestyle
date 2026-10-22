@@ -24,8 +24,8 @@
       id:'rule-shift', runtimeId:'ruleshift', route:'rule-shift', profileApp:'ruleshift', core:true, group:'core', name:'Rule Shift',
       overview:overview({ order:4, group:'Core Games', art:'/systems/baseline-recreation/games/overview-art/rule-shift.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'Timed rule-switching challenge for flexible attention, impulse control, and deliberate choices.', brainBenefit:'Mental flexibility, impulse control, working memory, and attention switching.' })
     }),
-    Object.freeze({ id:'block-grid', runtimeId:'block-grid', route:'block-grid', profileApp:'blockgrid', core:false, group:'puzzle', name:'Block Grid' }),
-    Object.freeze({ id:'colour-sort', runtimeId:'colour-sort', route:'colour-sort', profileApp:'coloursort', core:false, group:'puzzle', name:'Colour Sort' }),
+    Object.freeze({ id:'block-grid', runtimeId:'block-grid', route:'block-grid', profileApp:'blockgrid', core:false, group:'extension', name:'Block Grid' }),
+    Object.freeze({ id:'colour-sort', runtimeId:'colour-sort', route:'colour-sort', profileApp:'coloursort', core:false, group:'extension', name:'Colour Sort' }),
     Object.freeze({
       id:'baseline-realm', runtimeId:'ninja', route:'baseline-realm', profileApp:'ninja', core:true, group:'realm', name:'Baseline Realm', legacyIds:Object.freeze(['ninja']),
       overview:overview({ order:8, group:'Testing', featured:true, art:'/systems/baseline-recreation/games/overview-art/baseline-realm.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'Experimental Basecamp/RPG layer with Ninja Training, exploration, and settlement systems.', brainBenefit:'Long-term planning, reward tracking, routine engagement, and strategic progression.' })
