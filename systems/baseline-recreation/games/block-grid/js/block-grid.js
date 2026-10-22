@@ -41,6 +41,7 @@ let statusMessage = '';
 let dragState = null;
 let suppressClick = false;
 let storageAuth = null;
+let specialMode = '';
 let boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false, scoreDelta:0, lines:0, combo:0, newTray:false, perfectClear:false };
 
 function number(value, minimum = 0) {
@@ -60,6 +61,7 @@ function normaliseRun(value) {
     combo:number(value.combo),
     lines:number(value.lines),
     pieces:number(value.pieces),
+    skillCharge:Math.max(0,Math.min(100,number(value.skillCharge))),
     gameOver:Boolean(value.gameOver)
   };
   if (!run.gameOver && run.tray.length === 0) run.tray = createTray(run.board, profile?.selectedMode || 'classic');
@@ -101,7 +103,7 @@ function syncAutoNextControl() {
 
 function createRun() {
   const board = emptyBoard();
-  return { board, tray:createTray(board, profile.selectedMode), score:0, combo:0, lines:0, pieces:0, gameOver:false };
+  return { board, tray:createTray(board, profile.selectedMode), score:0, combo:0, lines:0, pieces:0, skillCharge:0, gameOver:false };
 }
 
 function persist() {
@@ -117,6 +119,7 @@ function startNewGame() {
   selectedPiece = -1;
   previewAnchor = null;
   statusMessage = 'Choose a piece, then place it on the board.';
+  specialMode = '';
   boardMotion.newTray = true;
   persist();
   render();
@@ -284,6 +287,14 @@ function renderGame() {
       <span>${progress.current} / ${progress.target}</span>
     </div>
     <div class="block-grid-level-meter" aria-label="Run level progress"><span style="width:${progress.current / progress.target * 100}%"></span></div>
+    <div class="block-grid-skill">
+      <div class="block-grid-skill-head"><strong>Special Skill</strong><span>${Math.round(active.skillCharge || 0)}%</span></div>
+      <div class="block-grid-skill-meter" role="progressbar" aria-label="Special skill charge" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(active.skillCharge || 0)}"><span style="width:${Math.min(100,active.skillCharge || 0)}%"></span></div>
+      <div class="block-grid-skill-actions">
+        <button class="action ghost" data-block-action="blast" type="button" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}>Clear 4 × 4</button>
+        <button class="action ghost" data-block-action="rows" type="button" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}>Clear 2 Rows</button>
+      </div>
+    </div>
     <div class="block-grid-board-stage">
       <div class="block-grid-board${boardMotion.invalid ? ' is-invalid-drop' : ''}${occupancy >= .72 ? ' is-danger' : occupancy >= .55 ? ' is-crowded' : ''}" data-block-board role="grid" aria-label="Block Grid board">${boardHtml()}</div>
       ${boardFeedbackHtml()}
@@ -448,12 +459,10 @@ function positionDragGhost(ghost, clientX, clientY, anchor) {
     const gap = adjacentRect && anchor.col < 7 ? Math.max(0, adjacentRect.left - rect.right) : 4;
     ghost.style.setProperty('--drag-cell', rect.width + 'px');
     ghost.style.setProperty('--drag-gap', gap + 'px');
-    ghost.style.left = rect.left + 'px';
-    ghost.style.top = rect.top + 'px';
     ghost.classList.add('is-over-board');
-    return;
+  } else {
+    ghost.classList.remove('is-over-board');
   }
-  ghost.classList.remove('is-over-board');
   ghost.style.left = clientX + 'px';
   ghost.style.top = clientY + 'px';
 }
@@ -508,6 +517,7 @@ function placeSelected(row, col) {
   active.combo = result.combo;
   active.lines += result.linesCleared;
   active.pieces += 1;
+  active.skillCharge = Math.min(100, (active.skillCharge || 0) + 8 + (result.linesCleared * 18) + (perfectClear ? 30 : 0));
   active.tray.splice(selectedPiece, 1);
   profile.totalPieces += 1;
   profile.totalLines += result.linesCleared;
@@ -533,6 +543,42 @@ function placeSelected(row, col) {
   return true;
 }
 
+function consumeSpecialCharge(active) {
+  active.skillCharge = 0;
+  active.combo = 0;
+  specialMode = '';
+  selectedPiece = -1;
+  previewAnchor = null;
+  persist();
+  render();
+}
+function clearSpecialBlast(row, col) {
+  const active = run();
+  if (!active || (active.skillCharge || 0) < 100) return false;
+  const startRow=Math.max(0,Math.min(active.board.length-4,row-1));
+  const startCol=Math.max(0,Math.min(active.board.length-4,col-1));
+  let cleared=0;
+  for(let r=startRow;r<startRow+4;r+=1){
+    for(let c=startCol;c<startCol+4;c+=1){
+      if(active.board[r][c]){ active.board[r][c]=0; cleared+=1; }
+    }
+  }
+  if(!cleared){ statusMessage='Choose a 4 × 4 area containing blocks.'; render(); return false; }
+  statusMessage='Special used — cleared a 4 × 4 area.';
+  consumeSpecialCharge(active);
+  return true;
+}
+function clearSpecialRows() {
+  const active=run();
+  if(!active || (active.skillCharge || 0)<100) return false;
+  const ranked=active.board.map((row,index)=>({index,count:row.filter(Boolean).length}))
+    .filter(item=>item.count>0).sort((a,b)=>b.count-a.count || a.index-b.index).slice(0,2);
+  if(!ranked.length){ statusMessage='There are no occupied rows to clear.'; render(); return false; }
+  ranked.forEach(item=>{ active.board[item.index]=active.board[item.index].map(()=>0); });
+  statusMessage='Special used — cleared ' + ranked.length + ' row' + (ranked.length===1?'':'s') + '.';
+  consumeSpecialCharge(active);
+  return true;
+}
 function changeMode(mode) {
   if (!MODES[mode] || profile.selectedMode === mode) return;
   profile.selectedMode = mode;
@@ -567,11 +613,14 @@ function handleClick(event) {
   const cell = target.closest('[data-block-cell]');
   if (cell) {
     const coords = cellCoordinates(cell);
-    if (coords) placeSelected(coords.row, coords.col);
+    if (coords && specialMode === 'blast') clearSpecialBlast(coords.row, coords.col);
+    else if (coords) placeSelected(coords.row, coords.col);
     return;
   }
   const action = target.closest('[data-block-action]')?.getAttribute('data-block-action');
   if (action === 'new') startNewGame();
+  if (action === 'blast') { if((run()?.skillCharge || 0)>=100){ specialMode='blast'; selectedPiece=-1; previewAnchor=null; statusMessage='Special ready: select the centre of the 4 × 4 area to clear.'; render(); } }
+  if (action === 'rows') clearSpecialRows();
   if (action === 'fullscreen') toggleFullscreen();
   const mode = target.closest('[data-block-mode]')?.getAttribute('data-block-mode');
   if (mode) changeMode(mode);
@@ -699,6 +748,7 @@ function init() {
   document.addEventListener('pointerdown', handlePointerDown);
   document.addEventListener('pointermove', handlePointerMove);
   document.addEventListener('pointerup', handlePointerUp);
+  document.addEventListener('dragstart', event => { if(event.target instanceof Element && event.target.closest('#blockGridPanel')) event.preventDefault(); });
   document.addEventListener('pointercancel', () => { destroyDragGhost(); dragState = null; previewAnchor = null; paintPreview(); });
   document.addEventListener('keydown', handleKeydown);
   document.addEventListener('fullscreenchange', renderGame);
