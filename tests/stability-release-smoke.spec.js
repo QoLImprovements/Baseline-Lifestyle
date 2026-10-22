@@ -173,6 +173,39 @@ test('Food Recipes clean route keeps only Recipes visible and preserves pill-tab
   expect(tabGeometry.paddingRight).toBeGreaterThanOrEqual(10);
 });
 
+test('Food recipe ingredient waits for its full record before revealing Ingredient Library', async ({ page }) => {
+  let releaseIngredient;
+  const ingredientGate = new Promise(resolve => { releaseIngredient = resolve; });
+  let ingredientRequestSeen = false;
+
+  await page.route('**/baseline-food-approach/ingredient-library/potato', async route => {
+    ingredientRequestSeen = true;
+    await ingredientGate;
+    await route.continue();
+  });
+
+  await page.goto('/baseline-food-approach/recipes/mung-bean-and-peanut-vegetable-hotpot', { waitUntil:'domcontentloaded' });
+  const potatoLink = page.locator('#r12 a.ing-link[data-ingredient="ing-potato"]').first();
+  await expect(potatoLink).toBeVisible();
+
+  await potatoLink.click();
+  await expect.poll(() => ingredientRequestSeen).toBe(true);
+
+  // While the full record is still loading, remain on the recipe. The
+  // lightweight Ingredient Library index card must never be shown to the user.
+  await expect(page.locator('#recipes')).toBeVisible();
+  await expect(page.locator('#ingredients')).toBeHidden();
+
+  releaseIngredient();
+
+  await expect(page.locator('#ingredients')).toBeVisible();
+  await expect(page.locator('#recipes')).toBeHidden();
+  await expect(page.locator('#ing-potato')).toBeVisible();
+  await expect(page.locator('#ing-potato')).not.toHaveClass(/ingredient-index-card/);
+  await expect(page.locator('#ing-potato')).toContainText('Benefits:');
+  await expect(page).toHaveURL(/\/baseline-food-approach\/ingredient-library\?filter=r12#ing-potato$/);
+});
+
 test('embedded Skincare recipe first paint is exact before external JavaScript runs', async ({ page }) => {
   await page.route('**/*', (route) => {
     const pathname = new URL(route.request().url()).pathname;
