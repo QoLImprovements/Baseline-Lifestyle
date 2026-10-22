@@ -92,16 +92,13 @@ Options -Indexes
   RewriteRule ^baseline-food-approach\.html/([^/]+)/?$ /baseline-food-approach/recipes/$1 [R=302,L]
 </IfModule>
 
-# BASELINE-HOME-INDEX-CANONICAL-20260607
-# The public home URL is /home/1, not /index.html or /index.html#tab=system.
-# THE_REQUEST prevents internal /home/1 -> index.html rewrites from looping.
+# BASELINE-HOME-ROOT-CANONICAL-20261022
+# The public home URL is the site root: /.
+# Legacy /index.html and /home/* URLs redirect permanently to the root.
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteCond %{THE_REQUEST} \s/+index\.html[?\s] [NC]
-  RewriteRule ^index\.html$ /home/1 [R=302,L]
-
-  RewriteCond %{THE_REQUEST} \s+/[?\s] [NC]
-  RewriteRule ^$ /home/1 [R=302,L]
+  RewriteRule ^index\.html$ / [R=301,L]
 </IfModule>
 
 # BASELINE-SYSTEMS-FOLDER-RESTRUCTURE-20260607
@@ -167,7 +164,7 @@ Options -Indexes
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteCond %{THE_REQUEST} \s/+systems/baseline-psychology/baseline-psychology\.html[?\s] [NC]
-  RewriteRule ^systems/baseline-psychology/baseline-psychology\.html$ /home/1?protected=locked [R=302,L,NE]
+  RewriteRule ^systems/baseline-psychology/baseline-psychology\.html$ /?protected=locked [R=302,L,NE]
 </IfModule>
 
 # BASELINE-PHASE-2-MOVED-MAIN-HTML-20260607
@@ -244,10 +241,10 @@ Options -Indexes
   RewriteEngine On
   Options -MultiViews
 
-  # Clean Home routes.
-  RewriteRule ^home/?$ /home/1 [R=302,L]
-  RewriteRule ^home/1/?$ index.html [L,QSA]
-  RewriteRule ^home/2/?$ index.html [L,QSA]
+  # Clean Home routes. The root domain is the sole public home URL.
+  RewriteRule ^home/?$ / [R=301,L]
+  RewriteRule ^home/1/?$ / [R=301,L]
+  RewriteRule ^home/2/?$ / [R=301,L]
 
   # Page defaults.
   RewriteRule ^baseline-food-approach/?$ /baseline-food-approach/system [R=302,L]
@@ -262,7 +259,7 @@ Options -Indexes
   # If a browser ever creates a bad nested static-file URL, recover to the clean route.
   # THE_REQUEST prevents internal Phase 2 rewrites from being redirected again.
   RewriteCond %{THE_REQUEST} \s/+[^\s]*index\.html[?\s] [NC]
-  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/index\.html$ /home/1 [R=302,L]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/index\.html$ / [R=301,L]
   RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-food-approach\.html[?\s] [NC]
   RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-food-approach\.html$ /baseline-food-approach/system [R=302,L]
   RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-massage\.html[?\s] [NC]
