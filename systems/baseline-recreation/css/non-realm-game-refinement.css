@@ -240,7 +240,7 @@
   left:7px;right:7px;bottom:6px;
   padding:4px 5px;
   border-radius:8px;
-  background:rgba(8,13,34,.7);
+  background:rgba(var(--recreation-burgundy-rgb),.7);
   color:#fff;
   font-size:10px;
   font-weight:800;
