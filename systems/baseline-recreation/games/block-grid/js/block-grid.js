@@ -334,7 +334,7 @@ function renderProgress() {
 const BLOCK_TABS = Object.freeze(['game','modes','progress']);
 
 function blockTabFromLocation() {
-  if (!/^\/baseline-recreation\/games-hub\/block-grid\/?$/i.test(String(location.pathname || ''))) return 'game';
+  if (!/^\/baseline-recreation\/games\/block-grid\/?$/i.test(String(location.pathname || ''))) return 'game';
   try {
     const requested = String(new URLSearchParams(location.search || '').get('view') || '').toLowerCase();
     return BLOCK_TABS.includes(requested) ? requested : 'game';
@@ -358,7 +358,7 @@ function setTab(name, historyMode = 'none') {
     const card = document.getElementById(`blockGrid${id}Card`);
     if (card) card.hidden = id.toLowerCase() !== next;
   }
-  if (historyMode !== 'none' && /^\/baseline-recreation\/games-hub\/block-grid\/?$/i.test(String(location.pathname || ''))) {
+  if (historyMode !== 'none' && /^\/baseline-recreation\/games\/block-grid\/?$/i.test(String(location.pathname || ''))) {
     try {
       const nextUrl = blockTabUrl(next);
       const currentUrl = location.pathname + location.search + location.hash;
