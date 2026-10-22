@@ -339,6 +339,14 @@ test('sitewide Contact control opens one themed shared flyout before Account', (
 
 
 
+test('sitewide CSS keeps fully superseded authority rules retired', () => {
+  const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
+  assert.equal((sitewideCss.match(/\.bl-flyout \.bl-player\s*\{/g) || []).length, 1);
+  assert.equal((sitewideCss.match(/html:not\(\.bl-pages-dd-ready\) \.bl-topnav\s*\{/g) || []).length, 1);
+  assert.doesNotMatch(sitewideCss,/\.bl-pages-menu,\s*\.bl-system-menu,\s*\.bl-flyout \.bl-select-menu\s*\{/);
+  assert.doesNotMatch(sitewideCss,/body\[data-app\] #bl-auth-flyout \.card,\s*body\[data-app\] #bl-beats-flyout \.card,\s*body\[data-app\] \.bl-flyout \.card\s*\{/);
+});
+
 test('desktop header utility icons have consistent breathing room and vertical alignment', () => {
   const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
   const headerCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-header-canonical.css'), 'utf8');
