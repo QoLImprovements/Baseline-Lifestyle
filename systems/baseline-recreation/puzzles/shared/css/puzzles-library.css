@@ -68,7 +68,7 @@ body[data-app="recreation"] .puzzle-library-art{
   border:1px solid rgba(var(--recreation-copper-light-rgb),.22);
   border-radius:20px;
   background:var(--recreation-card);
-  box-shadow:0 14px 28px -18px rgba(8,14,27,.72);
+  box-shadow:0 14px 28px -18px rgba(var(--recreation-shadow-rgb),.72);
 }
 body[data-app="recreation"] .puzzle-library-copy{
   grid-column:2;
