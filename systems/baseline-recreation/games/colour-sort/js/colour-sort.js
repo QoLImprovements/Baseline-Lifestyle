@@ -23,6 +23,17 @@ import {
 
 const BUILD = 'COLOUR_SORT_AUTO_NEXT_COHERENCE_20261018_1';
 const APP = 'coloursort';
+const COLOUR_SORT_TIERS = Object.freeze([
+  { id:'starter', name:'Starter', from:1, to:12 },
+  { id:'flow', name:'Flow', from:13, to:24 },
+  { id:'strategy', name:'Strategy', from:25, to:36 },
+  { id:'advanced', name:'Advanced', from:37, to:48 },
+  { id:'expert', name:'Expert', from:49, to:60 }
+]);
+function tierForLevel(levelId){
+  const value=Math.max(1,Math.min(LEVELS.length,Number(levelId)||1));
+  return COLOUR_SORT_TIERS.find(tier=>value>=tier.from&&value<=tier.to)||COLOUR_SORT_TIERS[0];
+}
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
   level:1,
@@ -230,6 +241,7 @@ function renderGame() {
   root.innerHTML = `
     <div class="colour-sort-active-header">
       <div class="stat-pills">
+        <div class="stat-pill">Tier <span>${escapeHtml(tierForLevel(active.level).name)}</span></div>
         <div class="stat-pill">Puzzle <span>${active.level} / ${LEVELS.length}</span></div>
         <div class="stat-pill">Sorted <span>${sorted} / ${colours}</span></div>
         <div class="stat-pill">Moves <span>${active.moves}</span></div>
@@ -269,8 +281,11 @@ function levelButton(level) {
 function renderLevels() {
   const root = document.getElementById('colourSortLevelsCard');
   if (!root) return;
-  root.innerHTML = `<div class="colour-sort-level-list">${LEVELS.map(levelButton).join('')}</div>
-    <div class="summary-box"><strong>Progression</strong><span class="inline-note">Completing a level unlocks the next one. Every included starting layout is checked against the same legal-pour rules used by the game.</span></div>`;
+  root.innerHTML = COLOUR_SORT_TIERS.map(tier => {
+    const levels=LEVELS.filter(level=>level.id>=tier.from&&level.id<=tier.to);
+    return `<section class="colour-sort-tier-group"><div class="colour-sort-tier-heading"><strong>${escapeHtml(tier.name)}</strong><span>Puzzles ${tier.from}–${tier.to}</span></div><div class="colour-sort-level-list">${levels.map(levelButton).join('')}</div></section>`;
+  }).join('') +
+    '<div class="summary-box"><strong>Long-form progression</strong><span class="inline-note">Five tiers now provide 60 solver-checked puzzles. Completing a puzzle unlocks the next one, with bottle and colour complexity increasing through the tiers.</span></div>';
 }
 
 function renderProgress() {
@@ -803,8 +818,8 @@ function showHint() {
   statusMessage = 'Finding a legal route…';
   renderGame();
   requestAnimationFrame(() => {
-    hint = hintMove(active.bottles, { maxNodes:180000 });
-    statusMessage = hint ? `Try bottle ${hint.from + 1} → ${hint.to + 1}.` : 'No hint was found for this position.';
+    hint = hintMove(active.bottles, { maxNodes:750000 });
+    statusMessage = hint ? `Solution step: bottle ${hint.from + 1} → ${hint.to + 1}.` : 'No verified solution step was found from this position. Undo a recent move and try Hint again.';
     renderGame();
   });
 }
@@ -888,7 +903,7 @@ const shell = createGameExtensionShell({
   styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
-  progressText:() => profile ? `Level ${profile.level} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
+  progressText:() => profile ? `${tierForLevel(profile.selectedLevel).name} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
   panelHtml,
   onOpen:() => { globalThis.BaselineGamesMusic?.selectGame?.('colour-sort'); render(); setTab(colourTabFromLocation(), 'none'); },
   onClose:() => { globalThis.BaselineGamesMusic?.selectGame?.(''); cleanupBottleDrag(); selectedBottle = -1; hint = null; }
