@@ -2,7 +2,16 @@
   'use strict';
 
   const ROOT_ID = 'weightCoherencePuzzle';
-  const BOARD_BASE = '#2A3672';
+  function recreationCssValue(name,fallback){
+    try{
+      const value=globalThis.getComputedStyle?.(document.documentElement)?.getPropertyValue(name)?.trim();
+      return value || fallback;
+    }catch(_error){ return fallback; }
+  }
+  function recreationRgba(name,fallback,alpha){
+    return 'rgba(' + recreationCssValue(name,fallback) + ',' + alpha + ')';
+  }
+  const BOARD_BASE = recreationCssValue('--recreation-panel','#6E2C44');
   const GUIDE_OPACITY = 0.50;
   const ZOOM_MIN = 1;
   const PIECE_ZOOM_DEFAULT = 2;
@@ -560,7 +569,7 @@
     targetCtx.save();
     targetCtx.translate(g.x,g.y);
     tracePiecePath(targetCtx,g);
-    targetCtx.strokeStyle='rgba(8,13,34,.48)';
+    targetCtx.strokeStyle=recreationRgba('--recreation-burgundy-rgb','58,16,34',.48);
     targetCtx.lineWidth=Math.max(0.7,Math.min(1.5,g.tab*0.15));
     targetCtx.stroke();
     targetCtx.restore();
@@ -596,7 +605,7 @@
     if(state){
       const config=difficultyConfig(state.difficulty);
       ctx.save();
-      ctx.strokeStyle=guideOn?'rgba(8,13,34,.18)':'rgba(214,223,255,.10)';
+      ctx.strokeStyle=guideOn?recreationRgba('--recreation-burgundy-rgb','58,16,34',.18):recreationRgba('--recreation-ink-rgb','255,244,239',.10);
       ctx.lineWidth=0.65;
       const cw=BOARD_WIDTH/config.cols, ch=BOARD_HEIGHT/config.rows;
       for(let c=1;c<config.cols;c++){ ctx.beginPath(); ctx.moveTo(c*cw,0); ctx.lineTo(c*cw,BOARD_HEIGHT); ctx.stroke(); }
@@ -631,7 +640,7 @@
     c.scale(scale,scale);
     c.translate(margin,margin);
     tracePiecePath(c,g);
-    c.strokeStyle='rgba(242,245,255,.72)';
+    c.strokeStyle=recreationRgba('--recreation-ink-rgb','255,244,239',.72);
     c.lineWidth=Math.max(0.8,1.2/scale);
     c.stroke();
     c.restore();
@@ -1493,7 +1502,7 @@
     overlayCtx.scale(renderScale,renderScale);
     overlayCtx.translate(pieceMargin,pieceMargin);
     tracePiecePath(overlayCtx,g);
-    overlayCtx.strokeStyle='rgba(242,245,255,.86)';
+    overlayCtx.strokeStyle=recreationRgba('--recreation-ink-rgb','255,244,239',.86);
     overlayCtx.lineWidth=Math.max(0.8,1.2/renderScale);
     overlayCtx.stroke();
     overlayCtx.restore();
