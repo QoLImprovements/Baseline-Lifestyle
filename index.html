@@ -17,11 +17,11 @@ These Markdown rules are a human reference point, not live runtime config.
 <title>BaselineLifestyle</title>
 <meta name="theme-color" content="#2b2a27"/>
 <style>html[data-app="home"],body[data-app="home"]{margin:0;min-height:100%;color:#f4efe7;background:#2b2a27;}</style>
-<link rel="canonical" href="https://baselinelifestyle.org/home/1">
+<link rel="canonical" href="https://baselinelifestyle.org/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Baseline Lifestyle">
 <meta property="og:description" content="Baseline Lifestyle: structured systems for food, massage, personal care, fitness, badminton sessions, and games.">
-<meta property="og:url" content="https://baselinelifestyle.org/home/1">
+<meta property="og:url" content="https://baselinelifestyle.org/">
 <link href="/sitewide/css/baseline-themes.css?v=SITEWIDE_THEMES_CSS_20261022_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_SHARED_CSS_20261021_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-home.css?v=HOME_FULL_WIDTH_STACK_20261022_2" rel="stylesheet"/>
@@ -34,10 +34,10 @@ These Markdown rules are a human reference point, not live runtime config.
   try{
     var path = String(location.pathname || '').toLowerCase().replace(/\/+$/,'');
     if(!/^https?:$/i.test(location.protocol)) return;
-    var isHomeRoute = /\/home\/[12]$/.test(path) || /\/index\.html$/.test(path) || path === '' || path === '/';
+    var isHomeRoute = /\/home(?:\/[12])?$/.test(path) || /\/index\.html$/.test(path) || path === '' || path === '/';
     if(!isHomeRoute) return;
-    if(location.pathname !== '/home/1' || location.hash){
-      history.replaceState(null, '', '/home/1');
+    if(location.pathname !== '/' || location.hash){
+      history.replaceState(null, '', '/' + (location.search || ''));
     }
   }catch(_e){}
 })();
