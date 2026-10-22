@@ -364,6 +364,20 @@ test('desktop header utility icons have consistent breathing room and vertical a
     'canonical system headers must align Contact consistently with Account and Binaural'
   );
 });
+test('canonical header keeps Pages dropdown overflow in one selector authority', () => {
+  const headerCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-header-canonical.css'), 'utf8');
+  assert.doesNotMatch(
+    headerCss,
+    /\.bl-homebar,\s*\.bl-homebar-inner,\s*\.bl-pages-dd\s*\{\s*overflow:visible!important;/,
+    'Pages dropdown overflow must not be duplicated in the earlier banner rule'
+  );
+  assert.match(
+    headerCss,
+    /\.bl-pages-dd\{[\s\S]*?overflow:visible!important;/,
+    'Pages dropdown must retain its canonical content-sized overflow rule'
+  );
+});
+
 test('mobile header keeps branding visible through one consolidated utility menu', () => {
   const shared = fs.readFileSync(path.join(root, 'sitewide/js/baseline-shared.js'), 'utf8');
   const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
