@@ -1,6 +1,6 @@
 const BUILD='RECREATION_LOADER_20261022_1';
 const LEGACY_BUILD='RECREATION_LEGACY_DARTS_ACCESS_20260706_1';
-const REALM_BUILD='REALM_DIRECT_WORKSHOP_ROUTE_20261019_1';
+const REALM_BUILD='REALM_RECREATION_ROUTE_20261022_1';
 const REALM='/systems/baseline-recreation/games/baseline-realm/shared/js/realm-entry.js?v='+REALM_BUILD;
 const DARTS='/systems/baseline-recreation/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4';
 const DARTS_CSS='/systems/baseline-recreation/games/darts-focused/css/darts-focused.css?v=DARTS_REBUILD_20260707_4';
@@ -38,7 +38,7 @@ function waitCore(){
 }
 
 function real(host){
-  return Boolean(host&&!host.__gamesHubGuard&&typeof host.configure==='function'&&typeof host.render==='function');
+  return Boolean(host&&typeof host.configure==='function'&&typeof host.render==='function');
 }
 
 function clearRealmFailure(){
