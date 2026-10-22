@@ -2284,9 +2284,15 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
     const tier=RULESHIFT_TIERS.find(function(item){return item.id===saved.tierId;});
     const validTypes=['colour','shape','size','notColour','notShape','colourShape','colourSize','shapeSize'];
     const rule=saved.currentRule&&typeof saved.currentRule==='object'?Object.assign({},saved.currentRule):null;
-    const options=Array.isArray(saved.options)?saved.options.filter(function(option){
+    if(rule && rule.shape==='pill') rule.shape='oval';
+    const options=Array.isArray(saved.options)?saved.options.map(function(option){
+      if(!option||typeof option!=='object') return null;
+      const next=Object.assign({},option);
+      if(next.shape==='pill') next.shape='oval';
+      return next;
+    }).filter(function(option){
       return option&&RULESHIFT_COLOURS.some(function(item){return item.id===option.colour;})&&RULESHIFT_SHAPES.some(function(item){return item.id===option.shape;})&&RULESHIFT_SIZES.some(function(item){return item.id===option.size;});
-    }).map(function(option){return Object.assign({},option);}):[];
+    }):[];
     if(!tier||profiles.ruleshift.level<tier.unlockLevel||!rule||!validTypes.includes(rule.type)||!options.length) return false;
     profiles.ruleshift.selectedTier=tier.id;
     const finished=Boolean(saved.finished);
