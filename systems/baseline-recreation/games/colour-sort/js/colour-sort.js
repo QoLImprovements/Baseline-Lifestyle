@@ -297,7 +297,7 @@ function renderProgress() {
 const COLOUR_TABS = Object.freeze(['game','levels','progress']);
 
 function colourTabFromLocation() {
-  if (!/^\/baseline-recreation\/games-hub\/colour-sort\/?$/i.test(String(location.pathname || ''))) return 'game';
+  if (!/^\/baseline-recreation\/games\/colour-sort\/?$/i.test(String(location.pathname || ''))) return 'game';
   try {
     const requested = String(new URLSearchParams(location.search || '').get('view') || '').toLowerCase();
     return COLOUR_TABS.includes(requested) ? requested : 'game';
@@ -321,7 +321,7 @@ function setTab(name, historyMode = 'none') {
     const card = document.getElementById(`colourSort${id}Card`);
     if (card) card.hidden = id.toLowerCase() !== next;
   }
-  if (historyMode !== 'none' && /^\/baseline-recreation\/games-hub\/colour-sort\/?$/i.test(String(location.pathname || ''))) {
+  if (historyMode !== 'none' && /^\/baseline-recreation\/games\/colour-sort\/?$/i.test(String(location.pathname || ''))) {
     try {
       const nextUrl = colourTabUrl(next);
       const currentUrl = location.pathname + location.search + location.hash;
