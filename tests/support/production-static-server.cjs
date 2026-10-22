@@ -30,7 +30,7 @@ const CONTENT_TYPES = Object.freeze({
   '.php': 'text/plain; charset=utf-8'
 });
 
-const RECREATION_ROUTE = /^\/baseline-recreation\/(?:system|games(?:\/(?:pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm))?|puzzles(?:\/(?:jigsaws(?:\/[^/]+)?|crossnumber))?)\/?$/;
+const RECREATION_ROUTE = /^\/baseline-recreation\/(?:system|games(?:\/(?:pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm))?|puzzles(?:\/(?:jigsaws(?:\/[^/]+)?|crossnumber))?|concepts(?:\/[^/]+)?)\/?$/;
 
 /* Keep this route table aligned with the public Apache clean-route contract.
    Playwright must be able to refresh a virtual route directly; otherwise a
