@@ -14,7 +14,7 @@
 .weight-coherence-launch-actions{display:flex;align-items:center;gap:8px}
 .weight-coherence-difficulty-row{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:10px}
 .weight-coherence-difficulty{min-height:46px}
-.weight-coherence-difficulty.is-active{border-color:rgba(var(--recreation-copper-light-rgb),.82);box-shadow:0 0 0 2px rgba(var(--recreation-copper-light-rgb),.26) inset;background:rgba(82,101,194,.32)}
+.weight-coherence-difficulty.is-active{border-color:rgba(var(--recreation-copper-light-rgb),.82);box-shadow:0 0 0 2px rgba(var(--recreation-copper-light-rgb),.26) inset;background:rgba(var(--recreation-copper-deep-rgb),.32)}
 
 .weight-coherence-icon-action{position:relative;display:inline-grid;place-items:center;flex:0 0 auto;width:44px;min-width:44px;height:44px;min-height:44px;padding:9px;border-radius:12px}
 .weight-coherence-icon-action svg{display:block;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
@@ -38,7 +38,7 @@
 .weight-coherence-help-section{display:grid;gap:7px;padding:13px 14px;border:1px solid rgba(var(--recreation-copper-light-rgb),.17);border-radius:14px;background:rgba(var(--recreation-burgundy-rgb),.42)}
 .weight-coherence-help-section p{margin:0;color:rgba(var(--recreation-ink-rgb),.78);line-height:1.5}
 .weight-coherence-help-grid{display:grid;gap:8px}
-.weight-coherence-help-row{display:grid;grid-template-columns:minmax(62px,78px) minmax(0,1fr);gap:12px;align-items:start;padding:11px 12px;border:1px solid rgba(var(--recreation-copper-light-rgb),.14);border-radius:12px;background:rgba(17,24,59,.34)}
+.weight-coherence-help-row{display:grid;grid-template-columns:minmax(62px,78px) minmax(0,1fr);gap:12px;align-items:start;padding:11px 12px;border:1px solid rgba(var(--recreation-copper-light-rgb),.14);border-radius:12px;background:rgba(var(--recreation-burgundy-rgb),.34)}
 .weight-coherence-help-row>kbd{display:inline-grid;place-items:center;min-height:28px;padding:5px 8px;border:1px solid rgba(var(--recreation-copper-light-rgb),.28);border-radius:8px;background:rgba(var(--recreation-burgundy-rgb),.72);color:var(--recreation-ink);font:700 .78rem/1 system-ui,sans-serif;white-space:nowrap}
 .weight-coherence-help-row>div{display:grid;gap:3px;min-width:0}
 .weight-coherence-help-row strong{font-size:.88rem}
@@ -316,7 +316,7 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
     min-height:0;
     padding:24px;
     text-align:center;
-    border:1px solid rgba(176,190,255,.24);
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.24);
     border-radius:18px;
     background:rgba(var(--recreation-burgundy-rgb),.84);
     color:var(--recreation-ink);
@@ -484,9 +484,9 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
   display:grid;
   gap:10px;
   padding:15px;
-  border:1px solid rgba(176,190,255,.20);
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.20);
   border-radius:15px;
-  background:rgba(17,24,59,.40);
+  background:rgba(var(--recreation-burgundy-rgb),.40);
 }
 #weightCoherenceProgress .coherent-progress-heading{
   display:flex;
@@ -522,7 +522,7 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
 #weightCoherenceProgress .coherent-progress-bar{
   height:13px;
   overflow:hidden;
-  border:1px solid rgba(176,190,255,.20);
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.20);
   border-radius:999px;
   background:#09122f;
 }
@@ -544,9 +544,9 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
   gap:14px;
   min-height:50px;
   padding:10px 12px;
-  border:1px solid rgba(176,190,255,.16);
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.16);
   border-radius:12px;
-  background:rgba(17,24,59,.30);
+  background:rgba(var(--recreation-burgundy-rgb),.30);
 }
 #weightCoherenceProgress .coherent-progress-stat span{
   color:rgba(var(--recreation-ink-rgb),.68);
@@ -563,7 +563,7 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
 #weightCoherenceProgress .jigsaw-completed-details{
   border:1px solid rgba(var(--recreation-copper-light-rgb),.18);
   border-radius:13px;
-  background:rgba(17,24,59,.28);
+  background:rgba(var(--recreation-burgundy-rgb),.28);
   overflow:hidden;
 }
 #weightCoherenceProgress .jigsaw-completed-details>summary{
@@ -611,7 +611,7 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
   gap:8px;
   min-height:38px;
   padding:7px 4px;
-  border-top:1px solid rgba(176,190,255,.10);
+  border-top:1px solid rgba(var(--recreation-copper-light-rgb),.10);
   color:var(--recreation-ink);
   font-size:.78rem;
 }
