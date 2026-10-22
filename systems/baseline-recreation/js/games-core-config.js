@@ -100,7 +100,7 @@
     { id:'square', name:'Square' },
     { id:'triangle', name:'Triangle' },
     { id:'diamond', name:'Diamond' },
-    { id:'pill', name:'Pill' },
+    { id:'oval', name:'Oval' },
     { id:'hexagon', name:'Hexagon' },
     { id:'star', name:'Star' },
     { id:'cross', name:'Cross' }
