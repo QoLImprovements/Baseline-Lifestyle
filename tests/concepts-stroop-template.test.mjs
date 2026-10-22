@@ -30,10 +30,24 @@ test('Concepts has shared architecture plus Stroop-specific variance',()=>{
   assert.match(rules,/reusable baseline, not a rigid universal page/);
 });
 
-test('selected Stroop artwork is committed as the Concept asset',()=>{
-  const art='systems/baseline-recreation/concepts/stroop-effect/art/stroop-effect.webp';
-  assert.equal(fs.existsSync(art),true);
-  assert.ok(fs.statSync(art).size>100000,'Stroop artwork should remain a substantive full visual asset');
+test('matched Stroop artworks are committed as Incongruent and Congruent assets',()=>{
+  const incongruent='systems/baseline-recreation/concepts/stroop-effect/art/stroop-effect.webp';
+  const congruent='systems/baseline-recreation/concepts/stroop-effect/art/stroop-effect-congruent.webp';
+  assert.equal(fs.existsSync(incongruent),true);
+  assert.equal(fs.existsSync(congruent),true);
+  assert.ok(fs.statSync(incongruent).size>100000,'Incongruent Stroop artwork should remain a substantive full visual asset');
+  assert.ok(fs.statSync(congruent).size>100000,'Congruent Stroop artwork should remain a substantive full visual asset');
+});
+
+test('Stroop provides a direct Incongruent and Congruent artwork comparison',()=>{
+  const html=read('systems/baseline-recreation/baseline-recreation.html');
+  const stroopJs=read('systems/baseline-recreation/concepts/stroop-effect/js/stroop-effect.js');
+  assert.match(html,/data-stroop-mode="incongruent"/);
+  assert.match(html,/data-stroop-mode="congruent"/);
+  assert.match(html,/data-stroop-comparison-art/);
+  assert.match(stroopJs,/stroop-effect-congruent\.webp/);
+  assert.match(stroopJs,/aria-pressed/);
+  assert.match(stroopJs,/setMode/);
 });
 
 test('Stroop content provides concise and expandable research context',()=>{
@@ -55,7 +69,12 @@ test('Concept routes are canonical and refresh-restorable',()=>{
   const core=read('systems/baseline-recreation/js/baseline-recreation-core.js');
   assert.match(ht,/baseline-recreation\/\(system\|games\|puzzles\|concepts\)/);
   assert.match(ht,/baseline-recreation\/concepts\/\[\^\/\]\+\/\?\$/);
-  assert.match(read('systems/baseline-recreation/concepts/shared/js/concepts.js'),/'stroop-effect'/);
+  assert.match(ht,/the-stoop-effect/);
+  assert.match(ht,/\/baseline-recreation\/concepts\/stroop-effect/);
+  const conceptsJs=read('systems/baseline-recreation/concepts/shared/js/concepts.js');
+  assert.match(conceptsJs,/'stroop-effect'/);
+  assert.match(conceptsJs,/'the-stoop-effect':'stroop-effect'/);
+  assert.match(conceptsJs,/'stoop-effect':'stroop-effect'/);
   assert.match(core,/base \+ '\/concepts'/);
   assert.match(core,/tab:'concepts'/);
   assert.match(core,/target === 'concepts'/);
