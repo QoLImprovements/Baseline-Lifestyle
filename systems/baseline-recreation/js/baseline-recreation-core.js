@@ -8,6 +8,12 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
   }catch(_buildMarkerError){}
 
   const API_PATH = '/systems/baseline-recreation/api/games_profile.php';
+  function retireLegacyRecreationViewState(){
+    ['localStorage','sessionStorage'].forEach(function(name){
+      try{ const store=window[name]; if(store) store.removeItem('baselineGamesHubView'); }catch(_error){}
+    });
+  }
+  retireLegacyRecreationViewState();
   const GAME_REGISTRY = window.BASELINE_GAMES_REGISTRY || null;
   const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
   const REGISTERED_OVERVIEW_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.overviewGames === 'function' ? GAME_REGISTRY.overviewGames() : [];
@@ -79,7 +85,7 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
   const saveTimers = Object.create(null);
   let authState = { authed:false, name:'', email:'' };
   let selectedGame = '';
-  let currentTab = 'hub';
+  let currentTab = 'system';
   let pairsBoardState = null;
   let pairsRoundToken = 0;
   let pairsIdleMessage = 'Choose a board tier and press Start New Game when you are ready.';
@@ -720,10 +726,10 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
   function normalisePanelId(gameId, panelId){ const config = getGamePanelConfig(gameId); if(!config) return ''; const value = String(panelId || ''); return config.panels.includes(value) ? value : config.defaultPanel; }
   function currentPanelIdForGame(gameId){ const config = getGamePanelConfig(gameId); return config ? normalisePanelId(gameId, config.get()) : ''; }
 
-  function recreationBaseRoute(){ return '/baseline-recreation/system'; }
+  function recreationBaseRoute(){ return '/baseline-recreation'; }
   function recreationCleanRouteForState(){
     const base = recreationBaseRoute();
-    let route = base;
+    let route = base + '/system';
     const params = new URLSearchParams();
     let currentParams = null;
     try{ currentParams = new URLSearchParams(window.location.search || ''); }catch(_error){ currentParams = new URLSearchParams(); }
@@ -733,23 +739,22 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
     const badmintonFocusedOpen = document.documentElement.hasAttribute('data-badminton-focused-open');
 
     if(currentTab === 'puzzles'){
-      route = base + '/puzzles';
-      const jigsaw = String(currentParams.get('jigsaw') || '').trim();
-      const puzzle = String(currentParams.get('puzzle') || '').trim();
-      if(jigsaw) params.set('jigsaw', jigsaw);
-      else if(puzzle === 'jigsaws') params.set('puzzle', 'jigsaws');
+      const currentPath=String(window.location.pathname||'').replace(/\/+$/,'');
+      route = /^\/baseline-recreation\/puzzles(?:\/.*)?$/i.test(currentPath) ? currentPath : (base + '/puzzles');
+      const jigsawPanel=String(currentParams.get('jigsaw-panel')||'').trim();
+      if(jigsawPanel) params.set('jigsaw-panel',jigsawPanel);
     }else if(currentTab === 'games'){
       if(externalPuzzle){
-        route = base + '/' + externalPuzzle;
+        route = base + '/games/' + externalPuzzle;
         const view = String(currentParams.get('view') || '').trim();
         if(view) params.set('view', view);
       }else if(dartsFocusedOpen){
-        route = base + '/darts-focused';
+        route = base + '/games/darts-focused';
       }else if(badmintonFocusedOpen){
-        route = base + '/badminton-focused';
-      }else if(!selectedGame) route = base + '/games-list';
+        route = base + '/games/badminton-focused';
+      }else if(!selectedGame) route = base + '/games';
       else{
-        route = base + '/' + (GAME_ID_TO_ROUTE_SLUG[selectedGame] || selectedGame);
+        route = base + '/games/' + (GAME_ID_TO_ROUTE_SLUG[selectedGame] || selectedGame);
         const config = getGamePanelConfig(selectedGame);
         const panelId = currentPanelIdForGame(selectedGame);
         if(config && panelId && panelId !== config.defaultPanel) params.set('panel', panelId);
@@ -766,16 +771,12 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
   function recreationStateFromCleanPath(){
     try{
       const path = String(window.location.pathname || '').toLowerCase().replace(/\/+$/,'');
-      const marker = '/baseline-recreation/system';
-      const idx = path.indexOf(marker);
-      if(idx === -1){
-        if(/\/baseline-recreation\/?$/.test(path)) return { tab:'hub', game:'', panel:'' };
-        return null;
-      }
-      const rest = path.slice(idx + marker.length).replace(/^\/+/, '');
-      if(!rest) return { tab:'hub', game:'', panel:'' };
-      if(rest === 'puzzles') return { tab:'puzzles', game:'', panel:'' };
-      if(rest === 'games-list') return { tab:'games', game:'', panel:'' };
+      const base = '/baseline-recreation';
+      if(path === base || path === base + '/system') return { tab:'system', game:'', panel:'' };
+      if(path === base + '/puzzles' || path.indexOf(base + '/puzzles/') === 0) return { tab:'puzzles', game:'', panel:'' };
+      if(path === base + '/games') return { tab:'games', game:'', panel:'' };
+      if(path.indexOf(base + '/games/') !== 0) return null;
+      const rest = path.slice((base + '/games/').length).replace(/^\/+/, '');
       const game = normaliseGameId(rest.split('/')[0]);
       let requestedPanel = '';
       try{ requestedPanel = new URLSearchParams(window.location.search || '').get('panel') || ''; }catch(_error){}
@@ -791,13 +792,13 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
       const requestedTab = String(params.get('tab') || '').toLowerCase();
       const game = params.has('game') ? normaliseGameId(params.get('game') || '') : '';
       const panel = game ? normalisePanelId(game, params.get('panel') || '') : '';
-      return { tab:requestedTab === 'puzzles' ? 'puzzles' : ((requestedTab === 'games' || game) ? 'games' : 'hub'), game:game, panel:panel };
+      return { tab:requestedTab === 'puzzles' ? 'puzzles' : ((requestedTab === 'games' || game) ? 'games' : 'system'), game:game, panel:panel };
     }catch(_error){ return null; }
   }
 
   function buildHashState(){
     const params = new URLSearchParams();
-    params.set('tab', currentTab === 'puzzles' ? 'puzzles' : (currentTab === 'games' ? 'games' : 'hub'));
+    params.set('tab', currentTab === 'puzzles' ? 'puzzles' : (currentTab === 'games' ? 'games' : 'system'));
     if(currentTab === 'games' && selectedGame){
       params.set('game', selectedGame);
       const panelId = currentPanelIdForGame(selectedGame);
@@ -811,20 +812,16 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
     const currentUrl = window.location.pathname + window.location.search;
     if(currentUrl === nextUrl && !(window.location.hash || '')) return;
     const shouldPush = mode === 'push' && window.history && typeof window.history.pushState === 'function';
-    if(shouldPush){
-      window.history.pushState({ baselineGames:true }, '', nextUrl);
-    }else if(window.history && typeof window.history.replaceState === 'function'){
-      window.history.replaceState({ baselineGames:true }, '', nextUrl);
-    }else{
-      window.location.hash = '#' + buildHashState();
-    }
+    if(shouldPush) window.history.pushState({ baselineRecreation:true }, '', nextUrl);
+    else if(window.history && typeof window.history.replaceState === 'function') window.history.replaceState({ baselineRecreation:true }, '', nextUrl);
+    else window.location.hash = '#' + buildHashState();
   }
   function applyHashState(){
     if(typeof window === 'undefined') return;
     const cleanState = recreationStateFromCleanPath();
     const legacyState = cleanState || legacyRecreationStateFromHash();
     if(legacyState){
-      currentTab = legacyState.tab === 'puzzles' ? 'puzzles' : (legacyState.tab === 'games' ? 'games' : 'hub');
+      currentTab = legacyState.tab === 'puzzles' ? 'puzzles' : (legacyState.tab === 'games' ? 'games' : 'system');
       selectedGame = currentTab === 'games' ? normaliseGameId(legacyState.game || '') : '';
       if(selectedGame){
         const config = getGamePanelConfig(selectedGame);
@@ -832,7 +829,7 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
       }
       return;
     }
-    currentTab = 'hub';
+    currentTab = 'system';
     selectedGame = '';
   }
   function restoreFromHashState(){
@@ -851,23 +848,10 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
     const currentUrl = window.location.pathname + window.location.search + window.location.hash;
     if(currentUrl === nextUrl) return;
     try{
-      window.history.pushState({
-        baselineGames:true,
-        baselineGamesGameEntry:true,
-        game:selectedGame,
-        panel:currentPanelIdForGame(selectedGame) || ''
-      }, '', nextUrl);
-    }catch(_error){
-      syncHashState('push');
-    }
+      window.history.pushState({ baselineRecreation:true, baselineRecreationGameEntry:true, game:selectedGame, panel:currentPanelIdForGame(selectedGame) || '' }, '', nextUrl);
+    }catch(_error){ syncHashState('push'); }
   }
-  function ensureRecreationBackEntry(){
-    // Refresh must be a real browser refresh.
-    // Do not rewrite the current history entry into the Games Overview during startup.
-    // The back-entry is only created when the user actively selects a game from the list.
-    return;
-  }
-
+  function ensureRecreationBackEntry(){ return; }
   function escapeHtml(value){
     return String(value == null ? '' : value)
       .replace(/&/g,'&amp;')
@@ -1430,7 +1414,7 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
       + '</div></details>';
   }
 
-  function renderHubSummary(){
+  function renderSystemSummary(){
     const existing = refs.gamesSummaryWrap ? Array.from(refs.gamesSummaryWrap.querySelectorAll('details[open][data-summary]')).map(function(el){ return el.getAttribute('data-summary'); }) : [];
     openSummaryIds.clear(); existing.forEach(function(id){ openSummaryIds.add(id); });
     refs.bankSummary.innerHTML = '<strong>Bank</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Core games, Crossnumber, Darts Focused and Badminton Focused feed the shared Recreation Bank/coins. Baseline Realm uses its own connected campaign coin economy.</span>';
@@ -3531,15 +3515,15 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
     injectAllMobileGameControls();
     syncAllMobileInputModes();
     syncDesktopKeypadState();
-    renderHubSummary();
+    renderSystemSummary();
     syncGameButtonLabels();
     renderAutoNextControls();
   }
 
   function activateTab(target, options){
     const opts = options || {};
-    currentTab = target === 'puzzles' ? 'puzzles' : (target === 'games' ? 'games' : 'hub');
-    if(currentTab === 'hub' && window.BaselineGamesMusic && typeof window.BaselineGamesMusic.selectGame === 'function') window.BaselineGamesMusic.selectGame('');
+    currentTab = target === 'puzzles' ? 'puzzles' : (target === 'games' ? 'games' : 'system');
+    if(currentTab === 'system' && window.BaselineGamesMusic && typeof window.BaselineGamesMusic.selectGame === 'function') window.BaselineGamesMusic.selectGame('');
     qsa('.tab').forEach(tab => tab.setAttribute('aria-selected', String(tab.getAttribute('data-target') === currentTab)));
     qsa('.section').forEach(section => section.classList.toggle('active', section.id === currentTab));
     if(opts.sync !== false) syncHashState(opts.historyMode);
@@ -3697,10 +3681,10 @@ function toggleGameFullscreen(gameId){
   }
 
   document.addEventListener('baseline:crossnumber-progress', function(){
-    try{ renderHubSummary(); }catch(_error){}
+    try{ renderSystemSummary(); }catch(_error){}
   });
   document.addEventListener('baseline:game-storage', function(){
-    try{ renderHubSummary(); }catch(_error){}
+    try{ renderSystemSummary(); }catch(_error){}
   });
 
   function cacheRefs(){
@@ -3939,7 +3923,7 @@ function toggleGameFullscreen(gameId){
     }catch(_coreReadyEventError){}
   }
 
-  async function initialiseStableHub(coreDependencies){
+  async function initialiseStableRecreation(coreDependencies){
     let stable=true;
     try{
       resolveInitialAuth();
@@ -3972,13 +3956,13 @@ function toggleGameFullscreen(gameId){
     const coreDependencies = {
       profiles:profiles, refs:refs, q:q, qsa:qsa, clamp:clamp, sum:sum, formatInt:formatInt, formatCompact:formatCompact,
       escapeHtml:escapeHtml, hotkeyActionLabel:hotkeyActionLabel, cleanWinBonusPct:cleanWinBonusPct, xpNeededForLevel:xpNeededForLevel, applyLevelCurve:applyLevelCurve,
-      scheduleSave:scheduleSave, renderAll:renderAll, renderHubSummary:renderHubSummary, renderGamesList:renderGamesList,
+      scheduleSave:scheduleSave, renderAll:renderAll, renderSystemSummary:renderSystemSummary, renderGamesList:renderGamesList,
       syncHashState:syncHashState, isMobileGameViewport:isMobileGameViewport, profileOrDefault:profileOrDefault
     };
     window.BASELINE_RECREATION_CORE_DEPENDENCIES = coreDependencies;
     if(window.BaselineRealmHost && typeof window.BaselineRealmHost.configure === 'function'){
       try{ window.BaselineRealmHost.configure(coreDependencies); }
-      catch(error){ console.error('[Baseline Recreation] Realm configuration failed; Hub controls remain active.', error); }
+      catch(error){ console.error('[Baseline Recreation] Realm configuration failed; Recreation controls remain active.', error); }
     }
     ensureGamePlayContract();
     setupGamePlayContractObserver();
@@ -3996,7 +3980,7 @@ function toggleGameFullscreen(gameId){
       document.addEventListener('visibilitychange', syncRuleShiftVisibility);
       try{ document.documentElement.setAttribute('data-baseline-games-resize-mobile-input-sync','1'); }catch(_e){}
     }
-    const initialRenderReady=initialiseStableHub(coreDependencies);
+    const initialRenderReady=initialiseStableRecreation(coreDependencies);
     window.BASELINE_RECREATION_INITIAL_RENDER_READY=initialRenderReady;
   }
   init();
