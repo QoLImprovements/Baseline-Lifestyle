@@ -30,6 +30,12 @@ test('Concepts has shared architecture plus Stroop-specific variance',()=>{
   assert.match(rules,/reusable baseline, not a rigid universal page/);
 });
 
+test('selected Stroop artwork is committed as the Concept asset',()=>{
+  const art='systems/baseline-recreation/concepts/stroop-effect/art/stroop-effect.webp';
+  assert.equal(fs.existsSync(art),true);
+  assert.ok(fs.statSync(art).size>100000,'Stroop artwork should remain a substantive full visual asset');
+});
+
 test('Stroop content provides concise and expandable research context',()=>{
   const html=read('systems/baseline-recreation/baseline-recreation.html');
   assert.match(html,/Comprehensive explanation/);
