@@ -1,3 +1,9 @@
+/* Hidden is authoritative: selector pages and detail pages must never stack. */
+body[data-app="recreation"] #conceptsOverviewCard[hidden],
+body[data-app="recreation"] #concepts [data-concept-detail][hidden]{
+  display:none!important;
+}
+
 /* Baseline Recreation — shared Concepts framework.
    Concept-specific visual/interaction variance belongs under concepts/<slug>/.
    This file owns the reusable library + detail-shell contract only. */

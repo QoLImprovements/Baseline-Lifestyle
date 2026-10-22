@@ -136,6 +136,6 @@ test('symbolic and animal jigsaws have dedicated server save profiles', () => {
 });
 
 test('Jigsaws type uses a neutral jigsaw icon rather than choosing one puzzle artwork', () => {
-  assert.match(registry, /preview:'\/systems\/baseline-recreation\/puzzles\/shared\/art\/jigsaws\.svg\?v=JIGSAWS_ICON_20261018_1'/);
+  assert.match(registry, /preview:'\/systems\/baseline-recreation\/puzzles\/shared\/art\/jigsaws\.svg\?v=RECREATION_PUZZLE_ART_20261022_2'/);
   assert.doesNotMatch(registry, /id:'jigsaws'[\s\S]{0,300}preview:'\/systems\/baseline-recreation\/puzzles\/the-weight-of-coherence\/art\//);
 });

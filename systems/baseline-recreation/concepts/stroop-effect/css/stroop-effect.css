@@ -82,3 +82,52 @@ body[data-app="recreation"] #conceptStroopEffect .stroop-mode-switch__button:foc
 body[data-app="recreation"] #conceptStroopEffect[data-stroop-comparison-mode="congruent"] .stroop-art-wrap{
   filter:saturate(.98);
 }
+
+
+/* Stroop reading comfort: reduce the amount of stark, heavy white typography. */
+body[data-app="recreation"] #conceptStroopEffect{
+  color:var(--recreation-muted);
+}
+body[data-app="recreation"] #conceptStroopEffect .concept-title{
+  color:#F3D8CE!important;
+  -webkit-text-fill-color:#F3D8CE!important;
+  font-weight:650!important;
+}
+body[data-app="recreation"] #conceptStroopEffect .concept-kicker{
+  color:var(--recreation-copper-light)!important;
+  -webkit-text-fill-color:var(--recreation-copper-light)!important;
+  font-weight:700!important;
+}
+body[data-app="recreation"] #conceptStroopEffect .concept-lede{
+  color:rgba(var(--recreation-ink-rgb),.84)!important;
+  -webkit-text-fill-color:rgba(var(--recreation-ink-rgb),.84)!important;
+  font-weight:450!important;
+}
+body[data-app="recreation"] #conceptStroopEffect :is(
+  .stroop-term strong,
+  .concept-observation strong,
+  .concept-module h3,
+  .concept-depth-section h3,
+  .concept-depth > summary
+){
+  color:#F0CBBE!important;
+  -webkit-text-fill-color:#F0CBBE!important;
+  font-weight:700!important;
+}
+body[data-app="recreation"] #conceptStroopEffect :is(
+  .stroop-term .note,
+  .concept-observation span,
+  .concept-module p,
+  .concept-depth-section p,
+  .concept-art-caption,
+  .concept-reference-list
+){
+  color:rgba(var(--recreation-ink-rgb),.76)!important;
+  -webkit-text-fill-color:rgba(var(--recreation-ink-rgb),.76)!important;
+  font-weight:400!important;
+}
+body[data-app="recreation"] #conceptStroopEffect .concept-reference-list a{
+  color:var(--recreation-copper-light)!important;
+  -webkit-text-fill-color:var(--recreation-copper-light)!important;
+  font-weight:500!important;
+}

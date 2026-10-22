@@ -39,3 +39,16 @@ When changing an individual Concept, decide explicitly whether the change is:
 Do not force later Concepts into the Stroop Effect's exact content or interaction shape.
 Audio-led, simulation-led, timed visual, sequential-choice and other formats may replace
 or extend optional modules while retaining the shared identity and explanatory structure.
+
+
+## Library/detail separation
+
+/baseline-recreation/concepts is the Concepts library/selector. It must show the
+available Concept entries only.
+
+An individual Concept route such as /baseline-recreation/concepts/stroop-effect
+shows that Concept's detail experience. The Concepts library card must be hidden
+while a detail is open, and Concept details must be hidden on the library route.
+
+The shared shell may contain both views in the same source document for efficient
+routing, but they must never visually stack as one page.

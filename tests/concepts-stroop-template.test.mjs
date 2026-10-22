@@ -79,3 +79,41 @@ test('Concept routes are canonical and refresh-restorable',()=>{
   assert.match(core,/tab:'concepts'/);
   assert.match(core,/target === 'concepts'/);
 });
+
+
+test('Concepts library and Concept detail are mutually exclusive views',()=>{
+  const css=read('systems/baseline-recreation/concepts/shared/css/concepts.css');
+  const html=read('systems/baseline-recreation/baseline-recreation.html');
+  assert.match(css,/#conceptsOverviewCard\[hidden\]/);
+  assert.match(css,/\[data-concept-detail\]\[hidden\]/);
+  assert.match(html,/data-stroop-mode="incongruent"/);
+  assert.match(html,/data-stroop-mode="congruent"/);
+});
+
+test('Puzzles cannot rewrite another Recreation section during startup',()=>{
+  const puzzles=read('systems/baseline-recreation/puzzles/shared/js/puzzles-library.js');
+  assert.match(puzzles,/function ownsPuzzleRoute\(\)/);
+  assert.match(puzzles,/if\(ownsPuzzleRoute\(\)\) writeRoute\(initial\.view,activeJigsaw,'replace'\)/);
+});
+
+test('Puzzles selector artwork contains no retired indigo palette values',()=>{
+  const art=[
+    read('systems/baseline-recreation/puzzles/shared/art/jigsaws.svg'),
+    read('systems/baseline-recreation/puzzles/shared/art/crossnumber.svg')
+  ].join('\n').toUpperCase();
+  ['#080D22','#526BC2','#8CA7FF','#1A244D','#4656A6','#1E2759','#F2F5FF'].forEach(colour=>{
+    assert.equal(art.includes(colour),false,'retired puzzle colour remains: '+colour);
+  });
+  assert.match(art,/#2A0B16/);
+  assert.match(art,/#9E4D38/);
+  assert.match(art,/#B86A50/);
+});
+
+test('legacy misspelled Stroop URLs canonicalise to stroop-effect',()=>{
+  const ht=read('.htaccess');
+  const concepts=read('systems/baseline-recreation/concepts/shared/js/concepts.js');
+  assert.match(ht,/concepts\/\(\?:stoop-effect\|the-stoop-effect\|the-stroop-effect\).*\/baseline-recreation\/concepts\/stroop-effect/);
+  assert.match(concepts,/'stoop-effect':'stroop-effect'/);
+  assert.match(concepts,/'the-stoop-effect':'stroop-effect'/);
+  assert.match(concepts,/'the-stroop-effect':'stroop-effect'/);
+});

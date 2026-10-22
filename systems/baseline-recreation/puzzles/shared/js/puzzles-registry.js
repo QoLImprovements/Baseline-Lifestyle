@@ -7,14 +7,14 @@
       name:'Jigsaws',
       note:'Image-based piece puzzles with selectable difficulty, saved state and experience earned for completed jigsaws.',
       meta:'8 jigsaws · completion XP',
-      preview:'/systems/baseline-recreation/puzzles/shared/art/jigsaws.svg?v=JIGSAWS_ICON_20261018_1'
+      preview:'/systems/baseline-recreation/puzzles/shared/art/jigsaws.svg?v=RECREATION_PUZZLE_ART_20261022_2'
     }),
     Object.freeze({
       id:'crossnumber',
       name:'Crossnumber',
       note:'Procedurally generated interlocking arithmetic layouts with tiers, XP, skills, Bank rewards and Baseline Realm progression.',
       meta:'Many generated layouts',
-      preview:'/systems/baseline-recreation/puzzles/shared/art/crossnumber.svg?v=CROSSNUMBER_PROGRESSION_20261018_4'
+      preview:'/systems/baseline-recreation/puzzles/shared/art/crossnumber.svg?v=RECREATION_PUZZLE_ART_20261022_2'
     })
   ]);
 

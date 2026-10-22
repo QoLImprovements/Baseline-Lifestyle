@@ -50,3 +50,20 @@ Structural CSS must not carry a competing indigo, blue, teal or orange top-level
 The shared Recreation shell currently hosts several game runtimes. Game mechanics remain game-specific. Baseline Realm keeps its staged module architecture beneath games/baseline-realm/.
 
 Before changing a game or puzzle, read its local rules/reference material. A fix for one activity must not overwrite another activity's mechanics, progression, layout contract, input behaviour or intentional in-game visual identity.
+
+
+## Route ownership
+
+Each Recreation sub-library owns only its own clean-route namespace.
+
+- Games code may write /baseline-recreation/games... routes.
+- Puzzles code may write /baseline-recreation/puzzles... routes.
+- Concepts code may write /baseline-recreation/concepts... routes.
+
+A module must not replace the current URL while another Recreation section is
+active. Reloading or refreshing a clean detail URL must restore that exact page,
+not redirect the user to another Recreation category.
+
+Puzzle selector artwork must use the current Burgundy–Rose–Burnt Copper Recreation
+palette. Retired indigo/blue selector-palette values must not remain in the shared
+Puzzles artwork sources.
