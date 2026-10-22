@@ -12,12 +12,12 @@ These Markdown rules are a human reference point, not live runtime config.
 <title>Baseline Recreation</title>
 <meta name="theme-color" content="#2A0B16"/>
 <style>html[data-app="recreation"],body[data-app="recreation"]{margin:0;min-height:100%;color:#FFF4EF;background:#2A0B16;background-image:linear-gradient(90deg,#2A0B16 0%,#6E1D34 25%,#9E4D38 50%,#6E1D34 75%,#2A0B16 100%);}</style>
-<script id="baseline-recreation-route-state">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-recreation\/puzzles(?:\/.*)?$/i.test(p)?"puzzles":(/^\/baseline-recreation\/games(?:\/.*)?$/i.test(p)?"games":"system"));document.documentElement.setAttribute("data-initial-section",t)}catch(_e){}}()</script>
-<meta name="description" content="Baseline Recreation brings games, puzzles and wider recreational experiences into one bounded Baseline system.">
+<script id="baseline-recreation-route-state">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-recreation\/concepts(?:\/.*)?$/i.test(p)?"concepts":(/^\/baseline-recreation\/puzzles(?:\/.*)?$/i.test(p)?"puzzles":(/^\/baseline-recreation\/games(?:\/.*)?$/i.test(p)?"games":"system")));document.documentElement.setAttribute("data-initial-section",t)}catch(_e){}}()</script>
+<meta name="description" content="Baseline Recreation brings games, puzzles, concepts and wider recreational experiences into one bounded Baseline system.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-recreation/system">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Baseline Recreation">
-<meta property="og:description" content="Games, puzzles and wider recreational experiences in one bounded Baseline system.">
+<meta property="og:description" content="Games, puzzles, concepts and wider recreational experiences in one bounded Baseline system.">
 <meta property="og:url" content="https://baselinelifestyle.org/baseline-recreation/system">
 <link href="/sitewide/css/baseline-themes.css?v=SITEWIDE_THEMES_CSS_20261022_2" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_SHARED_CSS_20261021_1" rel="stylesheet"/>
@@ -40,6 +40,8 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/systems/baseline-recreation/puzzles/shared/css/puzzles-library.css?v=RECREATION_PALETTE_20261022_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css?v=RECREATION_PALETTE_20261022_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=RECREATION_JIGSAW_PALETTE_20261022_1" rel="stylesheet"/>
+<link href="/systems/baseline-recreation/concepts/shared/css/concepts.css?v=CONCEPTS_TEMPLATE_20261022_1" rel="stylesheet"/>
+<link href="/systems/baseline-recreation/concepts/stroop-effect/css/stroop-effect.css?v=STROOP_CONCEPT_20261022_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
 <!-- Baseline Realm canonical presentation. Shared shell first, destination owners next, mobile geometry last. -->
 <link href="/systems/baseline-recreation/css/mobile-touch-targets.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-games-mobile-touch="true"/>
@@ -74,13 +76,14 @@ These Markdown rules are a human reference point, not live runtime config.
   <div class="hero-inner">
     <div>
       <div class="title" role="heading" aria-level="1">Baseline Recreation</div>
-      <div class="subtitle">A bounded recreation space for games, puzzles, perceptual experiences, restorative play and shared progression.</div>
+      <div class="subtitle">A bounded recreation space for games, puzzles, concepts, perceptual experiences, restorative play and shared progression.</div>
     </div>
   </div>
   <nav class="tabs" aria-label="Baseline Recreation tabs">
     <button class="tab" aria-selected="true" data-target="system">System</button>
     <button class="tab" aria-selected="false" data-target="games">Games</button>
     <button class="tab" aria-selected="false" data-target="puzzles">Puzzles</button>
+    <button class="tab" aria-selected="false" data-target="concepts">Concepts</button>
   </nav><script id="baseline-recreation-route-state-nav">!function(){try{var t=document.documentElement.getAttribute("data-initial-section")||"system",n=document.currentScript.previousElementSibling;n.querySelectorAll(".tab[data-target]").forEach(function(b){b.setAttribute("aria-selected",b.getAttribute("data-target")===t?"true":"false")})}catch(_e){}}()</script>
 </header>
 <main class="wrap">
@@ -88,7 +91,7 @@ These Markdown rules are a human reference point, not live runtime config.
     <div class="grid">
       <section class="card recreation-overview">
         <h2>Recreation Overview</h2>
-        <p class="note">Baseline Recreation is the shared environment for games, puzzles and future recreational experiences. Each category keeps its own purpose and rules while shared account and progression information remains visible here where it is relevant.</p>
+        <p class="note">Baseline Recreation is the shared environment for games, puzzles, concepts and future recreational experiences. Each category keeps its own purpose and rules while shared account and progression information remains visible here where it is relevant.</p>
       </section>
       <section class="card">
         <div class="header-row">
@@ -112,6 +115,118 @@ These Markdown rules are a human reference point, not live runtime config.
     </div>
   </section>
 
+
+
+  <section class="section" id="concepts">
+    <div class="grid">
+      <section class="card concepts-library" id="conceptsOverviewCard">
+        <div class="concept-library-head">
+          <h2>Concepts</h2>
+          <p class="note">Ideas, effects and phenomena worth experiencing and understanding. Concepts are added deliberately, one at a time, as this library develops.</p>
+        </div>
+
+        <div class="concept-library-list" id="conceptsList" aria-label="Concepts">
+          <button class="concept-card" type="button" data-open-concept="stroop-effect" aria-label="Open The Stroop Effect">
+            <img class="concept-card-art" src="/systems/baseline-recreation/concepts/stroop-effect/art/stroop-effect.webp?v=STROOP_ART_20261022_1" alt="Surreal Stroop Effect artwork filled with colour words whose written meanings and displayed colours compete."/>
+            <span class="concept-card-copy">
+              <span class="concept-field">Psychology · Attention</span>
+              <strong>The Stroop Effect</strong>
+              <span class="note">When an automatic response competes with the response you are intentionally trying to make.</span>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <article class="card concept-detail concept--stroop-effect" id="conceptStroopEffect" data-concept-detail="stroop-effect" hidden>
+        <div class="concept-detail-toolbar">
+          <button class="action secondary" type="button" data-concepts-back>Back To Concepts</button>
+        </div>
+
+        <div class="concept-hero">
+          <div class="concept-hero-copy">
+            <p class="concept-kicker">Psychology · Attention &amp; cognitive control</p>
+            <h2 class="concept-title" data-concept-heading>The Stroop Effect</h2>
+            <p class="concept-lede stroop-definition">The Stroop effect is the interference that appears when the meaning of a word and the response you are trying to make point in different directions. In the classic colour-word task, naming the ink colour is typically slower and more error-prone when the word itself names a different colour.</p>
+
+            <div class="stroop-terms" aria-label="Stroop terminology">
+              <div class="stroop-term">
+                <strong>Congruent</strong>
+                <span class="note">The word and its displayed colour agree — for example, RED shown in red.</span>
+              </div>
+              <div class="stroop-term">
+                <strong>Incongruent</strong>
+                <span class="note">The word and its displayed colour conflict — for example, RED shown in blue.</span>
+              </div>
+            </div>
+          </div>
+
+          <figure class="concept-art-figure stroop-art-wrap">
+            <img class="concept-art" src="/systems/baseline-recreation/concepts/stroop-effect/art/stroop-effect.webp?v=STROOP_ART_20261022_1" alt="Surreal city-like environment filled with colour words displayed in competing colours, representing Stroop interference."/>
+            <figcaption class="concept-art-caption">The artwork turns competing colour and word information into an environment: the visual instruction and the learned meaning of the words both demand attention.</figcaption>
+          </figure>
+        </div>
+
+        <aside class="concept-observation" aria-label="Observation prompt">
+          <strong>Experience the conflict</strong>
+          <span>Look at the large colour words in the artwork and try to name the colour you actually see rather than reading the word. Notice whether reading arrives automatically before you can deliberately answer with the colour.</span>
+        </aside>
+
+        <details class="concept-depth">
+          <summary>Comprehensive explanation</summary>
+          <div class="concept-depth-body">
+            <section class="concept-depth-section">
+              <h3>What is happening?</h3>
+              <p>Reading a familiar word is a highly practised process. For a fluent reader, the word's meaning can become active even when the current task is to ignore that meaning. Colour naming is also familiar, but in the classic Stroop situation it must compete with information produced by the word.</p>
+              <p>When the two sources agree, as in a congruent trial, they can support the same response. When they disagree, as in an incongruent trial, the irrelevant word can interfere with selecting or producing the required colour response. The measurable difference in speed and errors between conditions is central to the Stroop effect.</p>
+            </section>
+
+            <section class="concept-depth-section">
+              <h3>Automatic and controlled processing</h3>
+              <p>The task is useful because it places a strongly practised tendency — reading — against an explicit goal — reporting the ink colour. Calling reading simply “automatic” is a useful introduction, but the modern literature treats the underlying competition as more nuanced than a single automatic process overwhelming a single controlled one.</p>
+              <p>Performance reflects the relative strength of relevant and irrelevant information, the participant's task goal, attentional selection and cognitive control. Contemporary accounts also distinguish different possible forms and stages of conflict rather than assuming that all Stroop interference comes from one mechanism.</p>
+            </section>
+
+            <section class="concept-depth-section">
+              <h3>Selective attention and response inhibition</h3>
+              <p>To answer correctly, attention has to favour the task-relevant property — ink colour — while limiting the influence of the task-irrelevant word meaning. The task therefore became an important way of studying selective attention and cognitive control.</p>
+              <p>Response inhibition is relevant because a strongly activated but inappropriate response may need to be withheld. However, the Stroop effect should not be reduced to “an inhibition test” alone: conflict can arise at multiple levels of processing, and researchers continue to examine where selection and interference occur.</p>
+            </section>
+
+            <section class="concept-depth-section">
+              <h3>What do reaction time and errors tell us?</h3>
+              <p>Researchers commonly compare how quickly and accurately people respond across congruent, incongruent and neutral or control conditions. Slower responses or more errors under conflict show that information which is supposedly irrelevant to the task can still affect behaviour.</p>
+              <p>The size of the effect is informative about the interaction between stimulus-driven processing and goal-directed control, but it is not a pure measurement of one isolated mental faculty. Task design, response method, practice, stimulus proportions and other factors can alter the observed effect.</p>
+            </section>
+          </div>
+        </details>
+
+        <div class="concept-module-grid">
+          <section class="concept-module">
+            <h3>Why it matters</h3>
+            <p>The Stroop effect provides a compact experimental window into a broad problem: people rarely process only the information they intend to process. Competing information can influence behaviour even when it is irrelevant to the current goal.</p>
+            <p>This has made Stroop-style tasks useful for studying selective attention, cognitive control, automaticity, conflict monitoring, response selection and executive processes. Variants have also been used in neuropsychological and applied research, although a Stroop score by itself is not a diagnosis of a particular condition or mechanism.</p>
+          </section>
+
+          <section class="concept-module">
+            <h3>Origins and research</h3>
+            <p>John Ridley Stroop's 1935 paper, <em>Studies of interference in serial verbal reactions</em>, systematically demonstrated the striking asymmetry between reading colour words and naming the colours in which conflicting words were printed. The work became one of the foundational experimental demonstrations of interference in cognitive psychology.</p>
+            <p>Research since then has substantially refined the explanation. Modern reviews emphasise that Stroop performance can involve more than one locus or form of conflict, so the phenomenon remains useful precisely because a very simple task exposes complex interactions between attention, learned processing and cognitive control.</p>
+          </section>
+        </div>
+
+        <section class="concept-module">
+          <h3>References and further context</h3>
+          <ol class="concept-reference-list">
+            <li>Stroop, J. R. (1935). <em>Studies of interference in serial verbal reactions.</em> Journal of Experimental Psychology, 18(6), 643–662. <a href="https://doi.org/10.1037/h0054651" rel="noopener noreferrer">DOI 10.1037/h0054651</a>.</li>
+            <li>Parris, B. A., Hasshim, N., Wadsley, M., Augustinova, M., &amp; Ferrand, L. (2022). <em>The loci of Stroop effects: a critical review of methods and evidence for levels of processing contributing to color-word Stroop effects and the implications for the loci of attentional selection.</em> Psychological Research, 86, 1029–1053. <a href="https://doi.org/10.1007/s00426-021-01554-x" rel="noopener noreferrer">DOI 10.1007/s00426-021-01554-x</a>.</li>
+          </ol>
+        </section>
+
+        <section class="concept-module" data-concept-experience hidden aria-label="Optional Concept experience"></section>
+        <section class="concept-module" data-concept-related hidden aria-label="Related Concepts"></section>
+      </article>
+    </div>
+  </section>
 
 
   <section class="section" id="puzzles">
@@ -884,6 +999,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-recreation/js/games-help-modal.js?v=GAMES_HELP_MODAL_AUTHORITY_20261022_1"></script>
 <script src="/systems/baseline-recreation/js/baseline-recreation-core.js?v=RECREATION_CORE_20261022_1"></script>
 <script src="/systems/baseline-recreation/js/games-music.js?v=PUZZLE_MUSIC_20261019_1"></script>
+<script src="/systems/baseline-recreation/concepts/shared/js/concepts.js?v=CONCEPTS_TEMPLATE_20261022_1"></script>
 <script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-registry.js?v=MOVED_ALONG_CORRECTED_HAND_20261019_1"></script>
 <script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-library.js?v=PUZZLE_MUSIC_20261019_1"></script>
 <script src="/systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js?v=NONREALM_COHERENCE_20261018_1"></script>

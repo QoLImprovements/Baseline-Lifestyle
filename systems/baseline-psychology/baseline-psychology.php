@@ -9,7 +9,7 @@ bl_no_cache_headers();
 $accessUntil = (int)($_SESSION['psychology_access_until'] ?? 0);
 if($accessUntil <= time()){
   unset($_SESSION['psychology_access_until']);
-  header('Location: /home/1?protected=locked', true, 302);
+  header('Location: /?protected=locked', true, 302);
   exit;
 }
 

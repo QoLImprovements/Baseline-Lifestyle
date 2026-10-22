@@ -4,13 +4,14 @@ Baseline Recreation owns the top-level recreation system and navigation between 
 
 Canonical top-level navigation:
 
-    System | Games | Puzzles
+    System | Games | Puzzles | Concepts
 
 The System page is the default Recreation overview. It may summarise shared account and progression state, but it must not redefine the whole Recreation container as a game system.
 
 Games remain games. Their local reference folders live under systems/baseline-recreation/games/.
 Puzzle material remains puzzle material under systems/baseline-recreation/puzzles/.
-Do not force future recreational material into Games or Puzzles merely because those are the categories that currently exist.
+Concept material remains concept material under systems/baseline-recreation/concepts/.
+Do not force future recreational material into Games, Puzzles or Concepts merely because those are the categories that currently exist.
 
 ## Canonical routes
 
@@ -21,6 +22,8 @@ Do not force future recreational material into Games or Puzzles merely because t
 - /baseline-recreation/puzzles/jigsaws
 - /baseline-recreation/puzzles/jigsaws/<jigsaw-id>
 - /baseline-recreation/puzzles/crossnumber
+- /baseline-recreation/concepts
+- /baseline-recreation/concepts/<concept-slug>
 
 Old /baseline-games-hub/... paths are compatibility redirects only. They must never become canonical links again.
 
@@ -29,6 +32,7 @@ Old /baseline-games-hub/... paths are compatibility redirects only. They must ne
 - Anything representing the top-level container is Recreation.
 - Anything genuinely representing games remains Games.
 - Anything genuinely representing puzzles remains Puzzles.
+- Anything genuinely representing concepts remains Concepts.
 - Existing game save app IDs, games_profiles data, and Saved Data Games/ resources remain game identifiers, not Recreation identifiers.
 
 Canonical game identity metadata remains in systems/baseline-recreation/js/games-registry.js.

@@ -18,16 +18,19 @@ test('Baseline Recreation owns the canonical physical and public system identity
   assert.match(html,/data-target="system">System</);
   assert.match(html,/data-target="games">Games</);
   assert.match(html,/data-target="puzzles">Puzzles</);
+  assert.match(html,/data-target="concepts">Concepts</);
   assert.match(html,/id="system"/);
+  assert.match(html,/id="concepts"/);
   assert.doesNotMatch(html,/Baseline Games Hub|games-hub-theme|data-target="hub"/);
 });
 
-test('canonical Recreation routing separates System Games and Puzzles',()=>{
+test('canonical Recreation routing separates System Games Puzzles and Concepts',()=>{
   const core=get('systems/baseline-recreation/js/baseline-recreation-core.js');
   assert.match(core,/return '\/baseline-recreation'/);
   assert.match(core,/base \+ '\/system'/);
   assert.match(core,/base \+ '\/games'/);
   assert.match(core,/base \+ '\/puzzles'/);
+  assert.match(core,/base \+ '\/concepts'/);
   assert.match(core,/currentTab = 'system'/);
   assert.doesNotMatch(core,/gamesHubBaseRoute|currentTab = 'hub'|BASELINE_GAMES_HUB/);
   const puzzles=get('systems/baseline-recreation/puzzles/shared/js/puzzles-library.js');
@@ -41,16 +44,17 @@ test('legacy Games Hub URLs remain redirects only',()=>{
   assert.match(ht,/baseline-games-hub\/games-hub\/games-list\/\?\$ \/baseline-recreation\/games \[R=301/);
   assert.match(ht,/baseline-games-hub\/games-hub\/puzzles\/\?\$ \/baseline-recreation\/puzzles \[R=301/);
   assert.match(ht,/baseline-games-hub\(\?:\/games-hub\)\?\/\?\$ \/baseline-recreation\/system \[R=301/);
-  assert.match(ht,/baseline-recreation\/\(system\|games\|puzzles\)\/\?\$ systems\/baseline-recreation\/baseline-recreation\.html/);
+  assert.match(ht,/baseline-recreation\/\(system\|games\|puzzles\|concepts\)\/\?\$ systems\/baseline-recreation\/baseline-recreation\.html/);
   assert.match(ht,/baseline-recreation\/games\/\(pairs\|detect-the-word/);
   assert.match(ht,/baseline-recreation\/puzzles\/jigsaws\/\[\^\/\]\+\/\?\$/);
+  assert.match(ht,/baseline-recreation\/concepts\/\[\^\/\]\+\/\?\$/);
 });
 
 test('Recreation palette is Burgundy Rose Copper with one hue authority',()=>{
   const themes=get('sitewide/css/baseline-themes.css');
   const recreation=get('systems/baseline-recreation/css/recreation-theme.css');
   const structural=get('systems/baseline-recreation/css/baseline-recreation.css');
-  assert.match(themes,/--recreation-mirror:linear-gradient\(90deg,#3A1022 0%,#8B3F5B 25%,#A85D3B 50%,#8B3F5B 75%,#3A1022 100%\)/);
+  assert.match(themes,/--recreation-mirror:linear-gradient\(90deg,#2A0B16 0%,#6E1D34 25%,#9E4D38 50%,#6E1D34 75%,#2A0B16 100%\)/);
   assert.match(recreation,/Canonical hue values live in sitewide\/css\/baseline-themes\.css/);
   for(const retired of ['#080D22','#1E2759','#4656A6','#526BC2','#8CA7FF','#1A244D','#153d44','#cc694b','#e99455','#f4c56c']){
     assert.equal(recreation.toLowerCase().includes(retired.toLowerCase()),false,retired+' remains in Recreation theme');

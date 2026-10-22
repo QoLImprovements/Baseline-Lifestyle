@@ -58,12 +58,12 @@ test('Psychology clean routes are registered and protected server-side',()=>{
   assert.match(shared,/'baseline-psychology\.html': \{ base:'\/baseline-psychology'/);
   assert.match(shared,/'baseline-psychology\.html':'\/baseline-psychology\/system'/);
   assert.match(htaccess,/RewriteRule \^baseline-psychology\/\(system\|paralinguistics\)\/\?\$ systems\/baseline-psychology\/baseline-psychology\.php \[L,QSA\]/);
-  assert.match(htaccess,/baseline-psychology\/baseline-psychology\\\.html\$ \/home\/1\?protected=locked/);
+  assert.match(htaccess,/baseline-psychology\/baseline-psychology\\\.html\$ \/\?protected=locked/);
   assert.match(protectedAccess,/'baseline_psychology'/);
   assert.match(protectedAccess,/'code' => '0612'/);
   assert.match(protectedAccess,/psychology_access_until/);
   assert.match(psychologyGate,/psychology_access_until/);
-  assert.match(psychologyGate,/\/home\/1\?protected=locked/);
+  assert.match(psychologyGate,/Location: \/\?protected=locked/);
   assert.match(html,/name="robots" content="noindex,nofollow,noarchive"/);
   assert.doesNotMatch(home,/Baseline Psychology|card--psychology/);
 });

@@ -1,0 +1,287 @@
+/* Baseline Recreation — shared Concepts framework.
+   Concept-specific visual/interaction variance belongs under concepts/<slug>/.
+   This file owns the reusable library + detail-shell contract only. */
+
+body[data-app="recreation"] #concepts .concepts-library,
+body[data-app="recreation"] #concepts .concept-detail{
+  display:grid;
+  gap:18px;
+}
+
+body[data-app="recreation"] #concepts .concept-library-head{
+  display:grid;
+  gap:6px;
+}
+
+body[data-app="recreation"] #concepts .concept-library-head h2,
+body[data-app="recreation"] #concepts .concept-detail h2,
+body[data-app="recreation"] #concepts .concept-detail h3{
+  margin:0;
+}
+
+body[data-app="recreation"] #concepts .concept-library-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));
+  gap:16px;
+}
+
+body[data-app="recreation"] #concepts .concept-card{
+  appearance:none;
+  width:100%;
+  display:grid;
+  grid-template-columns:minmax(0,138px) minmax(0,1fr);
+  gap:16px;
+  align-items:center;
+  padding:14px;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.28);
+  border-radius:20px;
+  background:linear-gradient(145deg,rgba(var(--recreation-card-rgb),.96),rgba(var(--recreation-burgundy-rgb),.88));
+  color:var(--recreation-ink);
+  text-align:left;
+  box-shadow:0 20px 42px -32px rgba(var(--recreation-shadow-rgb),.82),inset 0 1px 0 rgba(255,255,255,.08);
+  cursor:pointer;
+}
+
+body[data-app="recreation"] #concepts .concept-card:hover,
+body[data-app="recreation"] #concepts .concept-card:focus-visible{
+  transform:translateY(-1px);
+  border-color:rgba(var(--recreation-copper-light-rgb),.58);
+  box-shadow:0 24px 48px -30px rgba(var(--recreation-shadow-rgb),.9),0 0 0 3px rgba(var(--recreation-copper-light-rgb),.10);
+}
+
+body[data-app="recreation"] #concepts .concept-card-art{
+  width:100%;
+  aspect-ratio:4/5;
+  object-fit:cover;
+  border-radius:14px;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.28);
+  background:var(--recreation-burgundy);
+}
+
+body[data-app="recreation"] #concepts .concept-card-copy{
+  display:grid;
+  gap:7px;
+}
+
+body[data-app="recreation"] #concepts .concept-card-copy strong{
+  font-size:clamp(1.1rem,2vw,1.35rem);
+  line-height:1.12;
+}
+
+body[data-app="recreation"] #concepts .concept-field{
+  display:inline-flex;
+  width:max-content;
+  max-width:100%;
+  padding:5px 9px;
+  border-radius:999px;
+  background:rgba(var(--recreation-copper-rgb),.20);
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.20);
+  color:var(--recreation-muted);
+  font-size:.78rem;
+  font-weight:800;
+  letter-spacing:.045em;
+  text-transform:uppercase;
+}
+
+body[data-app="recreation"] #concepts .concept-detail-toolbar{
+  display:flex;
+  justify-content:flex-start;
+}
+
+body[data-app="recreation"] #concepts .concept-hero{
+  display:grid;
+  grid-template-columns:minmax(0,1.02fr) minmax(280px,.98fr);
+  gap:clamp(18px,3vw,34px);
+  align-items:center;
+}
+
+body[data-app="recreation"] #concepts .concept-hero-copy{
+  display:grid;
+  gap:12px;
+  align-content:center;
+}
+
+body[data-app="recreation"] #concepts .concept-kicker{
+  margin:0;
+  color:var(--recreation-copper-light);
+  font-size:.82rem;
+  font-weight:900;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+
+body[data-app="recreation"] #concepts .concept-title{
+  font-size:clamp(2rem,5vw,4rem);
+  line-height:.98;
+  letter-spacing:-.035em;
+}
+
+body[data-app="recreation"] #concepts .concept-lede{
+  margin:0;
+  max-width:66ch;
+  color:var(--recreation-ink);
+  font-size:clamp(1.02rem,1.7vw,1.2rem);
+  line-height:1.65;
+}
+
+body[data-app="recreation"] #concepts .concept-art-figure{
+  margin:0;
+  display:grid;
+  gap:8px;
+}
+
+body[data-app="recreation"] #concepts .concept-art{
+  width:100%;
+  max-height:min(72vh,920px);
+  object-fit:contain;
+  border-radius:22px;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.28);
+  background:rgba(var(--recreation-burgundy-rgb),.55);
+  box-shadow:0 28px 60px -36px rgba(var(--recreation-shadow-rgb),.95);
+}
+
+body[data-app="recreation"] #concepts .concept-art-caption{
+  color:var(--recreation-muted);
+  font-size:.88rem;
+  line-height:1.5;
+}
+
+body[data-app="recreation"] #concepts .concept-observation{
+  padding:14px 16px;
+  border-left:3px solid var(--recreation-copper-light);
+  border-radius:0 14px 14px 0;
+  background:rgba(var(--recreation-copper-rgb),.11);
+}
+
+body[data-app="recreation"] #concepts .concept-observation strong{
+  display:block;
+  margin-bottom:5px;
+}
+
+body[data-app="recreation"] #concepts .concept-module-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+}
+
+body[data-app="recreation"] #concepts .concept-module{
+  padding:clamp(16px,2.5vw,24px);
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.20);
+  border-radius:18px;
+  background:rgba(var(--recreation-burgundy-rgb),.28);
+}
+
+body[data-app="recreation"] #concepts .concept-module > :first-child{
+  margin-top:0;
+}
+
+body[data-app="recreation"] #concepts .concept-module > :last-child{
+  margin-bottom:0;
+}
+
+body[data-app="recreation"] #concepts .concept-module p,
+body[data-app="recreation"] #concepts .concept-module li{
+  line-height:1.67;
+}
+
+body[data-app="recreation"] #concepts .concept-depth{
+  overflow:hidden;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.25);
+  border-radius:18px;
+  background:rgba(var(--recreation-card-rgb),.62);
+}
+
+body[data-app="recreation"] #concepts .concept-depth > summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:17px 20px;
+  cursor:pointer;
+  font-weight:900;
+  list-style:none;
+}
+
+body[data-app="recreation"] #concepts .concept-depth > summary::-webkit-details-marker{display:none}
+
+body[data-app="recreation"] #concepts .concept-depth > summary::after{
+  content:"+";
+  flex:0 0 auto;
+  font-size:1.5rem;
+  line-height:1;
+  color:var(--recreation-copper-light);
+}
+
+body[data-app="recreation"] #concepts .concept-depth[open] > summary::after{content:"−"}
+
+body[data-app="recreation"] #concepts .concept-depth-body{
+  display:grid;
+  gap:18px;
+  padding:0 20px 22px;
+}
+
+body[data-app="recreation"] #concepts .concept-depth-section{
+  padding-top:18px;
+  border-top:1px solid rgba(var(--recreation-copper-light-rgb),.14);
+}
+
+body[data-app="recreation"] #concepts .concept-depth-section h3{
+  margin-bottom:8px;
+}
+
+body[data-app="recreation"] #concepts .concept-depth-section p{
+  margin:0 0 12px;
+  line-height:1.72;
+}
+
+body[data-app="recreation"] #concepts .concept-depth-section p:last-child{margin-bottom:0}
+
+body[data-app="recreation"] #concepts .concept-reference-list{
+  display:grid;
+  gap:10px;
+  margin:0;
+  padding-left:20px;
+}
+
+body[data-app="recreation"] #concepts .concept-reference-list a{
+  color:var(--recreation-ink);
+  text-decoration-color:rgba(var(--recreation-copper-light-rgb),.68);
+  text-underline-offset:3px;
+}
+
+body[data-app="recreation"] #concepts [data-concept-related][hidden],
+body[data-app="recreation"] #concepts [data-concept-experience][hidden]{
+  display:none!important;
+}
+
+@media (max-width:760px){
+  body[data-app="recreation"] #concepts .concept-card{
+    grid-template-columns:100px minmax(0,1fr);
+    gap:12px;
+  }
+  body[data-app="recreation"] #concepts .concept-hero{
+    grid-template-columns:1fr;
+  }
+  body[data-app="recreation"] #concepts .concept-hero-copy{
+    order:1;
+  }
+  body[data-app="recreation"] #concepts .concept-art-figure{
+    order:2;
+  }
+  body[data-app="recreation"] #concepts .concept-module-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width:460px){
+  body[data-app="recreation"] #concepts .concept-card{
+    grid-template-columns:82px minmax(0,1fr);
+    padding:11px;
+  }
+  body[data-app="recreation"] #concepts .concept-depth > summary{
+    padding:15px 16px;
+  }
+  body[data-app="recreation"] #concepts .concept-depth-body{
+    padding:0 16px 18px;
+  }
+}
