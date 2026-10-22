@@ -732,7 +732,10 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
     const dartsFocusedOpen = document.documentElement.hasAttribute('data-darts-focused-open');
     const badmintonFocusedOpen = document.documentElement.hasAttribute('data-badminton-focused-open');
 
-    if(currentTab === 'puzzles'){
+    if(currentTab === 'concepts'){
+      const currentPath=String(window.location.pathname||'').replace(/\/+$/,'');
+      route = /^\/baseline-recreation\/concepts(?:\/.*)?$/i.test(currentPath) ? currentPath : (base + '/concepts');
+    }else if(currentTab === 'puzzles'){
       const currentPath=String(window.location.pathname||'').replace(/\/+$/,'');
       route = /^\/baseline-recreation\/puzzles(?:\/.*)?$/i.test(currentPath) ? currentPath : (base + '/puzzles');
       const jigsawPanel=String(currentParams.get('jigsaw-panel')||'').trim();
@@ -767,6 +770,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
       const path = String(window.location.pathname || '').toLowerCase().replace(/\/+$/,'');
       const base = '/baseline-recreation';
       if(path === base || path === base + '/system') return { tab:'system', game:'', panel:'' };
+      if(path === base + '/concepts' || path.indexOf(base + '/concepts/') === 0) return { tab:'concepts', game:'', panel:'' };
       if(path === base + '/puzzles' || path.indexOf(base + '/puzzles/') === 0) return { tab:'puzzles', game:'', panel:'' };
       if(path === base + '/games') return { tab:'games', game:'', panel:'' };
       if(path.indexOf(base + '/games/') !== 0) return null;
@@ -786,13 +790,13 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
       const requestedTab = String(params.get('tab') || '').toLowerCase();
       const game = params.has('game') ? normaliseGameId(params.get('game') || '') : '';
       const panel = game ? normalisePanelId(game, params.get('panel') || '') : '';
-      return { tab:requestedTab === 'puzzles' ? 'puzzles' : ((requestedTab === 'games' || game) ? 'games' : 'system'), game:game, panel:panel };
+      return { tab:requestedTab === 'concepts' ? 'concepts' : (requestedTab === 'puzzles' ? 'puzzles' : ((requestedTab === 'games' || game) ? 'games' : 'system')), game:game, panel:panel };
     }catch(_error){ return null; }
   }
 
   function buildHashState(){
     const params = new URLSearchParams();
-    params.set('tab', currentTab === 'puzzles' ? 'puzzles' : (currentTab === 'games' ? 'games' : 'system'));
+    params.set('tab', currentTab === 'concepts' ? 'concepts' : (currentTab === 'puzzles' ? 'puzzles' : (currentTab === 'games' ? 'games' : 'system')));
     if(currentTab === 'games' && selectedGame){
       params.set('game', selectedGame);
       const panelId = currentPanelIdForGame(selectedGame);
@@ -815,7 +819,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
     const cleanState = recreationStateFromCleanPath();
     const legacyState = cleanState || legacyRecreationStateFromHash();
     if(legacyState){
-      currentTab = legacyState.tab === 'puzzles' ? 'puzzles' : (legacyState.tab === 'games' ? 'games' : 'system');
+      currentTab = legacyState.tab === 'concepts' ? 'concepts' : (legacyState.tab === 'puzzles' ? 'puzzles' : (legacyState.tab === 'games' ? 'games' : 'system'));
       selectedGame = currentTab === 'games' ? normaliseGameId(legacyState.game || '') : '';
       if(selectedGame){
         const config = getGamePanelConfig(selectedGame);
@@ -3516,7 +3520,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
 
   function activateTab(target, options){
     const opts = options || {};
-    currentTab = target === 'puzzles' ? 'puzzles' : (target === 'games' ? 'games' : 'system');
+    currentTab = target === 'concepts' ? 'concepts' : (target === 'puzzles' ? 'puzzles' : (target === 'games' ? 'games' : 'system'));
     if(currentTab === 'system' && window.BaselineGamesMusic && typeof window.BaselineGamesMusic.selectGame === 'function') window.BaselineGamesMusic.selectGame('');
     qsa('.tab').forEach(tab => tab.setAttribute('aria-selected', String(tab.getAttribute('data-target') === currentTab)));
     qsa('.section').forEach(section => section.classList.toggle('active', section.id === currentTab));
@@ -3543,6 +3547,14 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
             window.BaselinePuzzlesLibrary.showOverview();
           }
           activateTab('puzzles', { historyMode:'push' });
+          return;
+        }
+        if(target === 'concepts'){
+          selectedGame = '';
+          if(window.BaselineConcepts && typeof window.BaselineConcepts.showOverview === 'function'){
+            window.BaselineConcepts.showOverview();
+          }
+          activateTab('concepts', { historyMode:'push' });
           return;
         }
         activateTab(target, { historyMode:'push' });
