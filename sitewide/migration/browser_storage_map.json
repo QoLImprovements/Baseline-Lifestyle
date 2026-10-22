@@ -345,17 +345,17 @@
       "cutoverRule": "Retired metadata from the former Tactical Operations browser-import flow. It contains no Tactical Operations progress and is deleted on signed-in account load; it must never bind or enable an import candidate."
     },
     {
-      "id": "games-hub-view",
+      "id": "legacy-games-hub-view",
       "inventoryPatterns": [
         "baselineGamesHubView"
       ],
       "knownKeys": [
         "baselineGamesHubView"
       ],
-      "classification": "device-only-preference",
-      "decision": "keep-local-or-session-only",
+      "classification": "retired-migration-metadata",
+      "decision": "delete-on-load",
       "target": null,
-      "cutoverRule": "Current tab or view is not progression data."
+      "cutoverRule": "Legacy Games Hub tab/view preference only. Baseline Recreation now uses canonical URL state; startup removes this obsolete local/session key and it must never become Saved Data."
     },
     {
       "id": "site-index-view",
