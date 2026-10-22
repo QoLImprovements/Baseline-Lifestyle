@@ -3,7 +3,7 @@
 
   var STORAGE_KEY = 'baseline.games.music.v1';
   var MIX_VERSION = 2;
-  var DEFAULTS = { enabled:true, volume:0.70 };
+  var DEFAULTS = { enabled:true, volume:0.58 };
   var MUSIC_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
   var ctx = null;
   var master = null;
@@ -32,10 +32,11 @@
       return {
         enabled: parsed.enabled !== false,
         volume: clamp(migratedLegacyDefault ? DEFAULTS.volume : storedVolume, 0, 1),
-        mixVersion: MIX_VERSION
+        mixVersion: MIX_VERSION,
+        textScale: parsed.textScale && typeof parsed.textScale==='object' ? parsed.textScale : { detectword:1, make24:1 }
       };
     }catch(_error){
-      return { enabled:DEFAULTS.enabled, volume:DEFAULTS.volume, mixVersion:MIX_VERSION };
+      return { enabled:DEFAULTS.enabled, volume:DEFAULTS.volume, mixVersion:MIX_VERSION, textScale:{ detectword:1, make24:1 } };
     }
   }
 
@@ -320,6 +321,43 @@
     }
   };
 
+  // Replacement themes for games whose former arrangements were reported as
+  // physically fatiguing. These use slower movement, lower density, no hard
+  // percussion, and near-mono placement so the sound does not sweep ear-to-ear.
+  Object.assign(TRACKS,{
+    pairs:{bpm:78,bars:32,sections:[
+      {bars:8,prog:[[60,64,67],[57,60,64]],motif:[72,67,69,64],density:4,style:'quiet'},
+      {bars:8,prog:[[53,57,60],[55,59,62],[60,64,67]],motif:[69,72,67,71],density:4,style:'warm'},
+      {bars:8,prog:[[57,60,64],[53,57,60]],motif:[72,69,67,64],density:4,style:'quiet'},
+      {bars:8,prog:[[60,64,67],[55,59,62]],motif:[67,71,69,64],density:4,style:'warm'}]},
+    detectword:{bpm:76,bars:32,sections:[
+      {bars:8,prog:[[50,57,62],[53,60,65]],motif:[69,71,74,71],density:4,style:'quiet'},
+      {bars:8,prog:[[48,55,60],[50,57,62]],motif:[67,69,72,69],density:4,style:'warm'},
+      {bars:8,prog:[[53,60,65],[50,57,62]],motif:[72,74,69,71],density:4,style:'quiet'},
+      {bars:8,prog:[[50,57,62],[48,55,60]],motif:[69,67,64,67],density:4,style:'warm'}]},
+    make24:{bpm:80,bars:32,sections:[
+      {bars:8,prog:[[48,55,60],[53,60,65]],motif:[64,67,72,67],density:4,style:'quiet'},
+      {bars:8,prog:[[50,57,62],[48,55,60]],motif:[65,69,67,62],density:4,style:'warm'},
+      {bars:8,prog:[[53,60,65],[55,62,67]],motif:[69,72,74,69],density:4,style:'quiet'},
+      {bars:8,prog:[[48,55,60],[50,57,62]],motif:[67,64,62,60],density:4,style:'warm'}]},
+    trackcoin:{bpm:82,bars:32,sections:[
+      {bars:8,prog:[[45,52,57],[48,55,60]],motif:[64,69,67,64],density:4,style:'quiet'},
+      {bars:8,prog:[[43,50,55],[45,52,57]],motif:[62,67,64,69],density:4,style:'warm'},
+      {bars:8,prog:[[48,55,60],[45,52,57]],motif:[67,72,69,67],density:4,style:'quiet'},
+      {bars:8,prog:[[45,52,57],[43,50,55]],motif:[64,62,67,64],density:4,style:'warm'}]},
+    ruleshift:{bpm:78,bars:32,sections:[
+      {bars:8,prog:[[48,55,60],[51,58,63]],motif:[67,70,72,67],density:4,style:'quiet'},
+      {bars:8,prog:[[46,53,58],[48,55,60]],motif:[65,69,67,72],density:4,style:'warm'},
+      {bars:8,prog:[[51,58,63],[48,55,60]],motif:[70,72,67,65],density:4,style:'quiet'},
+      {bars:8,prog:[[48,55,60],[46,53,58]],motif:[67,65,62,65],density:4,style:'warm'}]},
+    crossnumber:{bpm:76,bars:32,sections:[
+      {bars:8,prog:[[48,55,60],[53,60,65]],motif:[67,72,69,67],density:4,style:'quiet'},
+      {bars:8,prog:[[50,57,62],[48,55,60]],motif:[65,69,72,69],density:4,style:'warm'},
+      {bars:8,prog:[[53,60,65],[50,57,62]],motif:[69,72,74,69],density:4,style:'quiet'},
+      {bars:8,prog:[[48,55,60],[53,60,65]],motif:[67,64,69,67],density:4,style:'warm'}]}
+  });
+  var SENSORY_GENTLE_GAMES = new Set(['pairs','detectword','make24','trackcoin','ruleshift','crossnumber']);
+
   function sectionAt(track, bar){
     var cursor = 0;
     for(var i=0;i<track.sections.length;i++){
@@ -346,15 +384,17 @@
     var isColourSort = activeGame === 'colour-sort';
     var isBlockGrid = activeGame === 'block-grid';
     var isCrossnumber = activeGame === 'crossnumber';
+    var sensoryGentle = SENSORY_GENTLE_GAMES.has(activeGame);
 
     chordNotes.forEach(function(n, idx){
       var padLevel = quiet ? 0.017 : 0.022;
       if(isJigsaw) padLevel *= 0.92;
       if(isColourSort) padLevel *= 0.96;
-      makeVoice('pad', n, start + idx * 0.012, beat * 3.92, padLevel, (idx - 1) * 0.28);
+      if(sensoryGentle) padLevel *= 0.72;
+      makeVoice('pad', n, start + idx * 0.012, beat * 3.92, padLevel, sensoryGentle ? 0 : (idx - 1) * 0.28);
     });
 
-    if(sec.style !== 'quiet'){
+    if(sec.style !== 'quiet' && !sensoryGentle){
       var bassLevel = isJigsaw ? 0.010 : (isColourSort ? 0.013 : (isBlockGrid ? 0.017 : 0.016));
       makeVoice('bass', chordNotes[0] - 12, start, beat * 1.8, bassLevel, 0);
       makeVoice('bass', chordNotes[0] - 12, start + beat * 2, beat * 1.75, bassLevel * 0.82, 0);
@@ -367,7 +407,8 @@
       if(sec.style === 'lift' && (k === 2 || k === Math.max(3, steps-2))) pitch += 12;
 
       var kind;
-      if(activeGame === 'detectword' || isCrossnumber) kind = k % 4 === 3 ? 'lead' : 'mallet';
+      if(sensoryGentle) kind = k % 3 === 0 ? 'mallet' : 'pad';
+      else if(activeGame === 'detectword' || isCrossnumber) kind = k % 4 === 3 ? 'lead' : 'mallet';
       else if(activeGame === 'trackcoin' || isBlockGrid) kind = k % 3 === 0 ? 'mallet' : 'lead';
       else if(isColourSort) kind = k % 2 === 0 ? 'mallet' : 'lead';
       else if(isJigsaw) kind = k % 3 === 0 ? 'mallet' : 'lead';
@@ -376,8 +417,11 @@
       var voiceLevel = quiet ? 0.014 : 0.019;
       if(isJigsaw) voiceLevel *= 0.78;
       if(isColourSort) voiceLevel *= 0.90;
-      makeVoice(kind, pitch, start + k * stepDur + tinyHuman(bar,k), Math.min(stepDur * 0.76, beat * 0.44), voiceLevel, k % 2 ? 0.26 : -0.26);
+      if(sensoryGentle) voiceLevel *= 0.62;
+      makeVoice(kind, pitch, start + k * stepDur + tinyHuman(bar,k), Math.min(stepDur * (sensoryGentle ? 0.92 : 0.76), beat * (sensoryGentle ? 0.72 : 0.44)), voiceLevel, sensoryGentle ? 0 : (k % 2 ? 0.26 : -0.26));
     }
+
+    if(sensoryGentle) return;
 
     if(isJigsaw){
       if(!quiet && bar % 2 === 0) kick(start, 0.009);
@@ -521,6 +565,27 @@
     syncUi();
   }
 
+  function supportedTextScaleGame(){ return activeGame==='detectword' || activeGame==='make24' ? activeGame : ''; }
+  function textScaleFor(gameId){
+    var id=gameId==='detectword'||gameId==='make24'?gameId:'';
+    return id ? clamp(settings.textScale && settings.textScale[id] || 1,0.82,1.24) : 1;
+  }
+  function applyTextScale(gameId){
+    var id=gameId||supportedTextScaleGame();
+    if(!id) return;
+    var panel=document.getElementById(id==='detectword'?'detectwordPanel':'make24Panel');
+    if(panel) panel.style.setProperty('--game-text-scale',String(textScaleFor(id)));
+  }
+  function setTextScale(value){
+    var id=supportedTextScaleGame();
+    if(!id) return;
+    settings.textScale=settings.textScale&&typeof settings.textScale==='object'?settings.textScale:{detectword:1,make24:1};
+    settings.textScale[id]=clamp(value,0.82,1.24);
+    writeSettings();
+    applyTextScale(id);
+    syncUi();
+  }
+
   function setVolume(value){
     settings.volume = clamp(value,0,1);
     settings.mixVersion = MIX_VERSION;
@@ -539,6 +604,13 @@
     document.querySelectorAll('[data-games-music-volume]').forEach(function(input){
       if(document.activeElement !== input && input.value !== String(settings.volume)) input.value = String(settings.volume);
     });
+    var scaleGame=supportedTextScaleGame();
+    document.querySelectorAll('[data-games-text-size-row]').forEach(function(row){ row.hidden=!scaleGame; });
+    document.querySelectorAll('[data-games-text-size]').forEach(function(input){
+      input.disabled=!scaleGame;
+      if(scaleGame && document.activeElement!==input) input.value=String(textScaleFor(scaleGame));
+    });
+    if(scaleGame) applyTextScale(scaleGame);
   }
 
   function ensureSettingsPanel(){
@@ -552,7 +624,8 @@
         '<header><div><small>Baseline Games</small><h3 id="gamesMusicSettingsTitle">Settings</h3></div><button class="games-music-settings-close" type="button" data-games-settings-close aria-label="Close settings">×</button></header>' +
         '<div class="games-music-settings-list">' +
           '<section class="games-music-setting-row"><div><strong>Music</strong><small>Play the three-minute game theme.</small></div><button class="action ghost" type="button" data-games-music-toggle aria-pressed="true">On</button></section>' +
-          '<label class="games-music-setting-row games-music-setting-row--slider"><span><strong>Music volume</strong><small>Game music level. 100% is the full normalized mix.</small></span><input data-games-music-volume type="range" min="0" max="1" step="0.05" value="0.70" aria-label="Game music volume"></label>' +
+          '<label class="games-music-setting-row games-music-setting-row--slider"><span><strong>Music volume</strong><small>Game music level. 100% is the full normalized mix.</small></span><input data-games-music-volume type="range" min="0" max="1" step="0.05" value="0.58" aria-label="Game music volume"></label>' +
+          '<label class="games-music-setting-row games-music-setting-row--slider" data-games-text-size-row hidden><span><strong>Game text size</strong><small>Adjust text and keypad sizing for this game.</small></span><input data-games-text-size type="range" min="0.82" max="1.24" step="0.06" value="1" aria-label="Game text size"></label>' +
         '</div>' +
       '</section>';
     document.body.appendChild(panel);
@@ -618,6 +691,7 @@
 
   document.addEventListener('input', function(event){
     if(event.target.matches('[data-games-music-volume]')) setVolume(event.target.value);
+    if(event.target.matches('[data-games-text-size]')) setTextScale(event.target.value);
     if(event.target.matches('[data-realm-audio-volume]')) applyGain();
   }, true);
 
