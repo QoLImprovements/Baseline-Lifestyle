@@ -6,7 +6,7 @@ const { URL } = require('node:url');
 const ROOT = path.resolve(__dirname, '../..');
 const PORT = Number(process.env.PORT || 4173);
 const HOST = process.env.HOST || '127.0.0.1';
-const CACHE_EPOCH = '20261022_1';
+const CACHE_EPOCH = '20261022_2';
 const CACHE_COOKIE = `baseline_recreation_runtime_epoch=${CACHE_EPOCH}`;
 const GAME_DATA_PATH = '/systems/baseline-recreation/api/games_data.php';
 const FAVOURITES_PATH = '/sitewide/api/favourites.php';
