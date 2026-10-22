@@ -71,8 +71,8 @@ test('page-like nested navigation is URL-owned and refresh-restorable',()=>{
   assert.match(colourSort,/colourTabFromLocation/);
   assert.match(colourSort,/setTab\(tab, 'push'\)/);
 
-  assert.match(darts,/DARTS_ROUTE='\/baseline-recreation\/games-hub\/darts-focused'/);
-  assert.match(badmintonFocused,/BADMINTON_ROUTE='\/baseline-recreation\/games-hub\/badminton-focused'/);
+  assert.match(darts,/DARTS_ROUTE='\/baseline-recreation\/games\/darts-focused'/);
+  assert.match(badmintonFocused,/BADMINTON_ROUTE='\/baseline-recreation\/games\/badminton-focused'/);
   assert.match(gamesLoader,/addEventListener\('popstate',syncFocusedRoutes\)/);
 
   assert.match(realm,/ROUTABLE_SCENES/);
