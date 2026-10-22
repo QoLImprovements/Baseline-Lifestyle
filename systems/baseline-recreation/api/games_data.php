@@ -9,11 +9,11 @@ const BL_GAME_DATA_MAX_DEPTH = 48;
 const BL_GAME_DATA_MAX_ITEMS = 20000;
 
 function bl_game_data_apps(): array {
-  return ['pairs','make24','detectword','ninja','trackcoin','ruleshift','crossnumber','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused','hubsettings'];
+  return ['pairs','make24','detectword','ninja','trackcoin','ruleshift','crossnumber','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','movedalong','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused','hubsettings'];
 }
 
 function bl_game_data_file_apps(): array {
-  return ['pairs','make24','detectword','ninja','trackcoin','ruleshift','crossnumber','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused'];
+  return ['pairs','make24','detectword','ninja','trackcoin','ruleshift','crossnumber','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','movedalong','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused'];
 }
 
 function bl_game_data_app(string $value): string {
