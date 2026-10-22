@@ -37,6 +37,8 @@ const BASELINE_GAMES_HUB_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
 
   const CORE_GAME_CONFIG = window.BASELINE_GAMES_HUB_CORE_CONFIG || null;
   if(!CORE_GAME_CONFIG) throw new Error('games_core_config_authority_missing');
+  const PAIRS_ENGINE = window.BASELINE_PAIRS_ENGINE || null;
+  if(!PAIRS_ENGINE || typeof PAIRS_ENGINE.buildDeck !== 'function' || typeof PAIRS_ENGINE.boardLayout !== 'function' || typeof PAIRS_ENGINE.mismatchDelay !== 'function' || typeof PAIRS_ENGINE.calculateRewards !== 'function') throw new Error('pairs_engine_authority_missing');
   const PAIRS_FACES = CORE_GAME_CONFIG.PAIRS_FACES;
   const PAIRS_CARD_THEMES = CORE_GAME_CONFIG.PAIRS_CARD_THEMES;
   const PAIRS_TIERS = CORE_GAME_CONFIG.PAIRS_TIERS;
@@ -1457,28 +1459,11 @@ const BASELINE_GAMES_HUB_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
     return PAIRS_TIERS.find(t => profile.level < t.unlockLevel) || null;
   }
   function buildPairsDeck(tier){
-    const chosenFaces = shuffle(PAIRS_FACES).slice(0, tier.pairs);
-    const deck = [];
-    chosenFaces.forEach((face, index) => {
-      deck.push({ id:'a-' + index, face, open:false, matched:false, wasKnown:false, selections:0 });
-      deck.push({ id:'b-' + index, face, open:false, matched:false, wasKnown:false, selections:0 });
-    });
-    return shuffle(deck);
+    return PAIRS_ENGINE.buildDeck({tier:tier,faces:PAIRS_FACES,shuffle:shuffle});
   }
 
   function pairsBoardLayout(tier){
-    const desktopCols=Math.max(2,Math.min(6,Math.round(Number(tier&&tier.cols)||4)));
-    const mobileCols=Math.min(4,desktopCols);
-    const phoneCols=Math.min(3,desktopCols);
-    const pairCount=Math.max(1,Math.round(Number(tier&&tier.pairs)||6));
-    const cardMax=pairCount<=6?150:pairCount<=8?140:pairCount<=10?128:pairCount<=12?118:pairCount<=15?108:100;
-    const gap=10;
-    return {
-      desktopCols:desktopCols,
-      mobileCols:mobileCols,
-      phoneCols:phoneCols,
-      boardMax:(desktopCols*cardMax)+((desktopCols-1)*gap)
-    };
+    return PAIRS_ENGINE.boardLayout(tier);
   }
 
   function applyPairsBoardLayout(tier){
@@ -1505,7 +1490,7 @@ const BASELINE_GAMES_HUB_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
     renderAll();
   }
   function pairsMismatchDelay(){
-    return Math.max(260, 650 - ((profiles.pairs.skills.tempo || 0) * 90));
+    return PAIRS_ENGINE.mismatchDelay(profiles.pairs.skills.tempo || 0);
   }
   function applyPairsTempoPreview(){
     if(!pairsBoardState) return;
@@ -1515,15 +1500,13 @@ const BASELINE_GAMES_HUB_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
       : 'Board opened. Match all pairs.';
   }
   function calculatePairsRewards(){
-    const tier = currentPairsTier();
-    const profile = profiles.pairs;
-    const nextClean = pairsBoardState && !pairsBoardState.hadFailure ? profile.cleanWinStreak + 1 : 0;
-    const nextStreak = profile.currentStreak + 1;
-    const cleanPct = cleanWinBonusPct(nextClean) / 100;
-    const streakPct = trackCoinStreakBonusPct(nextStreak) / 100;
-    const bankMult = (1 + ((profile.skills.banker || 0) * 0.10)) * (1 + cleanPct) * (1 + streakPct);
-    const xpMult = (1 + ((profile.skills.flow || 0) * 0.08)) * (1 + cleanPct) * (1 + streakPct);
-    return { bank:Math.round(tier.bankReward * bankMult), xp:Math.round(tier.xpReward * xpMult), cleanPct:Math.round(cleanPct * 100), streakPct:Math.round(streakPct * 100), nextClean, nextStreak };
+    return PAIRS_ENGINE.calculateRewards({
+      tier:currentPairsTier(),
+      profile:profiles.pairs,
+      hadFailure:Boolean(pairsBoardState && pairsBoardState.hadFailure),
+      cleanBonusPctForStreak:cleanWinBonusPct,
+      streakBonusPctForStreak:trackCoinStreakBonusPct
+    });
   }
   function completePairsBoard(){
     const rewards = calculatePairsRewards();
