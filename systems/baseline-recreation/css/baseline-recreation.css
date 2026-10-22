@@ -2,7 +2,7 @@
    Consolidated from the former inline authority layers without changing cascade order. */
 
 /* --- Recreation foundation --- */
-/* Structural fallback only: active Recreation colour authority lives in css/baseline-recreation.css. */
+/* Structural fallback only: active Recreation colour authority lives in sitewide/css/baseline-themes.css and css/recreation-theme.css. */
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;min-height:100%;background:var(--page-bg);color:var(--ink);font-family:var(--font)}
 body{background:var(--page-bg)}
@@ -125,51 +125,44 @@ body{background:var(--page-bg)}
    ============================================================================ */
 
 body[data-app="recreation"]{
-  --games-page-deep:#153d44;
-  --games-page-mid:#cc694b;
-  --games-page-soft:#e99455;
-  --games-page-light:#f4c56c;
-  --games-accent:#cc694b;
-  --games-ink:#173438;
-  --games-muted:#f0dcc0;
-  --games-border:rgba(23,52,56,.32);
-  --games-border-strong:rgba(23,52,56,.48);
-  --games-shadow:0 22px 48px -30px rgba(8,35,39,.52);
-  --games-page-gradient:linear-gradient(90deg,
-    var(--games-page-deep) 0%,
-    var(--games-page-mid) 18%,
-    var(--games-page-soft) 36%,
-    var(--games-page-light) 50%,
-    var(--games-page-soft) 64%,
-    var(--games-page-mid) 82%,
-    var(--games-page-deep) 100%
-  );
-  --games-card:#e99455;
-  --games-panel:#f4c56c;
-  --games-panel-2:#e99455;
-  --games-control:#e99455;
-  --games-control-active:#cc694b;
-  --games-play:#cc694b;
-  --games-play-deep:#4E668D;
-  --games-surface-gradient:linear-gradient(135deg,rgba(244,197,108,.96) 0%,rgba(233,148,85,.92) 42%,rgba(127,150,185,.84) 70%,rgba(126,135,158,.48) 100%);
-  --games-control-gradient:linear-gradient(135deg,rgba(244,197,108,.98) 0%,rgba(111,136,173,.78) 55%,rgba(126,135,158,.35) 100%);
-  --games-active-gradient:linear-gradient(135deg,rgba(111,136,173,.96) 0%,rgba(244,197,108,.90) 58%,rgba(126,135,158,.42) 100%);
-  --games-row-gradient:linear-gradient(90deg,rgba(244,197,108,.96) 0%,rgba(233,148,85,.88) 44%,rgba(126,135,158,.50) 100%);
-  --games-input-gradient:linear-gradient(180deg,rgba(244,197,108,.96) 0%,rgba(233,148,85,.88) 62%,rgba(127,150,185,.78) 100%);
-  --ink:var(--games-ink)!important;
-  --muted:var(--games-muted)!important;
-  --accent:var(--games-accent)!important;
-  --accent-2:var(--games-ink)!important;
+  /* Structural aliases only. Recreation hue authority lives in baseline-themes.css. */
+  --games-page-deep:var(--recreation-burgundy);
+  --games-page-mid:var(--recreation-rose);
+  --games-page-soft:var(--recreation-copper);
+  --games-page-light:var(--recreation-copper-light);
+  --games-accent:var(--recreation-copper-light);
+  --games-ink:var(--recreation-ink);
+  --games-muted:var(--recreation-muted);
+  --games-border:rgba(var(--recreation-copper-light-rgb),.38);
+  --games-border-strong:rgba(var(--recreation-copper-light-rgb),.72);
+  --games-shadow:0 22px 48px -30px rgba(var(--recreation-shadow-rgb),.62);
+  --games-page-gradient:var(--recreation-mirror);
+  --games-card:var(--recreation-card);
+  --games-panel:var(--recreation-panel);
+  --games-panel-2:var(--recreation-card);
+  --games-control:var(--recreation-mirror);
+  --games-control-active:var(--recreation-copper-deep);
+  --games-play:var(--recreation-copper-deep);
+  --games-play-deep:var(--recreation-burgundy);
+  --games-surface-gradient:var(--recreation-mirror);
+  --games-control-gradient:var(--recreation-mirror);
+  --games-active-gradient:var(--recreation-mirror-active);
+  --games-row-gradient:var(--recreation-mirror);
+  --games-input-gradient:linear-gradient(180deg,var(--recreation-panel),var(--recreation-card));
+  --ink:var(--recreation-ink)!important;
+  --muted:var(--recreation-muted)!important;
+  --accent:var(--recreation-copper-light)!important;
+  --accent-2:var(--recreation-ink)!important;
   --border:var(--games-border)!important;
   --border-2:var(--games-border-strong)!important;
   --shadow:var(--games-shadow)!important;
   --shadow-soft:var(--games-shadow)!important;
-  --page-bg:var(--games-page-gradient)!important;
-  --hero-bg:var(--games-page-gradient)!important;
-  --homebar-bg:var(--games-page-gradient)!important;
-  --header-gradient:var(--games-page-gradient)!important;
-  --card-bg:var(--games-card)!important;
-  --showall-bg:var(--games-control)!important;
+  --page-bg:var(--recreation-mirror)!important;
+  --hero-bg:var(--recreation-mirror)!important;
+  --homebar-bg:var(--recreation-mirror)!important;
+  --header-gradient:var(--recreation-mirror)!important;
+  --card-bg:var(--recreation-card)!important;
+  --showall-bg:var(--recreation-mirror)!important;
   --showall-border:var(--games-border)!important;
 }
 
