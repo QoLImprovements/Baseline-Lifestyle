@@ -728,7 +728,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
     let currentParams = null;
     try{ currentParams = new URLSearchParams(window.location.search || ''); }catch(_error){ currentParams = new URLSearchParams(); }
 
-    const externalPuzzle = String(document.documentElement.getAttribute('data-puzzle-game-open') || '').trim();
+    const externalGameExtension = String(document.documentElement.getAttribute('data-game-extension-open') || '').trim();
     const dartsFocusedOpen = document.documentElement.hasAttribute('data-darts-focused-open');
     const badmintonFocusedOpen = document.documentElement.hasAttribute('data-badminton-focused-open');
 
@@ -738,8 +738,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
       const jigsawPanel=String(currentParams.get('jigsaw-panel')||'').trim();
       if(jigsawPanel) params.set('jigsaw-panel',jigsawPanel);
     }else if(currentTab === 'games'){
-      if(externalPuzzle){
-        route = base + '/games/' + externalPuzzle;
+      if(externalGameExtension){
+        route = base + '/games/' + externalGameExtension;
         const view = String(currentParams.get('view') || '').trim();
         if(view) params.set('view', view);
       }else if(dartsFocusedOpen){
