@@ -172,7 +172,7 @@ test('security and performance repairs stay in place', () => {
 
 test('primary pages expose canonical discovery metadata and a level-one heading', () => {
   const pages = [
-    ['index.html', 'https://baselinelifestyle.org/home/1'],
+    ['index.html', 'https://baselinelifestyle.org/'],
     ...systemNames.map((system) => [
       path.join('systems', system, `${system}.html`),
       `https://baselinelifestyle.org/${system}/system`
@@ -231,10 +231,11 @@ test('home index uses one six-strip system layout with the agreed order and copy
     assert.equal(css.includes(obsolete), false, `obsolete index view-switching CSS remains: ${obsolete}`);
   }
 
-  assert.ok(css.includes('--home-surface:linear-gradient(90deg'));
-  assert.ok(css.includes('border-bottom:2px solid #000'));
-  assert.ok(css.includes('border:2px solid #000'));
-  assert.ok(css.includes('gap:11px'));
+  assert.ok(css.includes('--home-surface:transparent;'));
+  assert.ok(css.includes('.system-lane + .system-lane{'));
+  assert.ok(css.includes('border-top:2px solid var(--home-divider);'));
+  assert.ok(css.includes('border:0;'));
+  assert.ok(css.includes('gap:.28em;'));
   assert.ok(css.includes('min-height:78px'));
   assert.ok(themes.includes('--scroll-track: #303036;'));
   assert.ok(themes.includes('--scroll-thumb: #62626c;'));
@@ -268,7 +269,7 @@ test('primary entry pages use one version key per static CSS and JavaScript asse
   }
 
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-  assert.match(home, /baseline-home\.css\?v=HOME_SINGLE_PAGE_20261022_1/);
+  assert.match(home, /baseline-home\.css\?v=HOME_FULL_WIDTH_STACK_20261022_2/);
 });
 
 test('Baseline Personal Care is the visible system name while the existing route stays compatible', () => {
@@ -441,9 +442,12 @@ test('primary entrypoints use one cache key per shared static asset', () => {
       const escaped = asset.replaceAll('/', '\\/').replaceAll('.', '\\.');
       const match = source.match(new RegExp(escaped + "(?:\\?[^\"']*)?"));
       assert.ok(match, entry + ': missing ' + asset);
+      const expectedVersion = entry === 'index.html' && asset === '/sitewide/js/baseline-shared.js'
+        ? 'SITEWIDE_SHARED_JS_20261022_HOME_ROOT_1'
+        : version;
       assert.equal(
         match[0].replaceAll('&amp;','&'),
-        asset + '?v=' + version,
+        asset + '?v=' + expectedVersion,
         entry + ': inconsistent cache key for ' + asset
       );
     }
