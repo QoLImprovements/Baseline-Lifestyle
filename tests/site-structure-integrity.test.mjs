@@ -449,3 +449,11 @@ test('primary entrypoints use one cache key per shared static asset', () => {
     }
   }
 });
+
+
+test('retired Skincare group UI stylesheet stays removed', () => {
+  const retired = path.join(root, 'systems/baseline-natural-skincare/css/skincare-routine-group-ui-v3.css');
+  const page = fs.readFileSync(path.join(root, 'systems/baseline-natural-skincare/baseline-natural-skincare.html'), 'utf8');
+  assert.equal(fs.existsSync(retired), false, 'unreferenced Skincare group UI stylesheet must stay retired');
+  assert.doesNotMatch(page, /skincare-routine-group-ui-v3\.css/);
+});
