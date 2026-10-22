@@ -1,120 +1,64 @@
-/* Baseline Recreation — G01 Indigo Circuit palette authority.
+/* Baseline Recreation — Burgundy–Rose–Copper palette authority.
    This file changes colour only. Existing geometry, typography, spacing,
    component ownership and game mechanics remain authoritative elsewhere. */
 html[data-app="recreation"],
 body[data-app="recreation"]{
-  --g01-deep:#080D22;
-  --g01-mid:#1E2759;
-  --g01-centre:#4656A6;
-  --g01-active:#526BC2;
-  --g01-focus:#8CA7FF;
-  --g01-card:#1A244D;
-  --g01-ink:#F2F5FF;
-  --g01-muted:#D5DEF7;
-  --g01-placeholder:#AFC0ED;
-  --g01-mirror:linear-gradient(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%);
-  /* The active centre is fractionally darker than the approved preview so
-     normal-sized white labels remain above WCAG AA contrast. */
-  --g01-mirror-active:linear-gradient(90deg,#0B1330 0%,#2A3672 25%,#5666BC 50%,#2A3672 75%,#0B1330 100%);
-
-  /* Compatibility aliases used by the existing Hub and every embedded game. */
-  --games-teal-deep:var(--g01-deep);
-  --games-teal:var(--g01-mid);
-  --games-teal-soft:var(--g01-centre);
-  --games-orange-deep:#2A3672;
-  --games-orange:var(--g01-active);
-  --games-gold:var(--g01-focus);
-  --games-ink:var(--g01-ink);
-  --games-cream:var(--g01-ink);
-  --games-muted:var(--g01-muted);
-  --games-page-gradient:var(--g01-mirror);
-  --games-key-gradient:var(--g01-mirror);
-  --games-card-gradient:var(--g01-card);
-  --games-panel-gradient:var(--g01-card);
-  --games-page-deep:var(--g01-deep);
-  --games-page-mid:var(--g01-mid);
-  --games-page-soft:var(--g01-centre);
-  --games-page-light:var(--g01-focus);
-  --games-accent:var(--g01-focus);
-  --games-card:var(--g01-card);
-  --games-card-strong:var(--g01-card);
-  --games-panel:var(--g01-card);
-  --games-control:var(--g01-mirror);
-  --games-control-active:var(--g01-active);
-  --games-play-deep:var(--g01-deep);
-  --games-surface-1:var(--g01-card);
-  --games-surface-2:var(--g01-card);
-  --games-surface-3:var(--g01-card);
-  --games-surface-soft:rgba(82,107,194,.22);
-  --games-border:rgba(140,167,255,.38);
-  --games-border-strong:rgba(140,167,255,.72);
-
-  --bg:var(--g01-deep);
-  --bg-2:var(--g01-mid);
-  --bg-3:#2A3672;
-  --ink:var(--g01-ink);
-  --muted:var(--g01-muted);
-  --accent:var(--g01-focus);
-  --accent-2:var(--g01-ink);
-  --accent-3:var(--g01-active);
-  --accent-4:var(--g01-focus);
-  --accent-soft:rgba(140,167,255,.22);
-  --border:var(--games-border);
-  --border-2:var(--games-border-strong);
-  --ring:var(--g01-focus);
-  --shadow:0 22px 48px -30px rgba(2,5,17,.88);
-  --shadow-soft:0 18px 38px -26px rgba(2,5,17,.78);
-  --glow:0 24px 60px -42px rgba(140,167,255,.68);
-  --glow-soft:0 0 0 3px rgba(140,167,255,.20);
-  --tip-bg:rgba(8,13,34,.98);
-  --tip-ink:var(--g01-ink);
-  --tip-border:rgba(140,167,255,.62);
-  --link:var(--g01-focus);
-  --link-hover:var(--g01-ink);
-  --scroll-track:var(--g01-deep);
-  --scroll-thumb:var(--g01-active);
-  --scroll-thumb-hover:var(--g01-focus);
-
-  --header-gradient:var(--g01-mirror);
-  --page-bg:var(--g01-mirror);
-  --homebar-bg:var(--g01-mirror);
-  --homebar-border:var(--g01-focus);
-  --banner-pill-bg:var(--g01-mirror);
-  --banner-pill-solid:var(--g01-mid);
-  --banner-pill-ink:var(--g01-ink);
-  --banner-pill-border:var(--g01-focus);
-  --auth-flyout-bg:var(--g01-mirror);
-  --card-bg:var(--g01-card);
-  --filter-bg:var(--g01-card);
-  --showall-bg:var(--g01-mirror);
-  --showall-border:rgba(140,167,255,.62);
-
-  --bl-flyout-bg-image:var(--g01-mirror);
-  --bl-flyout-bg-color:var(--g01-mid);
-  --bl-flyout-control-bg-image:var(--g01-mirror);
-  --bl-flyout-control-bg-color:var(--g01-mid);
-  --bl-flyout-field-bg:var(--g01-card);
-  --bl-flyout-field-ink:var(--g01-ink);
-  --bl-flyout-field-placeholder:var(--g01-placeholder);
-  --bl-flyout-ink:var(--g01-ink);
-  --bl-surface-card-solid:var(--g01-card);
-  --bl-surface-recipe-card-solid:var(--g01-card);
-  --bl-surface-panel-solid:var(--g01-card);
-  --bl-surface-control-solid:var(--g01-mid);
-  --bl-surface-input-solid:var(--g01-card);
-  --bl-surface-active-solid:var(--g01-active);
-  --bl-surface-ink:var(--g01-ink);
-  --bl-slider-track-solid:var(--g01-active);
-  --bl-slider-thumb-solid:var(--g01-focus);
-  --bl-slider-border-solid:var(--g01-ink);
-  --bl-dropdown-panel-solid:var(--g01-mid);
-  --bl-dropdown-control-solid:var(--g01-mid);
-  --bl-dropdown-active-solid:var(--g01-active);
-  --bl-dropdown-ink:var(--g01-ink);
-
-  color:var(--g01-ink)!important;
-  background:var(--g01-mirror)!important;
-  background-color:var(--g01-deep)!important;
+  /* Canonical hue values live in sitewide/css/baseline-themes.css. */
+  --games-teal-deep:var(--recreation-burgundy);
+  --games-teal:var(--recreation-rose);
+  --games-teal-soft:var(--recreation-copper);
+  --games-orange-deep:var(--recreation-panel);
+  --games-orange:var(--recreation-copper-deep);
+  --games-gold:var(--recreation-copper-light);
+  --games-ink:var(--recreation-ink);
+  --games-cream:var(--recreation-ink);
+  --games-muted:var(--recreation-muted);
+  --games-page-gradient:var(--recreation-mirror);
+  --games-key-gradient:var(--recreation-mirror);
+  --games-card-gradient:var(--recreation-card);
+  --games-panel-gradient:var(--recreation-card);
+  --games-page-deep:var(--recreation-burgundy);
+  --games-page-mid:var(--recreation-rose);
+  --games-page-soft:var(--recreation-copper);
+  --games-page-light:var(--recreation-copper-light);
+  --games-accent:var(--recreation-copper-light);
+  --games-card:var(--recreation-card);
+  --games-card-strong:var(--recreation-card);
+  --games-panel:var(--recreation-panel);
+  --games-control:var(--recreation-mirror);
+  --games-control-active:var(--recreation-copper-deep);
+  --games-play-deep:var(--recreation-burgundy);
+  --games-surface-1:var(--recreation-card);
+  --games-surface-2:var(--recreation-panel);
+  --games-surface-3:var(--recreation-card);
+  --games-surface-soft:rgba(var(--recreation-copper-deep-rgb),.22);
+  --games-border:rgba(var(--recreation-copper-light-rgb),.38);
+  --games-border-strong:rgba(var(--recreation-copper-light-rgb),.72);
+  --bl-flyout-bg-image:var(--recreation-mirror);
+  --bl-flyout-bg-color:var(--recreation-rose);
+  --bl-flyout-control-bg-image:var(--recreation-mirror);
+  --bl-flyout-control-bg-color:var(--recreation-rose);
+  --bl-flyout-field-bg:var(--recreation-card);
+  --bl-flyout-field-ink:var(--recreation-ink);
+  --bl-flyout-field-placeholder:var(--recreation-placeholder);
+  --bl-flyout-ink:var(--recreation-ink);
+  --bl-surface-card-solid:var(--recreation-card);
+  --bl-surface-recipe-card-solid:var(--recreation-card);
+  --bl-surface-panel-solid:var(--recreation-panel);
+  --bl-surface-control-solid:var(--recreation-rose);
+  --bl-surface-input-solid:var(--recreation-card);
+  --bl-surface-active-solid:var(--recreation-copper-deep);
+  --bl-surface-ink:var(--recreation-ink);
+  --bl-slider-track-solid:var(--recreation-copper-deep);
+  --bl-slider-thumb-solid:var(--recreation-copper-light);
+  --bl-slider-border-solid:var(--recreation-ink);
+  --bl-dropdown-panel-solid:var(--recreation-panel);
+  --bl-dropdown-control-solid:var(--recreation-rose);
+  --bl-dropdown-active-solid:var(--recreation-copper-deep);
+  --bl-dropdown-ink:var(--recreation-ink);
+  color:var(--recreation-ink)!important;
+  background:var(--recreation-mirror)!important;
+  background-color:var(--recreation-burgundy)!important;
   color-scheme:dark;
 }
 
@@ -125,11 +69,11 @@ html[data-app="recreation"] body[data-app="recreation"] .bl-scroll,
 html[data-app="recreation"] body[data-app="recreation"] .bl-homebar,
 html[data-app="recreation"] body[data-app="recreation"] .hero,
 html[data-app="recreation"] body[data-app="recreation"] .tabs{
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
-  background-color:var(--g01-deep)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-burgundy)!important;
   background-size:100% 100%!important;
-  color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"]::before,
 html[data-app="recreation"] body[data-app="recreation"]::after{
@@ -149,11 +93,11 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   .badminton-focused-panel .badminton-game-card,.badminton-tier-panel,
   .badminton-situation,.badminton-feedback,.badminton-progress-box,
 ){
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  background-color:var(--g01-card)!important;
+  background-color:var(--recreation-card)!important;
   border-color:var(--games-border)!important;
-  color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
   -webkit-text-fill-color:currentColor!important;
   box-shadow:none!important;
   backdrop-filter:none!important;
@@ -169,8 +113,8 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   .note,.inline-note,.game-row p,.game-row-meta,.game-summary-item p,
   .darts-muted,.badminton-focused-panel p
 ){
-  color:var(--g01-muted)!important;
-  -webkit-text-fill-color:var(--g01-muted)!important;
+  color:var(--recreation-muted)!important;
+  -webkit-text-fill-color:var(--recreation-muted)!important;
 }
 
 /* Every interface button is an individual mirrored-gradient control. */
@@ -183,12 +127,12 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   .badminton-game-selector,.badminton-tier-button,.badminton-choice,.badminton-zone-grid button,
   .badminton-selector-info
 ){
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
-  background-color:var(--g01-mid)!important;
-  border-color:rgba(140,167,255,.62)!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
   text-shadow:none!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
@@ -199,11 +143,11 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   .badminton-game-selector,.badminton-tier-button,.badminton-choice,.badminton-zone-grid button,
   .badminton-selector-info
 ):is(:hover,:active,[aria-pressed="true"],[aria-selected="true"],.is-active,.is-selected){
-  background:var(--g01-mirror-active)!important;
-  background-image:var(--g01-mirror-active)!important;
-  border-color:var(--g01-focus)!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  background:var(--recreation-mirror-active)!important;
+  background-image:var(--recreation-mirror-active)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(button,input,select,textarea):disabled,
 html[data-app="recreation"] body[data-app="recreation"] [aria-disabled="true"]{
@@ -215,9 +159,9 @@ html[data-app="recreation"] body[data-app="recreation"] [aria-disabled="true"]{
 /* Keyboard users receive a two-colour focus ring that remains visible against
    every point in the mirror gradient and the flat card surface. */
 html[data-app="recreation"] body[data-app="recreation"] :is(button,a,input,select,textarea,[tabindex]):not(.bl-protected-access-overlay *):focus-visible{
-  outline:3px solid var(--g01-ink)!important;
+  outline:3px solid var(--recreation-ink)!important;
   outline-offset:3px!important;
-  box-shadow:0 0 0 6px var(--g01-focus)!important;
+  box-shadow:0 0 0 6px var(--recreation-copper-light)!important;
 }
 
 /* Inputs and compact status surfaces remain dark and readable. */
@@ -225,30 +169,30 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   input:not([type="range"]),select,textarea,.text-input,.game-input,.status,.badge,
   .pill,.chip,.game-save-status,.games-save-tooltip,[role="tooltip"]
 ):not(.bl-protected-access-overlay *){
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  background-color:var(--g01-card)!important;
+  background-color:var(--recreation-card)!important;
   border-color:var(--games-border-strong)!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
-  caret-color:var(--g01-focus)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  caret-color:var(--recreation-copper-light)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(input,textarea):not(.bl-protected-access-overlay *)::placeholder{
-  color:var(--g01-placeholder)!important;
-  -webkit-text-fill-color:var(--g01-placeholder)!important;
+  color:var(--recreation-placeholder)!important;
+  -webkit-text-fill-color:var(--recreation-placeholder)!important;
   opacity:1!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(.error,.is-error,[data-state="error"]){
   background:#4C2540!important;
   background-image:none!important;
   border-color:#E49AB8!important;
-  color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(.loading,.empty,.empty-state,[data-state="loading"],[data-state="empty"]){
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  border-color:rgba(140,167,255,.46)!important;
-  color:var(--g01-muted)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.46)!important;
+  color:var(--recreation-muted)!important;
 }
 
 /* Banner controls, page dropdown, Account, Voice and Binaural all use the
@@ -256,12 +200,12 @@ html[data-app="recreation"] body[data-app="recreation"] :is(.loading,.empty,.emp
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .bl-pages-btn,.bl-protected-key,#bl-beats-toggle,#bl-voice-toggle,#bl-auth-toggle
 ){
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
-  background-color:var(--g01-mid)!important;
-  border-color:var(--g01-focus)!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .bl-pages-menu,.bl-pages-link,#bl-auth-flyout .card,#bl-beats-flyout .card,
@@ -269,58 +213,58 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   #bl-voice-flyout button,.bl-flyout .bl-select-btn,.bl-flyout .bl-select-menu,
   .bl-flyout .bl-select-menu [role="option"]
 ){
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
-  background-color:var(--g01-mid)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
   background-size:100% 100%!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
-  border-color:rgba(140,167,255,.62)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   #bl-auth-flyout .bl-auth-input-shell,#bl-auth-flyout input,
   #bl-beats-flyout input:not([type="range"]),#bl-beats-flyout select,
   #bl-voice-flyout input:not([type="range"])
 ){
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  background-color:var(--g01-card)!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  background-color:var(--recreation-card)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(.bl-btn-icon,.bl-btn-label,#blProtectedKey svg){
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
   stroke:currentColor!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] #bl-auth-flyout input:-webkit-autofill,
 html[data-app="recreation"] body[data-app="recreation"] #bl-auth-flyout input:-webkit-autofill:hover,
 html[data-app="recreation"] body[data-app="recreation"] #bl-auth-flyout input:-webkit-autofill:focus{
-  -webkit-text-fill-color:var(--g01-ink)!important;
-  box-shadow:0 0 0 1000px var(--g01-card) inset!important;
-  -webkit-box-shadow:0 0 0 1000px var(--g01-card) inset!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  box-shadow:0 0 0 1000px var(--recreation-card) inset!important;
+  -webkit-box-shadow:0 0 0 1000px var(--recreation-card) inset!important;
 }
 
 /* Games overview: one flat card colour, G01 artwork, gradient metadata pills. */
 html[data-app="recreation"] body[data-app="recreation"] #gamesList .game-row{
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  background-color:var(--g01-card)!important;
-  border-color:rgba(140,167,255,.42)!important;
-  color:var(--g01-ink)!important;
+  background-color:var(--recreation-card)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.42)!important;
+  color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] #gamesList .game-row-meta :is(strong,.inline-note){
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
-  background-color:var(--g01-mid)!important;
-  border-color:rgba(140,167,255,.46)!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.46)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] #gamesList .game-card-art{
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  border-color:rgba(140,167,255,.52)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.52)!important;
 }
 
 /* Modal chrome follows G01; game worlds and semantic gameplay feedback keep
@@ -334,10 +278,10 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .modal,.game-modal,.popover,[role="dialog"]
 ):not(.bl-protected-access-dialog){
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  border-color:var(--g01-focus)!important;
-  color:var(--g01-ink)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .darts-memory-veil,.darts-memory-arena,.darts-pressure-track span,
@@ -346,14 +290,14 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   .badminton-xp-block,.badminton-roadmap span,.badminton-scene-caption,
   .badminton-tactical-scene
 ){
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
   border-color:var(--games-border)!important;
-  color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(#dartsGameCard,#badmintonGameCard):fullscreen{
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
 }
 
 /* G01 completion authority.
@@ -368,51 +312,51 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   .game-info-details,.game-summary-details,.game-summary-body,
   .formula-box,.word-box,.solution-box,.clue-bar,.upgrade-item,.bonus-item
 ){
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  background-color:var(--g01-card)!important;
+  background-color:var(--recreation-card)!important;
   border-color:var(--games-border)!important;
-  color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
   -webkit-text-fill-color:currentColor!important;
   box-shadow:none!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .game-info-details summary,.game-summary-details summary,.stat-pill,.skill-alert
 ){
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
-  background-color:var(--g01-mid)!important;
-  border-color:rgba(140,167,255,.62)!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
   text-shadow:none!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .game-info-details summary,.game-summary-details summary,.stat-pill,.skill-alert
 ):is(:hover,:focus-visible,[aria-expanded="true"],.is-active,.is-ready){
-  background:var(--g01-mirror-active)!important;
-  background-image:var(--g01-mirror-active)!important;
-  border-color:var(--g01-focus)!important;
+  background:var(--recreation-mirror-active)!important;
+  background-image:var(--recreation-mirror-active)!important;
+  border-color:var(--recreation-copper-light)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .game-info-details,.game-summary-details
 )[open] summary{
-  border-bottom-color:rgba(140,167,255,.46)!important;
+  border-bottom-color:rgba(var(--recreation-copper-light-rgb),.46)!important;
 }
 
 /* Experience and neutral progress indicators use the same cool palette. */
 html[data-app="recreation"] body[data-app="recreation"] :is(.xp-bar,.meter,.darts-pressure-bar,.badminton-timer-bar){
-  background:var(--g01-deep)!important;
+  background:var(--recreation-burgundy)!important;
   background-image:none!important;
-  border-color:rgba(140,167,255,.42)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.42)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .xp-fill,.meter-fill,.darts-pressure-bar>span,.badminton-timer-bar>span
 ){
-  background:linear-gradient(90deg,#526BC2 0%,#8CA7FF 50%,#526BC2 100%)!important;
-  background-image:linear-gradient(90deg,#526BC2 0%,#8CA7FF 50%,#526BC2 100%)!important;
+  background:linear-gradient(90deg,var(--recreation-copper-deep) 0%,var(--recreation-copper-light) 50%,var(--recreation-copper-deep) 100%)!important;
+  background-image:linear-gradient(90deg,var(--recreation-copper-deep) 0%,var(--recreation-copper-light) 50%,var(--recreation-copper-deep) 100%)!important;
 }
-html[data-app="recreation"] body[data-app="recreation"] progress{accent-color:var(--g01-focus)!important}
+html[data-app="recreation"] body[data-app="recreation"] progress{accent-color:var(--recreation-copper-light)!important}
 
 /* Darts: instructional and calculation chrome is G01. The realistic board's
    red/green scoring segments remain sport-owned content. */
@@ -424,66 +368,66 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   .darts-fact-list label,.darts-confidence-control,.darts-calibration-result,
   .darts-comparison div,.darts-xp-block,.darts-tier-panel
 ){
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  background-color:var(--g01-card)!important;
+  background-color:var(--recreation-card)!important;
   border-color:var(--games-border)!important;
-  color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
   -webkit-text-fill-color:currentColor!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .darts-choice,.darts-game-selector,.darts-tier-button,.darts-category-card,
   .darts-routine-list button,.darts-selector-info
 ){
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
-  background-color:var(--g01-mid)!important;
-  border-color:rgba(140,167,255,.62)!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .darts-choice,.darts-game-selector,.darts-tier-button,.darts-category-card,
   .darts-routine-list button,.darts-selector-info
 ):is(:hover,:focus-visible,.is-selected,.is-active,[aria-expanded="true"]){
-  background:var(--g01-mirror-active)!important;
-  background-image:var(--g01-mirror-active)!important;
-  border-color:var(--g01-focus)!important;
+  background:var(--recreation-mirror-active)!important;
+  background-image:var(--recreation-mirror-active)!important;
+  border-color:var(--recreation-copper-light)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .darts-board-frame,.darts-visual-intro__art,.darts-visual-intro__art--memory
 ){
-  background:radial-gradient(circle at 50% 45%,rgba(140,167,255,.32),#1A244D 66%,#080D22 100%)!important;
-  background-image:radial-gradient(circle at 50% 45%,rgba(140,167,255,.32),#1A244D 66%,#080D22 100%)!important;
-  border-color:rgba(140,167,255,.46)!important;
+  background:radial-gradient(circle at 50% 45%,rgba(var(--recreation-copper-light-rgb),.32),var(--recreation-card) 66%,var(--recreation-burgundy) 100%)!important;
+  background-image:radial-gradient(circle at 50% 45%,rgba(var(--recreation-copper-light-rgb),.32),var(--recreation-card) 66%,var(--recreation-burgundy) 100%)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.46)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .darts-memory-veil::after{
-  background:linear-gradient(90deg,transparent 0%,rgba(82,107,194,.34) 50%,rgba(8,13,34,.30) 100%)!important;
+  background:linear-gradient(90deg,transparent 0%,rgba(var(--recreation-copper-deep-rgb),.34) 50%,rgba(var(--recreation-burgundy-rgb),.30) 100%)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .darts-category-icon,
 html[data-app="recreation"] body[data-app="recreation"] .darts-game-selector::before{
-  background:var(--g01-active)!important;
-  background-color:var(--g01-active)!important;
-  border-color:var(--g01-focus)!important;
-  color:var(--g01-ink)!important;
+  background:var(--recreation-copper-deep)!important;
+  background-color:var(--recreation-copper-deep)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .darts-simulated-mark{
-  fill:var(--g01-focus)!important;
-  stroke:var(--g01-deep)!important;
+  fill:var(--recreation-copper-light)!important;
+  stroke:var(--recreation-burgundy)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .darts-board-zone.is-highlight{
-  filter:brightness(1.55) drop-shadow(0 0 9px #8CA7FF)!important;
-  stroke:#F2F5FF!important;
+  filter:brightness(1.55) drop-shadow(0 0 9px var(--recreation-copper-light))!important;
+  stroke:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .darts-sequence-dots>span{
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
   border-color:var(--games-border)!important;
-  color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .darts-sequence-dots>span.is-current{
-  background:var(--g01-active)!important;
-  border-color:var(--g01-focus)!important;
+  background:var(--recreation-copper-deep)!important;
+  border-color:var(--recreation-copper-light)!important;
 }
 
 /* Badminton: menus, coaching panels and scene backplates use G01. Court,
@@ -493,60 +437,60 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   .badminton-pattern-strip,.badminton-xp-block,.badminton-roadmap span,
   .badminton-scene-caption
 ){
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  background-color:var(--g01-card)!important;
+  background-color:var(--recreation-card)!important;
   border-color:var(--games-border)!important;
-  color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
   -webkit-text-fill-color:currentColor!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .badminton-choice,.badminton-game-selector,.badminton-tier-button,
   .badminton-zone-grid button,.badminton-selector-info
 ){
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
-  background-color:var(--g01-mid)!important;
-  border-color:rgba(140,167,255,.62)!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .badminton-choice,.badminton-game-selector,.badminton-tier-button,
   .badminton-zone-grid button,.badminton-selector-info
 ):is(:hover,:focus-visible,.is-selected,.is-active,[aria-expanded="true"]){
-  background:var(--g01-mirror-active)!important;
-  background-image:var(--g01-mirror-active)!important;
-  border-color:var(--g01-focus)!important;
+  background:var(--recreation-mirror-active)!important;
+  background-image:var(--recreation-mirror-active)!important;
+  border-color:var(--recreation-copper-light)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .badminton-court-shell,.badminton-freeze-scene,.badminton-contact-panel,
   .badminton-tactical-scene
 ){
-  background:radial-gradient(circle at 50% 42%,rgba(140,167,255,.30),#1A244D 68%,#080D22 100%)!important;
-  background-image:radial-gradient(circle at 50% 42%,rgba(140,167,255,.30),#1A244D 68%,#080D22 100%)!important;
-  border-color:rgba(140,167,255,.46)!important;
+  background:radial-gradient(circle at 50% 42%,rgba(var(--recreation-copper-light-rgb),.30),var(--recreation-card) 68%,var(--recreation-burgundy) 100%)!important;
+  background-image:radial-gradient(circle at 50% 42%,rgba(var(--recreation-copper-light-rgb),.30),var(--recreation-card) 68%,var(--recreation-burgundy) 100%)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.46)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .badminton-pattern-strip span,.badminton-scene-caption span,.badminton-contact-light
 ){
-  background:var(--g01-active)!important;
+  background:var(--recreation-copper-deep)!important;
   background-image:none!important;
-  border-color:var(--g01-focus)!important;
-  color:var(--g01-ink)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .badminton-contact-light.is-contact{
-  background:var(--g01-focus)!important;
-  color:var(--g01-deep)!important;
-  box-shadow:0 0 0 11px rgba(140,167,255,.22)!important;
+  background:var(--recreation-copper-light)!important;
+  color:var(--recreation-burgundy)!important;
+  box-shadow:0 0 0 11px rgba(var(--recreation-copper-light-rgb),.22)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .badminton-court-zone.is-highlight{
-  fill:var(--g01-focus)!important;
-  filter:drop-shadow(0 0 9px rgba(140,167,255,.88))!important;
+  fill:var(--recreation-copper-light)!important;
+  filter:drop-shadow(0 0 9px rgba(var(--recreation-copper-light-rgb),.88))!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .badminton-distractor{
-  background:rgba(140,167,255,.34)!important;
-  border-color:var(--g01-focus)!important;
+  background:rgba(var(--recreation-copper-light-rgb),.34)!important;
+  border-color:var(--recreation-copper-light)!important;
 }
 
 /* The site's cards are flat reading surfaces. Remove the inherited glossy
@@ -594,10 +538,10 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
    high-contrast G01 foreground in every interaction state. */
 html[data-app="recreation"] body[data-app="recreation"] .memory-card,
 html[data-app="recreation"] body[data-app="recreation"] .memory-card[disabled]{
-  background:var(--g01-deep)!important;
+  background:var(--recreation-burgundy)!important;
   background-image:none!important;
-  border-color:var(--g01-focus)!important;
-  color:var(--g01-ink)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
   opacity:1!important;
   filter:none!important;
   box-shadow:none!important;
@@ -605,20 +549,20 @@ html[data-app="recreation"] body[data-app="recreation"] .memory-card[disabled]{
 }
 html[data-app="recreation"] body[data-app="recreation"] .memory-card-face,
 html[data-app="recreation"] body[data-app="recreation"] .memory-card-face *{
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
   filter:none!important;
   visibility:visible!important;
   mix-blend-mode:normal!important;
   text-shadow:none!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .memory-card-back{
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
   opacity:1!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .memory-card-front{
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
   opacity:0!important;
 }
@@ -630,7 +574,7 @@ html[data-app="recreation"] body[data-app="recreation"] .memory-card:is(.is-open
   transform:scale(1)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .memory-card.is-matched{
-  outline:3px solid var(--g01-focus)!important;
+  outline:3px solid var(--recreation-copper-light)!important;
   outline-offset:2px!important;
 }
 
@@ -643,49 +587,49 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   .ruleshift-rule-card,.ruleshift-choice-card,.mobile-game-keypad,
   .mobile-word-keypad,.mobile-make24-keypad
 ){
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  background-color:var(--g01-card)!important;
+  background-color:var(--recreation-card)!important;
   border-color:var(--games-border)!important;
-  color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
   box-shadow:none!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .trackcoin-lane{
-  background:radial-gradient(circle at 50% 42%,rgba(140,167,255,.28),#1A244D 62%,#080D22 100%)!important;
-  background-image:radial-gradient(circle at 50% 42%,rgba(140,167,255,.28),#1A244D 62%,#080D22 100%)!important;
+  background:radial-gradient(circle at 50% 42%,rgba(var(--recreation-copper-light-rgb),.28),var(--recreation-card) 62%,var(--recreation-burgundy) 100%)!important;
+  background-image:radial-gradient(circle at 50% 42%,rgba(var(--recreation-copper-light-rgb),.28),var(--recreation-card) 62%,var(--recreation-burgundy) 100%)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .trackcoin-cup{
-  background:linear-gradient(180deg,#4656A6 0%,#1E2759 55%,#080D22 100%)!important;
-  background-image:linear-gradient(180deg,#4656A6 0%,#1E2759 55%,#080D22 100%)!important;
-  border-color:var(--g01-focus)!important;
-  color:var(--g01-ink)!important;
+  background:linear-gradient(180deg,var(--recreation-copper) 0%,var(--recreation-rose) 55%,var(--recreation-burgundy) 100%)!important;
+  background-image:linear-gradient(180deg,var(--recreation-copper) 0%,var(--recreation-rose) 55%,var(--recreation-burgundy) 100%)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .trackcoin-cup::before{
-  background:linear-gradient(180deg,#526BC2 0%,#1E2759 100%)!important;
-  background-image:linear-gradient(180deg,#526BC2 0%,#1E2759 100%)!important;
-  border-color:var(--g01-focus)!important;
+  background:linear-gradient(180deg,var(--recreation-copper-deep) 0%,var(--recreation-rose) 100%)!important;
+  background-image:linear-gradient(180deg,var(--recreation-copper-deep) 0%,var(--recreation-rose) 100%)!important;
+  border-color:var(--recreation-copper-light)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .trackcoin-item-token{
-  background:radial-gradient(circle at 35% 28%,#F2F5FF 0%,#8CA7FF 36%,#526BC2 68%,#1E2759 100%)!important;
-  background-image:radial-gradient(circle at 35% 28%,#F2F5FF 0%,#8CA7FF 36%,#526BC2 68%,#1E2759 100%)!important;
-  border-color:var(--g01-ink)!important;
+  background:radial-gradient(circle at 35% 28%,var(--recreation-ink) 0%,var(--recreation-copper-light) 36%,var(--recreation-copper-deep) 68%,var(--recreation-rose) 100%)!important;
+  background-image:radial-gradient(circle at 35% 28%,var(--recreation-ink) 0%,var(--recreation-copper-light) 36%,var(--recreation-copper-deep) 68%,var(--recreation-rose) 100%)!important;
+  border-color:var(--recreation-ink)!important;
   box-shadow:none!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(.number-chip,.ruleshift-token){
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
-  border-color:var(--g01-focus)!important;
-  color:var(--g01-ink)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
   box-shadow:none!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .ruleshift-timer-bar{
-  background:var(--g01-deep)!important;
+  background:var(--recreation-burgundy)!important;
   background-image:none!important;
   border-color:var(--games-border)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .ruleshift-timer-fill{
-  background:linear-gradient(90deg,#526BC2 0%,#8CA7FF 50%,#526BC2 100%)!important;
-  background-image:linear-gradient(90deg,#526BC2 0%,#8CA7FF 50%,#526BC2 100%)!important;
+  background:linear-gradient(90deg,var(--recreation-copper-deep) 0%,var(--recreation-copper-light) 50%,var(--recreation-copper-deep) 100%)!important;
+  background-image:linear-gradient(90deg,var(--recreation-copper-deep) 0%,var(--recreation-copper-light) 50%,var(--recreation-copper-deep) 100%)!important;
 }
 
 /* Correct/incorrect feedback remains semantic, but uses cool accessible tones
@@ -694,33 +638,33 @@ html[data-app="recreation"] body[data-app="recreation"] :is(.darts-feedback,.bad
   background:#173E39!important;
   background-image:none!important;
   border-color:#72C7AF!important;
-  color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(.darts-feedback,.badminton-feedback).is-wrong{
   background:#4C2540!important;
   background-image:none!important;
   border-color:#E49AB8!important;
-  color:var(--g01-ink)!important;
+  color:var(--recreation-ink)!important;
 }
 
 /* Force both the page scroller and independently scrolling game lists to use
-   Indigo Circuit instead of the legacy orange thumb. */
+   Burgundy–Rose–Copper instead of the legacy orange thumb. */
 html[data-app="recreation"],
 html[data-app="recreation"] body[data-app="recreation"],
 html[data-app="recreation"] body[data-app="recreation"] :is(
   .bl-scroll,.darts-game-selectors,.badminton-game-selectors
 ){
-  scrollbar-color:var(--g01-active) var(--g01-deep)!important;
+  scrollbar-color:var(--recreation-copper-deep) var(--recreation-burgundy)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] ::-webkit-scrollbar-track{
-  background:var(--g01-deep)!important;
+  background:var(--recreation-burgundy)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] ::-webkit-scrollbar-thumb{
-  background:var(--g01-active)!important;
-  border-color:var(--g01-deep)!important;
+  background:var(--recreation-copper-deep)!important;
+  border-color:var(--recreation-burgundy)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] ::-webkit-scrollbar-thumb:hover{
-  background:var(--g01-focus)!important;
+  background:var(--recreation-copper-light)!important;
 }
 @media (max-width:520px){
   html[data-app="recreation"] body[data-app="recreation"] :is(
@@ -754,39 +698,39 @@ html[data-app="recreation"] body[data-app="recreation"] ::-webkit-scrollbar-thum
    key must not inherit the retired cream/orange Games palette. Semantic states
    remain distinct through cool green, circuit blue and deep indigo. */
 html[data-app="recreation"] body[data-app="recreation"] .letter-cell{
-  background:var(--g01-card)!important;
+  background:var(--recreation-card)!important;
   background-image:none!important;
-  border-color:rgba(140,167,255,.48)!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.48)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
   box-shadow:none!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(.letter-cell.correct,.word-feedback-dot--correct){
   background:#2F665D!important;
   background-image:none!important;
   border-color:#72C7AF!important;
-  color:#F2F5FF!important;
-  -webkit-text-fill-color:#F2F5FF!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(.letter-cell.present,.word-feedback-dot--present){
-  background:#526BC2!important;
+  background:var(--recreation-copper-deep)!important;
   background-image:none!important;
   border-color:#A9BCFF!important;
-  color:#F2F5FF!important;
-  -webkit-text-fill-color:#F2F5FF!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(.letter-cell.absent,.word-feedback-dot--absent){
-  background:#1E2759!important;
+  background:var(--recreation-rose)!important;
   background-image:none!important;
   border-color:#657BD0!important;
   color:#DCE4FF!important;
   -webkit-text-fill-color:#DCE4FF!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] .word-feedback-legend span{
-  background:var(--g01-mirror)!important;
-  background-image:var(--g01-mirror)!important;
-  border-color:rgba(140,167,255,.62)!important;
-  color:var(--g01-ink)!important;
-  -webkit-text-fill-color:var(--g01-ink)!important;
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
   box-shadow:none!important;
 }
