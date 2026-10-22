@@ -100,7 +100,7 @@ body{background:var(--page-bg)}
 /* Final game fixes: compact Pairs cards with larger symbols, seamless Ninja tile. */
 .memory-card{min-height:90px !important;aspect-ratio:auto !important;border-radius:18px !important;background:#6f452e !important;}
 .memory-card-face{font-size:clamp(48px,5.4vw,82px) !important;padding:4px !important;}
-.memory-card-back,.memory-card-front{background:linear-gradient(180deg,var(--games-page-mid) 0%,var(--games-page-deep) 52%,var(--games-page-deep) 100%) !important;color:var(--games-panel)3e8 !important;text-shadow:0 2px 0 rgba(0,0,0,.16) !important;}
+.memory-card-back,.memory-card-front{background:linear-gradient(180deg,var(--games-page-mid) 0%,var(--games-page-deep) 52%,var(--games-page-deep) 100%) !important;text-shadow:0 2px 0 rgba(0,0,0,.16) !important;}
 .memory-card-back{font-size:clamp(42px,4.8vw,64px) !important;}
 .memory-card-front{transform:scale(.94) !important;}
 .memory-card.is-open .memory-card-front,.memory-card.is-matched .memory-card-front{transform:scale(1.08) !important;}
