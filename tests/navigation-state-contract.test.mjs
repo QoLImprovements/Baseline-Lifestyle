@@ -19,7 +19,7 @@ test('page-like nested navigation is URL-owned and refresh-restorable',()=>{
   const games=read('systems/baseline-recreation/js/baseline-recreation-core.js');
   const puzzles=read('systems/baseline-recreation/puzzles/shared/js/puzzles-library.js');
   const jigsawEngine=read('systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
-  const puzzleSupport=read('systems/baseline-recreation/js/puzzle-game-support.mjs');
+  const gameExtensionSupport=read('systems/baseline-recreation/js/game-extension-support.mjs');
   const blockGrid=read('systems/baseline-recreation/games/block-grid/js/block-grid.js');
   const colourSort=read('systems/baseline-recreation/games/colour-sort/js/colour-sort.js');
   const darts=read('systems/baseline-recreation/games/darts-focused/js/darts-focused-shell.js');
@@ -65,7 +65,8 @@ test('page-like nested navigation is URL-owned and refresh-restorable',()=>{
   assert.match(jigsawEngine,/params\.get\('jigsaw'\)/);
   assert.match(jigsawEngine,/BaselinePuzzlesLibrary/);
 
-  assert.match(puzzleSupport,/historyMode = 'push'/);
+  assert.match(gameExtensionSupport,/historyMode = 'push'/);
+  assert.match(gameExtensionSupport,/`\/baseline-recreation\/games\/\$\{config\.id\}`/);
   assert.match(blockGrid,/blockTabFromLocation/);
   assert.match(blockGrid,/setTab\(tab, 'push'\)/);
   assert.match(colourSort,/colourTabFromLocation/);
