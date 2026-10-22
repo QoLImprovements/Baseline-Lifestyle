@@ -215,7 +215,7 @@
   }
 
   function buildForcedHomeHref(targetWin){
-    return '/home/1';
+    return '/';
   }
 
   function navigateHomeForGood(){
@@ -264,7 +264,7 @@
     'baseline-fitness.html': { base:'/baseline-fitness', defaultTab:'system', tabs:{ system:'system', routine:'my-plan', library:'library', achievements:'achievements', 'my-plan':'my-plan', 'my-routine':'my-plan', 'my-body':'my-body' } }
   });
   const BASELINE_CLEAN_PAGE_LINKS = Object.freeze({
-    'index.html':'/home/1', 'home.html':'/home/1', 'home':'/home/1',
+    'index.html':'/', 'home.html':'/', 'home':'/',
     'baseline-food-approach.html':'/baseline-food-approach/system',
     'baseline-massage.html':'/baseline-massage/system',
     'baseline-natural-skincare.html':'/baseline-natural-skincare/system',
@@ -356,7 +356,7 @@
     }
     const stripped = href.split('#')[0].split('?')[0].replace(/^\/+/, '');
     const targetFile = (stripped.split('/').pop() || '').toLowerCase();
-    if(label === 'home' || href === '/' || href === './' || href === '.' || targetFile === '' || targetFile === 'home.html' || targetFile === 'index.html') return '/home/1';
+    if(label === 'home' || href === '/' || href === './' || href === '.' || targetFile === '' || targetFile === 'home.html' || targetFile === 'index.html') return '/';
     if(/baseline-recreation(?:\.html)?(?:#tab=system)?$/i.test(href)) return '/baseline-recreation/system';
     return BASELINE_CLEAN_PAGE_LINKS[targetFile] || href;
   }
@@ -1343,6 +1343,11 @@
       }
     }
     if(state && state.kind === 'tab' && state.tabId){
+      // The homepage has no tab-route identity. Keep its URL at the site root
+      // instead of synthesising the legacy #tab=system hash.
+      if(routePageFileFromPath(location.pathname || '') === 'index.html'){
+        return '/' + String(location.search || '');
+      }
       const cleanUrl = cleanUrlWithOptionalFilter(state.tabId, state.recipeFilter || '');
       if(cleanUrl) return cleanUrl;
     }
@@ -6244,7 +6249,7 @@ function buildControls(recipeEl){
         byHref.set(href, a);
       });
       const desired = [
-        ['/home/1','Home'],
+        ['/','Home'],
         ['/baseline-food-approach/system','Baseline Food Approach'],
         ['/baseline-massage/system','Baseline Massage'],
         ['/baseline-natural-skincare/system','Baseline Personal Care'],
