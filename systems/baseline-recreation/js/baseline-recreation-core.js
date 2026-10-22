@@ -3552,9 +3552,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
         if(target === 'concepts'){
           selectedGame = '';
           if(window.BaselineConcepts && typeof window.BaselineConcepts.showOverview === 'function'){
-            window.BaselineConcepts.showOverview();
+            window.BaselineConcepts.showOverview({ historyMode:'push', focus:false });
+            activateTab('concepts', { sync:false });
+          }else{
+            activateTab('concepts', { historyMode:'push' });
           }
-          activateTab('concepts', { historyMode:'push' });
           return;
         }
         activateTab(target, { historyMode:'push' });
