@@ -9,7 +9,7 @@ import {
   enemyDecision
 } from '../systems/baseline-recreation/games/baseline-realm/tactical-operations/js/tactical-operations-engine.mjs';
 
-const hubHtml=fs.readFileSync(new URL('../systems/baseline-recreation/baseline-recreation.html',import.meta.url),'utf8');
+const recreationHtml=fs.readFileSync(new URL('../systems/baseline-recreation/baseline-recreation.html',import.meta.url),'utf8');
 const core=fs.readFileSync(new URL('../systems/baseline-recreation/js/baseline-recreation-core.js',import.meta.url),'utf8');
 const makeNumberEngine=fs.readFileSync(new URL('../systems/baseline-recreation/js/make-number-engine.js',import.meta.url),'utf8');
 const profileRules=fs.readFileSync(new URL('../systems/baseline-recreation/js/games-profile-rules.js',import.meta.url),'utf8');
@@ -38,7 +38,7 @@ test('Make The Number generation is explicitly seedable and generated-bank fill 
 
 test('Realm entry delegates lazy external-scene lifecycle and recovery',()=>{
   assert.match(realmEntry,/from '\.\/realm-lazy-scenes\.js/);
-  assert.match(realmEntry,/createRealmLazySceneAuthority\(/);
+  assert.match(realmEntry,/createRealmLazySceneManager\(/);
   assert.doesNotMatch(realmEntry,/function createLazyScene\(/);
   assert.match(lazyScenes,/realm:scene:load-failed/);
   assert.match(lazyScenes,/data-realm-scene-retry/);
@@ -79,14 +79,14 @@ test('Calorie Escape exposes descriptive module ownership with no opaque aliases
 
 
 test('Recreation has no artificial first-paint gate and one primary startup authority',()=>{
-  const hubCss=fs.readFileSync(new URL('../systems/baseline-recreation/css/baseline-recreation.css',import.meta.url),'utf8');
+  const recreationCss=fs.readFileSync(new URL('../systems/baseline-recreation/css/baseline-recreation.css',import.meta.url),'utf8');
   const loader=fs.readFileSync(new URL('../systems/baseline-recreation/js/baseline-recreation-loader.js',import.meta.url),'utf8');
 
-  assert.doesNotMatch(hubHtml, /data-games-document-pending|visibility:hidden!important|baseline-games-first-paint-release|baseline:games-hub:visual-ready|data-games-hub-boot/);
+  assert.doesNotMatch(recreationHtml, /data-games-document-pending|visibility:hidden!important|baseline-games-first-paint-release|baseline:games-hub:visual-ready|data-games-hub-boot/);
   assert.doesNotMatch(loader, /baseline:games-hub:visual-ready|signalVisualReady|data-games-hub-boot/);
-  assert.match(hubHtml, /id="baseline-games-route-state"/);
-  assert.match(hubCss, /\.section\{display:none\}\.section\.active\{display:block\}/);
-  assert.doesNotMatch(hubCss, /\.section\{display:none;animation:fade/);
+  assert.match(recreationHtml, /id="baseline-recreation-route-state"/);
+  assert.match(recreationCss, /\.section\{display:none\}\.section\.active\{display:block\}/);
+  assert.doesNotMatch(recreationCss, /\.section\{display:none;animation:fade/);
 
   assert.doesNotMatch(core, /seedProfilesForImmediateRender/);
   assert.doesNotMatch(core, /document\.addEventListener\('baseline:auth',\s*loadAllProfiles\)/);
