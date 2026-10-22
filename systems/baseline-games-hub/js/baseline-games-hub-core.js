@@ -11,6 +11,8 @@ const BASELINE_GAMES_HUB_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
   const GAME_REGISTRY = window.BASELINE_GAMES_HUB_GAME_REGISTRY || null;
   const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
   const REGISTERED_OVERVIEW_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.overviewGames === 'function' ? GAME_REGISTRY.overviewGames() : [];
+  const GAMES_HUB_MODAL = window.BaselineGamesHubModal || null;
+  if(!GAMES_HUB_MODAL || typeof GAMES_HUB_MODAL.open !== 'function' || typeof GAMES_HUB_MODAL.close !== 'function') throw new Error('games_hub_modal_authority_missing');
   const PROGRESSION_RULES = window.BASELINE_GAMES_HUB_PROGRESSION || null;
   if(!PROGRESSION_RULES) throw new Error('games_progression_authority_missing');
   const xpNeededForLevel = PROGRESSION_RULES.xpNeededForLevel;
@@ -3587,74 +3589,6 @@ const BASELINE_GAMES_HUB_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
     });
   }
 
-  const GAME_HELP_CONTENT = Object.freeze({
-    pairs:{
-      title:'Pairs',
-      brain:'Visual memory, pattern recall, short-term memory, and calm concentration.',
-      how:'Flip cards to find matching pairs. Remember where each symbol appears. Clear the board to earn Bank and XP. Higher tiers add more pairs and stronger rewards.'
-    },
-    detectword:{
-      title:'Detect The Word',
-      brain:'Language deduction, spelling, pattern narrowing, and verbal working memory.',
-      how:'Guess the hidden word for the active letter tier. Correct place, present letters, and absent letters help you narrow the answer. Dictionary rule: standard English words of the active length can be submitted; the answer pool remains curated by tier.'
-    },
-    make24:{
-      title:'Make The Number',
-      brain:'Number flexibility, working memory, multi-step problem solving, and planning.',
-      how:'Use all shown numbers exactly once with +, −, ×, ÷, and brackets to hit the target number. Expression rule: every puzzle must use all shown numbers exactly once; concatenating numbers is not allowed.'
-    },
-    trackcoin:{
-      title:'Track the Coin',
-      brain:'Visual tracking, sustained attention, working memory, and focus under movement.',
-      how:'Watch which cup starts with the coin. Follow the shuffle, then choose the cup holding the coin. Correct picks build streaks and increase pace; missed rounds reveal the answer and reduce the pace.'
-    },
-    ruleshift:{
-      title:'Rule Shift',
-      brain:'Mental flexibility, impulse control, working memory, and attention switching.',
-      how:'Read the rule, watch the timer, and press a matching shape. The correct answer is always present. Rules can ask for colour, shape, size, combined features, or the opposite. Wrong choices and time-outs move you to a new rule, so stop, read, and choose deliberately.'
-    },
-    ninja:{
-      title:'Baseline Realm',
-      brain:'Long-term planning, reward tracking, routine engagement, and strategic progression.',
-      how:'Use Ninja Training, Basecamp, Exploration, Workshop, Calorie Escape, Tactical Operations, upgrades, stores and party management as one connected RPG campaign inside the Games Hub.'
-    }
-  });
-  function gameHelpContent(gameId){
-    return GAME_HELP_CONTENT[normaliseGameId(gameId)] || null;
-  }
-  function ensureGamesHubModal(){
-    let modal = document.getElementById('gamesHubInfoModal');
-    if(modal) return modal;
-    modal = document.createElement('div');
-    modal.id = 'gamesHubInfoModal';
-    modal.className = 'games-modal';
-    modal.hidden = true;
-    modal.innerHTML = '<div class="games-modal__backdrop" data-close-games-modal="1"></div><section class="games-modal__panel" role="dialog" aria-modal="true" aria-labelledby="gamesModalTitle"><button class="games-modal__close" data-close-games-modal="1" type="button" aria-label="Close">×</button><h3 id="gamesModalTitle"></h3><div class="games-modal__body" id="gamesModalBody"></div></section>';
-    document.body.appendChild(modal);
-    return modal;
-  }
-  function openGamesHubModal(gameId, mode){
-    const content = gameHelpContent(gameId);
-    if(!content) return;
-    const modal = ensureGamesHubModal();
-    const title = document.getElementById('gamesModalTitle');
-    const body = document.getElementById('gamesModalBody');
-    if(!title || !body) return;
-    const isBrain = mode === 'brain';
-    title.textContent = isBrain ? (content.title + ' — Brain Benefit') : (content.title + ' — How To Play');
-    body.innerHTML = isBrain
-      ? '<p>' + escapeHtml(content.brain) + '</p>'
-      : '<p>' + escapeHtml(content.how) + '</p>';
-    modal.hidden = false;
-    document.body.classList.add('games-modal-open');
-    const close = modal.querySelector('.games-modal__close');
-    if(close && typeof close.focus === 'function') close.focus({ preventScroll:true });
-  }
-  function closeGamesHubModal(){
-    const modal = document.getElementById('gamesHubInfoModal');
-    if(modal) modal.hidden = true;
-    if(document.body) document.body.classList.remove('games-modal-open');
-  }
 function toggleGameFullscreen(gameId){
     const id = normaliseGameId(gameId);
     if(!id) return;
@@ -3839,11 +3773,11 @@ function toggleGameFullscreen(gameId){
   function bindEvents(){
     document.addEventListener('click', function(event){
       const modalClose = event.target.closest('[data-close-games-modal]');
-      if(modalClose){ closeGamesHubModal(); return; }
+      if(modalClose){ GAMES_HUB_MODAL.close(); return; }
       const infoModal = event.target.closest('[data-game-info-modal]');
-      if(infoModal){ if(event){ event.preventDefault(); event.stopPropagation(); } openGamesHubModal(infoModal.getAttribute('data-game-info-modal') || '', 'brain'); return; }
+      if(infoModal){ if(event){ event.preventDefault(); event.stopPropagation(); } GAMES_HUB_MODAL.open(infoModal.getAttribute('data-game-info-modal') || '', 'brain'); return; }
       const howToModal = event.target.closest('[data-game-howto-modal]');
-      if(howToModal){ if(event){ event.preventDefault(); event.stopPropagation(); } openGamesHubModal(howToModal.getAttribute('data-game-howto-modal') || '', 'how'); return; }
+      if(howToModal){ if(event){ event.preventDefault(); event.stopPropagation(); } GAMES_HUB_MODAL.open(howToModal.getAttribute('data-game-howto-modal') || '', 'how'); return; }
       const openDartsFocused = event.target.closest('[data-open-darts-focused]');
       if(openDartsFocused){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } requestDartsFocusedOpen(); return; }
       const openBadmintonFocused = event.target.closest('[data-open-badminton-focused]');
@@ -4072,7 +4006,7 @@ function toggleGameFullscreen(gameId){
       window.addEventListener('hashchange', function(){ restoreFromHashState({ useStored:false }); });
       window.addEventListener('popstate', function(){ restoreFromHashState({ useStored:false }); });
       document.addEventListener('fullscreenchange', function(){ syncDesktopKeypadState(); syncGameButtonLabels(); renderAutoNextControls(); });
-      document.addEventListener('keydown', function(event){ if(event && event.key === 'Escape') closeGamesHubModal(); });
+      document.addEventListener('keydown', function(event){ if(event && event.key === 'Escape') GAMES_HUB_MODAL.close(); });
       window.addEventListener('resize', function(){ ensureGameFullscreenButtons(); syncGameButtonLabels(); renderAutoNextControls(); if(wordState) renderWordBoard(); if(make24State) renderMake24Board(); }, { passive:true });
       window.addEventListener('resize', function(){ syncAllMobileInputModes(); if(selectedGame) ensureGamePlayContract(); syncDesktopKeypadState(); });
       window.addEventListener('orientationchange', function(){ syncAllMobileInputModes(); syncDesktopKeypadState(); if(selectedGame) focusGamePlaySurface(selectedGame, { scroll:false, mobileMode:!isDesktopKeypadGame(selectedGame) }); });
