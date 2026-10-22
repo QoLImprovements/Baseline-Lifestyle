@@ -19,6 +19,18 @@
 
   function routeState(){
     try{
+      const path=String(window.location.pathname||'').replace(/\/+$/,'');
+      const marker='/baseline-recreation/puzzles';
+      if(path===marker) return {view:'overview',jigsaw:''};
+      if(path.indexOf(marker+'/')===0){
+        const rest=path.slice((marker+'/').length).split('/').filter(Boolean);
+        if(rest[0]==='crossnumber') return {view:'crossnumber',jigsaw:''};
+        if(rest[0]==='jigsaws'){
+          const id=decodeURIComponent(rest[1]||'');
+          if(id&&registry.findJigsaw(id)) return {view:'player',jigsaw:id};
+          return {view:'jigsaws',jigsaw:''};
+        }
+      }
       const params=new URLSearchParams(window.location.search||'');
       const view=String(params.get('puzzle')||'').toLowerCase();
       const jigsaw=String(params.get('jigsaw')||'');
@@ -35,19 +47,19 @@
       url.searchParams.delete('puzzle');
       url.searchParams.delete('jigsaw');
       if(view!=='player') url.searchParams.delete('jigsaw-panel');
-      if(view==='jigsaws') url.searchParams.set('puzzle','jigsaws');
-      if(view==='crossnumber') url.searchParams.set('puzzle','crossnumber');
+      let pathname='/baseline-recreation/puzzles';
+      if(view==='jigsaws') pathname+='/jigsaws';
+      if(view==='crossnumber') pathname+='/crossnumber';
       if(view==='player'&&jigsaw){
         if(mode==='push') url.searchParams.delete('jigsaw-panel');
-        url.searchParams.set('puzzle','jigsaws');
-        url.searchParams.set('jigsaw',jigsaw);
+        pathname+='/jigsaws/'+encodeURIComponent(jigsaw);
       }
-      const next=url.pathname+(url.searchParams.toString()?'?'+url.searchParams.toString():'')+url.hash;
-      if(mode==='replace') window.history.replaceState({baselinePuzzles:true,view:view,jigsaw:jigsaw||''},'',next);
-      else window.history.pushState({baselinePuzzles:true,view:view,jigsaw:jigsaw||''},'',next);
+      const next=pathname+(url.searchParams.toString()?'?'+url.searchParams.toString():'')+url.hash;
+      const state={baselinePuzzles:true,view:view,jigsaw:jigsaw||''};
+      if(mode==='replace') window.history.replaceState(state,'',next);
+      else window.history.pushState(state,'',next);
     }catch(_error){}
   }
-
   function escapeHtml(value){
     return String(value??'').replace(/[&<>"']/g,function(ch){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
