@@ -110,7 +110,7 @@
       return '<div class="puzzle-library-group">' + escapeHtml(group.name) + '</div>' +
         group.items.map(function(item){
           const progress=jigsawProgress(item);
-          return '<div class="puzzle-library-row-wrap' + (activeJigsaw===item.id?' is-selected':'') + '">' +
+          return '<div class="puzzle-library-row-wrap">' +
             '<button class="puzzle-library-row" data-jigsaw-id="' + escapeHtml(item.id) + '" type="button">' +
               '<img class="puzzle-library-art" src="' + escapeHtml(item.image) + '" alt=""/>' +
               '<div class="puzzle-library-copy"><h3>' + escapeHtml(item.title) + '</h3><p>' + escapeHtml(item.libraryDescription||item.description) + '</p></div>' +
@@ -131,6 +131,7 @@
 
   function showView(view,historyMode){
     activeView=view;
+    if(view!=='player') activeJigsaw='';
     syncMusicForView(view);
     refs.overview.hidden=view!=='overview';
     refs.jigsaws.hidden=view!=='jigsaws';
