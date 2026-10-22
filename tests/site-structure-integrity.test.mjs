@@ -243,6 +243,34 @@ test('home index uses one six-strip system layout with the agreed order and copy
   assert.equal(css.includes('#bl-beats-flyout'), false, 'index stylesheet must not retain dead Binaural flyout rules');
 });
 
+test('primary entry pages use one version key per static CSS and JavaScript asset', () => {
+  const entries = [
+    'index.html',
+    'systems/baseline-food-approach/baseline-food-approach.html',
+    'systems/baseline-massage/baseline-massage.html',
+    'systems/baseline-natural-skincare/baseline-natural-skincare.html',
+    'systems/baseline-psychology/baseline-psychology.html',
+    'systems/baseline-badminton-session/baseline-badminton-session.html',
+    'systems/baseline-fitness/baseline-fitness.html',
+    'systems/baseline-games-hub/baseline-games-hub.html',
+    'systems/charity-shop/charity-shop.php'
+  ];
+
+  for (const relative of entries) {
+    const source = fs.readFileSync(path.join(root, relative), 'utf8');
+    for (const match of source.matchAll(/(?:src|href)=["']([^"']+\.(?:css|js)\?[^"']+)["']/gi)) {
+      const asset = match[1].replaceAll('&amp;', '&');
+      const query = asset.slice(asset.indexOf('?') + 1);
+      const parameters = query.split('&').filter(Boolean);
+      assert.equal(parameters.length, 1, relative + ' has stacked static-asset cache parameters: ' + asset);
+      assert.match(parameters[0], /^v=[A-Za-z0-9._-]+$/, relative + ' static assets must use one v= build key: ' + asset);
+    }
+  }
+
+  const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  assert.match(home, /baseline-home\.css\?v=HOME_SINGLE_PAGE_20261022_1/);
+});
+
 test('Baseline Personal Care is the visible system name while the existing route stays compatible', () => {
   const retiredSystemName = ['Baseline','Natural','Skincare'].join(' ');
   const retiredFavorites = ['Baseline','Skincare','Favorites'].join(' ');
