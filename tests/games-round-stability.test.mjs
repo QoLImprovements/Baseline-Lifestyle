@@ -95,7 +95,7 @@ test('Detect The Word and Make The Number preserve unfinished input across reren
   const wordStart = functionBody('startWordRound', 'submitWordGuess');
   const wordRender = functionBody('renderWordBoard', 'renderDetectWordSummary');
   const wordSubmit = functionBody('submitWordGuess', 'spendWordSkill');
-  const makeStart = functionBody('startMake24Puzzle', 'countNumbers');
+  const makeStart = functionBody('startMake24Puzzle', 'submitMake24Expression');
   const makeSubmit = functionBody('submitMake24Expression', 'useMake24Hint');
   const makeRender = functionBody('renderMake24Board', 'renderMake24Summary');
 
