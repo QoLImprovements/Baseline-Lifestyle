@@ -24,9 +24,9 @@ test('Puzzles opens as a type library with Jigsaws as a nested selection', () =>
   assert.match(registry, /id:'jigsaws'/);
   assert.match(library, /data-puzzle-type/);
   assert.match(library, /data-jigsaw-id/);
-  assert.match(library, /showView\('overview'\)/);
-  assert.match(library, /showView\('jigsaws'\)/);
-  assert.match(library, /showView\('player'\)/);
+  assert.match(library, /showView\('overview','push'\)/);
+  assert.match(library, /showView\('jigsaws','push'\)/);
+  assert.match(library, /showView\('player','push'\)/);
   assert.match(core, /BaselinePuzzlesLibrary\.showOverview\(\)/);
 });
 
