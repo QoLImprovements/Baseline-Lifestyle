@@ -98,6 +98,6 @@ test('Recreation core delegates Detect The Word engine logic to one authority',(
 
   const configIndex=html.indexOf('/systems/baseline-recreation/js/games-core-config.js');
   const engineIndex=html.indexOf('/systems/baseline-recreation/js/detect-word-engine.js?v=DETECT_WORD_ENGINE_AUTHORITY_20261021_1');
-  const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js?v=DETECT_WORD_ENGINE_AUTHORITY_20261021_1');
+  const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js?v=RECREATION_CORE_20261022_1');
   assert.ok(configIndex>=0 && engineIndex>configIndex && coreIndex>engineIndex);
 });
