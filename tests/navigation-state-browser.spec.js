@@ -163,6 +163,17 @@ test('Recreation inner panels survive refresh',async({page})=>{
   await expect(page.locator('#pairsSkillCard')).toBeVisible();
 });
 
+test('Concept detail route survives refresh and restores the Concepts shell',async({page})=>{
+  await stubGames(page);
+  await page.goto('/baseline-recreation/concepts/stroop-effect',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
+  await expect(page.locator('[data-target="concepts"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#conceptStroopEffect')).toBeVisible();
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
+  await expect(page.locator('#conceptStroopEffect')).toBeVisible();
+});
+
 test('Block Grid and Colour Sort nested tabs survive refresh',async({page})=>{
   await stubGames(page);
   await page.goto('/baseline-recreation/games/block-grid',{waitUntil:'domcontentloaded'});
