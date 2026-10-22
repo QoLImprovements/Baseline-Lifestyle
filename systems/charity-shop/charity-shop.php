@@ -35,8 +35,7 @@ if($accessUntil <= time()){
   <link rel="stylesheet" href="/sitewide/css/baseline-protected-access.css?v=PROTECTED_ACCESS_CSS_20261021_1" data-protected-access-style="true">
   <link rel="stylesheet" href="/sitewide/css/baseline-protected-key-placement.css?v=PROTECTED_KEY_CSS_20261021_1" data-protected-key-placement="true">
   <link rel="stylesheet" href="/sitewide/css/baseline-ui-fixes.css?v=SITEWIDE_UI_FIXES_20261021_1" data-baseline-ui-fixes="true">
-  <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-cashing-and-artwork.css?v=CHARITY_CSS_SHADOW_CLEANUP_20261021_1" data-charity-cashing-corrections="true">
-  <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-final-coherence.css?v=CHARITY_DROPDOWN_ACCESS_20260801_2">
+  <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-presentation.css?v=CHARITY_PRESENTATION_SINGLE_AUTHORITY_20261022_1" data-charity-presentation="true">
   <link rel="stylesheet" href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" data-baseline-gradient-alignment="true">
 </head>
 <body data-app="charity-shop" data-page="charity-shop-guidance">

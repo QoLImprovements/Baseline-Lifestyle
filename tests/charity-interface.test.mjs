@@ -35,7 +35,7 @@ test('Charity Shop dropdown has one controller instead of two click toggles',asy
 test('Charity Shop dropdown supports keyboard navigation and cannot be clipped',async()=>{
   const [controller,styles,page] = await Promise.all([
     read('sitewide/js/baseline-protected-access.js'),
-    read('systems/charity-shop/css/charity-shop-final-coherence.css'),
+    read('systems/charity-shop/css/charity-shop-presentation.css'),
     read('systems/charity-shop/charity-shop.php')
   ]);
   ['ArrowDown','ArrowUp','Home','End','Escape'].forEach(key => assert.ok(controller.includes(key),key));
@@ -44,7 +44,7 @@ test('Charity Shop dropdown supports keyboard navigation and cannot be clipped',
   assert.match(styles,/\.bl-pages-menu:not\(\[hidden\]\)\{[\s\S]*?pointer-events:auto!important;[\s\S]*?overflow-y:auto!important;/);
   assert.match(styles,/\.bl-pages-menu \.bl-pages-link\{[\s\S]*?min-height:44px!important;/);
   assert.match(page,/baseline-protected-access\.css\?v=PROTECTED_ACCESS_CSS_20261021_1/);
-  assert.match(page,/CHARITY_DROPDOWN_ACCESS_20260801_2/);
+  assert.match(page,/CHARITY_PRESENTATION_SINGLE_AUTHORITY_20261022_1/);
   assert.match(page,/CHARITY_FLOAT_COPY_20260801_2/);
 });
 
@@ -73,16 +73,17 @@ test('retired Charity coherence runtime stays absent',async()=>{
   assert.doesNotMatch(runtime,/charity-shop-coherence\.css/);
 });
 
-test('Charity Shop presentation layers remain consolidated under one pre-colour authority',async()=>{
-  const [page,cashing,finalCoherence] = await Promise.all([
+test('Charity Shop has one late presentation stylesheet authority',async()=>{
+  const [page,presentation] = await Promise.all([
     read('systems/charity-shop/charity-shop.php'),
-    read('systems/charity-shop/css/charity-shop-cashing-and-artwork.css'),
-    read('systems/charity-shop/css/charity-shop-final-coherence.css')
+    read('systems/charity-shop/css/charity-shop-presentation.css')
   ]);
 
   for(const retired of [
     'systems/charity-shop/css/charity-shop-coherence.css',
-    'systems/charity-shop/css/charity-shop-complete-theme.css'
+    'systems/charity-shop/css/charity-shop-complete-theme.css',
+    'systems/charity-shop/css/charity-shop-cashing-and-artwork.css',
+    'systems/charity-shop/css/charity-shop-final-coherence.css'
   ]){
     await assert.rejects(
       read(retired),
@@ -91,26 +92,22 @@ test('Charity Shop presentation layers remain consolidated under one pre-colour 
     );
   }
 
-  assert.doesNotMatch(page,/charity-shop-coherence\.css|charity-shop-complete-theme\.css/);
-  assert.equal((page.match(/charity-shop-cashing-and-artwork\.css/g)||[]).length,1);
-  assert.match(page,/charity-shop-cashing-and-artwork\.css\?v=CHARITY_CSS_SHADOW_CLEANUP_20261021_1/);
+  assert.doesNotMatch(page,/charity-shop-coherence\.css|charity-shop-complete-theme\.css|charity-shop-cashing-and-artwork\.css|charity-shop-final-coherence\.css/);
+  assert.equal((page.match(/charity-shop-presentation\.css/g)||[]).length,1);
+  assert.match(page,/charity-shop-presentation\.css\?v=CHARITY_PRESENTATION_SINGLE_AUTHORITY_20261022_1/);
 
-  const mergedStart=cashing.indexOf('Charity Shop single-gradient authority');
-  const laterStart=cashing.indexOf('Former cashing-and-artwork layer: later authority begins here.');
-  assert.ok(mergedStart>=0 && laterStart>mergedStart,'contributing former complete-theme rules must remain before later cashing/artwork rules');
+  const earlierStart=presentation.indexOf('Charity Shop single-gradient authority');
+  const finalStart=presentation.indexOf('Charity Shop final colour authority');
+  assert.ok(earlierStart>=0 && finalStart>earlierStart,'former presentation layers must retain their original cascade order');
 
-  const retainedLegacyLayer=cashing.slice(mergedStart,laterStart);
-  assert.doesNotMatch(retainedLegacyLayer,/body\[data-app="charity-shop"\] \.charity-scroll,[\s\S]*?background-size:100% 100%!important;/);
-  assert.doesNotMatch(retainedLegacyLayer,/\.charity-grid,[\s\S]*?\.charity-card-grid\{[\s\S]*?gap:18px!important;/);
-  assert.doesNotMatch(retainedLegacyLayer,/\.charity-step-number--teal\{[\s\S]*?margin:0 0 2px!important;/);
-  assert.doesNotMatch(retainedLegacyLayer,/\.charity-step-artwork\{[\s\S]*?box-shadow:0 8px 18px rgba\(80,12,19,\.10\)!important;/);
-
-  const cashingLink=page.indexOf('charity-shop-cashing-and-artwork.css');
-  const finalLink=page.indexOf('charity-shop-final-coherence.css');
-  assert.ok(cashingLink>=0 && finalLink>cashingLink,'final colour authority must remain later in the cascade');
+  const retainedEarlierLayer=presentation.slice(earlierStart,finalStart);
+  assert.doesNotMatch(retainedEarlierLayer,/body\[data-app="charity-shop"\] \.charity-scroll,[\s\S]*?background-size:100% 100%!important;/);
+  assert.doesNotMatch(retainedEarlierLayer,/\.charity-grid,[\s\S]*?\.charity-card-grid\{[\s\S]*?gap:18px!important;/);
+  assert.doesNotMatch(retainedEarlierLayer,/\.charity-step-number--teal\{[\s\S]*?margin:0 0 2px!important;/);
+  assert.doesNotMatch(retainedEarlierLayer,/\.charity-step-artwork\{[\s\S]*?box-shadow:0 8px 18px rgba\(80,12,19,\.10\)!important;/);
 
   assert.doesNotMatch(page,/charityCashToBankWhiteAuthority|CHARITY-CASH-TO-BANK-INLINE-AUTHORITY/);
-  assert.doesNotMatch(cashing,/CHARITY-CASH-TO-BANK-WHITE-20260803/);
-  assert.match(finalCoherence,/\.charity-total-line--final > span,[\s\S]*\.charity-total-line--final > output[\s\S]*color:#fff!important;[\s\S]*-webkit-text-fill-color:#fff!important;/);
+  assert.doesNotMatch(presentation,/CHARITY-CASH-TO-BANK-WHITE-20260803/);
+  assert.match(presentation,/\.charity-total-line--final > span,[\s\S]*\.charity-total-line--final > output[\s\S]*color:#fff!important;[\s\S]*-webkit-text-fill-color:#fff!important;/);
 });
 

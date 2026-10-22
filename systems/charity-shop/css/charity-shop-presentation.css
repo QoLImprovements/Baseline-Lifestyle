@@ -1,6 +1,6 @@
-/* Consolidated Charity Shop presentation authority.
-   The former complete-theme layer is retained only where it still contributes
-   to the final result; rules fully superseded later in this file are removed. */
+/* Charity Shop presentation authority.
+   Consolidates the former cashing/artwork and final-colour layers in their
+   original cascade order so one late stylesheet owns Charity presentation. */
 
 /* Charity Shop single-gradient authority — 2026-07-30
    One mirrored Air Ambulance palette across the banner, header and all pages.
@@ -918,3 +918,476 @@ html body[data-app="charity-shop"] .charity-artwork-card{
   }
 }
 
+/* --- Former final-colour layer; retained in its original cascade position. --- */
+
+/* Charity Shop final colour authority — site-template compliant.
+   This file owns Charity Shop colours only. Shared geometry and the universal
+   protected-access transition remain sitewide-owned. */
+
+html[data-app="charity-shop"],
+body[data-app="charity-shop"]{
+  /* Lock this value so older, later-loaded Charity styles cannot restore the
+     pale yellow centre. The range remains mirrored: deep red -> burnt orange -> deep red. */
+  --charity-gradient:linear-gradient(90deg,
+    #6f1218 0%,
+    #861920 12%,
+    #9f2426 25%,
+    #b43724 38%,
+    #c44f1f 50%,
+    #b43724 62%,
+    #9f2426 75%,
+    #861920 88%,
+    #6f1218 100%)!important;
+
+  --charity-surface-ink:#0c2232!important;
+  --charity-card-surface:#d36a2a!important;
+  --charity-card-soft:#dc8551!important;
+  --charity-tab-surface:#c44f1f!important;
+  --charity-tab-hover:#cf6232!important;
+  --charity-tab-active:#8f1d24!important;
+  --charity-field-surface:#dc8551!important;
+  --charity-table-surface:#e6a06f!important;
+  --charity-table-alt:#dda06f!important;
+  --charity-table-head:#9f2426!important;
+  --charity-control-gradient:var(--charity-gradient)!important;
+
+  --page-bg:var(--charity-gradient)!important;
+  --header-gradient:var(--charity-gradient)!important;
+  --hero-bg:var(--charity-gradient)!important;
+  --homebar-bg:var(--charity-gradient)!important;
+  --bl-active-page-gradient:var(--charity-gradient)!important;
+  --banner-pill-bg:var(--charity-gradient)!important;
+  --banner-pill-ink:#fff!important;
+  --card-bg:var(--charity-card-surface)!important;
+  --bl-surface-panel-solid:var(--charity-card-surface)!important;
+  --bl-surface-control-solid:var(--charity-tab-surface)!important;
+  --bl-surface-active-solid:var(--charity-tab-active)!important;
+  --bl-surface-input-solid:var(--charity-field-surface)!important;
+  --bl-flyout-field-bg:var(--charity-field-surface)!important;
+  --bl-flyout-field-ink:var(--charity-surface-ink)!important;
+  --scroll-track:#6f1218!important;
+  --scroll-thumb:#9f2426!important;
+  --scroll-thumb-hover:#c44f1f!important;
+}
+
+/* One opaque mirrored background across the Charity Shop system. */
+html[data-app="charity-shop"],
+body[data-app="charity-shop"],
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-scroll,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-hero,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .hero,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-subtabs{
+  background:var(--charity-gradient)!important;
+  background-image:var(--charity-gradient)!important;
+  background-color:#6f1218!important;
+  /* Every independently painted full-width region uses the viewport as the
+     positioning area, so the mirrored colour stops cannot drift sideways. */
+  background-size:100vw 100vh!important;
+  background-position:left top!important;
+  background-repeat:no-repeat!important;
+  background-attachment:fixed!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+/* Requested Cashing Up cleanup. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-cashup-heading,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-cheque-heading .charity-kicker{
+  display:none!important;
+}
+
+/* The coloured final row extends outward by its own padding. Its label and value
+   therefore land on the exact same left/right columns as Total Count and Float made. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-total-line--final{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  width:calc(100% + 28px)!important;
+  margin:8px -14px 0!important;
+  padding:14px!important;
+  box-sizing:border-box!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-total-line--final > span,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-total-line--final > output{
+  margin:0!important;
+  padding:0!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+
+/* Normal site cards: one opaque medium terracotta surface, not a gradient. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-card,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll article.charity-card,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-step-card,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-table-card,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cash-table-card,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cash-totals,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-float-maker,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cheque-summary{
+  background:var(--charity-card-surface)!important;
+  background-image:none!important;
+  background-color:var(--charity-card-surface)!important;
+  border-color:rgba(111,18,24,.42)!important;
+  color:var(--charity-surface-ink)!important;
+  -webkit-text-fill-color:var(--charity-surface-ink)!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-card h1,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-card h2,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-card h3,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-card h4,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-card p,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-card li,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-card strong,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-card span,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-card label{
+  color:var(--charity-surface-ink)!important;
+  -webkit-text-fill-color:var(--charity-surface-ink)!important;
+  text-shadow:none!important;
+}
+
+/* Related internal panels remain close to the cards. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-principles > div,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-rule,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-warning,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-equation,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-float-total-line,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-bank-total-line,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cheque-row,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-float-status,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-float-fallback{
+  background:var(--charity-card-soft)!important;
+  background-image:none!important;
+  background-color:var(--charity-card-soft)!important;
+  border-color:rgba(111,18,24,.34)!important;
+  color:var(--charity-surface-ink)!important;
+  -webkit-text-fill-color:var(--charity-surface-ink)!important;
+}
+
+/* Site-template pill tabs with medium solid tones. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-main-tab,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-subtab{
+  background:var(--charity-tab-surface)!important;
+  background-image:none!important;
+  background-color:var(--charity-tab-surface)!important;
+  border-color:rgba(255,255,255,.42)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  opacity:1!important;
+  text-shadow:0 1px 1px rgba(0,0,0,.28)!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-main-tab:hover,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-main-tab:focus-visible,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-subtab:hover,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-subtab:focus-visible{
+  background:var(--charity-tab-hover)!important;
+  background-image:none!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-main-tab[aria-selected="true"],
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-subtab[aria-selected="true"],
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-main-tab.active,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-subtab.active{
+  background:var(--charity-tab-active)!important;
+  background-image:none!important;
+  border-color:#e6a06f!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+
+/* Charity Shop content fields only. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll input:not([type="range"]),
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll select,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll textarea,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cash-count{
+  background:var(--charity-field-surface)!important;
+  background-image:none!important;
+  background-color:var(--charity-field-surface)!important;
+  border-color:rgba(111,18,24,.46)!important;
+  color:var(--charity-surface-ink)!important;
+  -webkit-text-fill-color:var(--charity-surface-ink)!important;
+  caret-color:var(--charity-surface-ink)!important;
+  opacity:1!important;
+}
+
+/* Cashing Up tables use warm mid-tones, avoiding the cream-versus-red jump. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cash-table-wrap,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-float-table-wrap,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-table-scroll,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cash-table,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-float-table,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-table-scroll table{
+  background:var(--charity-table-surface)!important;
+  background-image:none!important;
+  background-color:var(--charity-table-surface)!important;
+  color:var(--charity-surface-ink)!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cash-table tbody th,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cash-table tbody td,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-float-table tbody th,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-float-table tbody td,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-table-scroll tbody th,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-table-scroll tbody td{
+  background:var(--charity-table-surface)!important;
+  background-image:none!important;
+  color:var(--charity-surface-ink)!important;
+  -webkit-text-fill-color:var(--charity-surface-ink)!important;
+  border-color:rgba(111,18,24,.22)!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cash-table tbody tr:nth-child(even) th,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cash-table tbody tr:nth-child(even) td,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-float-table tbody tr:nth-child(even) th,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-float-table tbody tr:nth-child(even) td,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-table-scroll tbody tr:nth-child(even) th,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-table-scroll tbody tr:nth-child(even) td{
+  background:var(--charity-table-alt)!important;
+  background-image:none!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-cash-table thead th,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-float-table thead th,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-scroll .charity-table-scroll thead th{
+  background:var(--charity-table-head)!important;
+  background-image:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+
+/* Banner controls, dropdown panel background, and each dropdown option all use
+   the exact same Charity Shop mirrored gradient. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-pages-btn,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-mini-btn,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar #bl-beats-toggle,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar #bl-auth-toggle,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar #blProtectedKey,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-pages-dd .bl-pages-menu,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-pages-dd .bl-pages-menu .bl-pages-link{
+  background:var(--charity-control-gradient)!important;
+  background-image:var(--charity-control-gradient)!important;
+  background-color:#6f1218!important;
+  background-size:100% 100%!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  border-color:rgba(255,255,255,.44)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.42)!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-pages-dd{
+  position:relative!important;
+  z-index:16001!important;
+  background:transparent!important;
+  background-image:none!important;
+  overflow:visible!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-pages-dd .bl-pages-menu::before,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-pages-dd .bl-pages-menu::after{
+  content:none!important;
+  display:none!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-pages-btn{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:8px!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-protected-site-key{
+  display:inline-block!important;
+  flex:0 0 18px!important;
+  width:18px!important;
+  height:18px!important;
+  background:currentColor!important;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='8' cy='12' r='4.2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M12.2 12H22M18 12v3M15 12v2' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat!important;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='8' cy='12' r='4.2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M12.2 12H22M18 12v3M15 12v2' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-protected-site-caret{
+  line-height:1!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-btn-icon,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-btn-label,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar svg,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar svg *{
+  color:#fff!important;
+  fill:currentColor!important;
+  stroke:currentColor!important;
+  -webkit-text-fill-color:#fff!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] #blProtectedKey svg,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #blProtectedKey svg *{
+  fill:none!important;
+  stroke:currentColor!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu[hidden]{display:none!important;}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar-inner{
+  overflow:visible!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu:not([hidden]){
+  display:block!important;
+  z-index:16002!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  max-height:calc(100dvh - 76px)!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link{
+  min-height:44px!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-btn:focus-visible,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link:focus-visible{
+  outline:3px solid #fff!important;
+  outline-offset:2px!important;
+  box-shadow:0 0 0 5px #6f1218!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link[aria-current="page"]{
+  order:-1!important;
+  border-color:#e6a06f!important;
+  font-weight:900!important;
+}
+
+@media (max-width:520px){
+  html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu:not([hidden]){
+    left:0!important;
+    right:auto!important;
+    width:min(420px,calc(100vw - 12px))!important;
+    max-height:calc(100dvh - 118px)!important;
+  }
+}
+
+/* Account, Binaural and Voice retain the normal site flyout geometry. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout .card,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout .card,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout .card{
+  --ink:#fff;
+  --muted:rgba(255,255,255,.88);
+  background:var(--charity-control-gradient)!important;
+  background-image:var(--charity-control-gradient)!important;
+  background-color:#6f1218!important;
+  background-size:100% 100%!important;
+  background-position:center!important;
+  border-color:rgba(255,255,255,.42)!important;
+  color:#fff!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout h1,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout h2,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout h3,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout p,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout label,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout h1,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout h2,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout h3,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout p,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout label,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout h1,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout h2,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout h3,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout p,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout label{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.38)!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout input,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout select,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout textarea,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout input:not([type="range"]),
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout select,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout textarea,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout input,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout select,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout textarea{
+  background:var(--charity-field-surface)!important;
+  background-image:none!important;
+  background-color:var(--charity-field-surface)!important;
+  border-color:rgba(111,18,24,.48)!important;
+  color:var(--charity-surface-ink)!important;
+  -webkit-text-fill-color:var(--charity-surface-ink)!important;
+  caret-color:var(--charity-surface-ink)!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout button,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout button,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout button{
+  background:var(--charity-control-gradient)!important;
+  background-image:var(--charity-control-gradient)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  border-color:rgba(255,255,255,.44)!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout input[type="range"]{
+  background:transparent!important;
+  background-image:none!important;
+  accent-color:#dc8551!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout input[type="range"]::-webkit-slider-runnable-track,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout input[type="range"]::-moz-range-track{
+  border:1px solid rgba(255,255,255,.34)!important;
+  border-radius:999px!important;
+  background:#8f1d24!important;
+  background-image:none!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout input[type="range"]::-webkit-slider-thumb,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout input[type="range"]::-moz-range-thumb{
+  background:#dc8551!important;
+  border:2px solid #fff!important;
+  box-shadow:none!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+
+/* The lock transition is universal. Reassert its shared variables after every
+   Charity Shop rule so this system cannot recolour the transition page. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-protected-access-overlay{
+  background:var(--protected-overlay-bg)!important;
+  background-image:none!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-protected-access-dialog{
+  background:var(--protected-dialog-bg)!important;
+  background-image:var(--protected-dialog-bg)!important;
+  border-color:var(--protected-dialog-border)!important;
+  color:var(--protected-dialog-ink)!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-protected-access-kicker,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-protected-access-status{
+  color:var(--protected-accent)!important;
+  -webkit-text-fill-color:var(--protected-accent)!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-protected-access-dialog h2,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-protected-access-copy,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-protected-access-form label{
+  color:var(--protected-dialog-ink)!important;
+  -webkit-text-fill-color:var(--protected-dialog-ink)!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-protected-code-row input{
+  background:var(--protected-input-bg)!important;
+  background-image:var(--protected-input-bg)!important;
+  color:var(--protected-input-ink)!important;
+  -webkit-text-fill-color:var(--protected-input-ink)!important;
+  caret-color:var(--protected-input-ink)!important;
+  border-color:var(--protected-dialog-border)!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-protected-code-row button,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-protected-access-close{
+  background:var(--protected-button-bg)!important;
+  background-image:var(--protected-button-bg)!important;
+  color:var(--protected-button-ink)!important;
+  -webkit-text-fill-color:var(--protected-button-ink)!important;
+  border-color:var(--protected-dialog-border)!important;
+}
