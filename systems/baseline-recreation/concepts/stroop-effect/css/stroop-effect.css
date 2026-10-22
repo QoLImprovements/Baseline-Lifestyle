@@ -45,3 +45,40 @@ body[data-app="recreation"] #conceptStroopEffect .stroop-term strong{
     grid-template-columns:1fr;
   }
 }
+
+
+body[data-app="recreation"] #conceptStroopEffect .stroop-comparison{
+  display:grid;
+  gap:12px;
+  min-width:0;
+}
+
+body[data-app="recreation"] #conceptStroopEffect .stroop-mode-switch{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  width:100%;
+}
+
+body[data-app="recreation"] #conceptStroopEffect .stroop-mode-switch__button{
+  min-height:44px;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.28);
+  background:rgba(var(--recreation-burgundy-rgb),.72);
+  color:var(--recreation-ink);
+}
+
+body[data-app="recreation"] #conceptStroopEffect .stroop-mode-switch__button.is-active,
+body[data-app="recreation"] #conceptStroopEffect .stroop-mode-switch__button[aria-pressed="true"]{
+  background:var(--recreation-copper);
+  border-color:var(--recreation-copper-light);
+  box-shadow:0 0 0 2px rgba(var(--recreation-copper-light-rgb),.16);
+}
+
+body[data-app="recreation"] #conceptStroopEffect .stroop-mode-switch__button:focus-visible{
+  outline:3px solid rgba(var(--recreation-copper-light-rgb),.42);
+  outline-offset:2px;
+}
+
+body[data-app="recreation"] #conceptStroopEffect[data-stroop-comparison-mode="congruent"] .stroop-art-wrap{
+  filter:saturate(.98);
+}
