@@ -2,17 +2,17 @@
   <title id="title">Block Grid overview</title>
   <desc id="desc">An original Baseline-style eight by eight block puzzle board with geometric pieces.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" x2="1"><stop stop-color="#080d22"/><stop offset=".52" stop-color="#4656a6"/><stop offset="1" stop-color="#080d22"/></linearGradient>
-    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8ca7ff"/><stop offset="1" stop-color="#4656a6"/></linearGradient>
-    <pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="30" height="30" rx="5" fill="#f2f5ff" fill-opacity=".055" stroke="#8ca7ff" stroke-opacity=".2"/></pattern>
+    <linearGradient id="bg" x1="0" x2="1"><stop stop-color="#2A0B16"/><stop offset=".52" stop-color="#9E4D38"/><stop offset="1" stop-color="#2A0B16"/></linearGradient>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#B86A50"/><stop offset="1" stop-color="#9E4D38"/></linearGradient>
+    <pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="30" height="30" rx="5" fill="#FFF4EF" fill-opacity=".055" stroke="#B86A50" stroke-opacity=".2"/></pattern>
     <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".3"/></filter>
   </defs>
   <rect width="640" height="360" rx="28" fill="url(#bg)"/>
-  <circle cx="565" cy="45" r="120" fill="#8ca7ff" fill-opacity=".09"/>
+  <circle cx="565" cy="45" r="120" fill="#B86A50" fill-opacity=".09"/>
   <g transform="translate(66 38)" filter="url(#shadow)">
-    <rect width="284" height="284" rx="24" fill="#080d22" fill-opacity=".82" stroke="#8ca7ff" stroke-opacity=".3"/>
+    <rect width="284" height="284" rx="24" fill="#2A0B16" fill-opacity=".82" stroke="#B86A50" stroke-opacity=".3"/>
     <rect x="10" y="10" width="272" height="272" fill="url(#grid)"/>
-    <g fill="url(#tile)" stroke="#afc0ed" stroke-opacity=".82">
+    <g fill="url(#tile)" stroke="#FFF4EF" stroke-opacity=".82">
       <rect x="11" y="215" width="30" height="30" rx="5"/><rect x="45" y="215" width="30" height="30" rx="5"/><rect x="79" y="215" width="30" height="30" rx="5"/><rect x="113" y="215" width="30" height="30" rx="5"/>
       <rect x="147" y="215" width="30" height="30" rx="5"/><rect x="181" y="215" width="30" height="30" rx="5"/><rect x="215" y="215" width="30" height="30" rx="5"/>
       <rect x="11" y="249" width="30" height="30" rx="5"/><rect x="45" y="249" width="30" height="30" rx="5"/><rect x="79" y="249" width="30" height="30" rx="5"/>
@@ -27,5 +27,5 @@
   <g transform="translate(438 196)" filter="url(#shadow)">
     <rect x="0" y="0" width="38" height="38" rx="7" fill="url(#tile)"/><rect x="0" y="42" width="38" height="38" rx="7" fill="url(#tile)"/><rect x="42" y="42" width="38" height="38" rx="7" fill="url(#tile)"/>
   </g>
-  <g fill="#f2f5ff"><text x="397" y="48" font-family="system-ui,sans-serif" font-size="28" font-weight="800">BLOCK GRID</text><text x="397" y="326" font-family="system-ui,sans-serif" font-size="17" opacity=".75">PLACE · CLEAR · PLAN</text></g>
+  <g fill="#FFF4EF"><text x="397" y="48" font-family="system-ui,sans-serif" font-size="28" font-weight="800">BLOCK GRID</text><text x="397" y="326" font-family="system-ui,sans-serif" font-size="17" opacity=".75">PLACE · CLEAR · PLAN</text></g>
 </svg>
