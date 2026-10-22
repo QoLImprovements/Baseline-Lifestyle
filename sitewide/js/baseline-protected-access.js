@@ -32,7 +32,7 @@
       '<div class="bl-pages-dd" data-protected-current-section="charity-shop">',
       '  <button class="bl-mini-btn bl-pages-btn" id="bl-pages-toggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Charity Shop, locked site"><span class="bl-protected-site-label">Charity Shop</span><span class="bl-protected-site-key" aria-hidden="true"></span><span class="bl-protected-site-caret" aria-hidden="true">&#9662;</span></button>',
       '  <div class="bl-pages-menu" role="menu" hidden>',
-      '    <a class="bl-pages-link" role="menuitem" href="/home/1">Home</a>',
+      '    <a class="bl-pages-link" role="menuitem" href="/">Home</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-food-approach/system">Baseline Food Approach</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-massage/system">Baseline Massage</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-natural-skincare/system">Baseline Personal Care</a>',
