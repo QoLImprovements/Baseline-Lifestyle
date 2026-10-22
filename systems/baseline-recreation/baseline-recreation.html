@@ -41,7 +41,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css?v=RECREATION_PALETTE_20261022_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=RECREATION_JIGSAW_PALETTE_20261022_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/concepts/shared/css/concepts.css?v=CONCEPTS_TEMPLATE_20261022_1" rel="stylesheet"/>
-<link href="/systems/baseline-recreation/concepts/stroop-effect/css/stroop-effect.css?v=STROOP_CONCEPT_20261022_1" rel="stylesheet"/>
+<link href="/systems/baseline-recreation/concepts/stroop-effect/css/stroop-effect.css?v=STROOP_COMPARISON_20261022_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
 <!-- Baseline Realm canonical presentation. Shared shell first, destination owners next, mobile geometry last. -->
 <link href="/systems/baseline-recreation/css/mobile-touch-targets.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-games-mobile-touch="true"/>
@@ -160,15 +160,21 @@ These Markdown rules are a human reference point, not live runtime config.
             </div>
           </div>
 
-          <figure class="concept-art-figure stroop-art-wrap">
-            <img class="concept-art" src="/systems/baseline-recreation/concepts/stroop-effect/art/stroop-effect.webp?v=STROOP_ART_20261022_1" alt="Surreal city-like environment filled with colour words displayed in competing colours, representing Stroop interference."/>
-            <figcaption class="concept-art-caption">The artwork turns competing colour and word information into an environment: the visual instruction and the learned meaning of the words both demand attention.</figcaption>
-          </figure>
+          <div class="stroop-comparison" data-stroop-comparison>
+            <div class="stroop-mode-switch" role="group" aria-label="Choose Stroop comparison condition">
+              <button class="action stroop-mode-switch__button is-active" type="button" data-stroop-mode="incongruent" aria-pressed="true">Incongruent</button>
+              <button class="action stroop-mode-switch__button" type="button" data-stroop-mode="congruent" aria-pressed="false">Congruent</button>
+            </div>
+            <figure class="concept-art-figure stroop-art-wrap">
+              <img class="concept-art" data-stroop-comparison-art src="/systems/baseline-recreation/concepts/stroop-effect/art/stroop-effect.webp?v=STROOP_ART_20261022_1" alt="Surreal city-like environment filled with colour words displayed in conflicting colours, representing Stroop interference."/>
+              <figcaption class="concept-art-caption" data-stroop-comparison-caption>Incongruent: the word meaning and displayed colour conflict. Naming the colour requires resisting the strongly practised tendency to read the word.</figcaption>
+            </figure>
+          </div>
         </div>
 
         <aside class="concept-observation" aria-label="Observation prompt">
-          <strong>Experience the conflict</strong>
-          <span>Look at the large colour words in the artwork and try to name the colour you actually see rather than reading the word. Notice whether reading arrives automatically before you can deliberately answer with the colour.</span>
+          <strong data-stroop-prompt-title>Experience the interference</strong>
+          <span data-stroop-prompt>Name the colour you actually see rather than reading the word. Notice whether the written word reaches awareness first or competes with your colour response.</span>
         </aside>
 
         <details class="concept-depth">
@@ -999,7 +1005,8 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-recreation/js/games-help-modal.js?v=GAMES_HELP_MODAL_AUTHORITY_20261022_1"></script>
 <script src="/systems/baseline-recreation/js/baseline-recreation-core.js?v=RECREATION_CORE_20261022_1"></script>
 <script src="/systems/baseline-recreation/js/games-music.js?v=PUZZLE_MUSIC_20261019_1"></script>
-<script src="/systems/baseline-recreation/concepts/shared/js/concepts.js?v=CONCEPTS_TEMPLATE_20261022_1"></script>
+<script src="/systems/baseline-recreation/concepts/shared/js/concepts.js?v=CONCEPTS_TEMPLATE_20261022_2"></script>
+<script src="/systems/baseline-recreation/concepts/stroop-effect/js/stroop-effect.js?v=STROOP_COMPARISON_20261022_1"></script>
 <script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-registry.js?v=MOVED_ALONG_CORRECTED_HAND_20261019_1"></script>
 <script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-library.js?v=PUZZLE_MUSIC_20261019_1"></script>
 <script src="/systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js?v=NONREALM_COHERENCE_20261018_1"></script>
