@@ -33,7 +33,7 @@ function generatedArchitectureData(relative){
     || relative.startsWith('systems/baseline-food-approach/Diet Log/food-library/sources/');
 }
 function authorityCandidateExcluded(relative){
-  return generatedArchitectureData(relative) || relative.includes('/tests/');
+  return generatedArchitectureData(relative) || migrationOnly(relative);
 }
 function migrationOnly(relative){
   return relative.startsWith('sitewide/migration/') || relative.includes('/tests/') || relative.startsWith('tests/') || relative.startsWith('prototypes/');
