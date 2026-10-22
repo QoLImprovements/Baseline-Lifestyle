@@ -768,3 +768,143 @@ body[data-app="recreation"] #ruleshiftPanel .ruleshift-token-caption{
     grid-column:1/-1!important;
   }
 }
+
+
+/* 2026-10-23 game-first usability and fullscreen pass */
+body[data-app="recreation"] :is(#detectwordPanel,#make24Panel){
+  --game-text-scale:1;
+}
+body[data-app="recreation"] #detectwordPanel .letter-cell{
+  margin:0!important;
+  width:clamp(40px,4vw,54px)!important;
+  height:clamp(40px,4vw,54px)!important;
+  font-size:calc(clamp(19px,2.1vw,26px) * var(--game-text-scale))!important;
+}
+body[data-app="recreation"] #detectwordPanel .word-row{
+  display:grid!important;
+  grid-template-columns:repeat(var(--letters),max-content)!important;
+  justify-content:center!important;
+  gap:8px!important;
+}
+body[data-app="recreation"] #detectwordPanel #wordGuessInput,
+body[data-app="recreation"] #make24Panel #make24ExpressionInput{
+  font-size:calc(20px * var(--game-text-scale))!important;
+}
+body[data-app="recreation"] #detectwordPanel .mobile-game-key,
+body[data-app="recreation"] #make24Panel .mobile-game-key{
+  min-height:40px!important;
+  padding:7px 6px!important;
+  font-size:calc(15px * var(--game-text-scale))!important;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] #detectwordPanel .game-play-root.desktop-keypad-open #wordBoard,
+  body[data-app="recreation"] #detectwordPanel .game-play-root.keypad-open #wordBoard,
+  body[data-app="recreation"] #detectwordPanel .game-play-root.desktop-keypad-open:fullscreen #wordBoard,
+  body[data-app="recreation"] #detectwordPanel .game-play-root.keypad-open:fullscreen #wordBoard{
+    display:grid!important;
+    grid-template-columns:minmax(380px,1fr) minmax(410px,.82fr)!important;
+    gap:clamp(18px,3vw,42px)!important;
+    align-items:center!important;
+    width:min(100%,1180px)!important;
+    margin-inline:auto!important;
+  }
+  body[data-app="recreation"] #detectwordPanel #wordBoard>.word-box{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:100%!important;
+    max-width:650px!important;
+  }
+  body[data-app="recreation"] #detectwordPanel #wordBoard>.mobile-word-keypad[aria-hidden="false"],
+  body[data-app="recreation"] #detectwordPanel .desktop-keypad-open #wordBoard>.mobile-word-keypad{
+    display:grid!important;
+    grid-column:2!important;
+    grid-row:1!important;
+    width:100%!important;
+    max-width:500px!important;
+    grid-template-columns:repeat(7,minmax(42px,1fr))!important;
+    grid-auto-rows:minmax(40px,auto)!important;
+    gap:7px!important;
+    padding:12px!important;
+    align-self:center!important;
+  }
+
+  body[data-app="recreation"] #make24Panel .game-play-root.desktop-keypad-open #make24Board,
+  body[data-app="recreation"] #make24Panel .game-play-root.keypad-open #make24Board,
+  body[data-app="recreation"] #make24Panel .game-play-root.desktop-keypad-open:fullscreen #make24Board,
+  body[data-app="recreation"] #make24Panel .game-play-root.keypad-open:fullscreen #make24Board{
+    display:grid!important;
+    grid-template-columns:minmax(420px,1fr) minmax(330px,.68fr)!important;
+    gap:clamp(18px,3vw,42px)!important;
+    align-items:center!important;
+    width:min(100%,1120px)!important;
+    margin-inline:auto!important;
+  }
+  body[data-app="recreation"] #make24Panel #make24Board>.formula-box{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:100%!important;
+  }
+  body[data-app="recreation"] #make24Panel #make24Board>.mobile-game-keypad[aria-hidden="false"],
+  body[data-app="recreation"] #make24Panel .desktop-keypad-open #make24Board>.mobile-game-keypad{
+    display:grid!important;
+    grid-column:2!important;
+    grid-row:1!important;
+    width:100%!important;
+    max-width:410px!important;
+    grid-template-columns:repeat(4,minmax(46px,1fr))!important;
+    grid-auto-rows:minmax(42px,auto)!important;
+    gap:8px!important;
+    padding:12px!important;
+    align-self:center!important;
+  }
+}
+
+body[data-app="recreation"] #pairsPanel .memory-card-face{padding:4px!important}
+body[data-app="recreation"] #pairsPanel .memory-card-front>img,
+body[data-app="recreation"] #pairsPanel .memory-card-front>svg{
+  width:92%!important;
+  height:92%!important;
+  max-width:92%!important;
+  max-height:92%!important;
+}
+body[data-app="recreation"] #pairsPanel #pairsGameCard:fullscreen #pairsBoard{
+  --pairs-board-max:1120px;
+  width:min(94vw,1120px)!important;
+  max-height:calc(100vh - 190px)!important;
+  gap:clamp(8px,1.2vw,16px)!important;
+}
+body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard):fullscreen{
+  padding:clamp(12px,1.8vw,24px)!important;
+  align-content:start!important;
+  gap:10px!important;
+}
+body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard):fullscreen .round-status-card{
+  min-height:0!important;
+  padding:8px 12px!important;
+  gap:2px!important;
+}
+body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard):fullscreen .game-live-xp{
+  padding:5px 9px!important;
+  margin:0!important;
+}
+body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard):fullscreen .game-window-actions{
+  margin-top:4px!important;
+}
+
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{background:#ff5064!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--blue .ruleshift-shape{background:#3877ff!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--green .ruleshift-shape{background:#63d46f!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--yellow .ruleshift-shape{background:#ffd23f!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--purple .ruleshift-shape{background:#a36dff!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--orange .ruleshift-shape{background:#ff8a32!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--teal .ruleshift-shape{background:#00c7a5!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--pink .ruleshift-shape{background:#ff5bb6!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-token-caption{display:none!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-token{
+  min-height:124px!important;
+  background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(var(--recreation-burgundy-rgb),.44))!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape{
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,.28)) saturate(1.12)!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape--square{border-radius:2px!important}
