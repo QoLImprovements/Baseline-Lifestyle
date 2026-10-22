@@ -62,7 +62,7 @@ let restoringSceneFromHistory = false;
 let realmSceneHistoryBound = false;
 
 function realmGameRouteActive() {
-  return /^\/baseline-recreation\/games-hub\/baseline-realm\/?$/i.test(String(globalThis.location?.pathname || ''));
+  return /^\/baseline-recreation\/games\/baseline-realm\/?$/i.test(String(globalThis.location?.pathname || ''));
 }
 
 function realmSceneFromLocation() {
@@ -340,11 +340,11 @@ function isolateCoreDependencies(dependencies) {
   isolated.renderGamesList = () => {};
   isolated.syncHashState = () => {};
   let lastSummaryAt = 0;
-  isolated.renderHubSummary = () => {
+  isolated.renderSystemSummary = () => {
     const now = Date.now();
     if (now - lastSummaryAt < 5000) return;
     lastSummaryAt = now;
-    try { dependencies.renderHubSummary?.(); } catch (_error) {}
+    try { dependencies.renderSystemSummary?.(); } catch (_error) {}
   };
   return isolated;
 }
