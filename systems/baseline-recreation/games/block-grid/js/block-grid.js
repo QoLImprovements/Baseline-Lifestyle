@@ -13,12 +13,12 @@ import {
 import {
   awardXp,
   clone,
-  createPuzzleHubShell,
+  createGameExtensionShell,
   escapeHtml,
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1';
+} from '../../../js/game-extension-support.mjs?v=GAME_EXTENSIONS_RECREATION_20261022_1';
 
 const BUILD = 'BLOCK_GRID_AUTO_NEXT_COHERENCE_20261018_1';
 const APP = 'blockgrid';
@@ -364,7 +364,7 @@ function setTab(name, historyMode = 'none') {
       const currentUrl = location.pathname + location.search + location.hash;
       if (currentUrl !== nextUrl) {
         const method = historyMode === 'replace' ? 'replaceState' : 'pushState';
-        history[method]({ puzzleGame:'block-grid', view:next }, '', nextUrl);
+        history[method]({ recreationGame:'block-grid', view:next }, '', nextUrl);
       }
     } catch (_) {}
   }
@@ -656,7 +656,7 @@ function panelHtml() {
           <button class="action secondary game-shell-action game-shell-action--icon" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Spatial planning, visual organisation, prospective reasoning and flexible space management." type="button" aria-label="What Block Grid develops"><span class="game-shell-action__icon" aria-hidden="true">i</span></button>
           <button class="action secondary game-shell-action" data-bl-info-button data-bl-info-title="How To Play" data-bl-info-text="Choose one of the three supplied pieces and place it on the 8 × 8 board. Complete an entire row or column to clear it. The run ends when none of the available pieces can fit. Dragging and tap-then-place are both supported." type="button"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>
           <button class="action secondary game-shell-action" data-block-action="fullscreen" type="button"><span class="game-shell-action__icon" aria-hidden="true">⛶</span><span class="game-shell-action__label">Full Screen</span></button>
-          <button class="action secondary game-shell-action" data-close-puzzle-game="block-grid" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
+          <button class="action secondary game-shell-action" data-close-game-extension="block-grid" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
         </div>
       </div>
       <details class="game-info-details" data-game-info="blockgrid"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
@@ -676,13 +676,13 @@ function panelHtml() {
   </section>`;
 }
 
-const shell = createPuzzleHubShell({
+const shell = createGameExtensionShell({
   id:'block-grid',
   panelId:'blockGridPanel',
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1',
-  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=NONREALM_GAME_REFINEMENT_20261018_1',
+  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=RECREATION_PALETTE_20261022_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `Level ${profile.level} · Best ${profile.bestScore}` : 'Ready',
