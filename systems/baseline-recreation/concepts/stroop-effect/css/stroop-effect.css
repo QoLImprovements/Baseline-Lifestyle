@@ -1,0 +1,47 @@
+/* Stroop-specific presentation variance.
+   Shared Concept layout remains in concepts/shared/css/concepts.css. */
+
+body[data-app="recreation"] #conceptStroopEffect .stroop-art-wrap{
+  position:relative;
+}
+
+body[data-app="recreation"] #conceptStroopEffect .stroop-art-wrap::after{
+  content:"";
+  position:absolute;
+  inset:auto 8% -10px 8%;
+  height:22px;
+  border-radius:50%;
+  background:rgba(var(--recreation-shadow-rgb),.46);
+  filter:blur(16px);
+  pointer-events:none;
+  z-index:-1;
+}
+
+body[data-app="recreation"] #conceptStroopEffect .stroop-definition{
+  font-weight:750;
+}
+
+body[data-app="recreation"] #conceptStroopEffect .stroop-terms{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:14px;
+}
+
+body[data-app="recreation"] #conceptStroopEffect .stroop-term{
+  padding:13px 14px;
+  border-radius:14px;
+  background:rgba(var(--recreation-copper-rgb),.12);
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.16);
+}
+
+body[data-app="recreation"] #conceptStroopEffect .stroop-term strong{
+  display:block;
+  margin-bottom:5px;
+}
+
+@media (max-width:560px){
+  body[data-app="recreation"] #conceptStroopEffect .stroop-terms{
+    grid-template-columns:1fr;
+  }
+}
