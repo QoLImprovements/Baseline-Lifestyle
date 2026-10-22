@@ -574,10 +574,15 @@ body[data-app="recreation"]{
   --recreation-copper-light:#C77B52;
   --recreation-copper-light-rgb:199,123,82;
   --recreation-card:#5A2038;
+  --recreation-card-rgb:90,32,56;
   --recreation-panel:#6E2C44;
+  --recreation-panel-rgb:110,44,68;
   --recreation-ink:#FFF4EF;
+  --recreation-ink-rgb:255,244,239;
   --recreation-muted:#E6C9D3;
+  --recreation-muted-rgb:230,201,211;
   --recreation-placeholder:#D9B1BE;
+  --recreation-placeholder-rgb:217,177,190;
   --recreation-shadow-rgb:38,8,21;
   --recreation-mirror:linear-gradient(90deg,#3A1022 0%,#8B3F5B 25%,#A85D3B 50%,#8B3F5B 75%,#3A1022 100%);
   --recreation-mirror-active:linear-gradient(90deg,#451329 0%,#974761 25%,#B56642 50%,#974761 75%,#451329 100%);
