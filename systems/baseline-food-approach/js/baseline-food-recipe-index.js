@@ -193,6 +193,31 @@
       "ing-tapioca-starch",
       "ing-turmeric"
     ]
+  },
+  {
+    "id": "r12",
+    "slug": "mung-bean-and-peanut-vegetable-hotpot",
+    "title": "Mung Bean & Peanut Vegetable Hotpot",
+    "category": "Slow Cooker",
+    "href": "/baseline-food-approach/recipes/mung-bean-and-peanut-vegetable-hotpot",
+    "ingredients": [
+      "ing-potato",
+      "ing-carrot",
+      "ing-mung-beans",
+      "ing-peas",
+      "ing-sweetcorn",
+      "ing-spinach",
+      "ing-tomatoes",
+      "ing-red-pepper",
+      "ing-yellow-pepper",
+      "ing-green-pepper",
+      "ing-peanut-butter",
+      "ing-dried-herbs",
+      "ing-sea-salt",
+      "ing-water",
+      "ing-tapioca-starch",
+      "ing-lemon"
+    ]
   }
 ]);
 })(window);

@@ -43,7 +43,7 @@ test('Recipes overview contains no historical visible recipe-card grid', () => {
 
 test('Food recipe sources are content fragments only', () => {
   const files = fs.readdirSync(recipeDir).filter((name) => name.endsWith('.html'));
-  assert.equal(files.length, 11);
+  assert.equal(files.length, 12);
 
   for (const name of files) {
     const html = read(path.join('systems/baseline-food-approach/recipes', name));
@@ -92,7 +92,7 @@ test('Food Diet Log persistence remains server-authoritative', () => {
 
 test('canonical Food ingredient files own detailed records', () => {
   const files = fs.readdirSync(ingredientDir).filter((entry) => entry.endsWith('.html'));
-  assert.equal(files.length, 41);
+  assert.equal(files.length, 47);
   assert.match(foodHtml, /class="lib ingredient-index"/);
   assert.doesNotMatch(foodHtml, /<div class="card" id="ing-apple">/);
 

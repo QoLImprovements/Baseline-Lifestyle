@@ -307,6 +307,38 @@
       g_per_unit: 170,
       notes: "Approx. 1 metric cup cooked potato ≈ 160 g. 1 medium potato edible portion ≈ 170 g (varies)."
     }),
+    "ing-mung-beans": withDerived({
+      label: "Dried mung beans",
+      g_per_cup: 200,
+      notes: "Approx. 1 metric cup dried mung beans ≈ 200 g; bean size and packing vary."
+    }),
+    "ing-peas": withDerived({
+      label: "Frozen peas",
+      g_per_cup: 145,
+      notes: "Approx. 1 metric cup frozen peas ≈ 145 g; practical kitchen conversion."
+    }),
+    "ing-sweetcorn": withDerived({
+      label: "Frozen sweetcorn",
+      g_per_cup: 165,
+      notes: "Approx. 1 metric cup frozen sweetcorn kernels ≈ 165 g; practical kitchen conversion."
+    }),
+    "ing-spinach": withDerived({
+      label: "Frozen spinach",
+      g_per_cup: 150,
+      notes: "Approx. 1 metric cup frozen chopped spinach ≈ 150 g; packing and water content vary."
+    }),
+    "ing-green-pepper": withDerived({
+      label: "Green pepper",
+      g_per_cup: 150,
+      g_per_unit: 150,
+      notes: "Approx. 1 metric cup chopped green pepper ≈ 150 g. 1 medium green pepper ≈ 150 g (varies)."
+    }),
+    "ing-yellow-pepper": withDerived({
+      label: "Yellow pepper",
+      g_per_cup: 150,
+      g_per_unit: 150,
+      notes: "Approx. 1 metric cup chopped yellow pepper ≈ 150 g. 1 medium yellow pepper ≈ 150 g (varies)."
+    }),
     "ing-tapioca-starch": withDerived({
       label: "Tapioca starch",
       g_per_tbsp: 8,
