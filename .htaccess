@@ -106,7 +106,7 @@ Options -Indexes
 
 # BASELINE-SYSTEMS-FOLDER-RESTRUCTURE-20260607
 # Section-owned folders now live under /systems/.
-# Public URLs remain unchanged: /baseline-food-approach/system, /baseline-games-hub/games-hub, etc.
+# Public URLs remain system-oriented: /baseline-food-approach/system, /baseline-recreation/system, etc.
 # Rewrite targets point to systems/<section>/...
 
 # BASELINE-STAGE-3-ASSET-ACCOUNTABILITY-20260607
