@@ -431,7 +431,7 @@ test('primary entrypoints use one cache key per shared static asset', () => {
     ['/sitewide/js/baseline-shared.js','SITEWIDE_SHARED_JS_20261021_1'],
     ['/sitewide/js/baseline-public-routine-viewonly-v4.js','SITEWIDE_PUBLIC_ROUTINE_VIEWONLY_JS_20261021_1'],
     ['/sitewide/js/baseline-routine-coherence-v12.js','SITEWIDE_ROUTINE_COHERENCE_JS_20261021_1'],
-    ['/sitewide/js/baseline-ingredient-profiles.js','SITEWIDE_INGREDIENT_PROFILES_JS_20261021_1']
+    ['/sitewide/js/baseline-ingredient-profiles.js','SITEWIDE_INGREDIENT_PROFILES_JS_20261022_1']
   ]);
 
   for (const entry of entries) {
