@@ -14,12 +14,12 @@ import {
 import {
   awardXp,
   clone,
-  createPuzzleHubShell,
+  createGameExtensionShell,
   escapeHtml,
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1';
+} from '../../../js/game-extension-support.mjs?v=GAME_EXTENSIONS_RECREATION_20261022_1';
 
 const BUILD = 'COLOUR_SORT_AUTO_NEXT_COHERENCE_20261018_1';
 const APP = 'coloursort';
@@ -327,7 +327,7 @@ function setTab(name, historyMode = 'none') {
       const currentUrl = location.pathname + location.search + location.hash;
       if (currentUrl !== nextUrl) {
         const method = historyMode === 'replace' ? 'replaceState' : 'pushState';
-        history[method]({ puzzleGame:'colour-sort', view:next }, '', nextUrl);
+        history[method]({ recreationGame:'colour-sort', view:next }, '', nextUrl);
       }
     } catch (_) {}
   }
@@ -859,7 +859,7 @@ function panelHtml() {
           <button class="action secondary game-shell-action game-shell-action--icon" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Sequencing, planning, state tracking, inhibition and multi-step problem solving." type="button" aria-label="What Colour Sort develops"><span class="game-shell-action__icon" aria-hidden="true">i</span></button>
           <button class="action secondary game-shell-action" data-bl-info-button data-bl-info-title="How To Play" data-bl-info-text="Move the exposed run of one colour into an empty bottle or onto the same exposed colour. Sort every filled bottle into a single colour. Drag bottles or tap a source and then a destination. Undo, Hint and Restart stay available below the board." type="button"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>
           <button class="action secondary game-shell-action" data-colour-action="fullscreen" type="button"><span class="game-shell-action__icon" aria-hidden="true">⛶</span><span class="game-shell-action__label">Full Screen</span></button>
-          <button class="action secondary game-shell-action" data-close-puzzle-game="colour-sort" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
+          <button class="action secondary game-shell-action" data-close-game-extension="colour-sort" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
         </div>
       </div>
       <details class="game-info-details" data-game-info="coloursort"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
@@ -879,13 +879,13 @@ function panelHtml() {
   </section>`;
 }
 
-const shell = createPuzzleHubShell({
+const shell = createGameExtensionShell({
   id:'colour-sort',
   panelId:'colourSortPanel',
   name:'Colour Sort',
   order:20,
   art:'/systems/baseline-recreation/games/colour-sort/art/colour-sort-overview.svg?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1',
-  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=NONREALM_GAME_REFINEMENT_20261018_1',
+  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=RECREATION_PALETTE_20261022_1',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `Level ${profile.level} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
