@@ -1066,6 +1066,12 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
     const temporary=readGuestProfile(app);
     const fallback=app==='trackcoin'?readTrackCoinStorage():(temporary || defaultProfileForApp(app));
     profiles[app]=normaliseProfile(app,serverProfile || fallback || defaultProfileForApp(app));
+    // A server save can still be in flight when the page is refreshed. The
+    // browser copy is written synchronously on every round mutation, so retain
+    // its active round until the account-backed copy catches up.
+    if(temporary && typeof temporary==='object' && Object.prototype.hasOwnProperty.call(temporary,'activeRound')){
+      profiles[app].activeRound=temporary.activeRound;
+    }
     writeGuestProfile(app,profiles[app]);
   }
 
@@ -2738,7 +2744,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
     function frame(now){
       if(!trackCoinState || trackCoinState.roundToken !== roundToken || trackCoinState.phase !== 'hide') return;
       const raw = clamp((now - startAt) / step.duration, 0, 1);
-      const eased = raw < 0.5 ? 16 * Math.pow(raw, 5) : 1 - (Math.pow(-2 * raw + 2, 5) / 2);
+      // Keep velocity through shuffle-step boundaries. The former quintic
+      // ease reached zero velocity at every boundary, which read as move/pause.
+      const eased = raw;
       cups.forEach((cup, idx) => {
         const s = starts[idx];
         const t = targets[idx];
@@ -3438,7 +3446,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
     const timePct = clamp((remaining / Math.max(1, ruleShiftTimeLimitMs(tier))) * 100, 0, 100);
     const cards = (ruleShiftState.options || []).map(function(option){
       const label = ruleShiftName(RULESHIFT_COLOURS, option.colour) + ' ' + ruleShiftName(RULESHIFT_SIZES, option.size) + ' ' + ruleShiftName(RULESHIFT_SHAPES, option.shape);
-      return '<button class="ruleshift-token ruleshift-colour--' + escapeHtml(option.colour) + ' ruleshift-size--' + escapeHtml(option.size) + '" data-ruleshift-pick="' + escapeHtml(option.id) + '" type="button" aria-label="' + escapeHtml(label) + '"><span class="ruleshift-shape ruleshift-shape--' + escapeHtml(option.shape) + '"></span><span class="ruleshift-token-caption" aria-hidden="true">' + escapeHtml(label) + '</span></button>';
+      return '<button class="ruleshift-token ruleshift-colour--' + escapeHtml(option.colour) + ' ruleshift-size--' + escapeHtml(option.size) + '" data-ruleshift-pick="' + escapeHtml(option.id) + '" type="button" aria-label="' + escapeHtml(label) + '"><span class="ruleshift-shape ruleshift-shape--' + escapeHtml(option.shape) + '" aria-hidden="true"></span></button>';
     }).join('');
     refs.ruleShiftBoard.innerHTML =
       '<div class="ruleshift-rule-card' + (ruleShiftState.lastWasRuleChange ? ' is-rule-change' : '') + '" data-rule-type="' + escapeHtml(rule.type) + '">' +
@@ -3830,6 +3838,18 @@ function toggleGameFullscreen(gameId){
       const ruleShiftPanelBtn = event.target.closest('[data-ruleshift-panel]'); if(ruleShiftPanelBtn){ setRuleShiftPanel(ruleShiftPanelBtn.getAttribute('data-ruleshift-panel'), 'push'); return; }
       const ninjaPanelBtn = event.target.closest('[data-ninja-panel]'); if(ninjaPanelBtn){ setNinjaPanel(ninjaPanelBtn.getAttribute('data-ninja-panel'), 'push'); return; }
       const panelToggle = event.target.closest('[data-toggle-panel]'); if(panelToggle){ const id = panelToggle.getAttribute('data-toggle-panel'); const target = document.getElementById(id); if(target){ const hidden = !!target.hidden; target.hidden = !hidden; panelToggle.setAttribute('aria-expanded', String(hidden)); } return; }
+      const explicitWordSubmit=event.target.closest('#wordGuessForm [type="submit"]');
+      if(explicitWordSubmit){
+        event.preventDefault();
+        submitWordGuess({preventDefault:function(){},target:explicitWordSubmit.closest('form')});
+        return;
+      }
+      const explicitMakeSubmit=event.target.closest('#make24ExpressionForm [type="submit"]');
+      if(explicitMakeSubmit){
+        event.preventDefault();
+        submitMake24Expression({preventDefault:function(){},target:explicitMakeSubmit.closest('form')});
+        return;
+      }
       const make24TokenBtn=event.target.closest('[data-make24-token]');
       if(make24TokenBtn){ appendMake24BuilderToken(make24TokenBtn.getAttribute('data-make24-token')||''); return; }
       const make24EditBtn=event.target.closest('[data-make24-edit]');
