@@ -45,8 +45,8 @@ test('Recreation registry exposes canonical identities with legacy compatibility
   assert.equal(registry.canonicalId('colour-sort'), 'colour-sort');
   assert.equal(registry.resolve('block-grid').profileApp, 'blockgrid');
   assert.equal(registry.resolve('colour-sort').profileApp, 'coloursort');
-  assert.equal(registry.resolve('block-grid').group, 'puzzle');
-  assert.equal(registry.resolve('colour-sort').group, 'puzzle');
+  assert.equal(registry.resolve('block-grid').group, 'extension');
+  assert.equal(registry.resolve('colour-sort').group, 'extension');
 
   const core = registry.coreGames();
   assert.deepEqual(
