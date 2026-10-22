@@ -28,6 +28,13 @@ function lineOf(source,index){ return source.slice(0,index).split('\n').length; 
 function runtimeFile(relative){
   return relative==='index.html' || relative.startsWith('index/') || relative.startsWith('sitewide/') || relative.startsWith('systems/');
 }
+function generatedArchitectureData(relative){
+  return relative.startsWith('systems/baseline-food-approach/Diet Log/food-library/runtime/')
+    || relative.startsWith('systems/baseline-food-approach/Diet Log/food-library/sources/');
+}
+function authorityCandidateExcluded(relative){
+  return generatedArchitectureData(relative) || relative.includes('/tests/');
+}
 function migrationOnly(relative){
   return relative.startsWith('sitewide/migration/') || relative.includes('/tests/') || relative.startsWith('tests/') || relative.startsWith('prototypes/');
 }
@@ -59,6 +66,7 @@ const dynamicScript=[];
 const inlineStyles=[];
 const timingPaint=[];
 const authorityNamed=[];
+let excludedAuthorityNamedCount=0;
 const references=new Map();
 
 const storageRegex=/\b(?:localStorage|sessionStorage|indexedDB)\b/g;
@@ -96,9 +104,12 @@ for(const [file,source] of sources){
 }
 
 for(const file of sources.keys()){
-  if(/(?:legacy|obsolete|repair|fix|fallback|shim|bridge|final-authority|refinement|stability|coherence-v\d+|authority)/i.test(path.basename(file))){
-    authorityNamed.push({file,referencedBy:references.get(file)||[]});
+  if(!/(?:legacy|obsolete|repair|fix|fallback|shim|bridge|final-authority|refinement|stability|coherence-v\d+|authority)/i.test(path.basename(file))) continue;
+  if(authorityCandidateExcluded(file)){
+    excludedAuthorityNamedCount+=1;
+    continue;
   }
+  authorityNamed.push({file,referencedBy:references.get(file)||[]});
 }
 
 const runtimeStorage=storage.filter(x=>!x.migrationOnly);
@@ -164,6 +175,7 @@ const report={
   timingPaintCount:timingPaint.length,
   timingPaint:timingPaint.slice(0,300),
   authorityNamed,
+  excludedAuthorityNamedCount,
   orphanAuthority,
   loadedAuthority,
   conflictingCssDeclarations:cssDup.slice(0,500)
@@ -179,8 +191,9 @@ console.log('Unreviewed runtime storage groups:',report.unreviewedRuntimeStorage
 console.log('Dynamic style creators:',report.dynamicStyle.length);
 console.log('Dynamic script creators:',report.dynamicScript.length);
 console.log('Large inline style blocks:',report.inlineStyles.length);
-console.log('Authority/repair/stability named files:',report.authorityNamed.length);
-console.log('Unreferenced authority/repair/stability named files:',report.orphanAuthority.length);
+console.log('Authority/repair/stability named runtime files:',report.authorityNamed.length);
+console.log('Excluded generated/test authority-name matches:',report.excludedAuthorityNamedCount);
+console.log('Unreferenced authority/repair/stability named runtime files:',report.orphanAuthority.length);
 console.log('Conflicting CSS selector/property declarations:',report.conflictingCssDeclarations.length);
 
 if(process.argv.includes('--strict')){
