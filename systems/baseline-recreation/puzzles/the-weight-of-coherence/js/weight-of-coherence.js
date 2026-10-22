@@ -53,7 +53,7 @@
   });
   const JIGSAW_XP_REWARDS = Object.freeze({ 50:30, 100:70, 500:400, 1000:900 });
   const JIGSAW_PROFILE_APPS = Object.freeze([
-    'weightcoherence','unheardsignal','tearswithoutwitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw'
+    'weightcoherence','unheardsignal','tearswithoutwitness','movedalong','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw'
   ]);
 
   const root = document.getElementById(ROOT_ID);
