@@ -1,76 +1,48 @@
-# Recreation Rules
+# Baseline Recreation Rules
 
-This page owns the Recreation system and navigation between games.
+Baseline Recreation owns the top-level recreation system and navigation between its current categories.
 
-The Recreation is a hub. It must not absorb every game's identity or mechanics into one vague blob.
+Canonical top-level navigation:
 
-Each game has its own local reference folder under:
+    System | Games | Puzzles
 
-```text
-systems/baseline-recreation/games/
-```
+The System page is the default Recreation overview. It may summarise shared account and progression state, but it must not redefine the whole Recreation container as a game system.
 
-Current game folders:
+Games remain games. Their local reference folders live under systems/baseline-recreation/games/.
+Puzzle material remains puzzle material under systems/baseline-recreation/puzzles/.
+Do not force future recreational material into Games or Puzzles merely because those are the categories that currently exist.
 
-```text
-systems/baseline-recreation/games/pairs/
-systems/baseline-recreation/games/detect-the-word/
-systems/baseline-recreation/games/make-the-number/
-systems/baseline-recreation/games/track-the-coin/
-systems/baseline-recreation/games/rule-shift/
-systems/baseline-recreation/games/block-grid/
-systems/baseline-recreation/games/colour-sort/
-systems/baseline-recreation/games/baseline-realm/
-systems/baseline-recreation/games/darts-focused/
-systems/baseline-recreation/games/badminton-focused/
-```
+## Canonical routes
 
-Individual game mechanics stay separate from hub-level rules.
+- /baseline-recreation/system
+- /baseline-recreation/games
+- /baseline-recreation/games/<game-slug>
+- /baseline-recreation/puzzles
+- /baseline-recreation/puzzles/jigsaws
+- /baseline-recreation/puzzles/jigsaws/<jigsaw-id>
+- /baseline-recreation/puzzles/crossnumber
 
-The top-level `Puzzles` tab is a separate image-puzzle area and currently owns `puzzles/the-weight-of-coherence/`. Block Grid and Colour Sort are puzzle-genre **games** and remain inside the Games list under a `Puzzle Games` group. Do not collapse these two navigation concepts into competing tab implementations.
+Old /baseline-games-hub/... paths are compatibility redirects only. They must never become canonical links again.
 
-Block Grid and Colour Sort are module-first games. Their mechanics live in their own game folders, while `js/puzzle-game-support.mjs` provides only shared Recreation navigation/presentation glue. That helper must not become a second mechanics authority.
+## Identity rule
 
-Canonical game identity and routing are defined in:
+- Anything representing the top-level container is Recreation.
+- Anything genuinely representing games remains Games.
+- Anything genuinely representing puzzles remains Puzzles.
+- Existing game save app IDs, games_profiles data, and Saved Data Games/ resources remain game identifiers, not Recreation identifiers.
 
-```text
-systems/baseline-recreation/js/games-registry.js
-```
+Canonical game identity metadata remains in systems/baseline-recreation/js/games-registry.js.
+Public game IDs such as make-the-number and baseline-realm remain unchanged. Legacy runtime/save IDs such as make24 and ninja remain compatibility aliases only.
 
-Public IDs/routes use canonical names such as `make-the-number` and `baseline-realm`. Legacy runtime/save IDs such as `make24` and `ninja` are compatibility aliases only and must not become new public identifiers.
+## Theme authority
+
+The Recreation habitat is Burgundy -> Rose -> Copper -> Rose -> Burgundy.
+Canonical Recreation hue tokens live in sitewide/css/baseline-themes.css.
+Recreation-specific component mappings live in css/recreation-theme.css.
+Structural CSS must not carry a competing indigo, blue, teal or orange top-level palette.
 
 ## Runtime ownership
 
-Most existing game runtime code is still implemented in:
+The shared Recreation shell currently hosts several game runtimes. Game mechanics remain game-specific. Baseline Realm keeps its staged module architecture beneath games/baseline-realm/.
 
-```text
-systems/baseline-recreation/baseline-recreation.html
-systems/baseline-recreation/js/baseline-recreation.js
-systems/baseline-recreation/css/baseline-recreation.css
-```
-
-Baseline Realm is now explicitly approved for a staged extraction from the shared monolith. Its modules live under:
-
-```text
-systems/baseline-recreation/games/baseline-realm/shared/
-systems/baseline-recreation/games/baseline-realm/basecamp/
-systems/baseline-recreation/games/baseline-realm/ninja-training/
-systems/baseline-recreation/games/baseline-realm/exploration/
-systems/baseline-recreation/games/baseline-realm/workshop/
-systems/baseline-recreation/games/baseline-realm/calorie-escape/
-systems/baseline-recreation/games/baseline-realm/tactical-operations/
-```
-
-Extraction must be incremental. Account saves, routes, public IDs, and current progress need migration support before old code is removed.
-
-Before changing a game, read that game's own rules folder first.
-
-Baseline Realm is the fullscreen exception inside the shared runtime. Fullscreen controls target `#realmSceneFrame`, so the complete animated stage enters fullscreen rather than the surrounding game card or page.
-
-Do not let a fix for one game overwrite another game's mechanics, status feedback, progression model, colour identity, layout contract, or input behaviour.
-
-## Route and asset integrity
-
-Baseline Realm art assets live only inside the module that owns them. Ninja Training art is under `ninja-training/assets/`; Basecamp settlement art is under `basecamp/art/`; Exploration art is under `exploration/art/`. The removed shared art directory must not be recreated or referenced.
-
-Use absolute site paths for runtime assets unless a file has been physically moved and its route has been checked.
+Before changing a game or puzzle, read its local rules/reference material. A fix for one activity must not overwrite another activity's mechanics, progression, layout contract, input behaviour or intentional in-game visual identity.
