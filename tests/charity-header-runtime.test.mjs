@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const html = readFileSync(new URL('../systems/charity-shop/charity-shop.php', import.meta.url), 'utf8');
-const finalCss = readFileSync(new URL('../systems/charity-shop/css/charity-shop-final-coherence.css', import.meta.url), 'utf8');
+const presentationCss = readFileSync(new URL('../systems/charity-shop/css/charity-shop-presentation.css', import.meta.url), 'utf8');
 
 test('Charity loads account and Binaural dependencies before the shared runtime', () => {
   const api = html.indexOf('/sitewide/js/baseline-api.js');
@@ -15,11 +15,11 @@ test('Charity loads account and Binaural dependencies before the shared runtime'
   assert.match(html, /baseline-shared\.js\?v=SITEWIDE_SHARED_JS_20261021_1/);
 });
 
-test('Cash To Bank final label and amount are owned by the final Charity colour stylesheet', () => {
-  assert.match(finalCss, /\.charity-total-line--final > span,/);
-  assert.match(finalCss, /\.charity-total-line--final > output/);
-  assert.match(finalCss, /color:#fff!important/);
-  assert.match(finalCss, /-webkit-text-fill-color:#fff!important/);
-  assert.match(html, /charity-shop-final-coherence\.css\?v=CHARITY_DROPDOWN_ACCESS_20260801_2/);
+test('Cash To Bank final label and amount are owned by the Charity presentation stylesheet', () => {
+  assert.match(presentationCss, /\.charity-total-line--final > span,/);
+  assert.match(presentationCss, /\.charity-total-line--final > output/);
+  assert.match(presentationCss, /color:#fff!important/);
+  assert.match(presentationCss, /-webkit-text-fill-color:#fff!important/);
+  assert.match(html, /charity-shop-presentation\.css\?v=CHARITY_PRESENTATION_SINGLE_AUTHORITY_20261022_1/);
   assert.doesNotMatch(html, /charityCashToBankWhiteAuthority|CHARITY-CASH-TO-BANK-INLINE-AUTHORITY/);
 });
