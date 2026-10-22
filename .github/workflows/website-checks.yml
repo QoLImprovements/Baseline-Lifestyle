@@ -44,6 +44,14 @@ jobs:
           if-no-files-found: ignore
           retention-days: 1
 
+      - name: Run Games unit tests
+        if: always()
+        run: npm run test:games-unit
+
+      - name: Run focused games unit tests
+        if: always()
+        run: npm run test:focused-games
+
       - name: Run Fitness and voice unit tests
         run: npm run test:fitness && npm run test:voice
 
@@ -107,14 +115,6 @@ jobs:
             test-results
           if-no-files-found: ignore
           retention-days: 7
-
-      - name: Run Games unit tests
-        if: always()
-        run: npm run test:games-unit
-
-      - name: Run focused games unit tests
-        if: always()
-        run: npm run test:focused-games
 
       - name: Run Badminton Recreation browser smoke
         if: always()
