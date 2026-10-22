@@ -105,7 +105,7 @@ function ra(s,a,b){ return s.split(a).join(b); }
 
 for(const f of walk(root).filter(textFile)){
  const rel=path.relative(root,f).replace(/\\/g,'/');
- if(rel==='.htaccess') continue;
+ if(rel==='.htaccess'||rel.startsWith('.github/workflows/')) continue;
  let c=fs.readFileSync(f,'utf8');
  for(const slug of gameSlugs) c=ra(c,'/baseline-games-hub/games-hub/'+slug,'/baseline-recreation/games/'+slug);
  c=ra(c,'/baseline-games-hub/games-hub/games-list','/baseline-recreation/games');
