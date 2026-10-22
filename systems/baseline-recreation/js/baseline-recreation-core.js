@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
+const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
   try{
     window.BASELINE_RECREATION_BUILD = BASELINE_RECREATION_BUILD;
     document.documentElement.setAttribute('data-baseline-recreation-js', BASELINE_RECREATION_BUILD);
