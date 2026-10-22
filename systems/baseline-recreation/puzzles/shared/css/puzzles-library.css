@@ -21,7 +21,7 @@ body[data-app="recreation"] .puzzle-library-group::after{
   content:"";
   height:1px;
   flex:1;
-  background:rgba(176,190,255,.22);
+  background:rgba(var(--recreation-copper-light-rgb),.22);
 }
 body[data-app="recreation"] .puzzle-library-row-wrap{
   position:relative;
@@ -39,7 +39,7 @@ body[data-app="recreation"] .puzzle-library-row{
   min-height:120px;
   width:100%;
   padding:13px 15px;
-  border:1px solid rgba(176,190,255,.24);
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.24);
   border-radius:16px;
   background:linear-gradient(145deg,rgba(var(--recreation-burgundy-rgb),.96) 0%,rgba(var(--recreation-rose-rgb),.94) 54%,rgba(var(--recreation-panel-rgb),.90) 100%);
   box-shadow:0 18px 38px -28px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.07);
@@ -57,7 +57,7 @@ body[data-app="recreation"] .puzzle-library-row:focus-visible{
   outline:none;
 }
 body[data-app="recreation"] .puzzle-library-row-wrap.is-selected .puzzle-library-row{
-  box-shadow:0 0 0 2px rgba(176,190,255,.58),0 24px 48px -28px rgba(0,0,0,.72);
+  box-shadow:0 0 0 2px rgba(var(--recreation-copper-light-rgb),.58),0 24px 48px -28px rgba(0,0,0,.72);
 }
 body[data-app="recreation"] .puzzle-library-art{
   grid-column:1;
@@ -65,9 +65,9 @@ body[data-app="recreation"] .puzzle-library-art{
   width:92px;
   height:92px;
   object-fit:cover;
-  border:1px solid rgba(224,230,255,.22);
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.22);
   border-radius:20px;
-  background:#11183b;
+  background:var(--recreation-card);
   box-shadow:0 14px 28px -18px rgba(8,14,27,.72);
 }
 body[data-app="recreation"] .puzzle-library-copy{
@@ -104,9 +104,9 @@ body[data-app="recreation"] .puzzle-library-meta .inline-note{
   align-items:center;
   min-height:32px;
   padding:6px 11px;
-  border:1px solid rgba(176,190,255,.24);
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.24);
   border-radius:999px;
-  background:rgba(70,86,166,.34);
+  background:rgba(var(--recreation-copper-deep-rgb),.34);
   color:rgba(var(--recreation-ink-rgb),.90);
 }
 body[data-app="recreation"] .puzzle-library-toolbar{
