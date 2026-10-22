@@ -76,7 +76,10 @@ test('obsolete Games Hub view persistence is deletion-only compatibility state',
   assert.deepEqual(item.knownKeys,['baselineGamesHubView']);
   assert.equal(item.decision,'delete-on-load');
   const core=get('systems/baseline-recreation/js/baseline-recreation-core.js');
-  assert.match(core,/removeItem\('baselineGamesHubView'\)/);
+  const migration=get('systems/baseline-recreation/js/recreation-legacy-state-migration.js');
+  assert.doesNotMatch(core,/localStorage|sessionStorage|baselineGamesHubView/);
+  assert.match(migration,/removeItem\(key\)/);
+  assert.match(migration,/baselineGamesHubView/);
 });
 
 test('active Recreation surfaces contain no stale Games Hub identity',()=>{
