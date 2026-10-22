@@ -82,20 +82,30 @@ test('obsolete Games Hub view persistence is deletion-only compatibility state',
   assert.match(migration,/baselineGamesHubView/);
 });
 
-test('active Recreation surfaces contain no stale Games Hub identity',()=>{
-  const active=[
-    'index.html',
-    'sitewide/js/baseline-shared.js',
-    'sitewide/page-shell.php',
-    'sitewide/css/baseline-themes.css',
-    'systems/baseline-recreation/baseline-recreation.html',
-    'systems/baseline-recreation/js/baseline-recreation-loader.js',
-    'systems/baseline-recreation/js/baseline-recreation-guard.js',
-    'systems/baseline-recreation/js/baseline-recreation.js',
-    'systems/baseline-recreation/css/recreation-theme.css'
-  ];
-  for(const p of active){
-    const c=get(p);
-    assert.doesNotMatch(c,/Baseline Games Hub|Games Hub|BASELINE_GAMES_HUB|\/baseline-games-hub\//,p);
+test('active Recreation runtime contains no stale Games Hub container identity',()=>{
+  const runtimeExt=new Set(['.html','.css','.js','.mjs','.cjs','.php']);
+  const allowed=new Set([
+    path.join(root,'systems/baseline-recreation/js/recreation-legacy-state-migration.js')
+  ]);
+  const failures=[];
+  function walk(dir){
+    for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
+      const full=path.join(dir,entry.name);
+      if(entry.isDirectory()) walk(full);
+      else if(runtimeExt.has(path.extname(full).toLowerCase()) && !allowed.has(full)){
+        const source=fs.readFileSync(full,'utf8');
+        if(/Baseline Games Hub|Games Hub|BASELINE_GAMES_HUB|GAMES_HUB_|gamesHub[A-Z]|data-baseline-games-hub|baseline-games-hub/i.test(source)){
+          failures.push(path.relative(root,full));
+        }
+      }
+    }
   }
+  walk(path.join(root,'systems/baseline-recreation'));
+  for(const p of ['index.html','sitewide/js/baseline-shared.js','sitewide/page-shell.php','sitewide/css/baseline-themes.css']){
+    const source=get(p);
+    if(/Baseline Games Hub|Games Hub|BASELINE_GAMES_HUB|GAMES_HUB_|gamesHub[A-Z]|data-baseline-games-hub|\/baseline-games-hub\//i.test(source)){
+      failures.push(p);
+    }
+  }
+  assert.deepEqual(failures,[]);
 });
