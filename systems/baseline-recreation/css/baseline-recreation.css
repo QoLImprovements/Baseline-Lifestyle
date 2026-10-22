@@ -2747,7 +2747,7 @@ body[data-app="recreation"] .ruleshift-size--large .ruleshift-shape{
 }
 
 body[data-app="recreation"] .ruleshift-shape--circle{ border-radius:999px!important; }
-body[data-app="recreation"] .ruleshift-shape--square{ border-radius:16px!important; }
+body[data-app="recreation"] .ruleshift-shape--square{ border-radius:2px!important; }
 body[data-app="recreation"] .ruleshift-shape--triangle{
   clip-path:polygon(50% 0%,100% 100%,0% 100%)!important;
   border-radius:0!important;
@@ -2756,7 +2756,7 @@ body[data-app="recreation"] .ruleshift-shape--diamond{
   clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)!important;
   border-radius:0!important;
 }
-body[data-app="recreation"] .ruleshift-shape--pill{
+body[data-app="recreation"] .ruleshift-shape--oval{
   border-radius:999px!important;
   width:clamp(72px,7.6vw,112px)!important;
   height:clamp(40px,4.6vw,64px)!important;
@@ -2848,7 +2848,7 @@ body[data-app="recreation"] .ruleshift-colour--pink .ruleshift-shape{ background
     height:clamp(42px,14vw,70px)!important;
   }
 
-  body[data-app="recreation"] .ruleshift-shape--pill{
+  body[data-app="recreation"] .ruleshift-shape--oval{
     width:clamp(58px,18vw,86px)!important;
     height:clamp(34px,10vw,52px)!important;
   }
@@ -2983,7 +2983,7 @@ body[data-app="recreation"] .ruleshift-choice-card{
     height:min(16vw,64px)!important;
   }
 
-  body[data-app="recreation"] .is-mobile-game-root[data-game-play-root="ruleshift"] .ruleshift-shape--pill{
+  body[data-app="recreation"] .is-mobile-game-root[data-game-play-root="ruleshift"] .ruleshift-shape--oval{
     width:min(20vw,78px)!important;
     height:min(10vw,42px)!important;
   }
@@ -3049,13 +3049,13 @@ body[data-app="recreation"] .ruleshift-size--large .ruleshift-shape{
   transform:scale(1)!important;
 }
 
-body[data-app="recreation"] .ruleshift-size--small .ruleshift-shape--pill{
+body[data-app="recreation"] .ruleshift-size--small .ruleshift-shape--oval{
   width:clamp(72px,7.6vw,112px)!important;
   height:clamp(40px,4.6vw,64px)!important;
   transform:scale(.46)!important;
 }
 
-body[data-app="recreation"] .ruleshift-size--large .ruleshift-shape--pill{
+body[data-app="recreation"] .ruleshift-size--large .ruleshift-shape--oval{
   width:clamp(72px,7.6vw,112px)!important;
   height:clamp(40px,4.6vw,64px)!important;
   transform:scale(1)!important;
@@ -3086,11 +3086,11 @@ body[data-app="recreation"] .ruleshift-size--large .ruleshift-shape--pill{
     transform:scale(1)!important;
   }
 
-  body[data-app="recreation"] .is-mobile-game-root[data-game-play-root="ruleshift"] .ruleshift-size--small .ruleshift-shape--pill{
+  body[data-app="recreation"] .is-mobile-game-root[data-game-play-root="ruleshift"] .ruleshift-size--small .ruleshift-shape--oval{
     transform:scale(.44)!important;
   }
 
-  body[data-app="recreation"] .is-mobile-game-root[data-game-play-root="ruleshift"] .ruleshift-size--large .ruleshift-shape--pill{
+  body[data-app="recreation"] .is-mobile-game-root[data-game-play-root="ruleshift"] .ruleshift-size--large .ruleshift-shape--oval{
     transform:scale(1)!important;
   }
 }
@@ -3165,11 +3165,11 @@ body[data-app="recreation"] .ruleshift-size--large .ruleshift-shape{
   transform:scale(1)!important;
 }
 
-body[data-app="recreation"] .ruleshift-size--small .ruleshift-shape--pill{
+body[data-app="recreation"] .ruleshift-size--small .ruleshift-shape--oval{
   transform:scale(.46)!important;
 }
 
-body[data-app="recreation"] .ruleshift-size--large .ruleshift-shape--pill{
+body[data-app="recreation"] .ruleshift-size--large .ruleshift-shape--oval{
   transform:scale(1)!important;
 }
 
@@ -3196,7 +3196,7 @@ body[data-app="recreation"] .ruleshift-failed-card{
   body[data-app="recreation"] .is-mobile-game-root[data-game-play-root="ruleshift"] .ruleshift-size--small .ruleshift-shape{
     transform:scale(.48)!important;
   }
-  body[data-app="recreation"] .is-mobile-game-root[data-game-play-root="ruleshift"] .ruleshift-size--small .ruleshift-shape--pill{
+  body[data-app="recreation"] .is-mobile-game-root[data-game-play-root="ruleshift"] .ruleshift-size--small .ruleshift-shape--oval{
     transform:scale(.44)!important;
   }
 }
