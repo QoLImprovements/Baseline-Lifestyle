@@ -49,6 +49,7 @@
 
         card.replaceChildren(fragment);
         card.classList.remove('ingredient-index-card');
+        card.classList.add('food-ingredient-record');
         card.dataset.ingredientRecordHydrated='1';
         return true;
       }catch(err){
