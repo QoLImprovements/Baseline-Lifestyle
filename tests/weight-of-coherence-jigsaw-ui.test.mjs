@@ -8,17 +8,17 @@ const js = fs.readFileSync('systems/baseline-recreation/puzzles/the-weight-of-co
 
 test('Weight of Coherence keeps a muted board normally and uses white behind the 50% guide', () => {
   assert.match(js, /the-weight-of-coherence\.png\?v=WEIGHT_OF_COHERENCE_FULL_20261016_2/);
-  assert.match(js, /const BOARD_BASE = '#2A3672'/);
+  assert.match(js, /const BOARD_BASE = recreationCssValue\('--recreation-panel','#6E2C44'\)/);
   assert.match(js, /const GUIDE_OPACITY = 0\.50/);
   assert.match(js, /ctx\.fillStyle=guideOn\?'#FFFFFF':BOARD_BASE/);
   assert.match(js, /ctx\.globalAlpha\s*=\s*GUIDE_OPACITY/);
-  assert.match(js, /guideOn\?'rgba\(8,13,34,\.18\)':'rgba\(214,223,255,\.10\)'/);
+  assert.match(js, /guideOn\?recreationRgba\('--recreation-burgundy-rgb','58,16,34',\.18\):recreationRgba\('--recreation-ink-rgb','255,244,239',\.10\)/);
   assert.doesNotThrow(() => new Function(js));
-  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
+  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(var\(--recreation-copper-light-rgb\),\.28\)[^}]*background:var\(--recreation-panel\)/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_FULL_PIECE_OVERLAY_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_FULL_PIECE_OVERLAY_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=RECREATION_JIGSAW_PALETTE_20261022_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=RECREATION_JIGSAW_PALETTE_20261022_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
@@ -49,7 +49,7 @@ test('rejected drag drops stay at the board and highlight the returned tray piec
   assert.match(js, /root\.classList\.add\('is-wrong-drop'\);[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return false;/);
   assert.match(js, /button\.classList\.toggle\('is-return-highlight',id===returnHighlightPieceId\)/);
   assert.match(js, /if\(returnHighlightPieceId===id\)\{[\s\S]*?returnHighlightPieceId=null;[\s\S]*?syncSelectedPieceClasses\(\)/);
-  assert.match(css, /\.weight-coherence-piece\.is-return-highlight \.weight-coherence-piece-canvas\{[^}]*drop-shadow\(0 0 8px rgba\(126,145,255,\.98\)\)/);
+  assert.match(css, /\.weight-coherence-piece\.is-return-highlight \.weight-coherence-piece-canvas\{[^}]*drop-shadow\(0 0 8px rgba\(var\(--recreation-copper-light-rgb\),\.98\)\)/);
 });
 
 test('V toggles a persistent full-colour view and pauses piece interaction without disabling zoom', () => {
