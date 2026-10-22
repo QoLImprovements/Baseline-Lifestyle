@@ -97,8 +97,16 @@ test('Charity Shop has one late presentation stylesheet authority',async()=>{
   assert.match(page,/charity-shop-presentation\.css\?v=CHARITY_PRESENTATION_SINGLE_AUTHORITY_20261022_1/);
 
   const earlierStart=presentation.indexOf('Charity Shop single-gradient authority');
+  const cashingStart=presentation.indexOf('Former cashing-and-artwork layer');
   const finalStart=presentation.indexOf('Charity Shop final colour authority');
-  assert.ok(earlierStart>=0 && finalStart>earlierStart,'former presentation layers must retain their original cascade order');
+  assert.ok(earlierStart>=0 && cashingStart>earlierStart && finalStart>cashingStart,'former presentation layers must retain their original cascade order');
+
+  const initialLayer=presentation.slice(earlierStart,cashingStart);
+  assert.doesNotMatch(initialLayer,/\.charity-subpanel\.active/);
+  assert.doesNotMatch(initialLayer,/\.charity-card--danger/);
+  assert.doesNotMatch(initialLayer,/\.charity-subtabs::before/);
+  assert.doesNotMatch(initialLayer,/\.charity-artwork-card\s*,/);
+  assert.doesNotMatch(initialLayer,/html body\[data-app="charity-shop"\] p\s*,/);
 
   const retainedEarlierLayer=presentation.slice(earlierStart,finalStart);
   assert.doesNotMatch(retainedEarlierLayer,/body\[data-app="charity-shop"\] \.charity-scroll,[\s\S]*?background-size:100% 100%!important;/);
