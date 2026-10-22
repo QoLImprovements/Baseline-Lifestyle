@@ -54,7 +54,8 @@ test('Concept routes are canonical and refresh-restorable',()=>{
   const ht=read('.htaccess');
   const core=read('systems/baseline-recreation/js/baseline-recreation-core.js');
   assert.match(ht,/baseline-recreation\/\(system\|games\|puzzles\|concepts\)/);
-  assert.match(ht,/baseline-recreation\/concepts\/stroop-effect/);
+  assert.match(ht,/baseline-recreation\/concepts\/\[\^\/\]\+\/\?\$/);
+  assert.match(read('systems/baseline-recreation/concepts/shared/js/concepts.js'),/'stroop-effect'/);
   assert.match(core,/base \+ '\/concepts'/);
   assert.match(core,/tab:'concepts'/);
   assert.match(core,/target === 'concepts'/);
