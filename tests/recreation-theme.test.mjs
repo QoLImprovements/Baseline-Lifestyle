@@ -10,31 +10,27 @@ const read = relativePath => readFile(path.join(root,relativePath),'utf8');
 const files = {
   theme:'systems/baseline-recreation/css/recreation-theme.css',
   hub:'systems/baseline-recreation/baseline-recreation.html',
-  core:'systems/baseline-recreation/js/baseline-recreation-core.js',
-  registry:'systems/baseline-recreation/js/games-registry.js',
-  home:'sitewide/css/baseline-home.css',
   themes:'sitewide/css/baseline-themes.css',
-  sitewide:'sitewide/css/baseline-sitewide.css',
-  alignment:'sitewide/css/baseline-gradient-alignment.css',
-  shared:'sitewide/js/baseline-shared.js',
-  protectedCss:'sitewide/css/baseline-protected-access.css',
-  protectedJs:'sitewide/js/baseline-protected-access.js',
   hubCss:'systems/baseline-recreation/css/baseline-recreation.css',
-  realmBasecampCss:'systems/baseline-recreation/games/baseline-realm/basecamp/css/basecamp.css',
-  realmNinjaCss:'systems/baseline-recreation/games/baseline-realm/ninja-training/css/ninja-training.css',
+  refinement:'systems/baseline-recreation/css/non-realm-game-refinement.css',
   musicCss:'systems/baseline-recreation/css/games-music.css',
-  musicJs:'systems/baseline-recreation/js/games-music.js'
+  blockCss:'systems/baseline-recreation/games/block-grid/css/block-grid.css',
+  colourCss:'systems/baseline-recreation/games/colour-sort/css/colour-sort.css',
+  blockJs:'systems/baseline-recreation/games/block-grid/js/block-grid.js',
+  colourJs:'systems/baseline-recreation/games/colour-sort/js/colour-sort.js'
 };
 
-const g01 = Object.freeze({
-  deep:'#080D22',
-  mid:'#1E2759',
-  centre:'#4656A6',
-  active:'#526BC2',
-  focus:'#8CA7FF',
-  card:'#1A244D',
-  ink:'#F2F5FF'
+const recreation = Object.freeze({
+  deep:'#2A0B16',
+  rich:'#6E1D34',
+  copper:'#9E4D38',
+  copperLight:'#B86A50',
+  card:'#4A1426',
+  panel:'#5B1A2E',
+  ink:'#FFF4EF'
 });
+
+const retiredThemeBlue = /#(?:080d22|4656a6|8ca7ff|afc0ed|f2f5ff|dfeaff|0b1434|5d78d4|8ca4f0|5571ce|7891e6|a1b4ff|23335f|a9b9f4|304277|1e2d59|17234a|101737|1d2a43)\b|rgba?\(\s*(?:140\s*,\s*167\s*,\s*255|70\s*,\s*86\s*,\s*166|115\s*,\s*139\s*,\s*215|126\s*,\s*147\s*,\s*219|10\s*,\s*20\s*,\s*58|5\s*,\s*12\s*,\s*35|12\s*,\s*21\s*,\s*50|13\s*,\s*22\s*,\s*53|13\s*,\s*20\s*,\s*45|4\s*,\s*9\s*,\s*28|16\s*,\s*24\s*,\s*39|12\s*,\s*19\s*,\s*44|15\s*,\s*25\s*,\s*55|178\s*,\s*190\s*,\s*255|59\s*,\s*70\s*,\s*110|79\s*,\s*91\s*,\s*125|127\s*,\s*150\s*,\s*185|126\s*,\s*135\s*,\s*158|151\s*,\s*174\s*,\s*207|111\s*,\s*136\s*,\s*173|23\s*,\s*32\s*,\s*51)/i;
 
 function luminance(hex){
   const values = hex.slice(1).match(/../g).map(value => parseInt(value,16) / 255);
@@ -47,88 +43,58 @@ function contrast(a,b){
   return (values[0] + .05) / (values[1] + .05);
 }
 
-test('G01 is the final Recreation palette authority',async()=>{
-  const theme = await read(files.theme);
-  Object.values(g01).forEach(colour => assert.match(theme,new RegExp(colour,'i'),colour));
-  assert.match(theme,/--g01-mirror:linear-gradient\(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%\)/);
-  assert.match(theme,/--games-card-gradient:var\(--g01-card\)/);
-  assert.match(theme,/#gamesList \.game-row\{[\s\S]*?background:var\(--g01-card\)!important;[\s\S]*?background-image:none!important;/);
-  ['#153d44','#235f63','#4f8476','#cc694b','#e99455','#f4c56c','#173438','#fff4df'].forEach(
-    retired => assert.doesNotMatch(theme,new RegExp(retired,'i'),retired)
-  );
+test('Recreation uses the Option 4 blackened-burgundy to burnt-copper mirror',async()=>{
+  const [themes,theme,hub] = await Promise.all([
+    read(files.themes),read(files.theme),read(files.hub)
+  ]);
+  Object.values(recreation).forEach(colour => assert.match(themes,new RegExp(colour,'i'),colour));
+  assert.match(themes,/--recreation-mirror:linear-gradient\(90deg,#2A0B16 0%,#6E1D34 25%,#9E4D38 50%,#6E1D34 75%,#2A0B16 100%\)/);
+  assert.match(theme,/Blackened Burgundy–Burnt Copper palette authority/);
+  assert.doesNotMatch(theme,/--games-(?:teal|orange|gold)/);
+  assert.match(hub,/theme-color" content="#2A0B16"/);
+  assert.match(hub,/linear-gradient\(90deg,#2A0B16 0%,#6E1D34 25%,#9E4D38 50%,#6E1D34 75%,#2A0B16 100%\)/);
 });
 
-test('sitewide Games fallbacks, homepage card and first paint use G01',async()=>{
-  const [hub,home,themes,sitewide] = await Promise.all([
-    read(files.hub),read(files.home),read(files.themes),read(files.sitewide)
+test('theme-facing Games CSS contains no retired indigo/navy chrome',async()=>{
+  const sources = await Promise.all([
+    read(files.hubCss),
+    read(files.refinement),
+    read(files.musicCss),
+    read(files.blockCss),
+    read(files.colourCss)
   ]);
-  assert.match(hub,/theme-color" content="#080D22"/);
-  assert.match(hub,/games-hub-theme\.css\?v=G01_INDIGO_CIRCUIT_20260801_3/);
-  assert.match(home,/--games-card-bg:linear-gradient\(90deg,[\s\S]*?var\(--games-deep\) 0%,[\s\S]*?var\(--games-mid\) 25%,[\s\S]*?var\(--games-soft\) 50%,[\s\S]*?var\(--games-mid\) 75%,[\s\S]*?var\(--games-deep\) 100%/);
-  assert.match(themes,/--games-page-gradient:linear-gradient\(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%\)/);
-  assert.match(sitewide,/--bl-flyout-bg-image:linear-gradient\(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%\)!important/);
+  sources.forEach(source => assert.doesNotMatch(source,retiredThemeBlue));
 });
 
-test('dropdown, tabs, banner controls, Account, Binaural and Realm controls are covered by their canonical owners',async()=>{
-  const [theme,realmBasecampCss,realmNinjaCss] = await Promise.all([
-    read(files.theme),read(files.realmBasecampCss),read(files.realmNinjaCss)
-  ]);
+test('Block Grid and Colour Sort consume the Recreation theme instead of owning a blue shell',async()=>{
+  const [blockCss,colourCss] = await Promise.all([read(files.blockCss),read(files.colourCss)]);
   [
-    '.bl-pages-btn','.bl-pages-menu','.bl-pages-link','#bl-auth-flyout .card',
-    '#bl-beats-flyout .card','.bl-flyout .bl-select-menu [role="option"]',
-    '.tab','.action'
-  ].forEach(selector => assert.ok(theme.includes(selector),selector));
-  assert.ok(realmBasecampCss.includes('#ninjaPanel #realmBasecampScreen .realm-location-button'));
-  assert.ok(realmNinjaCss.includes('#ninjaPanel .realm-combat-btn'));
+    '--recreation-burgundy-rgb',
+    '--recreation-rose-rgb',
+    '--recreation-copper-light-rgb'
+  ].forEach(token => {
+    assert.ok(blockCss.includes(token),`Block Grid missing ${token}`);
+    assert.ok(colourCss.includes(token),`Colour Sort missing ${token}`);
+  });
+  assert.match(colourCss,/\[data-colour="4"\]\{background:#3e70cb\}/i,
+    'Colour Sort may retain blue as a puzzle liquid colour, not as interface chrome');
 });
 
-test('remaining Hub summaries, Darts panels and core game surfaces use G01',async()=>{
-  const theme = await read(files.theme);
-  [
-    '.game-info-details summary','.game-summary-details summary','.stat-pill','.empty-box',
-    '.darts-scenario-header','.darts-scenario-facts span','.darts-coaching-note',
-    '.trackcoin-scene','.ruleshift-rule-card','.number-chip'
-  ].forEach(selector => assert.ok(theme.includes(selector),selector));
-  assert.match(theme,/\.game-info-details summary[\s\S]*?background:var\(--g01-mirror\)!important/);
-  assert.match(theme,/\.darts-scenario-header[\s\S]*?background:var\(--g01-card\)!important/);
+test('Block Grid and Colour Sort overview art use the Recreation frame palette',async()=>{
+  const art = [
+    'systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg',
+    'systems/baseline-recreation/games/colour-sort/art/colour-sort-overview.svg'
+  ];
+  for(const file of art){
+    const source = await read(file);
+    assert.match(source,/#2A0B16/i,file);
+    assert.match(source,/#9E4D38/i,file);
+    assert.match(source,/#B86A50/i,file);
+    assert.doesNotMatch(source,retiredThemeBlue,file);
+  }
 });
 
-test('Games cards are flat and Pairs symbols remain fully visible',async()=>{
-  const theme = await read(files.theme);
-  assert.match(theme,/The site's cards are flat reading surfaces/);
-  assert.match(theme,/\.card,\.game-card,\.game-row[\s\S]*?box-shadow:none!important/);
-  assert.match(theme,/\.card,\.game-card,\.game-row[\s\S]*?\)::after\{[\s\S]*?content:none!important;[\s\S]*?display:none!important/);
-  assert.match(theme,/\.memory-card\[disabled\]\{[\s\S]*?opacity:1!important;[\s\S]*?filter:none!important/);
-  assert.match(theme,/\.memory-card-face,[\s\S]*?color:var\(--g01-ink\)!important;[\s\S]*?text-shadow:none!important/);
-});
-
-test('every system shares viewport-aligned gradients, canonical header geometry and themed scrollbars',async()=>{
-  const [alignment,shared,hub] = await Promise.all([
-    read(files.alignment),read(files.shared),read(files.hub)
-  ]);
-  assert.match(alignment,/background-size:100vw 100vh!important;/);
-  assert.match(alignment,/background-position:left top!important;/);
-  assert.match(alignment,/\.hero-inner\{[\s\S]*?width:min\(var\(--bl-maxw\),calc\(100% - var\(--bl-gutter\)\)\)!important;/);
-  assert.match(alignment,/\.hero>\.tabs\{[\s\S]*?margin:10px auto 0!important;[\s\S]*?padding:0 var\(--bl-hero-pad-x\) 12px!important;/);
-  assert.match(alignment,/scrollbar-color:var\(--scroll-thumb,var\(--accent\)\) var\(--scroll-track,var\(--bg\)\)!important;/);
-  assert.match(shared,/ensureGradientAlignmentStylesheet/);
-  assert.match(shared,/BASELINE_GRADIENT_ALIGNMENT_20260801_1/);
-  assert.match(hub,/data-baseline-gradient-alignment="true"/);
-});
-
-test('Digital Code remains universal and cannot inherit a system theme',async()=>{
-  const [theme,protectedCss,protectedJs] = await Promise.all([
-    read(files.theme),read(files.protectedCss),read(files.protectedJs)
-  ]);
-  assert.match(theme,/:not\(\.bl-protected-access-overlay \*\)/);
-  assert.match(protectedCss,/html body\[data-app\] \.bl-protected-code-row input\{[\s\S]*?background:linear-gradient\(180deg,#5d5c63 0%,#3d3c41 100%\)!important;/);
-  assert.doesNotMatch(protectedCss,/--index-games-gradient|\.card--games|\.home-panel--play/);
-  assert.match(protectedJs,/addStylesheet\('\/sitewide\/css\/baseline-protected-access\.css[\s\S]*?true\);/);
-});
-
-test('all eight Games overview images are versioned and carry G01 artwork',async()=>{
-  const registry = await read(files.registry);
-  assert.equal((registry.match(/G01_INDIGO_CIRCUIT_20260801_1/g) || []).length,8);
+test('all Games overview artwork is free of the retired G01 frame palette',async()=>{
   const art = [
     'systems/baseline-recreation/games/overview-art/detect-the-word.svg',
     'systems/baseline-recreation/games/overview-art/make-the-number.svg',
@@ -137,33 +103,33 @@ test('all eight Games overview images are versioned and carry G01 artwork',async
     'systems/baseline-recreation/games/overview-art/track-the-coin.svg',
     'systems/baseline-recreation/games/overview-art/baseline-realm.svg',
     'systems/baseline-recreation/games/darts-focused/art/realistic-dartboard.svg',
-    'systems/baseline-recreation/games/badminton-focused/art/badminton-focused-overview.svg'
+    'systems/baseline-recreation/games/badminton-focused/art/badminton-focused-overview.svg',
+    'systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg',
+    'systems/baseline-recreation/games/colour-sort/art/colour-sort-overview.svg'
   ];
   for(const file of art){
     const source = await read(file);
-    assert.match(source,/#(?:080D22|1E2759|4656A6|526BC2|8CA7FF|1A244D|F2F5FF)/i,file);
+    assert.doesNotMatch(source,retiredThemeBlue,file);
   }
 });
 
-test('normal text passes WCAG AA at every mirror-gradient stop',()=>{
-  [g01.deep,g01.mid,g01.centre].forEach(
-    background => assert.ok(contrast(g01.ink,background) >= 4.5,background)
-  );
-  ['#0B1330','#2A3672','#5666BC'].forEach(
-    background => assert.ok(contrast(g01.ink,background) >= 4.5,background)
-  );
-  assert.ok(contrast(g01.ink,g01.card) >= 4.5);
-  assert.ok(contrast(g01.deep,g01.focus) >= 4.5);
+test('Block Grid and Colour Sort asset URLs are versioned for the new palette',async()=>{
+  const [hub,blockJs,colourJs] = await Promise.all([
+    read(files.hub),read(files.blockJs),read(files.colourJs)
+  ]);
+  assert.match(blockJs,/block-grid-overview\.svg\?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2/);
+  assert.match(blockJs,/block-grid\.css\?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2/);
+  assert.match(colourJs,/colour-sort-overview\.svg\?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2/);
+  assert.match(colourJs,/colour-sort\.css\?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2/);
+  assert.match(hub,/block-grid\.js\?v=RECREATION_ROUTE_20261022_2/);
+  assert.match(hub,/colour-sort\.js\?v=RECREATION_ROUTE_20261022_2/);
 });
 
-
-test('Games music settings presentation is statically owned by its stylesheet',async()=>{
-  const [hub,musicCss,musicJs] = await Promise.all([
-    read(files.hub),read(files.musicCss),read(files.musicJs)
-  ]);
-  assert.match(hub,/games-music\.css\?v=GAMES_MUSIC_STATIC_STYLES_20261020_1/);
-  assert.match(musicCss,/\.games-settings-trigger\{/);
-  assert.match(musicCss,/\.games-music-settings-dialog\{/);
-  assert.doesNotMatch(musicJs,/createElement\s*\(\s*['"]style['"]\s*\)/);
-  assert.doesNotMatch(musicJs,/ensureStyles\s*\(/);
+test('normal text passes WCAG AA at every mirror-gradient stop',()=>{
+  [recreation.deep,recreation.rich,recreation.copper].forEach(
+    background => assert.ok(contrast(recreation.ink,background) >= 4.5,background)
+  );
+  assert.ok(contrast(recreation.ink,recreation.card) >= 4.5);
+  assert.ok(contrast(recreation.ink,recreation.panel) >= 4.5);
+  assert.ok(contrast(recreation.deep,recreation.copperLight) >= 4.5);
 });

@@ -563,29 +563,29 @@ body[data-app="recreation"]{
 -------------------------------- */
 html[data-app="recreation"],
 body[data-app="recreation"]{
-  --recreation-burgundy:#3A1022;
-  --recreation-burgundy-rgb:58,16,34;
-  --recreation-rose:#8B3F5B;
-  --recreation-rose-rgb:139,63,91;
-  --recreation-copper:#A85D3B;
-  --recreation-copper-rgb:168,93,59;
-  --recreation-copper-deep:#93492F;
-  --recreation-copper-deep-rgb:147,73,47;
-  --recreation-copper-light:#C77B52;
-  --recreation-copper-light-rgb:199,123,82;
-  --recreation-card:#5A2038;
-  --recreation-card-rgb:90,32,56;
-  --recreation-panel:#6E2C44;
-  --recreation-panel-rgb:110,44,68;
+  --recreation-burgundy:#2A0B16;
+  --recreation-burgundy-rgb:42,11,22;
+  --recreation-rose:#6E1D34;
+  --recreation-rose-rgb:110,29,52;
+  --recreation-copper:#9E4D38;
+  --recreation-copper-rgb:158,77,56;
+  --recreation-copper-deep:#7D372B;
+  --recreation-copper-deep-rgb:125,55,43;
+  --recreation-copper-light:#B86A50;
+  --recreation-copper-light-rgb:184,106,80;
+  --recreation-card:#4A1426;
+  --recreation-card-rgb:74,20,38;
+  --recreation-panel:#5B1A2E;
+  --recreation-panel-rgb:91,26,46;
   --recreation-ink:#FFF4EF;
   --recreation-ink-rgb:255,244,239;
-  --recreation-muted:#E6C9D3;
-  --recreation-muted-rgb:230,201,211;
-  --recreation-placeholder:#D9B1BE;
-  --recreation-placeholder-rgb:217,177,190;
-  --recreation-shadow-rgb:38,8,21;
-  --recreation-mirror:linear-gradient(90deg,#3A1022 0%,#8B3F5B 25%,#A85D3B 50%,#8B3F5B 75%,#3A1022 100%);
-  --recreation-mirror-active:linear-gradient(90deg,#451329 0%,#974761 25%,#B56642 50%,#974761 75%,#451329 100%);
+  --recreation-muted:#E5C7CF;
+  --recreation-muted-rgb:229,199,207;
+  --recreation-placeholder:#D8AEBB;
+  --recreation-placeholder-rgb:216,174,187;
+  --recreation-shadow-rgb:28,5,13;
+  --recreation-mirror:linear-gradient(90deg,#2A0B16 0%,#6E1D34 25%,#9E4D38 50%,#6E1D34 75%,#2A0B16 100%);
+  --recreation-mirror-active:linear-gradient(90deg,#340D1C 0%,#7D2640 25%,#B25940 50%,#7D2640 75%,#340D1C 100%);
 
   --bg:var(--recreation-burgundy);
   --bg-2:var(--recreation-rose);

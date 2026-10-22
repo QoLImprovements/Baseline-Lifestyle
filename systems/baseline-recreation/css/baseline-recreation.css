@@ -112,7 +112,7 @@ body{background:var(--page-bg)}
 /* EDIT_VERSION_20260607_REALM_ART_REFRESH */
 /* ============================================================================
    Baseline Recreation — SITEWIDE GAME CONTRACT
-   Edit: 20260606_games_blue_flyout_authority
+   Edit: 20260606_games_flyout_authority
 
    One dominant coding layer for all games. Hidden sub-tabs must stay hidden.
    - Game card = game window / mobile root.
@@ -418,7 +418,7 @@ body[data-app="recreation"] .trackcoin-lane{
   border-radius:18px!important;
   background:radial-gradient(circle at 50% 44%,rgba(244,197,108,.22),transparent 34%),linear-gradient(180deg,var(--recreation-rose) 0%,var(--recreation-copper) 44%,var(--recreation-rose) 100%)!important;
   border:1px solid rgba(var(--recreation-burgundy-rgb),.42)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 -18px 28px rgba(46,56,92,.20)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 -18px 28px rgba(var(--recreation-shadow-rgb),.28)!important;
   overflow:hidden!important;
 }
 body[data-app="recreation"] .trackcoin-lane--idle{
@@ -572,7 +572,7 @@ body[data-app="recreation"] .game-play-root:fullscreen .mobile-game-keypad{displ
     position:sticky!important;
     bottom:0!important;
     z-index:18!important;
-    background:linear-gradient(180deg,rgba(59,70,110,0),rgba(59,70,110,.92) 38%,rgba(59,70,110,.98) 100%)!important;
+    background:linear-gradient(180deg,rgba(var(--recreation-burgundy-rgb),0),rgba(var(--recreation-burgundy-rgb),.92) 38%,rgba(var(--recreation-burgundy-rgb),.98) 100%)!important;
     padding:12px 0 calc(4px + env(safe-area-inset-bottom,0px))!important;
     justify-content:flex-end!important;
   }
@@ -631,8 +631,8 @@ body[data-app="recreation"] textarea.text-input{
   box-shadow:inset 0 1px 0 rgba(255,255,255,.20)!important;
 }
 body[data-app="recreation"] .text-input::placeholder{
-  color:rgba(23,32,51,.72)!important;
-  -webkit-text-fill-color:rgba(23,32,51,.72)!important;
+  color:rgba(var(--recreation-placeholder-rgb),.82)!important;
+  -webkit-text-fill-color:rgba(var(--recreation-placeholder-rgb),.82)!important;
 }
 body[data-app="recreation"] .game-window-actions .auto-next-toggle{
   min-width:210px!important;
@@ -875,7 +875,7 @@ body[data-app="recreation"] .trackcoin-scene{
 body[data-app="recreation"] .trackcoin-lane{
   height:min(280px,38vh)!important;
   min-height:220px!important;
-  background:radial-gradient(circle at 50% 44%,rgba(244,197,108,.24),transparent 34%),linear-gradient(180deg,rgba(244,197,108,.50) 0%,rgba(127,150,185,.78) 48%,rgba(126,135,158,.80) 100%)!important;
+  background:radial-gradient(circle at 50% 44%,rgba(244,197,108,.24),transparent 34%),linear-gradient(180deg,rgba(244,197,108,.50) 0%,rgba(var(--recreation-copper-rgb),.78) 48%,rgba(var(--recreation-rose-rgb),.80) 100%)!important;
 }
 @media (min-width:900px){
   body[data-app="recreation"] .game-card:not([hidden]){gap:12px!important;}
@@ -1012,7 +1012,7 @@ body[data-app="recreation"] .game-summary-details summary{
 body[data-app="recreation"] .game-row:hover{filter:brightness(1.02)!important;}
 body[data-app="recreation"] .game-row.is-selected{
   outline:2px solid var(--games-page-deep)!important;
-  box-shadow:0 0 0 4px rgba(79,91,125,.18),0 16px 30px -18px rgba(var(--recreation-shadow-rgb),.40)!important;
+  box-shadow:0 0 0 4px rgba(var(--recreation-copper-light-rgb),.18),0 16px 30px -18px rgba(var(--recreation-shadow-rgb),.40)!important;
 }
 body[data-app="recreation"] .action,
 body[data-app="recreation"] .action.secondary,
@@ -1114,7 +1114,7 @@ body[data-app="recreation"] .trackcoin-lane{
 
 
 /* 20260605 coherent Recreation contract — final dominant layer.
-   Purpose: remove tan/brown/near-white control drift, remove mobile dark-blue action bars,
+   Purpose: remove tan/brown/near-white control drift, remove legacy mobile action-bar colour overrides,
    keep desktop fullscreen clean, and make the optional desktop keypad explicit. */
 body[data-app="recreation"]{
   --games-page-deep:var(--recreation-burgundy);
@@ -2426,7 +2426,7 @@ body[data-app="recreation"] .hero .subtitle{
   }
 }
 
-/* BASELINE-TRACKCOIN-MOBILE-ABSOLUTE-AUTHORITY-20260606_games_blue_flyout_authority
+/* BASELINE-TRACKCOIN-MOBILE-ABSOLUTE-AUTHORITY-20260606_games_flyout_authority
    Track The Coin uses JS left/top absolute positioning. CSS must not turn cups into flex children. */
 @media (max-width:820px), (hover:none) and (pointer:coarse){
   body[data-app="recreation"] .is-mobile-game-root #trackCoinScene .trackcoin-scene,
@@ -2553,7 +2553,7 @@ body[data-app="recreation"] .games-modal{
 body[data-app="recreation"] .games-modal__backdrop{
   position:absolute!important;
   inset:0!important;
-  background:rgba(23,32,51,.58)!important;
+  background:rgba(var(--recreation-shadow-rgb),.66)!important;
   backdrop-filter:blur(4px)!important;
 }
 
@@ -3254,7 +3254,7 @@ body[data-app="recreation"] #gamesList .game-row{
   width:100%!important;
   padding:13px 72px 13px 15px!important;
   border-radius:20px!important;
-  background:linear-gradient(135deg,rgba(244,197,108,.98) 0%,rgba(151,174,207,.92) 55%,rgba(111,136,173,.78) 100%)!important;
+  background:var(--recreation-card)!important;
   border:1px solid rgba(var(--recreation-burgundy-rgb),.38)!important;
   box-shadow:0 18px 38px -28px rgba(var(--recreation-shadow-rgb),.58),inset 0 1px 0 rgba(255,255,255,.24)!important;
   text-align:left!important;
@@ -3275,8 +3275,8 @@ body[data-app="recreation"] #gamesList .game-card-art{
   object-fit:cover!important;
   border-radius:20px!important;
   border:1px solid rgba(var(--recreation-burgundy-rgb),.34)!important;
-  background:#1d2a43!important;
-  box-shadow:0 14px 28px -18px rgba(8,14,27,.72)!important;
+  background:var(--recreation-burgundy)!important;
+  box-shadow:0 14px 28px -18px rgba(var(--recreation-shadow-rgb),.72)!important;
 }
 body[data-app="recreation"] #gamesList .game-row-copy{
   grid-column:2!important;
