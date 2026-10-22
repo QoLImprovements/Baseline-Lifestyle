@@ -27,7 +27,7 @@ if($accessUntil <= time()){
   <meta name="theme-color" content="#6f1218">
   <style>html[data-app="charity-shop"],body[data-app="charity-shop"]{margin:0;min-height:100%;color:#0c2232;background:linear-gradient(90deg,#6f1218 0%,#861920 12%,#9f2426 25%,#b43724 38%,#c44f1f 50%,#b43724 62%,#9f2426 75%,#861920 88%,#6f1218 100%);}</style>
   <link rel="canonical" href="https://baselinelifestyle.org/baseline-charity-shop/guidance">
-  <link rel="stylesheet" href="/sitewide/css/baseline-themes.css?v=SITEWIDE_THEMES_CSS_20261021_1">
+  <link rel="stylesheet" href="/sitewide/css/baseline-themes.css?v=SITEWIDE_THEMES_CSS_20261022_1">
   <link rel="stylesheet" href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_SHARED_CSS_20261021_1">
   <link rel="stylesheet" href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_HEADER_CSS_20261021_1">
   <link rel="stylesheet" href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth">
