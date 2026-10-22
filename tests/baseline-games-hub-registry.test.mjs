@@ -7,6 +7,8 @@ const registryPath = new URL('../systems/baseline-games-hub/js/games-registry.js
 const corePath = new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js', import.meta.url);
 const loaderPath = new URL('../systems/baseline-games-hub/js/baseline-games-hub-v14.js', import.meta.url);
 const realmEntryPath = new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js', import.meta.url);
+const modalPath = new URL('../systems/baseline-games-hub/js/games-hub-modal.js', import.meta.url);
+const pagePath = new URL('../systems/baseline-games-hub/baseline-games-hub.html', import.meta.url);
 
 function loadRegistry() {
   const attributes = new Map();
@@ -65,6 +67,27 @@ test('Games Hub registry exposes canonical identities with legacy compatibility 
   }
   assert.equal(registry.resolve('darts-focused').overview.group, 'Testing');
   assert.equal(registry.resolve('baseline-realm').overview.featured, true);
+});
+
+test('Games Hub help modal has one presentation authority loaded before core', () => {
+  const core = fs.readFileSync(corePath, 'utf8');
+  const page = fs.readFileSync(pagePath, 'utf8');
+  const sandbox = { window:{}, document:{} };
+  vm.runInNewContext(fs.readFileSync(modalPath, 'utf8'), sandbox, { filename:'games-hub-modal.js' });
+  const modal = sandbox.window.BaselineGamesHubModal;
+
+  assert.ok(modal);
+  assert.equal(modal.version, 1);
+  assert.equal(modal.contentFor('pairs').title, 'Pairs');
+  assert.match(modal.contentFor('ninja').how, /Ninja Training/);
+
+  assert.match(core, /GAMES_HUB_MODAL = window\.BaselineGamesHubModal/);
+  assert.match(core, /games_hub_modal_authority_missing/);
+  assert.doesNotMatch(core, /GAME_HELP_CONTENT|function gameHelpContent|function ensureGamesHubModal|function openGamesHubModal|function closeGamesHubModal/);
+
+  const modalIndex = page.indexOf('/systems/baseline-games-hub/js/games-hub-modal.js');
+  const coreIndex = page.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js');
+  assert.ok(modalIndex >= 0 && coreIndex > modalIndex, 'modal authority must load before Games Hub core');
 });
 
 test('Games Hub core and Realm coordinate readiness through an explicit event', () => {
