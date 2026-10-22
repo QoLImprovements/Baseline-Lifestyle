@@ -1,15 +1,11 @@
-/* Baseline Recreation — Burgundy–Rose–Copper palette authority.
+/* Baseline Recreation — Blackened Burgundy–Burnt Copper palette authority.
    This file changes colour only. Existing geometry, typography, spacing,
    component ownership and game mechanics remain authoritative elsewhere. */
 html[data-app="recreation"],
 body[data-app="recreation"]{
-  /* Canonical hue values live in sitewide/css/baseline-themes.css. */
-  --games-teal-deep:var(--recreation-burgundy);
-  --games-teal:var(--recreation-rose);
-  --games-teal-soft:var(--recreation-copper);
-  --games-orange-deep:var(--recreation-panel);
-  --games-orange:var(--recreation-copper-deep);
-  --games-gold:var(--recreation-copper-light);
+  /* Canonical hue values live in sitewide/css/baseline-themes.css.
+     Recreation game chrome must consume these semantic tokens directly;
+     obsolete teal/orange aliases are intentionally not retained. */
   --games-ink:var(--recreation-ink);
   --games-cream:var(--recreation-ink);
   --games-muted:var(--recreation-muted);
