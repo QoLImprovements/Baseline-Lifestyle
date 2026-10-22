@@ -175,7 +175,7 @@ test('primary pages expose canonical discovery metadata and a level-one heading'
     ['index.html', 'https://baselinelifestyle.org/home/1'],
     ...systemNames.map((system) => [
       path.join('systems', system, `${system}.html`),
-      `https://baselinelifestyle.org/${system}/${system === 'baseline-recreation' ? 'games-hub' : 'system'}`
+      `https://baselinelifestyle.org/${system}/system`
     ])
   ];
 
