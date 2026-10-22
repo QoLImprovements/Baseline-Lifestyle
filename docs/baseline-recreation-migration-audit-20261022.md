@@ -15,6 +15,7 @@
 - Legacy /baseline-games-hub/... public URLs exist only as HTTP redirects.
 - Legacy physical Games Hub asset paths have explicit compatibility redirects where container filenames changed and a generic migrated-folder fallback for unchanged assets.
 - The obsolete baselineGamesHubView browser preference is deletion-only compatibility state. Recreation tab/view authority is the canonical URL.
+- That cleanup lives only in js/recreation-legacy-state-migration.js; the canonical Recreation core remains free of browser-storage persistence APIs.
 
 ## Preserved game-specific architecture
 
