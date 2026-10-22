@@ -26,7 +26,7 @@
 
   const DEFAULT_PROFILE=Object.freeze({
     app:APP,bank:0,xp:0,level:1,skillPoints:1,puzzlesSolved:0,gamesPlayed:0,currentStreak:0,bestStreak:0,
-    cleanWinStreak:0,roundCounter:0,bestScore:0,selectedTier:'starter',
+    cleanWinStreak:0,roundCounter:0,bestScore:0,selectedTier:'starter',recentLayouts:Object.freeze([]),
     skills:Object.freeze({insight:0,flow:0,banker:0,precision:0,structure:0}),activeRound:null
   });
 
@@ -151,6 +151,7 @@
       roundCounter:Math.max(0,int(source.roundCounter,0)),
       bestScore:Math.max(0,int(source.bestScore,0)),
       selectedTier:String(source.selectedTier||'starter'),
+      recentLayouts:(Array.isArray(source.recentLayouts)?source.recentLayouts:[]).map(String).filter(Boolean).slice(-12),
       skills:Object.assign({insight:0,flow:0,banker:0,precision:0,structure:0},source.skills||{}),
       activeRound:source.activeRound&&typeof source.activeRound==='object'?clone(source.activeRound):null
     };
@@ -334,6 +335,33 @@
     };
   }
 
+  function layoutSignature(generated){
+    return generated.edges.map(function(edge){
+      return edge.op+':'+edge.constant+':'+generated.values[edge.from]+'>'+generated.values[edge.to];
+    }).sort().join('|');
+  }
+  function signatureOverlap(a,b){
+    const left=new Set(String(a||'').split('|').filter(Boolean));
+    const right=new Set(String(b||'').split('|').filter(Boolean));
+    if(!left.size||!right.size) return 0;
+    let shared=0;
+    left.forEach(function(item){ if(right.has(item)) shared+=1; });
+    return shared/Math.max(1,Math.min(left.size,right.size));
+  }
+  function chooseDiverseLayout(tier){
+    const recent=Array.isArray(profile.recentLayouts)?profile.recentLayouts:[];
+    let best=null;
+    for(let attempt=0;attempt<14;attempt+=1){
+      const seed=hashSeed((Date.now()>>>0)^(profile.roundCounter*2654435761)^(tier.unlockLevel*977)^(attempt*2246822519));
+      const candidate=generateLayout(seed,tier.id);
+      const signature=layoutSignature(candidate);
+      const worst=recent.reduce(function(max,old){return Math.max(max,signatureOverlap(signature,old));},0);
+      if(!best||worst<best.worst) best={seed:seed,layout:candidate,signature:signature,worst:worst};
+      if(worst<=0.18) break;
+    }
+    return best;
+  }
+
   function fixedNodesForLayout(generated,tier,seed){
     const rng=rngFor(seed^0xA53C91);
     const extra=Math.floor(Math.max(0,int(profile.skills.structure,0))/2);
@@ -421,8 +449,10 @@
     profile.selectedTier=tier.id;
     profile.roundCounter+=1;
     profile.gamesPlayed+=1;
-    const seed=hashSeed((Date.now()>>>0)^(profile.roundCounter*2654435761)^(tier.unlockLevel*977));
-    layout=generateLayout(seed,tier.id);
+    const diverse=chooseDiverseLayout(tier);
+    const seed=diverse.seed;
+    layout=diverse.layout;
+    profile.recentLayouts=(Array.isArray(profile.recentLayouts)?profile.recentLayouts:[]).concat(diverse.signature).slice(-12);
     const fixed=fixedNodesForLayout(layout,tier,seed);
     const movable=layout.nodes.filter(function(node){return !fixed.includes(node.id);});
     const rng=rngFor(seed^0xC0FFEE);
@@ -437,6 +467,26 @@
     saveProfile();
     renderAll();
     setStatus('New '+tier.name+' layout generated. Place the number tiles so every equation balances.');
+    startTimer();
+  }
+
+  function restartRound(){
+    if(!round||!layout) return;
+    stopTimer();
+    const tier=tierDefinition(round.tierId);
+    const fixed=fixedNodesForLayout(layout,tier,round.seed);
+    const movable=layout.nodes.filter(function(node){return !fixed.includes(node.id);});
+    const rng=rngFor(round.seed^0xC0FFEE);
+    round={
+      seed:round.seed,tierId:round.tierId,fixedNodes:fixed,assignments:Object.create(null),
+      tileOrder:shuffled(movable.map(function(node){return tileIdForNode(node.id);}),rng),
+      seconds:0,mistakes:0,hintsUsed:0,hadFailure:false,startedAt:Date.now()
+    };
+    selectedTile='';
+    undoStack=[];
+    saveProfile();
+    renderAll();
+    setStatus('Layout restarted. Place the number tiles so every equation balances.');
     startTimer();
   }
 
@@ -931,6 +981,7 @@
     if(name==='hint') useHint();
     if(name==='undo') undo();
     if(name==='sort') sortBank();
+    if(name==='restart') restartRound();
     if(name==='new') createNewRound({tierId:profile.selectedTier});
   });
 
