@@ -8,12 +8,6 @@ const BASELINE_RECREATION_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
   }catch(_buildMarkerError){}
 
   const API_PATH = '/systems/baseline-recreation/api/games_profile.php';
-  function retireLegacyRecreationViewState(){
-    ['localStorage','sessionStorage'].forEach(function(name){
-      try{ const store=window[name]; if(store) store.removeItem('baselineGamesHubView'); }catch(_error){}
-    });
-  }
-  retireLegacyRecreationViewState();
   const GAME_REGISTRY = window.BASELINE_GAMES_REGISTRY || null;
   const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
   const REGISTERED_OVERVIEW_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.overviewGames === 'function' ? GAME_REGISTRY.overviewGames() : [];
