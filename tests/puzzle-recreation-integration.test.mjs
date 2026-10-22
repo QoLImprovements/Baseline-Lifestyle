@@ -4,21 +4,22 @@ import test from 'node:test';
 
 const read = relative => fs.readFileSync(relative, 'utf8');
 
-test('puzzle games are registered and loaded as isolated Recreation modules', () => {
+test('extension games are registered and loaded as isolated Recreation modules', () => {
   const registry = read('systems/baseline-recreation/js/games-registry.js');
   const html = read('systems/baseline-recreation/baseline-recreation.html');
   const htaccess = read('.htaccess');
+  const support = read('systems/baseline-recreation/js/game-extension-support.mjs');
   assert.match(registry, /id:'block-grid'[\s\S]*?profileApp:'blockgrid'/);
   assert.match(registry, /id:'colour-sort'[\s\S]*?profileApp:'coloursort'/);
   assert.match(html, /games\/block-grid\/js\/block-grid\.js/);
   assert.match(html, /games\/colour-sort\/js\/colour-sort\.js/);
-  assert.match(html, /rule-shift\|block-grid\|colour-sort\|darts-focused/);
+  assert.match(support, /`\/baseline-recreation\/games\/\$\{config\.id\}`/);
   assert.match(htaccess, /rule-shift\|block-grid\|colour-sort\|darts-focused/);
   assert.doesNotMatch(read('systems/baseline-recreation/games/block-grid/js/block-grid.js'), /baseline-realm|ninjaPanel/);
   assert.doesNotMatch(read('systems/baseline-recreation/games/colour-sort/js/colour-sort.js'), /baseline-realm|ninjaPanel/);
 });
 
-test('puzzle games use the Recreation server storage authority with dedicated saved-data resources', () => {
+test('extension games use the Recreation server storage authority with dedicated saved-data resources', () => {
   const guard = read('systems/baseline-recreation/js/baseline-recreation-guard.js');
   const api = read('systems/baseline-recreation/api/games_data.php');
   const saved = read('sitewide/api/saved_data.php');
@@ -30,9 +31,9 @@ test('puzzle games use the Recreation server storage authority with dedicated sa
   assert.match(saved, /'coloursort'\s*=>\s*'colour-sort\.json'/);
 });
 
-test('production puzzle modules do not create a competing browser persistence layer', () => {
+test('production game-extension modules do not create a competing browser persistence layer', () => {
   for (const path of [
-    'systems/baseline-recreation/js/puzzle-game-support.mjs',
+    'systems/baseline-recreation/js/game-extension-support.mjs',
     'systems/baseline-recreation/games/block-grid/js/block-grid.js',
     'systems/baseline-recreation/games/colour-sort/js/colour-sort.js'
   ]) {
@@ -46,11 +47,11 @@ test('Weight of Coherence uses the muted Recreation medium board and a 50% guide
   const source = read('systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
   const css = read('systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css');
 
-  assert.match(source, /BOARD_BASE = '#2A3672'/);
+  assert.match(source, /BOARD_BASE = recreationCssValue\('--recreation-panel','#6E2C44'\)/);
   assert.match(source, /GUIDE_OPACITY = 0\.50/);
   assert.match(source, /ctx\.fillStyle=BOARD_BASE/);
   assert.match(source, /ctx\.globalAlpha=GUIDE_OPACITY/);
-  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*background:#2A3672/);
+  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*background:var\(--recreation-panel\)/);
   assert.doesNotMatch(source, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
 });
@@ -65,7 +66,7 @@ test('jigsaws use the Recreation server save authority with separate puzzle prof
   assert.match(source, /BaselineGameStorage/);
   assert.doesNotMatch(source, /\b(?:localStorage|sessionStorage|indexedDB)\b/);
 
-  for (const app of ['weightcoherence','unheardsignal','tearswithoutwitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw']) {
+  for (const app of ['weightcoherence','unheardsignal','tearswithoutwitness','movedalong','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw']) {
     assert.ok(registry.includes(`app:'${app}'`));
     assert.ok(guard.includes(`'${app}'`));
     assert.ok(api.includes(`'${app}'`));
@@ -74,6 +75,7 @@ test('jigsaws use the Recreation server save authority with separate puzzle prof
   assert.match(saved, /'weightcoherence'\s*=>\s*'weight-of-coherence\.json'/);
   assert.match(saved, /'unheardsignal'\s*=>\s*'the-unheard-signal\.json'/);
   assert.match(saved, /'tearswithoutwitness'\s*=>\s*'tears-without-witness\.json'/);
+  assert.match(saved, /'movedalong'\s*=>\s*'moved-along\.json'/);
   assert.match(saved, /'pantherjigsaw'\s*=>\s*'black-panther\.json'/);
   assert.match(saved, /'bearjigsaw'\s*=>\s*'bear\.json'/);
   assert.match(saved, /'foxjigsaw'\s*=>\s*'fox\.json'/);
@@ -131,14 +133,16 @@ test('puzzle games expose visible gameplay motion and contained Block Grid dragg
 
 
 test('Block Grid and Colour Sort follow the Core Games presentation contract', () => {
-  const support = read('systems/baseline-recreation/js/puzzle-game-support.mjs');
+  const support = read('systems/baseline-recreation/js/game-extension-support.mjs');
   const block = read('systems/baseline-recreation/games/block-grid/js/block-grid.js');
   const blockCss = read('systems/baseline-recreation/games/block-grid/css/block-grid.css');
   const colour = read('systems/baseline-recreation/games/colour-sort/js/colour-sort.js');
   const colourCss = read('systems/baseline-recreation/games/colour-sort/css/colour-sort.css');
 
   assert.doesNotMatch(support, /Puzzle Games/);
-  assert.match(support, /data\.coreGameExtension = 'true'/);
+  assert.match(support, /data-open-game-extension/);
+  assert.match(support, /\/baseline-recreation\/games\/\$\{config\.id\}/);
+  assert.match(support, /dataset\.coreGameExtension = 'true'/);
   assert.match(support, /if \(testing\) list\.insertBefore\(node, testing\)/);
 
   assert.match(block, /data-game-info="blockgrid"/);
