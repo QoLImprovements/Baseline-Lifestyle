@@ -110,7 +110,7 @@ jobs:
 
       - name: Run Games Hub unit tests
         if: always()
-        run: npm run test:games-hub-unit
+        run: npm run test:games-unit
 
       - name: Run focused games unit tests
         if: always()
