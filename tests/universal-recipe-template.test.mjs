@@ -409,7 +409,7 @@ test('Food and Skincare primary cards and tabs have one sitewide visual owner', 
 });
 
 test('Food and Skincare single-authority assets use refreshed cache keys', () => {
-  assert.match(foodHtml, /baseline-food-approach\.css\?v=FOOD_SINGLE_VISUAL_AUTHORITY_20261016_1/);
+  assert.match(foodHtml, /baseline-food-approach\.css\?v=FOOD_SINGLE_VISUAL_AUTHORITY_20261022_1/);
   assert.match(skincareHtml, /baseline-natural-skincare\.css\?v=SKINCARE_SINGLE_VISUAL_AUTHORITY_20261016_1/);
   assert.match(foodHtml, /baseline-shared\.js\?v=SITEWIDE_SHARED_JS_20261021_1/);
   assert.match(skincareHtml, /baseline-shared\.js\?v=SITEWIDE_SHARED_JS_20261021_1/);
