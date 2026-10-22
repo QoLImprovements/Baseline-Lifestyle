@@ -48,10 +48,10 @@ test('Home exposes the final single-page header and no retired view-switch state
   assert.match(css, /@media \(max-width:1350px\) and \(min-width:901px\)[\s\S]*?\.domain\{ font-size:44px; \}/);
   assert.match(protectedCss, /html body\[data-app="home"\] \.bl-top-header > \.bl-protected-key\s*\{[^}]*grid-area:key;[^}]*position:relative!important;[^}]*left:auto!important;[^}]*top:auto!important;[^}]*transform:none!important;[^}]*justify-self:start!important;/s);
   assert.match(protectedCss, /html body\[data-app="home"\] \.bl-top-header > \.bl-homebar-right\s*\{[^}]*grid-area:controls;[^}]*position:relative!important;[^}]*top:auto!important;[^}]*right:auto!important;[^}]*transform:none!important;[^}]*justify-self:end!important;/s);
-  for (const selector of ['massage','fitness','games']) {
+  for (const selector of ['massage','fitness','recreation']) {
     assert.match(css, new RegExp('\\.card--' + selector + '[\\s\\S]*?-webkit-text-fill-color:#fff'));
   }
-  assert.match(css, /\.card--games[\s\S]*?text-shadow:none;/);
+  assert.match(css, /\.card--recreation[\s\S]*?text-shadow:none;/);
   assert.doesNotMatch(css, /data-initial-home-view|#badmintonView|#systemsView|view-arrow/);
 });
 
