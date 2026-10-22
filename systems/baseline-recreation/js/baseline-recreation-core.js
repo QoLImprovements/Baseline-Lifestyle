@@ -1070,9 +1070,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
     const temporary=readGuestProfile(app);
     const fallback=app==='trackcoin'?readTrackCoinStorage():(temporary || defaultProfileForApp(app));
     profiles[app]=normaliseProfile(app,serverProfile || fallback || defaultProfileForApp(app));
-    // A server save can still be in flight when the page is refreshed. The
-    // browser copy is written synchronously on every round mutation, so retain
-    // its active round until the account-backed copy catches up.
+    // During an in-page auth/storage re-hydration, retain the current active
+    // round instead of replacing it with an older account snapshot. Hard
+    // reload durability is handled by immediate active-round server writes.
     if(temporary && typeof temporary==='object' && Object.prototype.hasOwnProperty.call(temporary,'activeRound')){
       profiles[app].activeRound=temporary.activeRound;
     }
