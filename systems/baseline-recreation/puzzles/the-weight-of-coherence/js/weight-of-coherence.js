@@ -895,7 +895,7 @@
     const storage=gameStorage();
     if(!payload||!storage) return false;
     storage.setTemporaryProfile?.(APP,payload);
-    storage.saveProfile?.(APP,payload,{immediate:document.hidden,keepalive:document.hidden});
+    storage.saveProfile?.(APP,payload,{immediate:true,keepalive:true});
     return true;
   }
 
