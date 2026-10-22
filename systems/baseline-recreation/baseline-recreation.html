@@ -10,14 +10,14 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Baseline Recreation</title>
-<meta name="theme-color" content="#080D22"/>
-<style>html[data-app="recreation"],body[data-app="recreation"]{margin:0;min-height:100%;color:#F2F5FF;background:#080D22;background-image:linear-gradient(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%);}</style>
-<script id="baseline-games-route-state">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-recreation\/games-hub\/puzzles\/?$/i.test(p)?"puzzles":(/^\/baseline-recreation\/games-hub\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm)\/?$/i.test(p)?"games":"hub"));document.documentElement.setAttribute("data-initial-section",t)}catch(_e){}}()</script>
-<meta name="description" content="Browser-based focus, number, word, darts, and adventure training games.">
+<meta name="theme-color" content="#3A1022"/>
+<style>html[data-app="recreation"],body[data-app="recreation"]{margin:0;min-height:100%;color:#FFF4EF;background:#3A1022;background-image:linear-gradient(90deg,#3A1022 0%,#8B3F5B 25%,#A85D3B 50%,#8B3F5B 75%,#3A1022 100%);}</style>
+<script id="baseline-recreation-route-state">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-recreation\/puzzles(?:\/.*)?$/i.test(p)?"puzzles":(/^\/baseline-recreation\/games(?:\/.*)?$/i.test(p)?"games":"system"));document.documentElement.setAttribute("data-initial-section",t)}catch(_e){}}()</script>
+<meta name="description" content="Baseline Recreation brings games, puzzles and wider recreational experiences into one bounded Baseline system.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-recreation/system">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Baseline Recreation">
-<meta property="og:description" content="Browser-based focus, number, word, darts, and adventure training games.">
+<meta property="og:description" content="Games, puzzles and wider recreational experiences in one bounded Baseline system.">
 <meta property="og:url" content="https://baselinelifestyle.org/baseline-recreation/system">
 <link href="/sitewide/css/baseline-themes.css?v=SITEWIDE_THEMES_CSS_20261021_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_SHARED_CSS_20261021_1" rel="stylesheet"/>
@@ -36,7 +36,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-protected-access.css?v=PROTECTED_ACCESS_CSS_20261021_1" rel="stylesheet" data-protected-access-style="true"/>
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=PROTECTED_KEY_CSS_20261021_1" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=SITEWIDE_UI_FIXES_20261021_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
-<link href="/systems/baseline-recreation/css/recreation-theme.css?v=G01_INDIGO_CIRCUIT_20260801_3" rel="stylesheet" data-recreation-theme="true"/>
+<link href="/systems/baseline-recreation/css/recreation-theme.css?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1" rel="stylesheet" data-recreation-theme="true"/>
 <link href="/systems/baseline-recreation/puzzles/shared/css/puzzles-library.css?v=NONREALM_COHERENCE_20261018_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css?v=CROSSNUMBER_SCALE_AUTONEXT_20261018_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=JIGSAW_PROGRESS_TABS_20261019_1" rel="stylesheet"/>
@@ -74,23 +74,27 @@ These Markdown rules are a human reference point, not live runtime config.
   <div class="hero-inner">
     <div>
       <div class="title" role="heading" aria-level="1">Baseline Recreation</div>
-      <div class="subtitle">A focused games space for restorative play, account-bound progress, gentle challenge, and linked progression.</div>
+      <div class="subtitle">A bounded recreation space for games, puzzles, perceptual experiences, restorative play and shared progression.</div>
     </div>
   </div>
   <nav class="tabs" aria-label="Baseline Recreation tabs">
-    <button class="tab" aria-selected="true" data-target="system">Recreation</button>
+    <button class="tab" aria-selected="true" data-target="system">System</button>
     <button class="tab" aria-selected="false" data-target="games">Games</button>
     <button class="tab" aria-selected="false" data-target="puzzles">Puzzles</button>
-  </nav><script id="baseline-games-route-state-nav">!function(){try{var t=document.documentElement.getAttribute("data-initial-section")||"hub",n=document.currentScript.previousElementSibling;n.querySelectorAll(".tab[data-target]").forEach(function(b){b.setAttribute("aria-selected",b.getAttribute("data-target")===t?"true":"false")})}catch(_e){}}()</script>
+  </nav><script id="baseline-recreation-route-state-nav">!function(){try{var t=document.documentElement.getAttribute("data-initial-section")||"system",n=document.currentScript.previousElementSibling;n.querySelectorAll(".tab[data-target]").forEach(function(b){b.setAttribute("aria-selected",b.getAttribute("data-target")===t?"true":"false")})}catch(_e){}}()</script>
 </header>
 <main class="wrap">
   <section class="section active" id="system">
     <div class="grid">
+      <section class="card recreation-overview">
+        <h2>Recreation Overview</h2>
+        <p class="note">Baseline Recreation is the shared environment for games, puzzles and future recreational experiences. Each category keeps its own purpose and rules while shared account and progression information remains visible here where it is relevant.</p>
+      </section>
       <section class="card">
         <div class="header-row">
           <div>
             <h2>Account State</h2>
-            <p class="note">Games are playable without signing in, but long-term save state is tied to your account.</p>
+            <p class="note">Recreation can be used without signing in. Where an activity supports long-term progression, its saved state is tied to your account.</p>
           </div>
         </div>
         <div class="summary-box" id="authStateNote"></div>
@@ -883,7 +887,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-library.js?v=PUZZLE_MUSIC_20261019_1"></script>
 <script src="/systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js?v=NONREALM_COHERENCE_20261018_1"></script>
 <script src="/systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=JIGSAW_PROGRESS_TABS_20261019_1"></script>
-<!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Hub or another game. -->
+<!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Recreation shell or another game. -->
 <script type="module" src="/systems/baseline-recreation/games/block-grid/js/block-grid.js?v=PUZZLE_MUSIC_20261019_1"></script>
 <script type="module" src="/systems/baseline-recreation/games/colour-sort/js/colour-sort.js?v=PUZZLE_MUSIC_20261019_1"></script>
 <script type="module" src="/systems/baseline-recreation/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4"></script>
