@@ -39,11 +39,11 @@ box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),inset 0 -24px 50px rgba(0,0,0,
 .block-grid-panel .block-grid-piece-cell{width:18px;height:18px;border-radius:4px;background:transparent}
 .block-grid-panel .block-grid-piece-cell.is-filled{background:linear-gradient(145deg,var(--recreation-copper-light),var(--recreation-copper));border:1px solid rgba(var(--recreation-copper-light-rgb),.78);box-shadow:inset 0 1px 1px rgba(255,255,255,.32)}
 .block-grid-drag-ghost{position:fixed;z-index:100000;pointer-events:none;left:0;top:0;transform:translate(-50%,-50%) scale(1.04);opacity:.94;filter:drop-shadow(0 12px 16px rgba(0,0,0,.42));transition:opacity .08s ease,filter .08s ease;will-change:left,top,transform}
-.block-grid-drag-ghost.is-over-board{transform:none;opacity:.84;filter:drop-shadow(0 7px 10px rgba(0,0,0,.34))}
+.block-grid-drag-ghost.is-over-board{transform:translate(-50%,-50%) scale(1.02);opacity:.88;filter:drop-shadow(0 7px 10px rgba(0,0,0,.34))}
 .block-grid-drag-ghost .block-grid-piece-shape{display:grid;grid-template-columns:repeat(var(--piece-cols),var(--drag-cell,18px));grid-template-rows:repeat(var(--piece-rows),var(--drag-cell,18px));gap:var(--drag-gap,3px)}
 .block-grid-drag-ghost .block-grid-piece-cell{width:var(--drag-cell,18px);height:var(--drag-cell,18px);border-radius:clamp(4px,.6vw,8px);background:transparent}
 .block-grid-drag-ghost .block-grid-piece-cell.is-filled{background:linear-gradient(145deg,var(--recreation-copper-light),var(--recreation-copper));border:1px solid rgba(var(--recreation-copper-light-rgb),.86);box-shadow:inset 0 1px 1px rgba(255,255,255,.34)}
-html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscroll-behavior:none}
+html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscroll-behavior:none;cursor:none!important;user-select:none!important;-webkit-user-select:none!important}
 .block-grid-panel .block-grid-run-objective{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-top:2px}
 .block-grid-panel .block-grid-run-objective>div{display:grid;gap:2px}.block-grid-panel .block-grid-run-objective strong{font-size:14px}.block-grid-panel .block-grid-run-objective span{font-size:12px;color:var(--games-muted)}
 .block-grid-panel .block-grid-run-objective>span{font-weight:850;color:var(--games-ink);white-space:nowrap}
@@ -101,3 +101,42 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
   #blockGridPanel .block-grid-cell{touch-action:none}
 }
 @media(prefers-reduced-motion:reduce){#blockGridPanel .block-grid-board.is-danger{animation:none}}
+
+
+/* 2026-10-23 continuous board/tray and special-skill pass */
+#blockGridPanel #blockGridGameCard{user-select:none;-webkit-user-select:none}
+#blockGridPanel #blockGridGameCard :is(img,svg,.block-grid-piece,.block-grid-piece-shape){-webkit-user-drag:none}
+#blockGridPanel .block-grid-board-stage,
+#blockGridPanel .block-grid-tray-wrap{
+  max-width:760px;
+  width:100%;
+  margin-inline:auto;
+}
+#blockGridPanel .block-grid-tray-wrap{
+  margin-top:-2px;
+  border-top-left-radius:8px;
+  border-top-right-radius:8px;
+}
+#blockGridPanel .block-grid-skill{
+  width:min(100%,760px);
+  margin:8px auto 10px;
+  display:grid;
+  gap:7px;
+  padding:10px 12px;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.22);
+  border-radius:14px;
+  background:rgba(var(--recreation-burgundy-rgb),.22);
+}
+#blockGridPanel .block-grid-skill-head{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px}
+#blockGridPanel .block-grid-skill-meter{height:10px;border-radius:999px;overflow:hidden;background:rgba(var(--recreation-burgundy-rgb),.45);border:1px solid rgba(var(--recreation-copper-light-rgb),.2)}
+#blockGridPanel .block-grid-skill-meter>span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--recreation-copper-deep),var(--recreation-copper-light));transition:width .2s ease}
+#blockGridPanel .block-grid-skill-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+#blockGridPanel .block-grid-skill-actions .action{min-height:34px;padding:6px 10px;font-size:12px}
+#blockGridPanel #blockGridGameCard:fullscreen{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  align-content:start;
+  gap:8px;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-board-stage{max-width:min(70vh,720px)}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-tray-wrap{max-width:min(92vw,900px)}
