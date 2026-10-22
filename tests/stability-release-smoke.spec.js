@@ -49,6 +49,7 @@ test('canonical clean route families can be requested directly for browser refre
     '/baseline-food-approach/recipes/aubergine-and-carrot-sauce',
     '/baseline-food-approach/recipes/tomato-and-red-pepper-sauce',
     '/baseline-food-approach/recipes/potato-and-carrot-vegan-cheese',
+    '/baseline-food-approach/recipes/mung-bean-and-peanut-vegetable-hotpot',
     '/baseline-massage/system',
     '/baseline-massage/library',
     '/baseline-massage/planner',
@@ -139,6 +140,37 @@ test('clean routes paint the exact tab before external application JavaScript ru
   await expect(page.locator('[data-body-view="profile"]')).toHaveAttribute('aria-selected','true');
   await expect(page.locator('[data-body-panel="overall"]')).toBeHidden();
   await expect(page.locator('[data-body-panel="profile"]')).toBeVisible();
+});
+
+test('Food Recipes clean route keeps only Recipes visible and preserves pill-tab geometry', async ({ page }) => {
+  await page.route('**/*', (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
+  });
+
+  const response = await page.goto('/baseline-food-approach/recipes', { waitUntil:'load' });
+  expect(response).not.toBeNull();
+  expect(response.status()).toBeLessThan(400);
+
+  const recipesTab = page.locator('.tabs .tab[data-target="recipes"]').first();
+  await expect(recipesTab).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#recipes')).toBeVisible();
+  await expect(page.locator('#system')).toBeHidden();
+  await expect(page.getByRole('link',{name:'Mung Bean & Peanut Vegetable Hotpot'})).toBeVisible();
+  await expect(page.locator('.subtitle')).toHaveText('Vegan & gluten-free food system focused on health and appearance.');
+
+  const tabGeometry = await recipesTab.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return {
+      radius: parseFloat(style.borderTopLeftRadius),
+      paddingLeft: parseFloat(style.paddingLeft),
+      paddingRight: parseFloat(style.paddingRight)
+    };
+  });
+  expect(tabGeometry.radius).toBeGreaterThanOrEqual(12);
+  expect(tabGeometry.paddingLeft).toBeGreaterThanOrEqual(10);
+  expect(tabGeometry.paddingRight).toBeGreaterThanOrEqual(10);
 });
 
 test('embedded Skincare recipe first paint is exact before external JavaScript runs', async ({ page }) => {
