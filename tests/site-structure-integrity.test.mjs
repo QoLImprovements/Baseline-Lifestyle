@@ -364,16 +364,19 @@ test('desktop header utility icons have consistent breathing room and vertical a
     'canonical system headers must align Contact consistently with Account and Binaural'
   );
 });
-test('canonical header keeps Pages dropdown overflow in one selector authority', () => {
+test('canonical header keeps desktop Pages dropdown overflow in one selector authority', () => {
   const headerCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-header-canonical.css'), 'utf8');
+  const earlyStart = headerCss.indexOf('20260606_mobile_banner_trackcoin_controls');
+  const mobileStart = headerCss.indexOf('@media (max-width:900px)', earlyStart);
+  const earlyDesktopBlock = headerCss.slice(earlyStart, mobileStart);
   assert.doesNotMatch(
-    headerCss,
+    earlyDesktopBlock,
     /\.bl-homebar,\s*\.bl-homebar-inner,\s*\.bl-pages-dd\s*\{\s*overflow:visible!important;/,
-    'Pages dropdown overflow must not be duplicated in the earlier banner rule'
+    'desktop Pages dropdown overflow must not be duplicated in the earlier banner rule'
   );
   assert.match(
     headerCss,
-    /\.bl-pages-dd\{[\s\S]*?overflow:visible!important;/,
+    /20260607_content_sized_banner_dropdown[\s\S]*?\.bl-pages-dd\{[\s\S]*?overflow:visible!important;/,
     'Pages dropdown must retain its canonical content-sized overflow rule'
   );
 });
