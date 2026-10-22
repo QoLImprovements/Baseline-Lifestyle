@@ -93,6 +93,12 @@ test('remaining Hub summaries, Darts panels and core game surfaces use G01',asyn
   assert.match(theme,/\.darts-scenario-header[\s\S]*?background:var\(--g01-card\)!important/);
 });
 
+test('Games Hub stylesheet contains no malformed Pairs colour declaration',async()=>{
+  const hubCss = await read(files.hubCss);
+  assert.doesNotMatch(hubCss,/color:\s*var\(--games-panel\)3e8/i);
+  assert.match(hubCss,/body\[data-app="games"\] \.memory-card-back\{[\s\S]*?color:#F3F0EA!important;/);
+});
+
 test('Games cards are flat and Pairs symbols remain fully visible',async()=>{
   const theme = await read(files.theme);
   assert.match(theme,/The site's cards are flat reading surfaces/);
