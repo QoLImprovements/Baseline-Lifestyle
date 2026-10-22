@@ -2,27 +2,27 @@
   <title id="title">Colour Sort overview</title>
   <desc id="desc">An original Baseline-style set of glass bottles holding layered coloured segments.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" x2="1"><stop stop-color="#080d22"/><stop offset=".52" stop-color="#4656a6"/><stop offset="1" stop-color="#080d22"/></linearGradient>
+    <linearGradient id="bg" x1="0" x2="1"><stop stop-color="#2A0B16"/><stop offset=".52" stop-color="#9E4D38"/><stop offset="1" stop-color="#2A0B16"/></linearGradient>
     <filter id="shadow"><feDropShadow dx="0" dy="9" stdDeviation="10" flood-color="#000" flood-opacity=".3"/></filter>
   </defs>
   <rect width="640" height="360" rx="28" fill="url(#bg)"/>
-  <circle cx="95" cy="50" r="130" fill="#8ca7ff" fill-opacity=".08"/>
-  <g font-family="system-ui,sans-serif" fill="#f2f5ff"><text x="44" y="58" font-size="28" font-weight="800">COLOUR SORT</text><text x="44" y="326" font-size="17" opacity=".75">SEQUENCE · POUR · RESOLVE</text></g>
-  <g transform="translate(278 55)" filter="url(#shadow)" stroke="#dfeaff" stroke-width="5" stroke-opacity=".72">
+  <circle cx="95" cy="50" r="130" fill="#B86A50" fill-opacity=".08"/>
+  <g font-family="system-ui,sans-serif" fill="#FFF4EF"><text x="44" y="58" font-size="28" font-weight="800">COLOUR SORT</text><text x="44" y="326" font-size="17" opacity=".75">SEQUENCE · POUR · RESOLVE</text></g>
+  <g transform="translate(278 55)" filter="url(#shadow)" stroke="#FFF4EF" stroke-width="5" stroke-opacity=".72">
     <g transform="translate(0 0)">
       <path d="M18 7h54v18c0 10 8 18 8 34v177c0 24-16 37-35 37S10 260 10 236V59c0-16 8-24 8-34z" fill="#fff" fill-opacity=".055"/>
       <path d="M13 69h64v47H13z" fill="#d86257" stroke="none"/><path d="M13 116h64v47H13z" fill="#188f8b" stroke="none"/><path d="M13 163h64v47H13z" fill="#7255b9" stroke="none"/><path d="M13 210h64v40c0 15-13 21-32 21s-32-6-32-21z" fill="#cf8737" stroke="none"/>
-      <ellipse cx="45" cy="11" rx="30" ry="8" fill="#080d22"/>
+      <ellipse cx="45" cy="11" rx="30" ry="8" fill="#2A0B16"/>
     </g>
     <g transform="translate(105 0)">
       <path d="M18 7h54v18c0 10 8 18 8 34v177c0 24-16 37-35 37S10 260 10 236V59c0-16 8-24 8-34z" fill="#fff" fill-opacity=".055"/>
       <path d="M13 69h64v47H13z" fill="#3e70cb" stroke="none"/><path d="M13 116h64v47H13z" fill="#d1a934" stroke="none"/><path d="M13 163h64v47H13z" fill="#3e70cb" stroke="none"/><path d="M13 210h64v40c0 15-13 21-32 21s-32-6-32-21z" fill="#4d8e52" stroke="none"/>
-      <ellipse cx="45" cy="11" rx="30" ry="8" fill="#080d22"/>
+      <ellipse cx="45" cy="11" rx="30" ry="8" fill="#2A0B16"/>
     </g>
     <g transform="translate(210 0)">
       <path d="M18 7h54v18c0 10 8 18 8 34v177c0 24-16 37-35 37S10 260 10 236V59c0-16 8-24 8-34z" fill="#fff" fill-opacity=".055"/>
       <path d="M13 116h64v47H13z" fill="#c34f78" stroke="none"/><path d="M13 163h64v47H13z" fill="#d1a934" stroke="none"/><path d="M13 210h64v40c0 15-13 21-32 21s-32-6-32-21z" fill="#c34f78" stroke="none"/>
-      <ellipse cx="45" cy="11" rx="30" ry="8" fill="#080d22"/>
+      <ellipse cx="45" cy="11" rx="30" ry="8" fill="#2A0B16"/>
     </g>
   </g>
 </svg>
