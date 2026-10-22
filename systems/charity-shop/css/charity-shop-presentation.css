@@ -40,14 +40,10 @@ body[data-app="charity-shop"]{
 
 
 
-/* The header and both navigation levels use the exact same gradient authority. */
+/* Legacy Charity-only header aliases retain the shared gradient. The live
+   hero, homebar and tab selectors are owned by the later canonical layer. */
 html body[data-app="charity-shop"] .charity-homebar,
-html body[data-app="charity-shop"] .charity-header,
-html body[data-app="charity-shop"] .charity-hero,
-html body[data-app="charity-shop"] .charity-main-tabs,
-html body[data-app="charity-shop"] .charity-subtabs,
-html body[data-app="charity-shop"] .bl-homebar,
-html body[data-app="charity-shop"] .hero{
+html body[data-app="charity-shop"] .charity-header{
   background:var(--charity-gradient)!important;
   background-image:var(--charity-gradient)!important;
   background-size:100% 100%!important;
@@ -78,27 +74,9 @@ html body[data-app="charity-shop"] .charity-main-section{
   overflow:visible!important;
 }
 
-html body[data-app="charity-shop"] .charity-subpanel,
-html body[data-app="charity-shop"] .charity-subpanel.active{
-  min-width:0!important;
-  padding:0!important;
-  background:transparent!important;
-  background-image:none!important;
-  border:0!important;
-  box-shadow:none!important;
-  overflow:visible!important;
-}
-
-
-
 /* One calm, solid reading surface. No competing card gradient. */
 
 
-html body[data-app="charity-shop"] .charity-card--danger,
-html body[data-app="charity-shop"] .charity-card--success{
-  border-color:var(--charity-border)!important;
-  box-shadow:var(--charity-shadow)!important;
-}
 
 /* Step cards stay in normal document flow, eliminating title/artwork overlap. */
 html body[data-app="charity-shop"] #operations-hanging article.charity-step-card,
@@ -117,11 +95,7 @@ html body[data-app="charity-shop"] #operations-cubing article.charity-step-card{
 
 
 
-html body[data-app="charity-shop"] p,
-html body[data-app="charity-shop"] li,
-html body[data-app="charity-shop"] .note,
-html body[data-app="charity-shop"] .charity-card p,
-html body[data-app="charity-shop"] .charity-card li{
+html body[data-app="charity-shop"] .note{
   color:var(--charity-muted)!important;
   -webkit-text-fill-color:var(--charity-muted)!important;
 }
@@ -164,10 +138,6 @@ html body[data-app="charity-shop"] .charity-subtabs{
   box-shadow:0 10px 22px rgba(80,12,19,.16)!important;
 }
 
-html body[data-app="charity-shop"] .charity-subtabs::before{
-  content:none!important;
-  display:none!important;
-}
 
 html body[data-app="charity-shop"] .charity-main-tab,
 html body[data-app="charity-shop"] .charity-subtab{
@@ -246,8 +216,8 @@ html body[data-app="charity-shop"] .charity-cash-count{
   border-color:var(--charity-border)!important;
 }
 
-/* The injected full-sheet duplicates are deliberately suppressed. */
-html body[data-app="charity-shop"] .charity-artwork-card,
+/* Legacy injected sheet-artwork duplicates remain suppressed. The live
+   artwork-card rule is owned by the later canonical layer. */
 html body[data-app="charity-shop"] .charity-artwork-pair[data-charity-sheet-artwork]{
   display:none!important;
 }
