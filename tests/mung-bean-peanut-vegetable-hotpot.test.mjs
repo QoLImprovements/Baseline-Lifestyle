@@ -56,6 +56,7 @@ test('Food descriptor stays clean and the hotpot is visible in the Recipes overv
   assert.match(food,/Vegan &amp; gluten-free food system focused on health and appearance\./);
   const subtitle=(food.match(/<div class="subtitle">([\s\S]*?)<\/div>/)||[])[1]||'';
   assert.doesNotMatch(subtitle,/cosmetic|odour control/i);
+  assert.doesNotMatch(food,/cosmetic/i);
   assert.match(food,/<h4>Slow Cooker<\/h4>[\s\S]*data-recipe-id="r12"[\s\S]*Mung Bean &amp; Peanut Vegetable Hotpot/);
   assert.match(food,/baseline-food-approach\.css\?v=FOOD_SINGLE_VISUAL_AUTHORITY_20261022_1/);
 });
