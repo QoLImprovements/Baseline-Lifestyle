@@ -32,8 +32,8 @@ test('all non-fullscreen jigsaw interactions preserve the actual Baseline scroll
   assert.match(js, /function restorePageScroll\(snapshot\)\{[\s\S]*?scrollRoot\.scrollTo\(\{left:snapshot\.rootX,top:snapshot\.rootY,behavior:'auto'\}\)/);
   assert.match(js, /function captureInteractionScroll\(event\)\{[\s\S]*?control\.focus\(\{preventScroll:true\}\)[\s\S]*?restorePageScroll\(snapshot\)/);
   assert.match(js, /root\.addEventListener\('pointerdown',captureInteractionScroll,true\)/);
-  assert.match(js, /root\.addEventListener\('click'[\s\S]*?settleInteractionScroll\(\)/);
-  assert.match(js, /window\.addEventListener\('pointerup'[\s\S]*?settleInteractionScroll\(\)/);
+  assert.match(js, /root\.addEventListener\('click'[\s\S]*?settleInteractionScroll\(event\)/);
+  assert.match(js, /window\.addEventListener\('pointerup'[\s\S]*?settleInteractionScroll\(event\)/);
   assert.match(js, /function attemptPlacement\(id,clientX,clientY\)\{[\s\S]*?const scrollSnapshot=pageScrollSnapshot\(\)/);
   assert.match(js, /if\(dx<=snapX && dy<=snapY\)\{[\s\S]*?placePiece\(id\);[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return true;/);
   assert.match(js, /setStatus\('That piece belongs elsewhere\. Its tray piece is highlighted so you can find it again\.'[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return false;/);
