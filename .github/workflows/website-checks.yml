@@ -108,7 +108,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Run Games Hub unit tests
+      - name: Run Games unit tests
         if: always()
         run: npm run test:games-unit
 
@@ -116,11 +116,11 @@ jobs:
         if: always()
         run: npm run test:focused-games
 
-      - name: Run Badminton Games Hub browser smoke
+      - name: Run Badminton Recreation browser smoke
         if: always()
         run: npx playwright test tests/badminton-focused-browser.spec.js --reporter=line
 
-      - name: Run Darts Games Hub browser smoke
+      - name: Run Darts Recreation browser smoke
         if: always()
         run: npx playwright test tests/darts-focused-browser.spec.js --reporter=line
 
