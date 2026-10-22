@@ -163,11 +163,13 @@ test('Recreation inner panels survive refresh',async({page})=>{
   await expect(page.locator('#pairsSkillCard')).toBeVisible();
 });
 
-test('Concept detail route survives refresh, compares Stroop conditions and returns to the Concepts library',async({page})=>{
+test('Concept detail route survives refresh without Puzzles taking URL ownership',async({page})=>{
   await stubGames(page);
   await page.goto('/baseline-recreation/concepts/stroop-effect',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
+  await expect(page).toHaveURL(/\/baseline-recreation\/concepts\/stroop-effect$/);
   await expect(page.locator('[data-target="concepts"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#conceptsOverviewCard')).toBeHidden();
   await expect(page.locator('#conceptStroopEffect')).toBeVisible();
 
   const art=page.locator('[data-stroop-comparison-art]');
@@ -181,6 +183,8 @@ test('Concept detail route survives refresh, compares Stroop conditions and retu
 
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
+  await expect(page).toHaveURL(/\/baseline-recreation\/concepts\/stroop-effect$/);
+  await expect(page.locator('#conceptsOverviewCard')).toBeHidden();
   await expect(page.locator('#conceptStroopEffect')).toBeVisible();
 
   await page.locator('[data-target="concepts"]').click();
