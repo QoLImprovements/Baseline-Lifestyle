@@ -82,6 +82,7 @@ let undoStack = [];
 let hint = null;
 let statusMessage = '';
 let storageAuth = null;
+let newGamePointerAt = 0;
 let isAnimating = false;
 let levelEntranceMotion = false;
 let bottleDragState = null;
@@ -258,10 +259,10 @@ function bottleHtml(bottle, index) {
 
 function statusHtml() {
   const active = puzzle();
-  if (!active) return '<strong>Ready.</strong><span class="inline-note">Choose a level to begin.</span>';
+  if (!active) return '<strong>Ready.</strong><span class="inline-note">Choose a difficulty tier, then press New Game.</span>';
   if (isSolved(active.bottles)) {
     const best = profile.bestMoves[active.level] || active.moves;
-    return `<strong>Level ${active.level} sorted in ${active.moves} moves.</strong><span class="inline-note">Best: ${best} move${best === 1 ? '' : 's'}. ${active.level < LEVELS.length ? 'The next level is available.' : 'All current levels are complete.'}</span>`;
+    return `<strong>${escapeHtml(tierForLevel(active.level).name)} game sorted in ${active.moves} moves.</strong><span class="inline-note">Best for this layout: ${best} move${best === 1 ? '' : 's'}. Press New Game for another unpredictable layout in this tier.</span>`;
   }
   if (hint) return `<strong>Hint: pour bottle ${hint.from + 1} into bottle ${hint.to + 1}.</strong><span class="inline-note">Hints follow a verified solution path and respect temporary bottle locks.</span>`;
   if (selectedBottle >= 0) return `<strong>Bottle ${selectedBottle + 1} selected.</strong><span class="inline-note">Choose an empty unlocked bottle or one whose exposed colour matches.</span>`;
@@ -294,7 +295,7 @@ function renderGameInfo() {
         <div class="stat-pill">Recorded Bests <span>${Object.keys(profile.bestMoves).length}</span></div>
       </div>
     </div>
-    <div class="summary-box"><strong>Match the exposed colour.</strong><span class="inline-note">Select a source bottle and then an empty bottle or a bottle with the same colour on top. The largest contiguous exposed run pours automatically, up to the destination capacity. Sort every colour to complete the level.</span></div>`;
+    <div class="summary-box"><strong>Match the exposed colour.</strong><span class="inline-note">Select a source bottle and then an empty bottle or a bottle with the same colour on top. The largest contiguous exposed run pours automatically, up to the destination capacity. Sort every colour to complete the game.</span></div>`;
 }
 
 function renderGame() {
@@ -553,8 +554,19 @@ function cleanupBottleDrag({ removeGhost = true } = {}) {
 }
 
 function handleBottlePointerDown(event) {
-  if (isAnimating || bottleDragState || (event.pointerType === 'mouse' && event.button !== 0)) return;
-  const button = event.target instanceof Element ? event.target.closest('#colourSortGameCard [data-colour-bottle]') : null;
+  if (event.pointerType === 'mouse' && event.button !== 0) return;
+  const rawTarget=event.target instanceof Element ? event.target : null;
+  const newGame=rawTarget?.closest('#colourSortGameCard [data-colour-action="new"]');
+  if(newGame){
+    event.preventDefault();
+    event.stopPropagation();
+    if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+    newGamePointerAt=performance.now();
+    startTierGame(profile.selectedTier);
+    return;
+  }
+  if (isAnimating || bottleDragState) return;
+  const button = rawTarget ? rawTarget.closest('#colourSortGameCard [data-colour-bottle]') : null;
   const active = puzzle();
   if (!button || !active || isSolved(active.bottles)) return;
   const from = Number(button.dataset.colourBottle);
@@ -924,7 +936,9 @@ function handleClick(event) {
   if(action){
     suppressBottleClick=false;
     event.preventDefault();
-    if (action === 'new' || action === 'start') startTierGame(profile.selectedTier);
+    if (action === 'new' || action === 'start') {
+      if(performance.now()-newGamePointerAt>=700) startTierGame(profile.selectedTier);
+    }
     if (action === 'undo') undo();
     if (action === 'hint') showHint();
     if (action === 'restart') startLevel(puzzle()?.level || randomLevelForTier(profile.selectedTier));
