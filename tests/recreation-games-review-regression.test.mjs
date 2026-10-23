@@ -92,6 +92,9 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/const h00=\(2\*t3\)-\(3\*t2\)\+1/);
   assert.match(core,/cup\.left=\+\(h00\*start\.left\+h10\*m0Left\+h01\*target\.left\+h11\*m1Left\)/);
   assert.match(core,/trackCoinState\.phase='pick';[\s\S]*?trackCoinState\.pickLocked=false;[\s\S]*?renderTrackCoin\(\)/);
+  assert.match(core,/const pickReady=!resolved&&savedPhase==='pick'/);
+  assert.match(core,/restoredWaiting:!resolved&&!pickReady/);
+  assert.doesNotMatch(core,/trackCoinState\.restoredWaiting=true/);
   assert.match(core,/trackCoinAnimationFrame=window\.requestAnimationFrame\(frame\)/);
   assert.match(core,/pointerdown[\s\S]*?trackcoin-cup\.is-selectable\[data-trackcoin-pick\]:not\(:disabled\)[\s\S]*?trackCoinPointerPickAt=performance\.now\(\)[\s\S]*?chooseTrackCoinCup/);
   assert.match(core,/const trackCoinCup = event\.target\.closest\('\[data-trackcoin-pick\]'\); if\(trackCoinCup\)\{ if\(performance\.now\(\)-trackCoinPointerPickAt>=700\) chooseTrackCoinCup/);
