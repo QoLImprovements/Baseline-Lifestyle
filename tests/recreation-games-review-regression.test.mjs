@@ -24,6 +24,16 @@ test('reviewed core games use game-first side-by-side desktop keypad layouts',()
   assert.match(music,/textScaleFor\(gameId\)/);
 });
 
+test('core round controls switch from Start New Game to Start Next Game at terminal state',()=>{
+  assert.match(core,/function roundIsTerminal\(gameId\)/);
+  assert.match(core,/roundIsTerminal\(gameId\) \? 'Start Next Game' : 'Start New Game'/);
+  assert.match(core,/startButtonLabel\('pairs'\)/);
+  assert.match(core,/startButtonLabel\('detectword'\)/);
+  assert.match(core,/startButtonLabel\('make24'\)/);
+  assert.match(core,/startButtonLabel\('trackcoin'\)/);
+  assert.match(core,/startButtonLabel\('ruleshift'\)/);
+});
+
 test('Detect the Word and Make The Number have direct submit and fresher active-round persistence safeguards',()=>{
   assert.match(core,/explicitWordSubmit[\s\S]*?submitWordGuess/);
   assert.match(core,/explicitMakeSubmit[\s\S]*?submitMake24Expression/);
