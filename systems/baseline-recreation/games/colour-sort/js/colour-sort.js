@@ -303,7 +303,7 @@ function renderGame() {
   if (!root) return;
   const active = puzzle();
   if (!active) {
-    root.innerHTML = `<div class="colour-sort-empty"><p>${escapeHtml(tierById(profile.selectedTier).name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-colour-action="new" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost" data-colour-action="fullscreen" type="button">Full Screen</button></div></div>`;
+    root.innerHTML = `<div class="colour-sort-empty"><p>${escapeHtml(tierById(profile.selectedTier).name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-colour-action="new" data-hotkey-caption="Alt+N" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-colour-action="fullscreen" data-hotkey-caption="Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
     syncAutoNextControl();
     return;
   }
@@ -335,9 +335,9 @@ function renderGame() {
       <button class="action ghost" data-colour-action="undo" type="button" ${!undoStack.length || solved || isAnimating ? 'disabled' : ''}>Undo</button>
       <button class="action ghost" data-colour-action="hint" type="button" ${solved || isAnimating ? 'disabled' : ''}>Hint</button>
       <button class="action ghost" data-colour-action="restart" type="button" ${isAnimating ? 'disabled' : ''}>Restart</button>
-      <button class="action ghost start-new-game-toggle" data-colour-action="new" type="button">New Game</button>
+      <button class="action ghost start-new-game-toggle" data-colour-action="new" data-hotkey-caption="Alt+N" type="button">New Game</button>
       <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
-      <button class="action ghost" data-colour-action="fullscreen" type="button">Full Screen</button>
+      <button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-colour-action="fullscreen" data-hotkey-caption="Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button>
     </div>`;
   levelEntranceMotion = false;
   syncAutoNextControl();
@@ -968,6 +968,11 @@ function handleClick(event) {
 
 function handleKeydown(event) {
   if (!document.getElementById('colourSortPanel')?.classList.contains('is-active')) return;
+  const key=String(event.key||'').toLowerCase();
+  if(event.altKey && !event.ctrlKey && !event.metaKey && !event.isComposing){
+    if(key==='n'){ event.preventDefault(); startTierGame(profile.selectedTier); return; }
+    if(key==='f'){ event.preventDefault(); toggleFullscreen(); return; }
+  }
   if (event.key === 'Escape' && document.fullscreenElement === document.getElementById('colourSortGameCard')) return;
   if (event.key === 'Escape') shell.close();
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undo(); }
