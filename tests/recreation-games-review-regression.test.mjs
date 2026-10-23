@@ -14,6 +14,7 @@ const blockGrid=read('systems/baseline-recreation/games/block-grid/js/block-grid
 const blockCss=read('systems/baseline-recreation/games/block-grid/css/block-grid.css');
 const colourSort=read('systems/baseline-recreation/games/colour-sort/js/colour-sort.js');
 const crossnumber=read('systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js');
+const extensionSupport=read('systems/baseline-recreation/js/game-extension-support.mjs');
 const crossnumberCss=read('systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css');
 const jigsaw=read('systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
 const jigsawCss=read('systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css');
@@ -121,6 +122,14 @@ test('reported uncomfortable games use the sensory-gentle music replacement set'
   }
   assert.match(music,/if\(sensoryGentle\) return;/);
   assert.match(music,/sensoryGentle \? 0 :/);
+});
+
+test('extension-game routes clear stale core selection without surrendering extension panel ownership',()=>{
+  assert.match(extensionSupport,/document\.dispatchEvent\(new CustomEvent\('baseline:game-extension-open'/);
+  assert.match(extensionSupport,/detail:\{ id:config\.id, panelId:config\.panelId \}/);
+  assert.match(core,/document\.addEventListener\('baseline:game-extension-open'[\s\S]*?selectedGame='';[\s\S]*?renderGamesList\(\)/);
+  assert.match(blockGrid,/game-extension-support\.mjs\?v=RECREATION_COHERENCE_20261023_2/);
+  assert.match(colourSort,/game-extension-support\.mjs\?v=RECREATION_COHERENCE_20261023_2/);
 });
 
 test('Block Grid lands from the exact grabbed piece cell and exposes charged specials',()=>{
