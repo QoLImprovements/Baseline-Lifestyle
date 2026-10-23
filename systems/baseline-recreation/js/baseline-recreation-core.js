@@ -2393,12 +2393,25 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     return true;
   }
   function restoreSavedCoreRounds(){
-    if(profiles.pairs) profiles.pairs.activeRound=null;
+    // Recreation's non-jigsaw games deliberately open idle. Account-backed
+    // progression is restored, but a previous unfinished play surface is not
+    // imposed on the player; New Game is the single explicit entry action.
+    clearAutoNextTimer('pairs');
+    clearAutoNextTimer('detectword');
+    clearAutoNextTimer('make24');
+    clearAutoNextTimer('trackcoin');
+    clearAutoNextTimer('ruleshift');
+    cancelTrackCoinAnimation();
+    clearRuleShiftTimer();
     pairsBoardState=null;
-    if(!make24State) restoreSavedMake24Round();
-    if(!wordState) restoreSavedWordRound();
-    if(!trackCoinState) restoreSavedTrackCoinRound();
-    if(!ruleShiftState) restoreSavedRuleShiftRound();
+    wordState=null;
+    make24State=null;
+    trackCoinState=null;
+    ruleShiftState=null;
+    pairsIdleMessage='Choose a board tier and press New Game when you are ready.';
+    wordIdleMessage='Choose a letter tier and press New Game when you are ready.';
+    make24IdleMessage='Choose a number tier and press New Game when you are ready.';
+    ruleShiftIdleMessage='Choose a rule tier and press New Game when you are ready.';
   }
 
   function startWordRound(){
