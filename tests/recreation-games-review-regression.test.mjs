@@ -84,5 +84,6 @@ test('canonical and legacy recreation routes preserve direct game destinations o
   assert.match(htaccess,/baseline-games-hub\/games-hub\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|block-grid\|colour-sort/);
   assert.match(htaccess,/baseline-recreation\/games\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|block-grid\|colour-sort/);
   assert.match(core,/function recreationStateFromCleanPath\(\)/);
-  assert.match(core,/path\.indexOf\(base \+ '\/games\/'\) !== 0/);
+  assert.match(core,/base \+ '\/games\/'/);
+  assert.match(core,/normaliseGameId\(rest\.split\('\/'\)\[0\]\)/);
 });
