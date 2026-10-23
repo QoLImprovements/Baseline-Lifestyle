@@ -60,7 +60,8 @@ async function openRealm(page, { mobile = false } = {}) {
   }, { mobile });
   await expect(page.locator('#realmSceneFrame')).toBeVisible();
   await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
-  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
+  const portraitBlocked = mobile && await page.evaluate(() => window.innerHeight > window.innerWidth);
+  if(!portraitBlocked) await expect(page.locator('#realmBasecampScreen')).toBeVisible();
 }
 
 async function screenshot(page, testInfo, name) {
