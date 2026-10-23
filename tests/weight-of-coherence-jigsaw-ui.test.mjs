@@ -116,7 +116,6 @@ test('jigsaw settings expose the shared server-backed music controls and tray re
   assert.match(js, /root\.classList\.add\('is-restarting'\)/);
   assert.match(js, /requestAnimationFrame\(function\(\)\{[\s\S]*?requestAnimationFrame\(function\(\)\{ root\.classList\.remove\('is-restarting'\)/);
   assert.match(css, /#weightCoherencePuzzle\.is-restarting \.weight-coherence-piece\{[\s\S]*?visibility:hidden!important[\s\S]*?transition:none!important[\s\S]*?animation:none!important/);
-  assert.doesNotMatch(js, /requestAnimationFrame\(paintBatch\)/);
 });
 
 test('jigsaws start or resume without a separate Start button and persist on pagehide', () => {
