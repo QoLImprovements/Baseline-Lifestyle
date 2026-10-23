@@ -197,8 +197,9 @@ test('jigsaw controls use compact icons and one settings authority', () => {
   assert.match(html, /id="weightCoherenceToolbarSettingsBtn"[^>]*aria-keyshortcuts="Alt\+S"/);
   assert.match(html, /id="weightCoherenceFullscreenBtn"[^>]*aria-keyshortcuts="Alt\+F"/);
   assert.match(css, /\.weight-coherence-icon-action\{/);
-  assert.match(css, /\.weight-coherence-hotkey\{[\s\S]*?top:calc\(100% \+ 3px\)!important[\s\S]*?background:transparent!important/);
-  assert.match(css, /#weightCoherenceWorkspace \[data-games-music-quick\]\[data-hotkey-caption\]::after/);
+  assert.match(css, /\.weight-coherence-hotkey\{[\s\S]*?width:1px!important[\s\S]*?clip-path:inset\(50%\)!important/);
+  assert.doesNotMatch(css, /\[data-hotkey-caption\]::after/);
+  assert.match(js, /\.weight-coherence-actions \[title\][\s\S]*?setAttribute\('data-tooltip'/);
   assert.doesNotMatch(css, /\.weight-coherence-actions\{display:grid/);
 });
 
