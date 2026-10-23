@@ -171,7 +171,7 @@ test('Zoom remains available on the board and tray pieces while View is enabled'
 test('jigsaw information button opens an in-workspace how-to and hotkey dialog', () => {
   assert.match(html, /id="weightCoherenceHelpBtn"[^>]*aria-controls="weightCoherenceHelpDialog"/);
   assert.match(html, /id="weightCoherenceHelpDialog"[\s\S]*?How to play & hotkeys/);
-  assert.match(html, /<kbd>Z<\/kbd>[\s\S]*?<kbd>− \/ \+<\/kbd>[\s\S]*?<kbd>V<\/kbd>[\s\S]*?<kbd>G<\/kbd>[\s\S]*?<kbd>S<\/kbd>[\s\S]*?<kbd>F<\/kbd>[\s\S]*?<kbd>← \/ →<\/kbd>/);
+  assert.match(html, /<kbd>Z<\/kbd>[\s\S]*?<kbd>− \/ \+<\/kbd>[\s\S]*?<kbd>V<\/kbd>[\s\S]*?<kbd>G<\/kbd>[\s\S]*?<kbd>S<\/kbd>[\s\S]*?<kbd>Alt\+M<\/kbd>[\s\S]*?<kbd>Alt\+S<\/kbd>[\s\S]*?<kbd>Alt\+F<\/kbd>[\s\S]*?<kbd>← \/ →<\/kbd>/);
   assert.match(js, /help:document\.getElementById\('weightCoherenceHelpBtn'\)/);
   assert.match(js, /helpDialog:document\.getElementById\('weightCoherenceHelpDialog'\)/);
   assert.match(js, /function openHelp\(\)/);
@@ -194,11 +194,13 @@ test('jigsaw controls use compact icons and one settings authority', () => {
   assert.equal((html.match(/id="weightCoherenceResetBtn"/g) || []).length, 1);
   assert.match(html, /id="weightCoherencePreviewBtn"[\s\S]*?aria-keyshortcuts="G"/);
   assert.match(html, /id="weightCoherenceShuffleBtn"[\s\S]*?aria-keyshortcuts="S"/);
-  assert.match(html, /id="weightCoherenceToolbarSettingsBtn"/);
+  assert.match(html, /id="weightCoherenceToolbarSettingsBtn"[^>]*aria-keyshortcuts="Alt\+S"/);
+  assert.match(html, /id="weightCoherenceFullscreenBtn"[^>]*aria-keyshortcuts="Alt\+F"/);
   assert.match(css, /\.weight-coherence-icon-action\{/);
+  assert.match(css, /\.weight-coherence-hotkey\{[\s\S]*?top:calc\(100% \+ 3px\)!important[\s\S]*?background:transparent!important/);
+  assert.match(css, /#weightCoherenceWorkspace \[data-games-music-quick\]\[data-hotkey-caption\]::after/);
   assert.doesNotMatch(css, /\.weight-coherence-actions\{display:grid/);
 });
-
 
 test('jigsaw tray navigation exposes left and right arrow hotkeys', () => {
   assert.match(html, /id="weightCoherencePrevBtn"[\s\S]*?aria-keyshortcuts="ArrowLeft"[\s\S]*?Previous Tray \[←\]/);
@@ -215,12 +217,16 @@ test('fullscreen drag ghost stays inside the fullscreen subtree', () => {
 });
 
 
-test('fullscreen exposes F as the enter and exit hotkey', () => {
-  assert.match(html, /id="weightCoherenceFullscreenBtn"[\s\S]*?aria-keyshortcuts="F"/);
-  assert.match(html, /weight-coherence-hotkey">F<\/kbd>/);
-  assert.match(js, /if\(key==='f'\)[\s\S]*?toggleFullscreen\(\)/);
-  assert.match(js, /Exit full screen · F/);
-  assert.match(js, /Full screen · F/);
+test('fullscreen and settings use the common Alt hotkeys', () => {
+  assert.match(html, /id="weightCoherenceFullscreenBtn"[\s\S]*?aria-keyshortcuts="Alt\+F"/);
+  assert.match(html, /weight-coherence-hotkey">Alt\+F<\/kbd>/);
+  assert.match(html, /id="weightCoherenceToolbarSettingsBtn"[\s\S]*?aria-keyshortcuts="Alt\+S"/);
+  assert.match(html, /weight-coherence-hotkey">Alt\+S<\/kbd>/);
+  assert.match(js, /if\(event\.altKey\)[\s\S]*?if\(key==='f'\)[\s\S]*?toggleFullscreen\(\)/);
+  assert.match(js, /if\(key==='s'\)[\s\S]*?openSettings\(\)/);
+  assert.match(js, /Exit full screen · Alt\+F/);
+  assert.match(js, /Full screen · Alt\+F/);
+  assert.doesNotMatch(html, /id="weightCoherenceFullscreenBtn"[^>]*aria-keyshortcuts="F"/);
 });
 
 test('sorting trays follow one artwork-orientation authority and persist parked pieces', () => {
