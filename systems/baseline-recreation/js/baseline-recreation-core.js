@@ -268,7 +268,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(typeof document === 'undefined') return;
 
     // Sitewide game contract:
-    // - every game opens idle until New Game is pressed;
+    // - New Game is a one-press explicit reset/start action;
+    // - Pairs opens idle, while games with resumable active rounds restore them;
     // - every authenticated game profile saves through the account API;
     // - the game card is always the game window / mobile root;
     // - the board/scene is only the play surface;
