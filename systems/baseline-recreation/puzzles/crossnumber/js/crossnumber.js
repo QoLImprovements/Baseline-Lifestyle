@@ -714,7 +714,7 @@
       refs.complete.setAttribute('aria-hidden','false');
       if(refs.completeTime) refs.completeTime.textContent=formatTime(completedTime);
       if(refs.completeScore) refs.completeScore.textContent=String(score);
-      if(refs.completeReward) refs.completeReward.textContent='+'+rewards.bank+' Bank · +'+rewards.xp+' XP'+(rewards.cleanPct?' · clean bonus +'+rewards.cleanPct+'%':'')+(levels?' · +'+levels+' level'+(levels>1?'s':''):'');
+      if(refs.completeReward) refs.completeReward.textContent='+'+rewards.bank+' Bank · +'+rewards.xp+' XP'+(rewards.cleanPct?' · clean bonus +'+rewards.cleanPct+'%':'')+(levels?' · Player Rank +'+levels:'');
     }
     setStatus('Every equation balances. Cross Number complete.');
     try{autoNextApi()?.schedule?.(APP,function(){createNewRound({tierId:profile.selectedTier});});}catch(_error){}
@@ -825,7 +825,7 @@
       const maxed=level>=skill.max;
       const canBuy=!locked&&!maxed&&profile.skillPoints>0;
       return '<article class="crossnumber-skill-card'+(locked?' is-locked':'')+'">'+
-        '<div class="crossnumber-skill-head"><div><strong>'+escapeHtml(skill.name)+'</strong><span>Rank '+level+' / '+skill.max+(locked?' · unlock L'+skill.unlockLevel:'')+'</span></div>'+
+        '<div class="crossnumber-skill-head"><div><strong>'+escapeHtml(skill.name)+'</strong><span>Rank '+level+' / '+skill.max+(locked?' · unlock Player Rank '+skill.unlockLevel:'')+'</span></div>'+
         '<button class="action ghost" type="button" data-crossnumber-skill="'+skill.id+'"'+(canBuy?'':' disabled')+'>+</button></div>'+
         '<p>'+escapeHtml(skill.description)+'</p>'+
       '</article>';
