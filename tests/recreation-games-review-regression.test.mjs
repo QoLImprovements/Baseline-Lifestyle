@@ -65,8 +65,8 @@ test('Rule Shift uses a true oval and unmistakably separated red, blue and lime 
   assert.doesNotMatch(core,/ruleshift-token-caption" aria-hidden/);
   assert.match(core,/if\(rule && rule\.shape==='pill'\) rule\.shape='oval'/);
   assert.match(core,/if\(rule && rule\.colour==='teal'\) rule\.colour='lime'/);
-  assert.match(nonRealmCss,/ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/);
-  assert.match(nonRealmCss,/ruleshift-colour--lime \.ruleshift-shape\{[\s\S]*?background:#9edb35!important/);
+  assert.match(nonRealmCss,/ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/i);
+  assert.match(nonRealmCss,/ruleshift-colour--lime \.ruleshift-shape\{[\s\S]*?background:#9edb35!important/i);
   assert.match(nonRealmCss,/ruleshift-shape--oval\{[\s\S]*?clip-path:ellipse\(50% 50% at 50% 50%\)!important/);
 });
 
