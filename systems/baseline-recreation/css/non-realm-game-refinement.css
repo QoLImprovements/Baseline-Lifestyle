@@ -490,42 +490,6 @@
   white-space:normal!important;
 }
 
-/* --- Detect The Word: keypad closed by JS; when opened it follows the puzzle vertically. --- */
-@media(min-width:821px){
-  body[data-app="recreation"] #detectwordPanel .game-play-root.desktop-keypad-open #wordBoard,
-  body[data-app="recreation"] #detectwordPanel .game-play-root.keypad-open #wordBoard,
-  body[data-app="recreation"] #detectwordPanel .game-play-root.desktop-keypad-open:fullscreen #wordBoard,
-  body[data-app="recreation"] #detectwordPanel .game-play-root.keypad-open:fullscreen #wordBoard{
-    display:grid!important;
-    grid-template-columns:1fr!important;
-    gap:12px!important;
-    align-items:start!important;
-  }
-  body[data-app="recreation"] #detectwordPanel #wordBoard>.word-box{
-    grid-column:1!important;
-    grid-row:auto!important;
-    width:min(100%,720px)!important;
-    justify-self:center!important;
-    align-self:start!important;
-  }
-  body[data-app="recreation"] #detectwordPanel #wordBoard>.mobile-word-keypad[aria-hidden="false"],
-  body[data-app="recreation"] #detectwordPanel .desktop-keypad-open #wordBoard>.mobile-word-keypad{
-    display:grid!important;
-    grid-column:1!important;
-    grid-row:auto!important;
-    position:relative!important;
-    top:auto!important;
-    width:min(100%,720px)!important;
-    max-height:none!important;
-    overflow:visible!important;
-    justify-self:center!important;
-    grid-template-columns:repeat(10,minmax(0,1fr))!important;
-    grid-auto-rows:minmax(48px,auto)!important;
-    gap:7px!important;
-    padding:10px!important;
-  }
-}
-
 /* --- Pairs: one authoritative flip model + tier-aware sizing. --- */
 body[data-app="recreation"] #pairsPanel #pairsBoard{
   width:min(100%,var(--pairs-board-max,630px))!important;
@@ -703,17 +667,6 @@ body[data-app="recreation"] #ruleshiftPanel .ruleshift-token{
   min-height:112px!important;
   justify-self:center!important;
 }
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-token-caption{
-  display:block!important;
-  visibility:visible!important;
-  width:auto!important;
-  height:auto!important;
-  max-width:none!important;
-  max-height:none!important;
-  overflow:visible!important;
-  font-size:10px!important;
-  line-height:1.1!important;
-}
 
 /* Keep phone boards compact while still centering incomplete rows. */
 @media(max-width:820px){
@@ -725,9 +678,6 @@ body[data-app="recreation"] #ruleshiftPanel .ruleshift-token-caption{
   body[data-app="recreation"] #ruleshiftPanel .ruleshift-token{
     max-width:none!important;
     min-height:92px!important;
-  }
-  body[data-app="recreation"] #ruleshiftPanel .ruleshift-token-caption{
-    font-size:9px!important;
   }
   .coherent-progress-grid{grid-template-columns:1fr!important}
   .game-live-xp{grid-template-columns:auto minmax(80px,1fr)!important}
