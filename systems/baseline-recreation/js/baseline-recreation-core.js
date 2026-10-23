@@ -168,8 +168,17 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   }
   function setHotkeyCaption(button, hotkey){
     if(!button) return;
-    if(isMobileGameViewport()) button.removeAttribute('data-hotkey-caption');
-    else button.setAttribute('data-hotkey-caption', String(hotkey || ''));
+    button.removeAttribute('data-hotkey-caption');
+    const shortcut=String(hotkey||'').trim();
+    const titleBase=String(button.getAttribute('title')||'').split(/\s+[—·]\s+/)[0].trim();
+    const label=String(button.getAttribute('aria-label')||titleBase||button.textContent||'').trim();
+    const tooltip=[label,shortcut].filter(Boolean).join(' · ');
+    if(tooltip){
+      button.setAttribute('data-tooltip',tooltip);
+      button.setAttribute('title',tooltip);
+    }else{
+      button.removeAttribute('data-tooltip');
+    }
   }
   function startButtonLabel(_gameId){ return 'New Game'; }
   function autoNextButtonLabel(gameId){
