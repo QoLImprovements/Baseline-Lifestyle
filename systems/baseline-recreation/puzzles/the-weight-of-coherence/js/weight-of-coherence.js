@@ -973,6 +973,7 @@
   }
 
   function beginPuzzle(){
+    root.classList.add('is-restarting');
     resetZoom();
     viewOn=false;
     syncViewButton();
@@ -1007,6 +1008,9 @@
     renderJigsawProgress();
     saveState();
     startTimer();
+    window.requestAnimationFrame(function(){
+      window.requestAnimationFrame(function(){ root.classList.remove('is-restarting'); });
+    });
   }
 
   function renderCompletion(){
