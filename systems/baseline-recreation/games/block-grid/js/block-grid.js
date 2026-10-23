@@ -421,25 +421,35 @@ function boardAnchorFromPointer(clientX, clientY, grip = dragState) {
   const tolerance = coarse ? 26 : 10;
   if (clientX < boardRect.left - tolerance || clientX > boardRect.right + tolerance || clientY < boardRect.top - tolerance || clientY > boardRect.bottom + tolerance) return null;
 
-  const cells = [...board.querySelectorAll('[data-block-cell]')];
-  if (!cells.length) return null;
-  let nearest = null;
-  let nearestDistance = Infinity;
-  for (const cell of cells) {
-    const rect = cell.getBoundingClientRect();
-    const dx = clientX - (rect.left + rect.width / 2);
-    const dy = clientY - (rect.top + rect.height / 2);
-    const distance = (dx * dx) + (dy * dy);
-    if (distance < nearestDistance) {
-      nearestDistance = distance;
-      nearest = cell;
-    }
-  }
-  const coords = cellCoordinates(nearest);
-  if (!coords) return null;
+  const first = board.querySelector('[data-block-cell="0:0"]');
+  const right = board.querySelector('[data-block-cell="0:1"]');
+  const down = board.querySelector('[data-block-cell="1:0"]');
+  if (!first) return null;
+  const firstRect = first.getBoundingClientRect();
+  const rightRect = right?.getBoundingClientRect();
+  const downRect = down?.getBoundingClientRect();
+  const pitchX = rightRect ? rightRect.left - firstRect.left : firstRect.width;
+  const pitchY = downRect ? downRect.top - firstRect.top : firstRect.height;
+  if (!(pitchX > 0) || !(pitchY > 0)) return null;
+
   const bounds = boundsForShape(piece);
-  const row = coords.row - Math.max(0, Number(grip?.grabRow) || 0);
-  const col = coords.col - Math.max(0, Number(grip?.grabCol) || 0);
+  const grabCol = Math.max(0, Math.min(bounds.cols - 1, Number(grip?.grabCol) || 0));
+  const grabRow = Math.max(0, Math.min(bounds.rows - 1, Number(grip?.grabRow) || 0));
+  const rawOffsetX = Number(grip?.grabOffsetX);
+  const rawOffsetY = Number(grip?.grabOffsetY);
+  const offsetX = Number.isFinite(rawOffsetX) ? Math.max(0, Math.min(1, rawOffsetX)) : .5;
+  const offsetY = Number.isFinite(rawOffsetY) ? Math.max(0, Math.min(1, rawOffsetY)) : .5;
+
+  // Project the exact point being held back onto the board grid. The cell under
+  // the pointer is not automatically the piece anchor: the grabbed cell/point
+  // must remain under the pointer all the way through the drop.
+  const heldX = (grabCol * pitchX) + (firstRect.width * offsetX);
+  const heldY = (grabRow * pitchY) + (firstRect.height * offsetY);
+  const pieceLeft = clientX - heldX;
+  const pieceTop = clientY - heldY;
+  const col = Math.round((pieceLeft - firstRect.left) / pitchX);
+  const row = Math.round((pieceTop - firstRect.top) / pitchY);
+
   if (row < 0 || col < 0 || row + bounds.rows > active.board.length || col + bounds.cols > active.board.length) return null;
   return { row, col };
 }
