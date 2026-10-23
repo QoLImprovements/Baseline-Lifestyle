@@ -3433,3 +3433,25 @@ body[data-app="recreation"] [role="tooltip"] *{color:inherit!important;-webkit-t
 html[data-initial-section] body[data-app="recreation"] main.wrap > .section{display:none!important}
 html[data-initial-section="hub"] body[data-app="recreation"] main.wrap > #hub,
 html[data-initial-section="games"] body[data-app="recreation"] main.wrap > #games{display:block!important}
+
+
+/* 2026-10-23 tab highlight breathing room */
+body[data-app="recreation"] .tabs,
+body[data-app="recreation"] .game-toggle-row,
+body[data-app="recreation"] .trackcoin-tab-row{
+  box-sizing:border-box;
+  padding:4px 5px 7px;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] .tabs,
+  body[data-app="recreation"] .game-toggle-row,
+  body[data-app="recreation"] .trackcoin-tab-row{
+    overflow:visible!important;
+  }
+}
+@media(max-width:820px),(hover:none) and (pointer:coarse){
+  body[data-app="recreation"] .is-mobile-game-root .game-toggle-row,
+  body[data-app="recreation"] .is-mobile-game-root .trackcoin-tab-row{
+    padding:4px 4px 8px!important;
+  }
+}
