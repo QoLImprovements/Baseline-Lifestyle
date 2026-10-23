@@ -2385,8 +2385,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const ruleRestored=restoreSavedRuleShiftRound();
     if(!wordRestored) wordIdleMessage='Choose a letter tier and press New Game when you are ready.';
     if(!makeRestored) make24IdleMessage='Choose a number tier and press New Game when you are ready.';
+    if(!trackRestored) trackCoinState=null;
     if(!ruleRestored) ruleShiftIdleMessage='Choose a rule tier and press New Game when you are ready.';
-    if(trackRestored && trackCoinState && !trackCoinState.resolved) trackCoinState.restoredWaiting=true;
   }
 
   function startWordRound(){
