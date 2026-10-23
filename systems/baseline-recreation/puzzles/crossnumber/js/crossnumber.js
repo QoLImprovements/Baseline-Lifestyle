@@ -931,11 +931,14 @@
     const full=document.fullscreenElement===panel;
     const rect=scroll.getBoundingClientRect();
     const ratio=Math.max(.25,Number(layout.cols||1)/Math.max(1,Number(layout.rows||1)));
-    const availableWidth=Math.max(220,rect.width-16);
-    const viewportBottom=Math.max(260,(window.visualViewport?.height||window.innerHeight||800)-rect.top-(full?10:22));
-    const availableHeight=full ? Math.max(220,rect.height-16) : Math.max(220,Math.min(viewportBottom,(window.visualViewport?.height||window.innerHeight||800)*0.72));
-    const width=Math.max(220,Math.min(availableWidth,availableHeight*ratio,full?1200:820));
+    const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
+    const availableWidth=Math.max(180,(scroll.clientWidth||rect.width)-16);
+    const viewportBottom=Math.max(180,viewportHeight-rect.top-(full?8:18));
+    const boundedHeight=Math.max(180,(scroll.clientHeight||rect.height)-16);
+    const availableHeight=Math.max(180,Math.min(boundedHeight,viewportBottom));
+    const width=Math.max(180,Math.min(availableWidth,availableHeight*ratio,full?1280:900));
     refs.board.style.width=Math.floor(width)+'px';
+    refs.board.style.height=Math.floor(width/ratio)+'px';
     refs.board.style.maxWidth='none';
   }
 
