@@ -20,7 +20,7 @@ const core=read('systems/baseline-recreation/js/baseline-recreation-core.js');
 
 function loadGenerator(){
   const cut=crossnumber.indexOf("  refs.bank.addEventListener('click'");
-  assert.ok(cut>0,'Crossnumber event binding anchor should exist');
+  assert.ok(cut>0,'Cross Number event binding anchor should exist');
   const source=crossnumber.slice(0,cut)+"\n  globalThis.__crossnumberTest={generateLayout,TIERS,SKILLS,getRealmContribution};\n})();";
   const rootNode={closest(){return null;},querySelector(){return {};}};
   const context={
@@ -50,7 +50,7 @@ function loadGenerator(){
   return context.__crossnumberTest;
 }
 
-test('Crossnumber has six coherent progression tiers and five skills',()=>{
+test('Cross Number has six coherent progression tiers and five skills',()=>{
   const api=loadGenerator();
   assert.deepEqual(Array.from(api.TIERS,tier=>tier.id),['starter','field','forge','circuit','citadel','masterwork']);
   assert.deepEqual(Array.from(api.TIERS,tier=>tier.unlockLevel),[1,4,9,16,26,40]);
@@ -86,15 +86,15 @@ test('procedural generator produces many valid layouts at every tier',()=>{
   }
 });
 
-test('Crossnumber inherits the Recreation Indigo Circuit palette instead of owning a competing palette',()=>{
+test('Cross Number inherits the Recreation Indigo Circuit palette instead of owning a competing palette',()=>{
   ['--g01-deep','--g01-mid','--g01-centre','--g01-active','--g01-focus','--g01-card','--g01-ink','--g01-muted'].forEach(token=>{
     assert.ok(css.includes('var('+token),token);
   });
   ['#fff7d2','#eadb9b','#fbf3d0','#f5f2e8'].forEach(retired=>assert.doesNotMatch(css,new RegExp(retired,'i')));
-  assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_(?:PROGRESSION|COHERENT_UI|SCALE_AUTONEXT)_/);
+  assert.match(html,/crossnumber\.css\?v=RECREATION_COHERENCE_20261023_/);
 });
 
-test('Crossnumber follows the Recreation single-panel navigation contract',()=>{
+test('Cross Number follows the Recreation single-panel navigation contract',()=>{
   assert.match(html,/data-game-info="crossnumber"/);
   ['crossnumberGamePanel','crossnumberSkillPanel','crossnumberTierPanel','crossnumberProgressPanel'].forEach(id=>{
     assert.match(html,new RegExp('data-crossnumber-panel="'+id+'"'));
@@ -107,17 +107,35 @@ test('Crossnumber follows the Recreation single-panel navigation contract',()=>{
   assert.match(crossnumber,/panelFromLocation/);
 });
 
-test('Crossnumber keeps the puzzle and answer bank playable without page-level overflow',()=>{
+test('Cross Number visible naming is two words while internal identifiers remain valid JavaScript',()=>{
+  assert.match(html,/<h2>Cross Number<\/h2>/);
+  assert.match(html,/data-crossnumber-level>Player Rank 1<\/div>/);
+  assert.doesNotMatch(html,/>Crossnumber</);
+  assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
+  assert.doesNotThrow(()=>new Function(crossnumber));
+});
+
+test('Cross Number keeps the entire puzzle and answer bank reachable without fullscreen scrolling',()=>{
   assert.match(html,/class="crossnumber-play-layout"/);
   assert.match(html,/class="crossnumber-board-column"/);
   assert.match(html,/class="crossnumber-bank-panel"/);
-  assert.match(css,/grid-template-columns:minmax\(0,1fr\) minmax\(190px,230px\)/);
-  assert.match(css,/@media \(max-width:820px\)[\s\S]*?crossnumber-play-layout\{grid-template-columns:1fr\}/);
-  assert.match(css,/crossnumber-board\{[\s\S]*?max-width:600px;[\s\S]*?min-width:0;/);
-  assert.doesNotMatch(css,/crossnumber-board\{[\s\S]*?min-width:5[0-9]{2}px/);
+  assert.match(crossnumber,/function fitCrossNumberBoard\(\)/);
+  assert.match(crossnumber,/availableHeight\*ratio/);
+  assert.match(crossnumber,/const playTop=play\.getBoundingClientRect\(\)\.top/);
+  assert.match(crossnumber,/--crossnumber-play-height/);
+  assert.match(crossnumber,/window\.requestAnimationFrame\(fitCrossNumberBoard\)/);
+  assert.match(crossnumber,/fullscreenchange[\s\S]*?requestAnimationFrame\(fitCrossNumberBoard\)/);
+  assert.match(crossnumber,/visualViewport\?\.addEventListener\?\.\('resize'[\s\S]*?requestAnimationFrame\(fitCrossNumberBoard\)/);
+  assert.match(css,/Cross Number one-screen reachability authority/);
+  assert.equal((css.match(/Cross Number one-screen reachability authority/g)||[]).length,1);
+  assert.match(css,/#crossnumberGamePanel:fullscreen\{[\s\S]*?height:100dvh!important[\s\S]*?overflow:hidden!important/);
+  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?flex:1 1 auto[\s\S]*?min-height:0/);
+  assert.match(css,/#crossnumberGamePanel \.crossnumber-board-column\{[\s\S]*?grid-template-rows:minmax\(0,1fr\) auto/);
+  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-board-scroll,[\s\S]*?overflow:hidden/);
+  assert.match(css,/@media\(max-width:820px\)[\s\S]*?crossnumber-board-scroll\{[\s\S]*?overflow:auto/);
 });
 
-test('Crossnumber uses shared Auto-Next and keeps larger type inside the tighter cells',()=>{
+test('Cross Number uses shared Auto-Next and keeps larger type inside the tighter cells',()=>{
   assert.match(html,/data-auto-next-toggle="crossnumber"/);
   assert.match(core,/AUTO_NEXT_GAMES = \[[^\]]*'crossnumber'/);
   assert.match(core,/window\.BaselineGamesAutoNext/);
@@ -128,7 +146,7 @@ test('Crossnumber uses shared Auto-Next and keeps larger type inside the tighter
   assert.match(css,/crossnumber-number-tile\{[\s\S]*?font:900 21px\/1/);
 });
 
-test('Crossnumber profile participates in shared account persistence',()=>{
+test('Cross Number profile participates in shared account persistence',()=>{
   assert.match(registry,/['"]crossnumber['"]/);
   assert.match(gamesData,/['"]crossnumber['"]/);
   assert.match(savedData,/'crossnumber'\s*=>\s*'crossnumber\.json'/);
@@ -136,13 +154,13 @@ test('Crossnumber profile participates in shared account persistence',()=>{
   assert.match(crossnumber,/saveProfile\?\.\(APP,profile\)/);
 });
 
-test('Crossnumber Realm contribution is bounded and wired into the Realm resolver',()=>{
+test('Cross Number Realm contribution is bounded and wired into the Realm resolver',()=>{
   assert.match(crossnumber,/Math\.min\(\.08,[\s\S]*?boss/);
   assert.match(crossnumber,/Math\.min\(\.08,[\s\S]*?clues/);
   assert.match(crossnumber,/Math\.min\(\.06,[\s\S]*?costReduction/);
-  assert.match(crossnumber,/Crossnumber: Constraint Reading/);
-  assert.match(crossnumber,/Crossnumber: Linked Planning/);
-  assert.match(crossnumber,/Crossnumber: Resource Arithmetic/);
+  assert.match(crossnumber,/Cross Number: Constraint Reading/);
+  assert.match(crossnumber,/Cross Number: Linked Planning/);
+  assert.match(crossnumber,/Cross Number: Resource Arithmetic/);
   assert.match(realmRuntime,/crossnumberRealmContribution/);
   assert.match(realmRuntime,/bonus\.bossDamageMult \*= Number\(crossnumber\.bossDamageMult/);
   assert.match(realmRuntime,/bonus\.clueDropChance \+= Number\(crossnumber\.clueDropChance/);

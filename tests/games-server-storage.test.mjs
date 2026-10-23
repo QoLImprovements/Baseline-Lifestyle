@@ -156,7 +156,7 @@ test('Baseline Realm play loop runs independently of saving availability',()=>{
 test('every current game and jigsaw save app is covered by the server authority contract',()=>{
   const expected=[
     'pairs','detectword','make24','trackcoin','ruleshift','crossnumber','ninja',
-    'blockgrid','coloursort','dartsfocused','badmintonfocused',
+    'blockgrid','coloursort','dartsfocused','badmintonfocused','hubsettings',
     'weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw','meridiangrove'
   ];
   expected.forEach(app=>{
@@ -167,12 +167,22 @@ test('every current game and jigsaw save app is covered by the server authority 
   assert.match(registry,/profileApp:'badmintonfocused'/);
   assert.match(registry,/persistentApps:storageApps/);
   assert.match(guard,/BASELINE_GAMES_REGISTRY\?\.persistentApps\?\.\(\)/);
+  assert.match(guard,/\['pairs'[\s\S]*?'crossnumber'[\s\S]*?'hubsettings'\]/);
   for(const app of ['weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw']){
     assert.ok(puzzlesRegistry.includes("app:'"+app+"'"));
   }
 });
 
-test('Crossnumber uses the shared server storage authority and has a saved-data resource',()=>{
+test('Recreation settings use the same server storage authority as game progress',()=>{
+  assert.match(registry,/['"]hubsettings['"]/);
+  assert.match(gamesApi,/['"]hubsettings['"]/);
+  assert.match(savedData,/'hubsettings'\s*=>\s*'recreation-settings\.json'/);
+  assert.doesNotMatch(read('systems/baseline-recreation/js/games-music.js'),/\b(?:localStorage|sessionStorage|indexedDB)\b/);
+  assert.match(read('systems/baseline-recreation/js/games-music.js'),/getProfile\?\.\('hubsettings'\)/);
+  assert.match(read('systems/baseline-recreation/js/games-music.js'),/saveProfile\?\.\('hubsettings'/);
+});
+
+test('Cross Number uses the shared server storage authority and has a saved-data resource',()=>{
   assert.match(registry,/['"]crossnumber['"]/);
   assert.match(gamesApi,/['"]crossnumber['"]/);
   assert.match(savedData,/'crossnumber'\s*=>\s*'crossnumber\.json'/);

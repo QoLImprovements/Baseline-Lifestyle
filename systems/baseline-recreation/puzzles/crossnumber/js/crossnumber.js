@@ -2,7 +2,7 @@
   'use strict';
 
   const APP='crossnumber';
-  const BUILD='CROSSNUMBER_GAMES_REVIEW_20261023_1';
+  const BUILD='CROSS_NUMBER_RECREATION_COHERENCE_20261023_2';
   const root=document.getElementById('crossnumberGame');
   if(!root) return;
   const panel=root.closest('#crossnumberPanel');
@@ -18,10 +18,10 @@
 
   const SKILLS=Object.freeze([
     Object.freeze({id:'insight',name:'Insight',max:4,unlockLevel:6,description:'Gain one additional hint use per puzzle per rank.'}),
-    Object.freeze({id:'flow',name:'Flow',max:5,unlockLevel:1,description:'Gain +8% Crossnumber XP per rank.'}),
+    Object.freeze({id:'flow',name:'Flow',max:5,unlockLevel:1,description:'Gain +8% Cross Number XP per rank.'}),
     Object.freeze({id:'banker',name:'Banker',max:5,unlockLevel:1,description:'Gain +10% Bank reward per rank.'}),
     Object.freeze({id:'precision',name:'Precision',max:4,unlockLevel:1,description:'Reduce Bank loss from an invalid completed equation by 1 per rank.'}),
-    Object.freeze({id:'structure',name:'Structure',max:4,unlockLevel:12,description:'Every two ranks add one starting anchor to future layouts and strengthen Crossnumber\'s Baseline Realm link.'})
+    Object.freeze({id:'structure',name:'Structure',max:4,unlockLevel:12,description:'Every two ranks add one starting anchor to future layouts and strengthen Cross Number\'s Baseline Realm link.'})
   ]);
 
   const DEFAULT_PROFILE=Object.freeze({
@@ -82,6 +82,7 @@
   let timerId=0;
   let dragTile='';
   let storageReloaded=false;
+  let newGamePointerAt=0;
 
   function clone(value){
     try{return JSON.parse(JSON.stringify(value));}catch(_error){return null;}
@@ -112,7 +113,7 @@
     const storage=storageAuthority();
     try{
       storage?.setTemporaryProfile?.(APP,profile);
-      storage?.saveProfile?.(APP,profile);
+      storage?.saveProfile?.(APP,profile,{immediate:true,keepalive:false});
     }catch(_error){}
     if(options.progress){
       try{document.dispatchEvent(new CustomEvent('baseline:crossnumber-progress',{detail:{profile:clone(profile),contribution:getRealmContribution(profile)}}));}catch(_error){}
@@ -284,7 +285,7 @@
       }
       if(nodes.length===tier.nodes) return {nodes:nodes,growth:growth,rng:rng};
     }
-    throw new Error('Unable to generate Crossnumber layout');
+    throw new Error('Unable to generate Cross Number layout');
   }
 
   function normaliseLayoutCoordinates(nodes){
@@ -713,9 +714,9 @@
       refs.complete.setAttribute('aria-hidden','false');
       if(refs.completeTime) refs.completeTime.textContent=formatTime(completedTime);
       if(refs.completeScore) refs.completeScore.textContent=String(score);
-      if(refs.completeReward) refs.completeReward.textContent='+'+rewards.bank+' Bank · +'+rewards.xp+' XP'+(rewards.cleanPct?' · clean bonus +'+rewards.cleanPct+'%':'')+(levels?' · +'+levels+' level'+(levels>1?'s':''):'');
+      if(refs.completeReward) refs.completeReward.textContent='+'+rewards.bank+' Bank · +'+rewards.xp+' XP'+(rewards.cleanPct?' · clean bonus +'+rewards.cleanPct+'%':'')+(levels?' · Player Rank +'+levels:'');
     }
-    setStatus('Every equation balances. Crossnumber complete.');
+    setStatus('Every equation balances. Cross Number complete.');
     try{autoNextApi()?.schedule?.(APP,function(){createNewRound({tierId:profile.selectedTier});});}catch(_error){}
   }
 
@@ -731,7 +732,7 @@
 
   function selectTier(id){
     const tier=tierDefinition(id);
-    if(profile.level<tier.unlockLevel){setStatus(tier.name+' unlocks at level '+tier.unlockLevel+'.');return;}
+    if(profile.level<tier.unlockLevel){setStatus(tier.name+' unlocks at Player Rank '+tier.unlockLevel+'.');return;}
     profile.selectedTier=tier.id;
     saveProfile();
     createNewRound({tierId:tier.id});
@@ -811,7 +812,7 @@
       const selected=(round?.tierId||profile.selectedTier)===tier.id;
       return '<button class="crossnumber-tier-button'+(selected?' is-active':'')+'" type="button" data-crossnumber-tier="'+tier.id+'"'+(locked?' disabled':'')+'>'+
         '<strong>'+escapeHtml(tier.name)+'</strong>'+
-        '<span>'+(locked?'Unlock L'+tier.unlockLevel:(tier.nodes+' numbers · '+tier.operators.join(' ')))+'</span>'+
+        '<span>'+(locked?'Unlock Rank '+tier.unlockLevel:(tier.nodes+' numbers · '+tier.operators.join(' ')))+'</span>'+
       '</button>';
     }).join('');
   }
@@ -824,7 +825,7 @@
       const maxed=level>=skill.max;
       const canBuy=!locked&&!maxed&&profile.skillPoints>0;
       return '<article class="crossnumber-skill-card'+(locked?' is-locked':'')+'">'+
-        '<div class="crossnumber-skill-head"><div><strong>'+escapeHtml(skill.name)+'</strong><span>Rank '+level+' / '+skill.max+(locked?' · unlock L'+skill.unlockLevel:'')+'</span></div>'+
+        '<div class="crossnumber-skill-head"><div><strong>'+escapeHtml(skill.name)+'</strong><span>Rank '+level+' / '+skill.max+(locked?' · unlock Player Rank '+skill.unlockLevel:'')+'</span></div>'+
         '<button class="action ghost" type="button" data-crossnumber-skill="'+skill.id+'"'+(canBuy?'':' disabled')+'>+</button></div>'+
         '<p>'+escapeHtml(skill.description)+'</p>'+
       '</article>';
@@ -838,9 +839,9 @@
     const clues=Math.min(.08,Math.min(.04,Math.max(0,p.level-1)*.0012)+(p.level>=5?.02:0)+(structure*.004));
     const costReduction=Math.min(.06,Math.min(.03,Math.max(0,p.level-1)*.0008)+(p.level>=20?.02:0)+(structure*.0025));
     const traits=[];
-    if(p.level>=5) traits.push('Crossnumber: Constraint Reading');
-    if(p.level>=10) traits.push('Crossnumber: Linked Planning');
-    if(p.level>=20) traits.push('Crossnumber: Resource Arithmetic');
+    if(p.level>=5) traits.push('Cross Number: Constraint Reading');
+    if(p.level>=10) traits.push('Cross Number: Linked Planning');
+    if(p.level>=20) traits.push('Cross Number: Resource Arithmetic');
     return {
       level:p.level,
       bossDamageMult:1+boss,
@@ -854,13 +855,13 @@
     if(!refs.realm) return;
     const contribution=getRealmContribution(profile);
     refs.realm.innerHTML=
-      '<div class="crossnumber-realm-title"><strong>Baseline Realm — Linked Reasoning</strong><span>Crossnumber progression contributes bounded Realm bonuses.</span></div>'+
+      '<div class="crossnumber-realm-title"><strong>Baseline Realm — Linked Reasoning</strong><span>Cross Number progression contributes bounded Realm bonuses.</span></div>'+
       '<div class="crossnumber-realm-grid">'+
         '<div><span>Boss damage</span><strong>+'+Math.round((contribution.bossDamageMult-1)*1000)/10+'%</strong></div>'+
         '<div><span>Clue discovery</span><strong>+'+Math.round(contribution.clueDropChance*1000)/10+'%</strong></div>'+
         '<div><span>Upgrade efficiency</span><strong>−'+Math.round((1-contribution.upgradeCostMult)*1000)/10+'%</strong></div>'+
       '</div>'+
-      '<p>Milestones: Level 5 Constraint Reading · Level 10 Linked Planning · Level 20 Resource Arithmetic. Crossnumber helps Realm, but its contribution is capped so it never becomes mandatory.</p>';
+      '<p>Milestones: Player Rank 5 Constraint Reading · Player Rank 10 Linked Planning · Player Rank 20 Resource Arithmetic. Cross Number helps Realm, but its contribution is capped so it never becomes mandatory.</p>';
   }
 
   function renderStats(){
@@ -882,7 +883,7 @@
     ];
     refs.stats.innerHTML=
       '<section class="coherent-progress-overview">' +
-        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Crossnumber</span><strong>Level '+profile.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Level '+(profile.level+1)+'</div></div>' +
+        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Cross Number</span><strong>Player Rank '+profile.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Player Rank '+(profile.level+1)+'</div></div>' +
         '<div class="coherent-progress-xp-meta"><span>'+profile.xp+' / '+needed+' XP</span><span>'+Math.round(pct)+'%</span></div>' +
         '<div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+needed+'" aria-valuenow="'+profile.xp+'"><span style="width:'+pct+'%"></span></div>' +
       '</section>' +
@@ -895,7 +896,7 @@
     profile=normaliseProfile(profile);
     const tier=tierDefinition(round?.tierId||profile.selectedTier);
     const needed=xpNeededForLevel(profile.level);
-    if(refs.level) refs.level.textContent='Level - '+profile.level;
+    if(refs.level) refs.level.textContent='Player Rank - '+profile.level;
     if(refs.tier) refs.tier.textContent=tier.name;
     if(refs.bankValue) refs.bankValue.textContent=String(profile.bank);
     if(refs.cleanStreak) refs.cleanStreak.textContent=String(profile.cleanWinStreak);
@@ -915,21 +916,50 @@
         else gamePanel.prepend(live);
       }
       const pct=clamp((profile.xp/Math.max(1,needed))*100,0,100);
-      live.innerHTML='<strong>Level '+profile.level+'</strong><div class="game-live-xp__bar"><span style="width:'+pct+'%"></span></div><span>'+profile.xp+' / '+needed+' XP</span>';
+      live.innerHTML='<strong>Player Rank '+profile.level+'</strong><div class="game-live-xp__bar"><span style="width:'+pct+'%"></span></div><span>'+profile.xp+' / '+needed+' XP</span>';
     }
 
     renderTiers();renderSkills();renderRealmContribution();renderStats();
     try{autoNextApi()?.sync?.();}catch(_error){}
   }
 
+  function fitCrossNumberBoard(){
+    if(!refs.board || !layout) return;
+    const scroll=refs.board.closest('.crossnumber-board-scroll');
+    const play=refs.board.closest('.crossnumber-play-layout');
+    const panel=document.getElementById('crossnumberGamePanel');
+    if(!scroll || !play || !panel) return;
+    const full=document.fullscreenElement===panel;
+    const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
+
+    // Outside fullscreen, size the whole play area from its actual on-screen
+    // position. This keeps the number bank and the entire puzzle reachable at
+    // once instead of relying on a guessed vh subtraction.
+    if(!full && window.matchMedia?.('(min-width:821px)').matches){
+      const playTop=play.getBoundingClientRect().top;
+      const available=Math.max(320,Math.min(720,viewportHeight-playTop-14));
+      panel.style.setProperty('--crossnumber-play-height',Math.floor(available)+'px');
+    }else{
+      panel.style.removeProperty('--crossnumber-play-height');
+    }
+
+    // Re-read after the play-area constraint has been applied.
+    const rect=scroll.getBoundingClientRect();
+    const ratio=Math.max(.25,Number(layout.cols||1)/Math.max(1,Number(layout.rows||1)));
+    const availableWidth=Math.max(180,(scroll.clientWidth||rect.width)-12);
+    const viewportBottom=Math.max(180,viewportHeight-rect.top-(full?6:12));
+    const boundedHeight=Math.max(180,(scroll.clientHeight||rect.height)-12);
+    const availableHeight=Math.max(180,Math.min(boundedHeight,viewportBottom));
+    const width=Math.max(180,Math.min(availableWidth,availableHeight*ratio,full?1280:980));
+    refs.board.style.width=Math.floor(width)+'px';
+    refs.board.style.height=Math.floor(width/ratio)+'px';
+    refs.board.style.maxWidth='none';
+  }
+
   function renderAll(){
     if(!round){
-      round=restoreRound(profile.activeRound);
-      if(round) layout=generateLayout(round.seed,round.tierId);
-    }
-    if(!round){
       layout=null;
-      refs.board.innerHTML='<div class="crossnumber-empty-board">Open Crossnumber or choose New Layout to generate a puzzle.</div>';
+      refs.board.innerHTML='<div class="crossnumber-empty-board">Open Cross Number or choose New Game to generate a puzzle.</div>';
       refs.board.style.removeProperty('--crossnumber-cols');
       refs.board.style.removeProperty('--crossnumber-rows');
       refs.bank.innerHTML='';
@@ -940,6 +970,7 @@
     }
     if(!layout||layout.seed!==round.seed||layout.tierId!==round.tierId) layout=generateLayout(round.seed,round.tierId);
     buildBoard();renderBank();renderRoundHud();renderProgression();
+    window.requestAnimationFrame(fitCrossNumberBoard);
   }
 
   refs.bank.addEventListener('click',function(event){
@@ -982,6 +1013,17 @@
     }else setStatus('Select a number tile from the bank first.');
   });
 
+  root.addEventListener('pointerdown',function(event){
+    if(event.pointerType==='mouse' && event.button!==0) return;
+    const button=event.target instanceof Element ? event.target.closest('[data-crossnumber-action="new"]') : null;
+    if(!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+    newGamePointerAt=performance.now();
+    createNewRound({tierId:profile.selectedTier});
+  },true);
+
   root.addEventListener('click',function(event){
     const panelButton=event.target.closest('button[data-crossnumber-panel]');
     if(panelButton){setCrossnumberPanel(panelButton.dataset.crossnumberPanel,'push');return;}
@@ -997,15 +1039,29 @@
     if(name==='sort') sortBank();
     if(name==='restart') restartRound();
     if(name==='fullscreen') toggleFullscreen();
-    if(name==='new') createNewRound({tierId:profile.selectedTier});
+    if(name==='new' && performance.now()-newGamePointerAt>=700) createNewRound({tierId:profile.selectedTier});
   });
 
   document.addEventListener('baseline:crossnumber-open',function(){
     setCrossnumberPanel(panelFromLocation(),'none');
-    if(!round) createNewRound({tierId:profile.selectedTier});
-    else startTimer();
+    if(profile.activeRound!=null){
+      profile.activeRound=null;
+      saveProfile();
+    }
+    round=null;
+    layout=null;
+    selectedTile='';
+    undoStack=[];
+    stopTimer();
+    renderAll();
+    setStatus('Choose a difficulty tier and press New Game when you are ready.');
   });
-  document.addEventListener('fullscreenchange',syncFullscreenControl);
+  document.addEventListener('fullscreenchange',function(){
+    syncFullscreenControl();
+    window.requestAnimationFrame(fitCrossNumberBoard);
+  });
+  window.addEventListener('resize',function(){ window.requestAnimationFrame(fitCrossNumberBoard); },{passive:true});
+  try{ window.visualViewport?.addEventListener?.('resize',function(){ window.requestAnimationFrame(fitCrossNumberBoard); },{passive:true}); }catch(_error){}
   window.addEventListener('popstate',function(){
     if(panel&&panel.hidden) return;
     setCrossnumberPanel(panelFromLocation(),'none');
@@ -1017,8 +1073,8 @@
     storageReloaded=true;
     stopTimer();
     profile=normaliseProfile(stored);
-    round=restoreRound(profile.activeRound);
-    layout=round?generateLayout(round.seed,round.tierId):null;
+    round=null;
+    layout=null;
     selectedTile='';
     undoStack=[];
     renderAll();
@@ -1026,17 +1082,13 @@
     startTimer();
   });
 
-  const hadSavedRound=Boolean(profile.activeRound);
   profile=normaliseProfile(profile);
-  round=restoreRound(profile.activeRound);
-  layout=round?generateLayout(round.seed,round.tierId):null;
+  round=null;
+  layout=null;
   renderAll();
   syncFullscreenControl();
   setCrossnumberPanel(panelFromLocation(),'none');
-  if(hadSavedRound&&round) setStatus('Your saved Crossnumber layout has been restored.');
-  else if(panel&&!panel.hidden&&!round) createNewRound({tierId:profile.selectedTier});
-  else setStatus('Open Crossnumber to generate a new layout.');
-  startTimer();
+  setStatus('Choose a difficulty tier and press New Game when you are ready.');
 
   globalThis.BaselineCrossnumber=Object.freeze({
     build:BUILD,

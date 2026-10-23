@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
+const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   try{
     window.BASELINE_RECREATION_BUILD = BASELINE_RECREATION_BUILD;
     document.documentElement.setAttribute('data-baseline-recreation-js', BASELINE_RECREATION_BUILD);
@@ -82,14 +82,14 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
   let currentTab = 'system';
   let pairsBoardState = null;
   let pairsRoundToken = 0;
-  let pairsIdleMessage = 'Choose a board tier and press Start New Game when you are ready.';
+  let pairsIdleMessage = 'Choose a board tier and press New Game when you are ready.';
   let make24State = null;
-  let make24IdleMessage = 'Choose a number tier and press Start New Game when you are ready.';
+  let make24IdleMessage = 'Choose a number tier and press New Game when you are ready.';
   let wordState = null;
-  let wordIdleMessage = 'Choose a letter tier and press Start New Game when you are ready.';
+  let wordIdleMessage = 'Choose a letter tier and press New Game when you are ready.';
   let ruleShiftState = null;
   let ruleShiftTimer = 0;
-  let ruleShiftIdleMessage = 'Choose a rule tier and press Start New Game when you are ready.';
+  let ruleShiftIdleMessage = 'Choose a rule tier and press New Game when you are ready.';
   let trackCoinState = null;
   let trackCoinRoundToken = 0;
   let trackCoinAnimationFrame = 0;
@@ -105,6 +105,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
   let autoNextSettings = readAutoNextSettings();
   const autoNextTimers = Object.create(null);
   let desktopKeypadOpenGame = '';
+  let coreNewGamePointerId = '';
+  let coreNewGamePointerAt = 0;
+  let trackCoinPointerPickAt = 0;
   const GAME_IDS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.runtimeId; }) : ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
 
   const GAME_ID_TO_ROUTE_SLUG = Object.freeze((function(){
@@ -163,8 +166,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     if(gameId === 'ruleshift') return Boolean(ruleShiftState && ruleShiftState.finished);
     return false;
   }
-  function startButtonLabel(gameId){
-    const label=roundIsTerminal(gameId) ? 'Start Next Game' : 'Start New Game';
+  function startButtonLabel(_gameId){
+    const label='New Game';
     return isMobileGameViewport() ? label : label + ' [' + SITEWIDE_START_HOTKEY_LABEL + ']';
   }
   function autoNextButtonLabel(gameId){
@@ -265,12 +268,13 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     if(typeof document === 'undefined') return;
 
     // Sitewide game contract:
-    // - every game opens idle until Start New Game is pressed;
+    // - New Game is a one-press explicit reset/start action;
+    // - Pairs opens idle, while games with resumable active rounds restore them;
     // - every authenticated game profile saves through the account API;
     // - the game card is always the game window / mobile root;
     // - the board/scene is only the play surface;
-    // - controls, Round Status, Start New Game, and Auto-Next stay inside the same root;
-    // - Start New Game uses Alt+N and Auto-Next uses Alt+A so typing games do not clash.
+    // - controls, Round Status, New Game, and Auto-Next stay inside the same root;
+    // - New Game uses Alt+N and Auto-Next uses Alt+A so typing games do not clash.
     ['pairs','detectword','make24','trackcoin','ruleshift','ninja'].forEach(function(gameId){
       markGameNode(defaultGamePanelId(gameId), 'data-game-panel', gameId, 'game-panel-shell');
       markGameNode(defaultGameCardId(gameId), 'data-game-card', gameId, 'game-card-shell');
@@ -586,35 +590,46 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
   function resetGameRoundToIdle(gameId){
     const id = normaliseGameId(gameId);
     if(!id) return;
+    const profile=profiles[id];
+    const clearSavedRound=function(){
+      if(!profile || profile.activeRound==null) return;
+      profile.activeRound=null;
+      scheduleSave(id);
+    };
     if(id === 'pairs'){
       clearAutoNextTimer('pairs');
       pairsBoardState = null;
-      pairsIdleMessage = 'Choose a board tier and press Start New Game when you are ready.';
+      pairsIdleMessage = 'Choose a board tier and press New Game when you are ready.';
+      clearSavedRound();
       return;
     }
     if(id === 'detectword'){
       clearAutoNextTimer('detectword');
       wordState = null;
-      wordIdleMessage = 'Choose a letter tier and press Start New Game when you are ready.';
+      wordIdleMessage = 'Choose a letter tier and press New Game when you are ready.';
+      clearSavedRound();
       return;
     }
     if(id === 'make24'){
       clearAutoNextTimer('make24');
       make24State = null;
-      make24IdleMessage = 'Choose a number tier and press Start New Game when you are ready.';
+      make24IdleMessage = 'Choose a number tier and press New Game when you are ready.';
+      clearSavedRound();
       return;
     }
     if(id === 'trackcoin'){
       clearAutoNextTimer('trackcoin');
       cancelTrackCoinAnimation();
       trackCoinState = null;
+      clearSavedRound();
       return;
     }
     if(id === 'ruleshift'){
       clearAutoNextTimer('ruleshift');
       clearRuleShiftTimer();
       ruleShiftState = null;
-      ruleShiftIdleMessage = 'Choose a rule tier and press Start New Game when you are ready.';
+      ruleShiftIdleMessage = 'Choose a rule tier and press New Game when you are ready.';
+      clearSavedRound();
     }
   }
   function toggleAutoNext(gameId){
@@ -842,11 +857,17 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     currentTab = 'system';
     selectedGame = '';
   }
-  function restoreFromHashState(){
+  function restoreFromHashState(options){
+    const opts=options||{};
     suspendHashSync = true;
     applyHashState();
     activateTab(currentTab);
-    selectGame(selectedGame);
+    const routedGame=selectedGame;
+    if(opts.useStored===true && routedGame==='pairs'){
+      pairsBoardState=null;
+      pairsIdleMessage='Choose a board tier and press New Game when you are ready.';
+    }
+    selectGame(routedGame);
     suspendHashSync = false;
     if(window.location.hash) syncHashState('replace');
     safeRenderAll();
@@ -907,7 +928,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       return '<div class="coherent-progress-stat"><span>' + escapeHtml(item[0]) + '</span><strong>' + escapeHtml(item[1]) + '</strong></div>';
     }).join('');
     return '<section class="coherent-progress-overview">' +
-      '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">' + escapeHtml(title||'Progress') + '</span><strong>Level ' + p.level + '</strong></div><div class="coherent-progress-next">' + p.remaining + ' XP to Level ' + (p.level+1) + '</div></div>' +
+      '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">' + escapeHtml(title||'Progress') + '</span><strong>Player Rank ' + p.level + '</strong></div><div class="coherent-progress-next">' + p.remaining + ' XP to Player Rank ' + (p.level+1) + '</div></div>' +
       '<div class="coherent-progress-xp-meta"><span>' + p.xp + ' / ' + p.needed + ' XP</span><span>' + Math.round(p.pct) + '%</span></div>' +
       '<div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + p.needed + '" aria-valuenow="' + p.xp + '" aria-label="' + escapeHtml(title||'Game') + ' experience"><span style="width:' + p.pct + '%"></span></div>' +
     '</section>' +
@@ -928,7 +949,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       else if(toolbar) toolbar.insertAdjacentElement('afterend',node);
       else root.prepend(node);
     }
-    node.innerHTML='<strong>Level ' + p.level + '</strong><div class="game-live-xp__bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + p.needed + '" aria-valuenow="' + p.xp + '"><span style="width:' + p.pct + '%"></span></div><span>' + p.xp + ' / ' + p.needed + ' XP</span>';
+    node.innerHTML='<strong>Player Rank ' + p.level + '</strong><div class="game-live-xp__bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + p.needed + '" aria-valuenow="' + p.xp + '"><span style="width:' + p.pct + '%"></span></div><span>' + p.xp + ' / ' + p.needed + ' XP</span>';
   }
   function getAuth(){
     try{
@@ -1207,19 +1228,19 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const id=String(game && game.runtimeId || '');
     if(id==='darts-focused'){
       const darts=dartsFocusedProfile();
-      return 'Level ' + Math.max(1,Number(darts && darts.level || 1)) + ' · 10 games';
+      return 'Player Rank ' + Math.max(1,Number(darts && darts.level || 1)) + ' · 10 games';
     }
     if(id==='badminton-focused'){
       const badminton=badmintonFocusedProfile();
-      return 'Level ' + Math.max(1,Number(badminton && badminton.level || 1)) + ' · 15 games';
+      return 'Player Rank ' + Math.max(1,Number(badminton && badminton.level || 1)) + ' · 15 games';
     }
     const profile=profileOrDefault(game && game.profileApp || id);
-    if(id==='detectword') return 'Level ' + profile.level + ' · ' + profile.wordsSolved + ' solved';
-    if(id==='make24') return 'Level ' + profile.level + ' · ' + profile.puzzlesSolved + ' solved';
-    if(id==='pairs') return 'Level ' + profile.level + ' · ' + profile.boardsCleared + ' cleared';
-    if(id==='ruleshift') return 'Level ' + profile.level + ' · Best streak ' + profile.bestStreak;
-    if(id==='trackcoin') return 'Level ' + profile.level + ' · Best streak ' + profile.bestStreak;
-    if(id==='ninja') return 'Level ' + profile.level + ' · Stage ' + profile.stage;
+    if(id==='detectword') return 'Player Rank ' + profile.level + ' · ' + profile.wordsSolved + ' solved';
+    if(id==='make24') return 'Player Rank ' + profile.level + ' · ' + profile.puzzlesSolved + ' solved';
+    if(id==='pairs') return 'Player Rank ' + profile.level + ' · ' + profile.boardsCleared + ' cleared';
+    if(id==='ruleshift') return 'Player Rank ' + profile.level + ' · Best streak ' + profile.bestStreak;
+    if(id==='trackcoin') return 'Player Rank ' + profile.level + ' · Best streak ' + profile.bestStreak;
+    if(id==='ninja') return 'Player Rank ' + profile.level + ' · Stage ' + profile.stage;
     return 'Ready';
   }
   function gameMeta(){
@@ -1317,8 +1338,10 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       if(selectedGame === 'detectword') desktopKeypadOpenGame = '';
       else if(desktopKeypadOpenGame === 'detectword') desktopKeypadOpenGame = '';
     }
-    if(selectedGame && selectedGame !== previousGame && opts.resetRound !== false){
-      resetGameRoundToIdle(selectedGame);
+    // Pairs is deliberately non-resumable. Other core games keep their
+    // account-backed active round when the player leaves and returns.
+    if(selectedGame === 'pairs' && selectedGame !== previousGame && opts.resetRound !== false){
+      resetGameRoundToIdle('pairs');
     }
     if(!selectedGame) exitMobileGameMode();
     const panels = {
@@ -1423,7 +1446,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const tierName = tier ? tier.name : tierId.charAt(0).toUpperCase() + tierId.slice(1);
     const skills = profile.skills || {};
     const needed = xpNeededForLevel(Math.max(1, Number(profile.level || 1)));
-    return '<details class="game-summary-details" data-summary="crossnumber"><summary><span>Crossnumber</span><span class="inline-note">Level ' + Math.max(1,Number(profile.level||1)) + '</span></summary><div class="game-summary-body">'
+    return '<details class="game-summary-details" data-summary="crossnumber"><summary><span>Cross Number</span><span class="inline-note">Player Rank ' + Math.max(1,Number(profile.level||1)) + '</span></summary><div class="game-summary-body">'
       + '<div class="game-summary-row"><span>Tier: ' + escapeHtml(tierName) + '</span><span>Puzzles solved: ' + Math.max(0,Number(profile.puzzlesSolved||0)) + '</span></div>'
       + '<div class="game-summary-row"><span>XP: ' + Math.max(0,Number(profile.xp||0)) + ' / ' + needed + '</span><span>Bank: ' + Math.max(0,Number(profile.bank||0)) + '</span></div>'
       + '<div class="game-summary-row"><span>Best streak: ' + Math.max(0,Number(profile.bestStreak||0)) + '</span><span>Clean streak: ' + Math.max(0,Number(profile.cleanWinStreak||0)) + '</span></div>'
@@ -1434,7 +1457,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
   function renderSystemSummary(){
     const existing = refs.gamesSummaryWrap ? Array.from(refs.gamesSummaryWrap.querySelectorAll('details[open][data-summary]')).map(function(el){ return el.getAttribute('data-summary'); }) : [];
     openSummaryIds.clear(); existing.forEach(function(id){ openSummaryIds.add(id); });
-    refs.bankSummary.innerHTML = '<strong>Bank</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Core games, Crossnumber, Darts Focused and Badminton Focused feed the shared Recreation Bank/coins. Baseline Realm uses its own connected campaign coin economy.</span>';
+    refs.bankSummary.innerHTML = '<strong>Bank</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Core games, Cross Number, Darts Focused and Badminton Focused feed the shared Recreation Bank/coins. Baseline Realm uses its own connected campaign coin economy.</span>';
     refs.gamesSummaryWrap.innerHTML = [renderDetectWordSummary(), renderMake24Summary(), renderPairsSummary(), renderTrackCoinSummary(), renderRuleShiftSummary(), renderCrossnumberSummary(), renderNinjaSummary()].join('');
     Array.from(refs.gamesSummaryWrap.querySelectorAll('details[data-summary]')).forEach(function(el){ el.open = openSummaryIds.has(el.getAttribute('data-summary')); });
   }
@@ -1518,7 +1541,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
     profile.cleanWinStreak = rewards.nextClean;
     const levels = levelUpFromGain(profile, rewards.xp);
-    pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · clean bonus +' + rewards.cleanPct + '%' : '') + (rewards.streakPct ? ' · streak bonus +' + rewards.streakPct + '%' : '') + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
+    pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · clean bonus +' + rewards.cleanPct + '%' : '') + (rewards.streakPct ? ' · streak bonus +' + rewards.streakPct + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
     pairsBoardState.roundBank += rewards.bank;
     pairsBoardState.completed = true;
     persistPairsRound();
@@ -1616,7 +1639,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const profile = profiles.pairs;
     const needed = xpNeededForLevel(profile.level);
     refs.pairsXpFill.style.width = clamp((profile.xp / needed) * 100, 0, 100) + '%';
-    if(refs.pairsLevelHeading) refs.pairsLevelHeading.textContent = 'Level - ' + profile.level;
+    if(refs.pairsLevelHeading) refs.pairsLevelHeading.textContent = 'Player Rank - ' + profile.level;
     refs.pairsXpMeta.textContent = profile.xp + ' / ' + needed + ' XP';
     refs.pairsSkillPointsValue.textContent = String(profile.skillPoints);
     refs.pairsBoardsClearedValue.textContent = String(profile.boardsCleared);
@@ -1664,8 +1687,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       const locked = profile.level < skill.unlockLevel;
       const maxed = level >= skill.max;
       const canSpend = profile.skillPoints > 0 && !locked && !maxed;
-      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
-      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-pairs-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
+      const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Rank ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires Player Rank ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-pairs-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
     refs.pairsSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Insight ' + profile.skills.insight + ' · Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank · Recall -' + profile.skills.recall + ' repeat loss · Tempo -' + (profile.skills.tempo * 90) + ' ms recovery</span><span class="inline-note">Current streak bonus: +' + trackCoinStreakBonusPct(profile.currentStreak) + '% · clean bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span>';
   }
@@ -1706,9 +1729,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const pct = clamp((profile.xp / needed) * 100, 0, 100);
     const current = currentPairsTier();
     const next = nextPairsTierToUnlock();
-    const nextText = next ? ('Next unlock: ' + next.name + ' at level ' + next.unlockLevel + '.') : 'All Pairs board tiers are unlocked.';
+    const nextText = next ? ('Next unlock: ' + next.name + ' at Player Rank ' + next.unlockLevel + '.') : 'All Pairs board tiers are unlocked.';
     const skillText = 'Insight ' + profile.skills.insight + ' · Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Recall ' + profile.skills.recall + ' · Tempo -' + (profile.skills.tempo * 90) + ' ms';
-    return '<details class="game-summary-details" data-summary="pairs"><summary><span>Pairs</span><span class="inline-note">Level ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Boards cleared: ' + profile.boardsCleared + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>Bank from Pairs: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Streak bonus: +' + trackCoinStreakBonusPct(profile.currentStreak) + '%</span><span>Current streak: ' + profile.currentStreak + '</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>' + current.pairs + ' pairs on current tier</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>' + skillText + '</span><span>Best streak: ' + profile.bestStreak + ' · unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+    return '<details class="game-summary-details" data-summary="pairs"><summary><span>Pairs</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Boards cleared: ' + profile.boardsCleared + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>Bank from Pairs: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Streak bonus: +' + trackCoinStreakBonusPct(profile.currentStreak) + '%</span><span>Current streak: ' + profile.currentStreak + '</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>' + current.pairs + ' pairs on current tier</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>' + skillText + '</span><span>Best streak: ' + profile.bestStreak + ' · unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
   }
 
   function currentMake24Tier(){
@@ -1818,7 +1841,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       profiles.make24.cleanWinStreak = nextClean;
       const levels = levelUpFromGain(profiles.make24, xpGain);
       make24State.roundBank += bankGain;
-      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + (nextClean ? ' · clean bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
+      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + (nextClean ? ' · clean bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
       make24State.revealSolution = '';
       make24State.draftExpression = '';
       make24State.completed = true;
@@ -1886,7 +1909,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const profile = profiles.make24;
     const needed = xpNeededForLevel(profile.level);
     refs.make24XpFill.style.width = clamp((profile.xp / needed) * 100, 0, 100) + '%';
-    if(refs.make24LevelHeading) refs.make24LevelHeading.textContent = 'Level - ' + profile.level;
+    if(refs.make24LevelHeading) refs.make24LevelHeading.textContent = 'Player Rank - ' + profile.level;
     refs.make24XpMeta.textContent = profile.xp + ' / ' + needed + ' XP';
     refs.make24SkillPointsValue.textContent = String(profile.skillPoints);
     refs.make24SolvedValue.textContent = String(profile.puzzlesSolved);
@@ -1927,8 +1950,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       const locked = profile.level < skill.unlockLevel;
       const maxed = level >= skill.max;
       const canSpend = profile.skillPoints > 0 && !locked && !maxed;
-      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
-      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-make24-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
+      const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Rank ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires Player Rank ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-make24-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
     refs.make24SkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Clarity ' + profile.skills.clarity + ' guide use(s) · Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank · Reserve ' + profile.skills.reserve + ' reroll(s) · Precision -' + profile.skills.precision + ' repeat loss</span>';
   }
@@ -1959,6 +1982,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
   }
   function syncMake24BuilderUi(){
     if(!make24State) return;
+    const input=refs.make24ExpressionInput || document.getElementById('make24ExpressionInput');
+    if(input && input.value!==String(make24State.draftExpression||'')) input.value=String(make24State.draftExpression||'');
     const usage=make24ExpressionNumberUsage(make24State.draftExpression||'');
     qsa('[data-make24-number-key]',refs.make24Board||document).forEach(function(button){
       const key=button.getAttribute('data-make24-number-key')||'';
@@ -1969,6 +1994,16 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     });
     const note=q('.make-number-builder-note',refs.make24Board||document);
     if(note) note.textContent=make24BuilderStatus();
+  }
+  function keepMake24InputFocused(){
+    if(isMobileGameViewport()) return;
+    const input=refs.make24ExpressionInput || document.getElementById('make24ExpressionInput');
+    if(!input || input.disabled) return;
+    try{
+      input.focus({preventScroll:true});
+      const end=String(input.value||'').length;
+      if(typeof input.setSelectionRange==='function') input.setSelectionRange(end,end);
+    }catch(_error){}
   }
   function appendMake24BuilderToken(token){
     if(!make24State||make24State.completed) return;
@@ -1997,7 +2032,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     }else return;
     make24State.draftExpression=raw;
     persistMake24Round();
-    renderMake24Board();
+    syncMake24BuilderUi();
+    keepMake24InputFocused();
   }
   function editMake24Builder(action){
     if(!make24State||make24State.completed) return;
@@ -2009,7 +2045,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     }
     make24State.draftExpression=raw;
     persistMake24Round();
-    renderMake24Board();
+    syncMake24BuilderUi();
+    keepMake24InputFocused();
   }
 
   function renderMake24Board(){
@@ -2063,69 +2100,20 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const pct = clamp((profile.xp / needed) * 100, 0, 100);
     const current = currentMake24Tier();
     const next = nextMake24TierToUnlock();
-    const nextText = next ? ('Next unlock: ' + next.name + ' at level ' + next.unlockLevel + '.') : 'All Make The Number tiers are unlocked.';
-    return '<details class="game-summary-details" data-summary="make24"><summary><span>Make The Number</span><span class="inline-note">Level ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Puzzles solved: ' + profile.puzzlesSolved + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>Bank from Make The Number: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Numbers up to ' + current.maxNumber + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Clarity ' + profile.skills.clarity + ' · Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Reserve ' + profile.skills.reserve + ' · Precision ' + profile.skills.precision + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+    const nextText = next ? ('Next unlock: ' + next.name + ' at Player Rank ' + next.unlockLevel + '.') : 'All Make The Number tiers are unlocked.';
+    return '<details class="game-summary-details" data-summary="make24"><summary><span>Make The Number</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Puzzles solved: ' + profile.puzzlesSolved + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>Bank from Make The Number: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Numbers up to ' + current.maxNumber + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Clarity ' + profile.skills.clarity + ' · Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Reserve ' + profile.skills.reserve + ' · Precision ' + profile.skills.precision + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
   }
 
   function currentWordTier(){
     return WORD_TIERS.find(t => t.id === profiles.detectword.selectedTier) || WORD_TIERS[0];
   }
   function nextWordTierToUnlock(){ return WORD_TIERS.find(t => profiles.detectword.level < t.unlockLevel) || null; }
-  function savedPairsRoundSnapshot(){
-    if(!pairsBoardState || !profiles.pairs) return null;
-    return {
-      tierId:currentPairsTier().id,
-      cards:(pairsBoardState.cards || []).map(function(card){
-        return { id:card.id, face:card.face, matched:Boolean(card.matched), selections:Math.max(0,Number(card.selections||0)) };
-      }),
-      matchedPairs:Math.max(0,Number(pairsBoardState.matchedPairs||0)),
-      moves:Math.max(0,Number(pairsBoardState.moves||0)),
-      roundBank:Number(pairsBoardState.roundBank||0),
-      hintsLeft:Math.max(0,Number(pairsBoardState.hintsLeft||0)),
-      hadFailure:Boolean(pairsBoardState.hadFailure),
-      completed:Boolean(pairsBoardState.completed),
-      lastMessage:String(pairsBoardState.lastMessage||'').slice(0,260)
-    };
-  }
   function persistPairsRound(){
     if(!profiles.pairs) return;
-    profiles.pairs.activeRound = savedPairsRoundSnapshot();
+    // Pairs deliberately opens idle. Keep progression, tier and rewards
+    // server-side, but do not persist a half-played board between openings.
+    profiles.pairs.activeRound = null;
     scheduleSave('pairs');
-  }
-  function restoreSavedPairsRound(){
-    const saved = profiles.pairs && profiles.pairs.activeRound;
-    if(!saved || typeof saved !== 'object') return false;
-    const tier = PAIRS_TIERS.find(function(item){ return item.id === saved.tierId; });
-    if(!tier || profiles.pairs.level < tier.unlockLevel) return false;
-    const cards = Array.isArray(saved.cards) ? saved.cards.slice(0,tier.pairs*2).map(function(card,index){
-      const face=String(card&&card.face||'');
-      if(!PAIRS_FACES.includes(face)) return null;
-      return {
-        id:String(card&&card.id||('restored-'+index)),
-        face:face,
-        open:Boolean(card&&card.matched),
-        matched:Boolean(card&&card.matched),
-        wasKnown:false,
-        selections:Math.max(0,Math.round(Number(card&&card.selections||0)))
-      };
-    }).filter(Boolean) : [];
-    if(cards.length !== tier.pairs*2) return false;
-    profiles.pairs.selectedTier=tier.id;
-    pairsBoardState={
-      roundToken:++pairsRoundToken,
-      cards:cards,
-      selected:[],
-      matchedPairs:Math.max(0,Math.min(tier.pairs,Math.round(Number(saved.matchedPairs||0)))),
-      moves:Math.max(0,Math.round(Number(saved.moves||0))),
-      roundBank:Number(saved.roundBank||0),
-      flipLock:false,
-      hintsLeft:Math.max(0,Math.round(Number(saved.hintsLeft||0))),
-      hadFailure:Boolean(saved.hadFailure),
-      hintBusy:false,
-      completed:Boolean(saved.completed),
-      lastMessage:String(saved.lastMessage||'Board restored. Continue matching pairs.').slice(0,260)
-    };
-    return true;
   }
 
   function savedMake24RoundSnapshot(){
@@ -2298,10 +2286,12 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const validTypes=['colour','shape','size','notColour','notShape','colourShape','colourSize','shapeSize'];
     const rule=saved.currentRule&&typeof saved.currentRule==='object'?Object.assign({},saved.currentRule):null;
     if(rule && rule.shape==='pill') rule.shape='oval';
+    if(rule && (rule.colour==='teal'||rule.colour==='lime')) rule.colour='white';
     const options=Array.isArray(saved.options)?saved.options.map(function(option){
       if(!option||typeof option!=='object') return null;
       const next=Object.assign({},option);
       if(next.shape==='pill') next.shape='oval';
+      if(next.colour==='teal'||next.colour==='lime') next.colour='white';
       return next;
     }).filter(function(option){
       return option&&RULESHIFT_COLOURS.some(function(item){return item.id===option.colour;})&&RULESHIFT_SHAPES.some(function(item){return item.id===option.shape;})&&RULESHIFT_SIZES.some(function(item){return item.id===option.size;});
@@ -2367,11 +2357,37 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     return true;
   }
   function restoreSavedCoreRounds(){
-    if(!pairsBoardState) restoreSavedPairsRound();
-    if(!make24State) restoreSavedMake24Round();
-    if(!wordState) restoreSavedWordRound();
-    if(!trackCoinState) restoreSavedTrackCoinRound();
-    if(!ruleShiftState) restoreSavedRuleShiftRound();
+    clearAutoNextTimer('pairs');
+    clearAutoNextTimer('detectword');
+    clearAutoNextTimer('make24');
+    clearAutoNextTimer('trackcoin');
+    clearAutoNextTimer('ruleshift');
+    cancelTrackCoinAnimation();
+    clearRuleShiftTimer();
+
+    // Pairs deliberately opens idle. Its progression persists, but a partially
+    // played memory board never returns when the activity is opened.
+    pairsBoardState=null;
+    pairsIdleMessage='Choose a board tier and press New Game when you are ready.';
+    if(profiles.pairs && profiles.pairs.activeRound!=null){
+      profiles.pairs.activeRound=null;
+      scheduleSave('pairs');
+    }
+
+    // These games are resumable. Their active round is account-backed and is
+    // restored after hydration; New Game remains an explicit one-press reset.
+    wordState=null;
+    make24State=null;
+    trackCoinState=null;
+    ruleShiftState=null;
+    const wordRestored=restoreSavedWordRound();
+    const makeRestored=restoreSavedMake24Round();
+    const trackRestored=restoreSavedTrackCoinRound();
+    const ruleRestored=restoreSavedRuleShiftRound();
+    if(!wordRestored) wordIdleMessage='Choose a letter tier and press New Game when you are ready.';
+    if(!makeRestored) make24IdleMessage='Choose a number tier and press New Game when you are ready.';
+    if(!trackRestored) trackCoinState=null;
+    if(!ruleRestored) ruleShiftIdleMessage='Choose a rule tier and press New Game when you are ready.';
   }
 
   function startWordRound(){
@@ -2419,7 +2435,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       profile.bank += bankGain;
       const levels = levelUpFromGain(profile, xpGain);
       wordState.roundBank += bankGain;
-      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
+      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · Player Rank +' + levels : '') + '.';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
       resolveNinjaBonuses();
@@ -2458,7 +2474,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const profile = profiles.detectword;
     const needed = xpNeededForLevel(profile.level);
     refs.wordXpFill.style.width = clamp((profile.xp / needed) * 100, 0, 100) + '%';
-    if(refs.wordLevelHeading) refs.wordLevelHeading.textContent = 'Level - ' + profile.level;
+    if(refs.wordLevelHeading) refs.wordLevelHeading.textContent = 'Player Rank - ' + profile.level;
     refs.wordXpMeta.textContent = profile.xp + ' / ' + needed + ' XP';
     refs.wordSkillPointsValue.textContent = String(profile.skillPoints);
     refs.wordSolvedValue.textContent = String(profile.wordsSolved);
@@ -2500,8 +2516,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       const locked = profile.level < skill.unlockLevel;
       const maxed = level >= skill.max;
       const canSpend = profile.skillPoints > 0 && !locked && !maxed;
-      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
-      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-word-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
+      const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Rank ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires Player Rank ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-word-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
     refs.wordSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank · Reserve +' + profile.skills.reserve + ' guesses · Focus streak scaler ' + profile.skills.focus + '</span>';
   }
@@ -2551,8 +2567,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const pct = clamp((profile.xp / needed) * 100, 0, 100);
     const current = currentWordTier();
     const next = nextWordTierToUnlock();
-    const nextText = next ? ('Next unlock: ' + next.name + ' at level ' + next.unlockLevel + '.') : 'All Detect The Word tiers are unlocked.';
-    return '<details class="game-summary-details" data-summary="detectword"><summary><span>Detect The Word</span><span class="inline-note">Level ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Words solved: ' + profile.wordsSolved + '</span><span>Best streak: ' + profile.bestStreak + '</span></div><div class="game-summary-row"><span>Bank from Detect The Word: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Reserve ' + profile.skills.reserve + ' · Focus ' + profile.skills.focus + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+    const nextText = next ? ('Next unlock: ' + next.name + ' at Player Rank ' + next.unlockLevel + '.') : 'All Detect The Word tiers are unlocked.';
+    return '<details class="game-summary-details" data-summary="detectword"><summary><span>Detect The Word</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Words solved: ' + profile.wordsSolved + '</span><span>Best streak: ' + profile.bestStreak + '</span></div><div class="game-summary-row"><span>Bank from Detect The Word: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Reserve ' + profile.skills.reserve + ' · Focus ' + profile.skills.focus + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
   }
 
   function resolveNinjaBonuses(){ const method = realmHostMethod('resolveBonuses'); return method ? method() : {}; }
@@ -2686,17 +2702,20 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
   }
   function trackCoinGenerateOrder(cups){
     const current = cups.map(cup => cup.id);
+    if(current.length < 2) return current.slice();
     let order = shuffle(current);
     let attempts = 0;
-    while(attempts < 10){
-      const moved = order.filter((id, index) => id !== current[index]).length;
-      const longJump = order.some((id, index) => Math.abs(current.indexOf(id) - index) >= 2);
-      if(moved >= Math.max(2, Math.floor(current.length * 0.66)) && longJump) break;
+    while(attempts < 24){
+      const everyCupMoves = order.every((id, index) => id !== current[index]);
+      const longJump = current.length < 3 || order.some((id, index) => Math.abs(current.indexOf(id) - index) >= 2);
+      if(everyCupMoves && longJump) return order;
       order = shuffle(current);
       attempts += 1;
     }
-    if(order.every((id, index) => id === current[index])) order = current.slice(1).concat(current[0]);
-    return order;
+    // A non-zero rotation is a guaranteed derangement: no cup pauses in place
+    // while the next shuffle segment begins.
+    const offset = 1 + Math.floor(Math.random() * Math.max(1,current.length - 1));
+    return current.slice(offset).concat(current.slice(0, offset));
   }
   function trackCoinMidTop(pattern, baseTop, slotIndex, count, direction){
     const centered = slotIndex - ((count - 1) / 2);
@@ -2738,60 +2757,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     });
   }
 
-  function applyTrackCoinMotionStep(step, onDone, roundToken){
-    if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
-    cancelTrackCoinAnimation();
-    const cups = trackCoinState.cups;
-    const positions = trackCoinCupPositions(cups.length);
-    const order = Array.isArray(step.order) && step.order.length === cups.length ? step.order.slice() : trackCoinGenerateOrder(cups);
-    if(!Array.isArray(step.order) || step.order.length !== cups.length) step.order = order.slice();
-    const targetIndex = Object.fromEntries(order.map((id, index) => [id, index]));
-    const starts = cups.map(cup => ({ left:cup.left, top:cup.top, tilt:cup.tilt }));
-    const targets = cups.map((cup, currentIndex) => {
-      const destIndex = targetIndex[cup.id];
-      const destLeft = positions[destIndex];
-      const direction = destLeft >= cup.left ? 1 : -1;
-      return {
-        left: positions[destIndex],
-        top: trackCoinFinalTop(step.pattern, trackCoinState.baseTop, destIndex),
-        tilt: (destIndex % 2 === 0 ? -1 : 1) * (step.pattern === 'cross' ? 3 : 2),
-        curveLeft: ((cup.left + destLeft) / 2) + (step.pattern === 'orbit' ? (direction * 14 * Math.sin((currentIndex + 1) * 1.4)) : step.pattern === 'sweep' ? (direction * 20) : step.pattern === 'spiral' ? (direction * 16) : step.pattern === 'feint' ? (-direction * 28) : direction * 12),
-        curveTop: trackCoinMidTop(step.pattern, trackCoinState.baseTop, destIndex, cups.length, direction)
-      };
-    });
-    const startAt = performance.now();
-    function frame(now){
-      if(!trackCoinState || trackCoinState.roundToken !== roundToken || trackCoinState.phase !== 'hide') return;
-      const raw = clamp((now - startAt) / step.duration, 0, 1);
-      // Keep velocity through shuffle-step boundaries. The former quintic
-      // ease reached zero velocity at every boundary, which read as move/pause.
-      const eased = raw;
-      cups.forEach((cup, idx) => {
-        const s = starts[idx];
-        const t = targets[idx];
-        const inv = 1 - eased;
-        cup.left = +(inv * inv * s.left + 2 * inv * eased * t.curveLeft + eased * eased * t.left).toFixed(2);
-        cup.top = +(inv * inv * s.top + 2 * inv * eased * t.curveTop + eased * eased * t.top).toFixed(2);
-        cup.tilt = +(s.tilt + ((t.tilt - s.tilt) * eased)).toFixed(2);
-      });
-      syncTrackCoinMotionDom();
-      if(raw < 1){
-        trackCoinAnimationFrame = window.requestAnimationFrame(frame);
-      }else{
-        cups.sort((a, b) => targetIndex[a.id] - targetIndex[b.id]);
-        cups.forEach((cup, slotIndex) => {
-          const target = targets.find(item => Math.abs(item.left - positions[slotIndex]) < 0.01);
-          cup.left = positions[slotIndex];
-          cup.top = target ? target.top : cup.top;
-          cup.tilt = target ? target.tilt : cup.tilt;
-        });
-        trackCoinAnimationFrame = 0;
-        syncTrackCoinMotionDom();
-        if(typeof onDone === 'function' && trackCoinState && trackCoinState.roundToken === roundToken) onDone();
-      }
-    }
-    trackCoinAnimationFrame = window.requestAnimationFrame(frame);
-  }
   function startTrackCoinRound(options){
     clearAutoNextTimer('trackcoin');
     cancelTrackCoinAnimation();
@@ -2823,24 +2788,90 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       }, 700);
     }, startWindowMs);
   }
-  function runTrackCoinShuffle(stepIndex, roundToken, onComplete){
-    if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
-    if(stepIndex >= trackCoinState.sequence.length){
-      if(typeof onComplete === 'function'){
-        onComplete();
-        return;
-      }
-      trackCoinState.phase = 'pick';
-      trackCoinState.pickLocked = false;
-      trackCoinState.message = 'Select the cup holding the coin.';
+  function runTrackCoinShuffle(_stepIndex, roundToken, onComplete){
+    if(!trackCoinState || trackCoinState.roundToken !== roundToken || trackCoinState.phase !== 'hide') return;
+    cancelTrackCoinAnimation();
+    const cups=trackCoinState.cups;
+    const positions=trackCoinCupPositions(cups.length);
+    const byId=Object.create(null);
+    cups.forEach(function(cup){ byId[cup.id]={left:cup.left,top:cup.top,tilt:cup.tilt}; });
+    const plans=[];
+    let cursor=0;
+    trackCoinState.sequence.forEach(function(step){
+      const order=Array.isArray(step.order)&&step.order.length===cups.length ? step.order.slice() : trackCoinGenerateOrder(cups);
+      step.order=order.slice();
+      const targetIndex=Object.fromEntries(order.map(function(id,index){return [id,index];}));
+      const duration=Math.max(120,Number(step.duration)||600);
+      const transitions={};
+      cups.forEach(function(cup,currentIndex){
+        const start=Object.assign({},byId[cup.id]);
+        const destIndex=targetIndex[cup.id];
+        const destLeft=positions[destIndex];
+        const direction=destLeft>=start.left?1:-1;
+        const target={
+          left:destLeft,
+          top:trackCoinFinalTop(step.pattern,trackCoinState.baseTop,destIndex),
+          tilt:(destIndex%2===0?-1:1)*(step.pattern==='cross'?3:2)
+        };
+        transitions[cup.id]={
+          start:start,
+          target:target,
+          arc:trackCoinMidTop(step.pattern,trackCoinState.baseTop,destIndex,cups.length,direction)-((start.top+target.top)/2)
+        };
+        byId[cup.id]=target;
+      });
+      plans.push({startAt:cursor,endAt:cursor+duration,duration:duration,transitions:transitions});
+      cursor+=duration;
+    });
+    const total=Math.max(1,cursor);
+    const started=performance.now();
+    function finish(){
+      cups.sort(function(a,b){return a.left-b.left;});
+      trackCoinAnimationFrame=0;
+      syncTrackCoinMotionDom();
+      if(typeof onComplete==='function'){ onComplete(); return; }
+      if(!trackCoinState || trackCoinState.roundToken!==roundToken) return;
+      trackCoinState.phase='pick';
+      trackCoinState.pickLocked=false;
+      trackCoinState.message='Select the cup holding the coin.';
       persistTrackCoinRound();
       renderTrackCoin();
-      return;
     }
-    const step = trackCoinState.sequence[stepIndex];
-    applyTrackCoinMotionStep(step, function(){
-      runTrackCoinShuffle(stepIndex + 1, roundToken, onComplete);
-    }, roundToken);
+    function frame(now){
+      if(!trackCoinState || trackCoinState.roundToken!==roundToken || trackCoinState.phase!=='hide') return;
+      const elapsed=Math.min(total,Math.max(0,now-started));
+      let planIndex=plans.length-1;
+      for(let i=0;i<plans.length;i+=1){ if(elapsed<=plans[i].endAt){planIndex=i;break;} }
+      const plan=plans[planIndex];
+      const t=clamp((elapsed-plan.startAt)/plan.duration,0,1);
+      const t2=t*t,t3=t2*t;
+      const h00=(2*t3)-(3*t2)+1;
+      const h10=t3-(2*t2)+t;
+      const h01=(-2*t3)+(3*t2);
+      const h11=t3-t2;
+      cups.forEach(function(cup){
+        const motion=plan.transitions[cup.id];
+        if(!motion) return;
+        const start=motion.start,target=motion.target;
+        const prevMotion=planIndex>0 ? plans[planIndex-1].transitions[cup.id] : null;
+        const nextMotion=planIndex<plans.length-1 ? plans[planIndex+1].transitions[cup.id] : null;
+        const prevPoint=prevMotion ? prevMotion.start : start;
+        const nextPoint=nextMotion ? nextMotion.target : target;
+        const m0Left=(target.left-prevPoint.left)/2;
+        const m1Left=(nextPoint.left-start.left)/2;
+        const m0Top=(target.top-prevPoint.top)/2;
+        const m1Top=(nextPoint.top-start.top)/2;
+        cup.left=+(h00*start.left+h10*m0Left+h01*target.left+h11*m1Left).toFixed(2);
+        const baseTop=(h00*start.top)+(h10*m0Top)+(h01*target.top)+(h11*m1Top);
+        const arcEnvelope=Math.sin(Math.PI*t);
+        cup.top=+(baseTop+(arcEnvelope*arcEnvelope*motion.arc)).toFixed(2);
+        cup.tilt=+(start.tilt+((target.tilt-start.tilt)*t)).toFixed(2);
+      });
+      syncTrackCoinMotionDom();
+      if(elapsed<total) trackCoinAnimationFrame=window.requestAnimationFrame(frame);
+      else finish();
+    }
+    trackCoinAnimationFrame=window.requestAnimationFrame(frame);
   }
   function grantTrackCoinRewards(correct){
     const profile = profiles.trackcoin;
@@ -2885,7 +2916,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     return { xpGain, coinGain, levelUps, bonusPct:streakPct, cleanPct, previousSpeed, roundSpeed, nextSpeed:trackCoinCurrentSpeedPercent(profile) };
   }
   function chooseTrackCoinCup(choiceRaw){
-    if(!trackCoinState || trackCoinState.pickLocked || trackCoinState.resolved) return;
+    if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
     cancelTrackCoinAnimation();
     const choice = Number(choiceRaw);
     if(Number.isNaN(choice)) return;
@@ -2899,7 +2930,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     trackCoinState.lastResult = correct ? 'correct' : 'missed';
     const reward = grantTrackCoinRewards(correct);
     trackCoinState.message = correct
-      ? 'Correct. The coin was under the cup you chose. Cup speed rises from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. +' + reward.xpGain + ' XP · +' + reward.coinGain + ' coins' + (reward.bonusPct ? ' · streak bonus +' + reward.bonusPct + '%' : '') + (reward.cleanPct ? ' · clean bonus +' + reward.cleanPct + '%' : '') + (reward.levelUps ? ' · +' + reward.levelUps + ' level' + (reward.levelUps > 1 ? 's' : '') : '') + '.'
+      ? 'Correct. The coin was under the cup you chose. Cup speed rises from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. +' + reward.xpGain + ' XP · +' + reward.coinGain + ' coins' + (reward.bonusPct ? ' · streak bonus +' + reward.bonusPct + '%' : '') + (reward.cleanPct ? ' · clean bonus +' + reward.cleanPct + '%' : '') + (reward.levelUps ? ' · Player Rank +' + reward.levelUps : '') + '.'
       : 'Missed. The coin has been revealed under the correct cup. Cup speed falls from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. Streak bonus reset. +' + reward.xpGain + ' XP · +' + reward.coinGain + ' coins.';
     persistTrackCoinRound();
     resolveNinjaBonuses();
@@ -2997,8 +3028,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       const locked = profile.level < skill.unlockLevel;
       const maxed = level >= skill.max;
       const canSpend = profile.skillPoints > 0 && !locked && !maxed;
-      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
-      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-trackcoin-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
+      const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Rank ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires Player Rank ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-trackcoin-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
     refs.trackCoinSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Read ' + profile.skills.read + ' · Banker ' + profile.skills.banker + ' · Flow ' + profile.skills.flow + ' · Discipline ' + profile.skills.discipline + ' · Pace Control -' + (profile.skills.steal * 4) + '%</span><span class="inline-note">Unspent skill points: ' + profile.skillPoints + '</span>';
   }
@@ -3009,7 +3040,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const needed = xpNeededForLevel(profile.level);
     const streakBonus = trackCoinStreakBonusPct(profile.currentStreak) + ((profile.skills.steal || 0) * 4);
     refs.trackCoinXpFill.style.width = clamp((profile.xp / needed) * 100, 0, 100) + '%';
-    refs.trackCoinLevelHeading.textContent = 'Level - ' + profile.level;
+    refs.trackCoinLevelHeading.textContent = 'Player Rank - ' + profile.level;
     refs.trackCoinXpMeta.textContent = profile.xp + ' / ' + needed + ' XP';
     refs.trackCoinSkillPointsValue.textContent = String(profile.skillPoints || 0);
     refs.trackCoinCoinsValue.textContent = formatInt(profile.coins);
@@ -3036,7 +3067,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     renderCompactGameXp('trackcoin',profile);
     refs.trackCoinRpgState.textContent = trackCoinRpgUnlocked(profile)
       ? 'Pace unlock threshold reached for RPG integration.'
-      : 'Reach level 10, maintain high accuracy, or push a major streak to unlock Pace Control.';
+      : 'Reach Player Rank 10, maintain high accuracy, or push a major streak to unlock Pace Control.';
     setTrackCoinPanel(trackCoinOpenPanel || 'trackCoinGamePanel');
 
     const replayButton = document.getElementById('replayTrackCoinShuffleBtn');
@@ -3049,12 +3080,12 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const trackCoinStatusTitle = trackCoinState && trackCoinState.reviewActive
       ? 'Round Status — Reviewing'
       : (trackCoinState && trackCoinState.resolved ? (trackCoinState.lastResult === 'correct' ? 'Round Status — Correct' : 'Round Status — Missed') : 'Round Status');
-    const trackCoinStatusMessage = trackCoinState ? trackCoinState.message : 'No round active yet. Press Start New Game when you are ready.';
+    const trackCoinStatusMessage = trackCoinState ? trackCoinState.message : 'No round active yet. Press New Game when you are ready.';
     const passiveText = 'Passive to Ninja Training: +' + Math.round((Math.min(0.10, profile.level * 0.0025) + Math.min(0.04, (profile.skills.read || 0) * 0.01)) * 100) + '% efficiency from Track the Coin progression.';
     const roundStatusHtml = '<div class="summary-box round-status-card trackcoin-game-status' + trackCoinResultClass + '" id="trackCoinSummary"><strong>' + escapeHtml(trackCoinStatusTitle) + '</strong><span class="inline-note">' + escapeHtml(trackCoinStatusMessage) + '</span><span class="inline-note">' + escapeHtml(passiveText) + '</span></div>';
 
     if(!trackCoinState){
-      refs.trackCoinBoard.innerHTML = '<div class="empty-box trackcoin-idle-card"><strong>Track the Coin is idle.</strong><span class="inline-note">Choose a tier and press Start New Game when you are ready.</span><span class="inline-note">The coin will be shown first, then covered, then shuffled. ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '.</span><span class="inline-note">Use the Start New Game control at the bottom-right of the game window.</span></div>';
+      refs.trackCoinBoard.innerHTML = '<div class="empty-box trackcoin-idle-card"><strong>Track the Coin is idle.</strong><span class="inline-note">Choose a tier and press New Game when you are ready.</span><span class="inline-note">The coin will be shown first, then covered, then shuffled. ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '.</span><span class="inline-note">Use the New Game control at the bottom-right of the game window.</span></div>';
       ensureGamePlayContract();
       return;
     }
@@ -3067,7 +3098,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       const isCorrect = trackCoinState.revealAll && cup.id === trackCoinState.coinCupId;
       const isPicked = trackCoinState.revealAll && cup.id === trackCoinState.pickedCupId;
       const cupClass = 'trackcoin-cup' + ((((trackCoinState.phase === 'show' || trackCoinState.revealAll) && cup.id === trackCoinState.coinCupId) ? ' is-lifted' : '')) + (selectable ? ' is-selectable' : '') + (isCorrect ? ' is-correct' : '') + (isPicked ? ' is-picked' : '') + (trackCoinState.revealAll && cup.id !== trackCoinState.coinCupId ? ' is-wrong' : '');
-      return '<button class="' + cupClass + '" data-trackcoin-pick="' + idx + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"' + (selectable ? '' : ' disabled') + '></button>';
+      return '<button class="' + cupClass + '" data-trackcoin-pick="' + idx + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" aria-disabled="' + String(!selectable) + '" tabindex="' + (selectable ? '0' : '-1') + '"' + (selectable ? '' : ' disabled') + ' style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"></button>';
     }).join('');
     const phaseClass=' is-phase-' + escapeHtml(trackCoinState.phase || 'show');
     const resumeHtml=trackCoinState.restoredWaiting
@@ -3082,7 +3113,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const needed = xpNeededForLevel(profile.level);
     const pct = clamp((profile.xp / needed) * 100, 0, 100);
     const current = currentTrackCoinTier();
-    return '<details class="game-summary-details" data-summary="trackcoin"><summary><span>Track the Coin</span><span class="inline-note">Level ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Current tier: ' + current.name + '</span><span>Coins: ' + profile.coins + '</span></div><div class="game-summary-row"><span>Cup speed: ' + trackCoinCurrentSpeedPercent(profile) + '%</span><span>Best speed: ' + trackCoinNormaliseSpeedPercent(profile.bestTrackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT) + '%</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>Best streak: ' + profile.bestStreak + '</span><span>Accuracy: ' + Math.round(trackCoinAccuracy(profile) * 100) + '%</span></div><div class="game-summary-row"><span>Total correct: ' + profile.totalCorrect + '</span><span>Rounds played: ' + profile.totalRounds + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Read ' + profile.skills.read + ' · Banker ' + profile.skills.banker + ' · Flow ' + profile.skills.flow + ' · Discipline ' + profile.skills.discipline + ' · Pace Control -' + (profile.skills.steal * 4) + '%</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+    return '<details class="game-summary-details" data-summary="trackcoin"><summary><span>Track the Coin</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Current tier: ' + current.name + '</span><span>Coins: ' + profile.coins + '</span></div><div class="game-summary-row"><span>Cup speed: ' + trackCoinCurrentSpeedPercent(profile) + '%</span><span>Best speed: ' + trackCoinNormaliseSpeedPercent(profile.bestTrackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT) + '%</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>Best streak: ' + profile.bestStreak + '</span><span>Accuracy: ' + Math.round(trackCoinAccuracy(profile) * 100) + '%</span></div><div class="game-summary-row"><span>Total correct: ' + profile.totalCorrect + '</span><span>Rounds played: ' + profile.totalRounds + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Read ' + profile.skills.read + ' · Banker ' + profile.skills.banker + ' · Flow ' + profile.skills.flow + ' · Discipline ' + profile.skills.discipline + ' · Pace Control -' + (profile.skills.steal * 4) + '%</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
   }
 
 
@@ -3357,7 +3388,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     profile.bank += bankGain;
     profile.cleanWinStreak = nextClean;
     ruleShiftState.finished = true;
-    ruleShiftState.lastMessage = 'Run complete. +' + bankGain + ' Bank and +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (leveled ? ' · Level up +' + leveled : '') + '.';
+    ruleShiftState.lastMessage = 'Run complete. +' + bankGain + ' Bank and +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (leveled ? ' · Player Rank up +' + leveled : '') + '.';
     persistRuleShiftRound();
     resolveNinjaBonuses();
     renderAll();
@@ -3405,7 +3436,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const profile = profiles.ruleshift;
     const needed = xpNeededForLevel(profile.level);
     const pct = clamp((profile.xp / needed) * 100, 0, 100);
-    if(refs.ruleShiftLevelHeading) refs.ruleShiftLevelHeading.textContent = 'Level - ' + profile.level;
+    if(refs.ruleShiftLevelHeading) refs.ruleShiftLevelHeading.textContent = 'Player Rank - ' + profile.level;
     if(refs.ruleShiftXpMeta) refs.ruleShiftXpMeta.textContent = profile.xp + ' / ' + needed + ' XP';
     if(refs.ruleShiftXpFill) refs.ruleShiftXpFill.style.width = pct + '%';
     if(refs.ruleShiftSkillPointsValue) refs.ruleShiftSkillPointsValue.textContent = profile.skillPoints;
@@ -3435,8 +3466,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       const locked = profile.level < skill.unlockLevel;
       const maxed = level >= skill.max;
       const canSpend = profile.skillPoints > 0 && !locked && !maxed;
-      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
-      return '<article class="skill-item"><div class="skill-meta"><h4>' + escapeHtml(skill.name) + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + escapeHtml(skill.description) + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-ruleshift-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
+      const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      return '<article class="skill-item"><div class="skill-meta"><h4>' + escapeHtml(skill.name) + '</h4><span>Rank ' + level + ' / ' + skill.max + '</span></div><p>' + escapeHtml(skill.description) + '</p><p class="inline-note">Requires Player Rank ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-ruleshift-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
     refs.ruleShiftSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Focus ' + profile.skills.focus + ' · Banker ' + profile.skills.banker + ' · Recovery ' + profile.skills.recovery + ' · Adapt ' + profile.skills.adapt + '</span><span class="inline-note">' + cleanBonusStatusText(profile) + '</span><span class="inline-note">Unspent skill points: ' + profile.skillPoints + '</span>';
   }
@@ -3456,7 +3487,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     refs.ruleShiftRoundSummary.innerHTML = '<strong>Game Status</strong><span class="inline-note">' + escapeHtml(ruleShiftState.lastMessage) + '</span>';
     if(ruleShiftState.finished){
       const finishedTitle = ruleShiftState.failed ? 'Run failed.' : 'Run complete.';
-      const finishedPrompt = ruleShiftState.failed ? 'Incorrect answers end the run. Press Start New Game to try again.' : 'Press Start New Game to begin another switching run.';
+      const finishedPrompt = ruleShiftState.failed ? 'Incorrect answers end the run. Press New Game to try again.' : 'Press New Game to begin another switching run.';
       refs.ruleShiftBoard.innerHTML = '<div class="ruleshift-complete-card' + (ruleShiftState.failed ? ' ruleshift-failed-card' : '') + '"><strong>' + finishedTitle + '</strong><span class="inline-note">' + escapeHtml(ruleShiftState.lastMessage) + '</span><span class="inline-note">' + finishedPrompt + '</span></div>';
       return;
     }
@@ -3510,8 +3541,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const next = nextRuleShiftTierToUnlock();
     const total = profile.correctAnswers + profile.wrongAnswers;
     const accuracy = total ? Math.round((profile.correctAnswers / total) * 100) : 0;
-    const nextText = next ? ('Next unlock: ' + next.name + ' at level ' + next.unlockLevel + '.') : 'All Rule Shift tiers are unlocked.';
-    return '<details class="game-summary-details" data-summary="ruleshift"><summary><span>Rule Shift</span><span class="inline-note">Level ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Bank from Rule Shift: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Correct choices: ' + profile.correctAnswers + '</span><span>Accuracy: ' + accuracy + '%</span></div><div class="game-summary-row"><span>Best streak: ' + profile.bestStreak + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Focus ' + profile.skills.focus + ' · Banker ' + profile.skills.banker + ' · Recovery ' + profile.skills.recovery + ' · Adapt ' + profile.skills.adapt + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+    const nextText = next ? ('Next unlock: ' + next.name + ' at Player Rank ' + next.unlockLevel + '.') : 'All Rule Shift tiers are unlocked.';
+    return '<details class="game-summary-details" data-summary="ruleshift"><summary><span>Rule Shift</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Bank from Rule Shift: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Correct choices: ' + profile.correctAnswers + '</span><span>Accuracy: ' + accuracy + '%</span></div><div class="game-summary-row"><span>Best streak: ' + profile.bestStreak + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Focus ' + profile.skills.focus + ' · Banker ' + profile.skills.banker + ' · Recovery ' + profile.skills.recovery + ' · Adapt ' + profile.skills.adapt + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
   }
 
 
@@ -3651,22 +3682,23 @@ function toggleGameFullscreen(gameId){
         actions.insertBefore(howBtn, full || back || null);
       }
 
-      qsa('[data-game-fullscreen="' + id + '"]', actions).forEach(function(existingBtn){
+      const gameRoot = gameCardElement(id) || panel.querySelector('[data-game-play-root="' + id + '"]');
+      const windowActions = gameRoot ? gameRoot.querySelector('.game-window-actions') : null;
+      qsa('[data-game-fullscreen="' + id + '"]', panel).forEach(function(existingBtn){
         if(id === 'ninja' || isMobileGameViewport()) existingBtn.remove();
       });
-      if(id !== 'ninja' && !isMobileGameViewport() && !actions.querySelector('[data-game-fullscreen="' + id + '"]')){
+      if(id !== 'ninja' && !isMobileGameViewport() && !panel.querySelector('[data-game-fullscreen="' + id + '"]')){
         const btn = document.createElement('button');
-        btn.className = 'action secondary game-fullscreen-toggle';
+        btn.className = 'action ghost game-fullscreen-toggle';
         btn.type = 'button';
         btn.setAttribute('data-game-fullscreen', id);
         btn.textContent = 'Full Screen';
-        const back = actions.querySelector('[data-select-game=""]');
-        actions.insertBefore(btn, back || null);
+        (windowActions || actions).appendChild(btn);
       }
 
       const infoBtn = actions.querySelector('[data-game-info-modal="' + id + '"]');
       const howBtn = actions.querySelector('[data-game-howto-modal="' + id + '"]');
-      const fullBtn = actions.querySelector('[data-game-fullscreen="' + id + '"]');
+      const fullBtn = panel.querySelector('[data-game-fullscreen="' + id + '"]');
       const backBtn = actions.querySelector('[data-select-game=""]');
 
       if(id !== 'ninja'){
@@ -3699,8 +3731,7 @@ function toggleGameFullscreen(gameId){
       if(fullBtn) fullBtn.style.order = '3';
       if(backBtn) backBtn.style.order = '5';
 
-      const gameRoot = gameCardElement(id) || panel.querySelector('[data-game-play-root="' + id + '"]');
-      const windowActions = gameRoot ? gameRoot.querySelector('.game-window-actions') : null;
+      if(fullBtn && windowActions && fullBtn.parentElement!==windowActions) windowActions.appendChild(fullBtn);
       if(isDesktopKeypadGame(id) && windowActions && !windowActions.querySelector('[data-desktop-keypad-toggle="' + id + '"]')){
         const keyboardBtn = document.createElement('button');
         keyboardBtn.className = 'action ghost desktop-keypad-toggle';
@@ -3715,6 +3746,14 @@ function toggleGameFullscreen(gameId){
     syncDesktopKeypadState();
   }
 
+  document.addEventListener('baseline:game-extension-open', function(){
+    // An extension owns the Games surface now. Clear only the core selection;
+    // the extension shell remains responsible for its panel and route.
+    selectedGame='';
+    desktopKeypadOpenGame='';
+    syncDesktopKeypadState();
+    if(refs.gamesList) renderGamesList();
+  });
   document.addEventListener('baseline:crossnumber-progress', function(){
     try{ renderSystemSummary(); }catch(_error){}
   });
@@ -3772,7 +3811,42 @@ function toggleGameFullscreen(gameId){
     }
   }
 
+  function startCoreGameFromButton(start){
+    if(!start) return false;
+    if(start.id==='newPairsBoardBtn'){ startPairsBoard(); focusGamePlaySurface('pairs',{scroll:false,mobileMode:true}); return true; }
+    if(start.id==='newWordRoundBtn'){ startWordRound(); focusGamePlaySurface('detectword',{scroll:false,mobileMode:true}); return true; }
+    if(start.id==='newMake24Btn'){ startMake24Puzzle(); focusGamePlaySurface('make24',{scroll:false,mobileMode:true}); return true; }
+    if(start.id==='newTrackCoinRoundBtn'){ startTrackCoinRound(); focusGamePlaySurface('trackcoin',{scroll:false,mobileMode:true}); return true; }
+    if(start.id==='newRuleShiftBtn'){ startRuleShiftRound(); focusGamePlaySurface('ruleshift',{scroll:false,mobileMode:true}); return true; }
+    return false;
+  }
+
   function bindEvents(){
+    // Pointer activation owns New Game so an already-focused game surface can
+    // never consume the first press. The following click is suppressed; a
+    // keyboard-generated click still works normally.
+    document.addEventListener('pointerdown', function(event){
+      if(event.pointerType==='mouse' && event.button!==0) return;
+      const target=event.target instanceof Element ? event.target : null;
+      const start=target?.closest('#newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn');
+      if(!start) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+      coreNewGamePointerId=start.id;
+      coreNewGamePointerAt=performance.now();
+      startCoreGameFromButton(start);
+    }, true);
+    document.addEventListener('click', function(event){
+      const target=event.target instanceof Element ? event.target : null;
+      const start=target?.closest('#newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn');
+      if(!start) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+      if(start.id===coreNewGamePointerId && performance.now()-coreNewGamePointerAt<800) return;
+      startCoreGameFromButton(start);
+    }, true);
     document.addEventListener('click', function(event){
       const modalClose = event.target.closest('[data-close-games-modal]');
       if(modalClose){ GAMES_HELP_MODAL.close(); return; }
@@ -3827,13 +3901,13 @@ function toggleGameFullscreen(gameId){
       const pairTier = event.target.closest('[data-pairs-tier]');
       if(pairTier){
         const tier = PAIRS_TIERS.find(item => item.id === pairTier.getAttribute('data-pairs-tier'));
-        if(tier && profiles.pairs.level >= tier.unlockLevel){ profiles.pairs.selectedTier = tier.id; profiles.pairs.activeRound = null; pairsBoardState = null; pairsIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('pairs'); renderAll(); }
+        if(tier && profiles.pairs.level >= tier.unlockLevel){ profiles.pairs.selectedTier = tier.id; profiles.pairs.activeRound = null; pairsBoardState = null; pairsIdleMessage = tier.name + ' selected. Press New Game when ready.'; scheduleSave('pairs'); renderAll(); }
         return;
       }
       const wordTier = event.target.closest('[data-word-tier]');
       if(wordTier){
         const tier = WORD_TIERS.find(item => item.id === wordTier.getAttribute('data-word-tier'));
-        if(tier && profiles.detectword.level >= tier.unlockLevel){ profiles.detectword.selectedTier = tier.id; profiles.detectword.activeRound = null; wordState = null; wordIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('detectword'); renderAll(); }
+        if(tier && profiles.detectword.level >= tier.unlockLevel){ profiles.detectword.selectedTier = tier.id; profiles.detectword.activeRound = null; wordState = null; wordIdleMessage = tier.name + ' selected. Press New Game when ready.'; scheduleSave('detectword'); renderAll(); }
         return;
       }
       const make24Tier = event.target.closest('[data-make24-tier]');
@@ -3841,7 +3915,7 @@ function toggleGameFullscreen(gameId){
       if(trackCoinTier){ const tier = TRACKCOIN_TIERS.find(item => item.id === trackCoinTier.getAttribute('data-trackcoin-tier')); if(tier && profiles.trackcoin.level >= tier.unlockLevel){ profiles.trackcoin.selectedTier = tier.id; profiles.trackcoin.currentTier = tier.id; profiles.trackcoin.activeRound = null; cancelTrackCoinAnimation(); trackCoinState = null; scheduleSave('trackcoin'); renderAll(); } return; }
       if(make24Tier){
         const tier = MAKE24_TIERS.find(item => item.id === make24Tier.getAttribute('data-make24-tier'));
-        if(tier && profiles.make24.level >= tier.unlockLevel){ profiles.make24.selectedTier = tier.id; profiles.make24.activeRound = null; make24State = null; make24IdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('make24'); renderAll(); }
+        if(tier && profiles.make24.level >= tier.unlockLevel){ profiles.make24.selectedTier = tier.id; profiles.make24.activeRound = null; make24State = null; make24IdleMessage = tier.name + ' selected. Press New Game when ready.'; scheduleSave('make24'); renderAll(); }
         return;
       }
       const pairSkill = event.target.closest('[data-pairs-skill]'); if(pairSkill){ spendPairsSkill(pairSkill.getAttribute('data-pairs-skill')); return; }
@@ -3852,7 +3926,7 @@ function toggleGameFullscreen(gameId){
       const make24PanelBtn = event.target.closest('[data-make24-panel]'); if(make24PanelBtn){ setMake24Panel(make24PanelBtn.getAttribute('data-make24-panel'), 'push'); return; }
       const trackCoinSkill = event.target.closest('[data-trackcoin-skill]'); if(trackCoinSkill){ spendTrackCoinSkill(trackCoinSkill.getAttribute('data-trackcoin-skill')); return; }
       const trackCoinPanelBtn = event.target.closest('[data-trackcoin-panel]'); if(trackCoinPanelBtn){ setTrackCoinPanel(trackCoinPanelBtn.getAttribute('data-trackcoin-panel'), 'push'); return; }
-      const ruleShiftTier = event.target.closest('[data-ruleshift-tier]'); if(ruleShiftTier){ const tier = RULESHIFT_TIERS.find(item => item.id === ruleShiftTier.getAttribute('data-ruleshift-tier')); if(tier && profiles.ruleshift.level >= tier.unlockLevel){ profiles.ruleshift.selectedTier = tier.id; profiles.ruleshift.activeRound = null; clearRuleShiftTimer(); ruleShiftState = null; ruleShiftIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('ruleshift'); renderAll(); } return; }
+      const ruleShiftTier = event.target.closest('[data-ruleshift-tier]'); if(ruleShiftTier){ const tier = RULESHIFT_TIERS.find(item => item.id === ruleShiftTier.getAttribute('data-ruleshift-tier')); if(tier && profiles.ruleshift.level >= tier.unlockLevel){ profiles.ruleshift.selectedTier = tier.id; profiles.ruleshift.activeRound = null; clearRuleShiftTimer(); ruleShiftState = null; ruleShiftIdleMessage = tier.name + ' selected. Press New Game when ready.'; scheduleSave('ruleshift'); renderAll(); } return; }
       const ruleShiftSkill = event.target.closest('[data-ruleshift-skill]'); if(ruleShiftSkill){ spendRuleShiftSkill(ruleShiftSkill.getAttribute('data-ruleshift-skill')); return; }
       const ruleShiftPanelBtn = event.target.closest('[data-ruleshift-panel]'); if(ruleShiftPanelBtn){ setRuleShiftPanel(ruleShiftPanelBtn.getAttribute('data-ruleshift-panel'), 'push'); return; }
       const ninjaPanelBtn = event.target.closest('[data-ninja-panel]'); if(ninjaPanelBtn){ setNinjaPanel(ninjaPanelBtn.getAttribute('data-ninja-panel'), 'push'); return; }
@@ -3875,17 +3949,27 @@ function toggleGameFullscreen(gameId){
       if(make24EditBtn){ editMake24Builder(make24EditBtn.getAttribute('data-make24-edit')||''); return; }
             const make24BoardHintBtn = event.target.closest('#make24BoardHintBtn'); if(make24BoardHintBtn){ useMake24Hint(); return; }
       const make24BoardRerollBtn = event.target.closest('#make24BoardRerollBtn'); if(make24BoardRerollBtn){ rerollMake24Puzzle(); return; }
-      const pairStart = event.target.closest('[data-action="start-pairs"], #newPairsBoardBtn'); if(pairStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startPairsBoard(); focusGamePlaySurface('pairs', { scroll:false, mobileMode:true }); return; }
-      const wordStart = event.target.closest('[data-action="start-word"], #newWordRoundBtn'); if(wordStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startWordRound(); focusGamePlaySurface('detectword', { scroll:false, mobileMode:true }); return; }
-      const trackCoinStart = event.target.closest('[data-action="start-trackcoin"], #newTrackCoinRoundBtn'); if(trackCoinStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startTrackCoinRound(); focusGamePlaySurface('trackcoin', { scroll:false, mobileMode:true }); return; }
       const trackCoinResume = event.target.closest('[data-action="resume-trackcoin"]'); if(trackCoinResume){ if(event){ event.preventDefault(); event.stopPropagation(); } resumeRestoredTrackCoinRound(); return; }
             const trackCoinReplay = event.target.closest('[data-action="replay-trackcoin"], #replayTrackCoinShuffleBtn'); if(trackCoinReplay){ if(event){ event.preventDefault(); event.stopPropagation(); } replayTrackCoinShuffle(); return; }
-      const trackCoinCup = event.target.closest('[data-trackcoin-pick]'); if(trackCoinCup){ chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick')); return; }
-      const ruleShiftStart = event.target.closest('[data-action="start-ruleshift"], #newRuleShiftBtn'); if(ruleShiftStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startRuleShiftRound(); focusGamePlaySurface('ruleshift', { scroll:false, mobileMode:true }); return; }
+      const trackCoinCup = event.target.closest('[data-trackcoin-pick]'); if(trackCoinCup){ if(performance.now()-trackCoinPointerPickAt>=700) chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick')); return; }
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
-      const make24Start = event.target.closest('[data-action="start-make24"], #newMake24Btn'); if(make24Start){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startMake24Puzzle(); focusGamePlaySurface('make24', { scroll:false, mobileMode:true }); return; }
 
     });
+    document.addEventListener('pointerdown',function(event){
+      const button=event.target instanceof Element ? event.target.closest('#make24GameCard [data-make24-token],#make24GameCard [data-make24-edit]') : null;
+      if(!button) return;
+      event.preventDefault();
+      window.requestAnimationFrame(keepMake24InputFocused);
+    },true);
+    document.addEventListener('pointerdown',function(event){
+      const cup=event.target instanceof Element ? event.target.closest('#trackCoinBoard .trackcoin-cup.is-selectable[data-trackcoin-pick]:not(:disabled)') : null;
+      if(!cup) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+      trackCoinPointerPickAt=performance.now();
+      chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
+    },true);
     document.addEventListener('input', function(event){
       const target = event.target;
       if(!target || !target.id) return;
@@ -3940,7 +4024,7 @@ function toggleGameFullscreen(gameId){
       const wordForm = event.target.closest('#wordGuessForm');
       if(wordForm){ submitWordGuess(event); return; }
     });
-    if(refs.newPairsBoardBtn){ refs.newPairsBoardBtn.textContent = startButtonLabel('pairs'); refs.newPairsBoardBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startPairsBoard(); focusGamePlaySurface('pairs', { scroll:false, mobileMode:true }); }); }
+    if(refs.newPairsBoardBtn) refs.newPairsBoardBtn.textContent = startButtonLabel('pairs');
     if(refs.pairsBoard){
       refs.pairsBoard.addEventListener('click',function(event){
         const pairCard=event.target.closest('button.memory-card[data-card]');
@@ -3952,11 +4036,11 @@ function toggleGameFullscreen(gameId){
     }
     if(refs.pairsHintBtn){ refs.pairsHintBtn.textContent = hotkeyActionLabel('Use Hint', 'H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
     if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard', 'push'); });
-    if(refs.newWordRoundBtn){ refs.newWordRoundBtn.textContent = startButtonLabel('detectword'); refs.newWordRoundBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startWordRound(); focusGamePlaySurface('detectword', { scroll:false, mobileMode:true }); }); }
-    if(refs.newTrackCoinRoundBtn){ refs.newTrackCoinRoundBtn.textContent = startButtonLabel('trackcoin'); refs.newTrackCoinRoundBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startTrackCoinRound(); focusGamePlaySurface('trackcoin', { scroll:false, mobileMode:true }); }); }
-    if(refs.newRuleShiftBtn){ refs.newRuleShiftBtn.textContent = startButtonLabel('ruleshift'); refs.newRuleShiftBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startRuleShiftRound(); focusGamePlaySurface('ruleshift', { scroll:false, mobileMode:true }); }); }
+    if(refs.newWordRoundBtn) refs.newWordRoundBtn.textContent = startButtonLabel('detectword');
+    if(refs.newTrackCoinRoundBtn) refs.newTrackCoinRoundBtn.textContent = startButtonLabel('trackcoin');
+    if(refs.newRuleShiftBtn) refs.newRuleShiftBtn.textContent = startButtonLabel('ruleshift');
     if(refs.wordSkillAlertBtn) refs.wordSkillAlertBtn.addEventListener('click', function(){ if(profiles.detectword.skillPoints > 0) setWordPanel('wordSkillCard', 'push'); });
-    if(refs.newMake24Btn){ refs.newMake24Btn.textContent = startButtonLabel('make24'); refs.newMake24Btn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startMake24Puzzle(); focusGamePlaySurface('make24', { scroll:false, mobileMode:true }); }); }
+    if(refs.newMake24Btn) refs.newMake24Btn.textContent = startButtonLabel('make24');
     if(refs.make24HintBtn){ refs.make24HintBtn.textContent = hotkeyActionLabel('Use Guide', 'H'); refs.make24HintBtn.addEventListener('click', useMake24Hint); }
     if(refs.make24RerollBtn){ refs.make24RerollBtn.textContent = hotkeyActionLabel('Reroll', 'J'); refs.make24RerollBtn.addEventListener('click', rerollMake24Puzzle); }
     if(refs.make24SkillAlertBtn) refs.make24SkillAlertBtn.addEventListener('click', function(){ if(profiles.make24.skillPoints > 0) setMake24Panel('make24SkillCard', 'push'); });

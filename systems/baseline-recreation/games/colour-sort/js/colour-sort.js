@@ -20,9 +20,9 @@ import {
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/game-extension-support.mjs?v=GAME_EXTENSIONS_RECREATION_20261022_1';
+} from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
-const BUILD = 'COLOUR_SORT_GAMES_REVIEW_20261023_1';
+const BUILD = 'COLOUR_SORT_RECREATION_COHERENCE_20261023_2';
 const APP = 'coloursort';
 const COLOUR_SORT_TIERS = Object.freeze([
   { id:'starter', name:'Starter', from:1, to:12 },
@@ -71,6 +71,8 @@ const DEFAULT_PROFILE = Object.freeze({
   completedLevels:[],
   bestMoves:{},
   selectedLevel:1,
+  selectedTier:'starter',
+  recentLevels:[],
   activePuzzle:null
 });
 
@@ -80,6 +82,7 @@ let undoStack = [];
 let hint = null;
 let statusMessage = '';
 let storageAuth = null;
+let newGamePointerAt = 0;
 let isAnimating = false;
 let levelEntranceMotion = false;
 let bottleDragState = null;
@@ -129,7 +132,11 @@ function normaliseProfile(value) {
       if (moves > 0) bestMoves[level] = moves;
     });
   }
-  const selectedLevel = Math.min(highestUnlocked, clampLevel(source.selectedLevel));
+  const selectedLevel = clampLevel(source.selectedLevel);
+  const requestedTier=String(source.selectedTier||tierForLevel(selectedLevel).id);
+  const selectedTier=COLOUR_SORT_TIERS.some(tier=>tier.id===requestedTier)?requestedTier:'starter';
+  const recentLevels=(Array.isArray(source.recentLevels)?source.recentLevels:[])
+    .map(clampLevel).filter((value,index,list)=>list.indexOf(value)===index).slice(-5);
   return {
     app:APP,
     level:Math.max(1, number(source.level, 1)),
@@ -139,6 +146,8 @@ function normaliseProfile(value) {
     completedLevels:completed,
     bestMoves,
     selectedLevel,
+    selectedTier,
+    recentLevels,
     activePuzzle:validPuzzle(source.activePuzzle)
   };
 }
@@ -163,8 +172,9 @@ function persist() {
 
 function startLevel(levelId, { persistChange = true } = {}) {
   try { autoNextApi()?.clear?.(APP); } catch (_) {}
-  const level = Math.min(profile.highestUnlocked, clampLevel(levelId));
+  const level = clampLevel(levelId);
   profile.selectedLevel = level;
+  profile.selectedTier = tierForLevel(level).id;
   profile.activePuzzle = { level, bottles:initialBottles(level), moves:0, settled:false };
   selectedBottle = -1;
   undoStack = [];
@@ -174,16 +184,32 @@ function startLevel(levelId, { persistChange = true } = {}) {
   if (persistChange) persist();
   render();
 }
-
-function selectLevel(levelId) {
-  const level = clampLevel(levelId);
-  if (level > profile.highestUnlocked) return;
-  profile.selectedLevel = level;
-  profile.activePuzzle = null;
-  selectedBottle = -1;
-  undoStack = [];
-  hint = null;
-  statusMessage = '';
+function tierById(id){
+  return COLOUR_SORT_TIERS.find(tier=>tier.id===String(id||''))||COLOUR_SORT_TIERS[0];
+}
+function randomLevelForTier(tierId){
+  const tier=tierById(tierId);
+  const all=LEVELS.filter(level=>level.id>=tier.from&&level.id<=tier.to).map(level=>level.id);
+  const recent=new Set(Array.isArray(profile.recentLevels)?profile.recentLevels:[]);
+  const available=all.filter(id=>!recent.has(id));
+  const pool=available.length?available:all;
+  return pool[Math.floor(Math.random()*pool.length)]||tier.from;
+}
+function startTierGame(tierId=profile.selectedTier){
+  const tier=tierById(tierId);
+  profile.selectedTier=tier.id;
+  const level=randomLevelForTier(tier.id);
+  profile.recentLevels=(Array.isArray(profile.recentLevels)?profile.recentLevels:[]).concat(level).slice(-5);
+  startLevel(level);
+}
+function selectTier(tierId){
+  const tier=tierById(tierId);
+  profile.selectedTier=tier.id;
+  profile.activePuzzle=null;
+  selectedBottle=-1;
+  undoStack=[];
+  hint=null;
+  statusMessage='';
   persist();
   render();
   setTab('game');
@@ -233,10 +259,10 @@ function bottleHtml(bottle, index) {
 
 function statusHtml() {
   const active = puzzle();
-  if (!active) return '<strong>Ready.</strong><span class="inline-note">Choose a level to begin.</span>';
+  if (!active) return '<strong>Ready.</strong><span class="inline-note">Choose a difficulty tier, then press New Game.</span>';
   if (isSolved(active.bottles)) {
     const best = profile.bestMoves[active.level] || active.moves;
-    return `<strong>Level ${active.level} sorted in ${active.moves} moves.</strong><span class="inline-note">Best: ${best} move${best === 1 ? '' : 's'}. ${active.level < LEVELS.length ? 'The next level is available.' : 'All current levels are complete.'}</span>`;
+    return `<strong>${escapeHtml(tierForLevel(active.level).name)} game sorted in ${active.moves} moves.</strong><span class="inline-note">Best for this layout: ${best} move${best === 1 ? '' : 's'}. Press New Game for another unpredictable layout in this tier.</span>`;
   }
   if (hint) return `<strong>Hint: pour bottle ${hint.from + 1} into bottle ${hint.to + 1}.</strong><span class="inline-note">Hints follow a verified solution path and respect temporary bottle locks.</span>`;
   if (selectedBottle >= 0) return `<strong>Bottle ${selectedBottle + 1} selected.</strong><span class="inline-note">Choose an empty unlocked bottle or one whose exposed colour matches.</span>`;
@@ -257,19 +283,19 @@ function renderGameInfo() {
     <div class="progress-shell progress-shell--trackcoin">
       <div class="xp-row">
         <div>
-          <div class="trackcoin-level-title">Level - ${profile.level}</div>
+          <div class="trackcoin-level-title">Player Rank ${profile.level}</div>
           <div class="xp-bar"><div class="xp-fill" style="width:${pct}%"></div></div>
           <div class="trackcoin-xp-meta-row"><span class="inline-note">${profile.xp} / ${needed} XP</span></div>
         </div>
       </div>
       <div class="stat-pills trackcoin-stat-pills">
-        <div class="stat-pill">Puzzles Completed <span>${profile.completedLevels.length} / ${LEVELS.length}</span></div>
-        <div class="stat-pill">Completed Runs <span>${profile.gamesPlayed}</span></div>
-        <div class="stat-pill">Highest Unlocked <span>${profile.highestUnlocked}</span></div>
+        <div class="stat-pill">Difficulty Tier <span>${escapeHtml(tierById(profile.selectedTier).name)}</span></div>
+        <div class="stat-pill">Completed Games <span>${profile.gamesPlayed}</span></div>
+        <div class="stat-pill">Unique Layouts Solved <span>${profile.completedLevels.length}</span></div>
         <div class="stat-pill">Recorded Bests <span>${Object.keys(profile.bestMoves).length}</span></div>
       </div>
     </div>
-    <div class="summary-box"><strong>Match the exposed colour.</strong><span class="inline-note">Select a source bottle and then an empty bottle or a bottle with the same colour on top. The largest contiguous exposed run pours automatically, up to the destination capacity. Sort every colour to complete the level.</span></div>`;
+    <div class="summary-box"><strong>Match the exposed colour.</strong><span class="inline-note">Select a source bottle and then an empty bottle or a bottle with the same colour on top. The largest contiguous exposed run pours automatically, up to the destination capacity. Sort every colour to complete the game.</span></div>`;
 }
 
 function renderGame() {
@@ -277,7 +303,7 @@ function renderGame() {
   if (!root) return;
   const active = puzzle();
   if (!active) {
-    root.innerHTML = `<div class="colour-sort-empty"><p>Level ${profile.selectedLevel} selected. Press Start New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-colour-action="start" type="button">Start New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button></div></div>`;
+    root.innerHTML = `<div class="colour-sort-empty"><p>${escapeHtml(tierById(profile.selectedTier).name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-colour-action="new" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost" data-colour-action="fullscreen" type="button">Full Screen</button></div></div>`;
     syncAutoNextControl();
     return;
   }
@@ -290,53 +316,54 @@ function renderGame() {
     <div class="colour-sort-active-header">
       <div class="stat-pills">
         <div class="stat-pill">Tier <span>${escapeHtml(tierForLevel(active.level).name)}</span></div>
-        <div class="stat-pill">Puzzle <span>${active.level} / ${LEVELS.length}</span></div>
+        <div class="stat-pill">Game <span>${profile.gamesPlayed + (solved?0:1)}</span></div>
         <div class="stat-pill">Sorted <span>${sorted} / ${colours}</span></div>
         <div class="stat-pill">Moves <span>${active.moves}</span></div>
         <div class="stat-pill">Best <span>${profile.bestMoves[active.level] || '—'}</span></div>
       </div>
     </div>
-    <div class="game-live-xp" data-live-xp="coloursort"><strong>Level ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
+    <div class="game-live-xp" data-live-xp="coloursort"><strong>Player Rank ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
     <div class="summary-box round-status-card" aria-live="polite">${statusHtml()}</div>
-    <div class="colour-sort-progress-head"><div><strong>Level Progress</strong><span>Drag a bottle onto a valid destination, or tap source then destination.</span></div><strong>${sorted} / ${colours}</strong></div>
+    <div class="colour-sort-progress-head"><div><strong>Game Progress</strong><span>Drag a bottle onto a valid destination, or tap source then destination.</span></div><strong>${sorted} / ${colours}</strong></div>
     <div class="colour-sort-progress-meter" aria-label="${sorted} of ${colours} colours sorted"><span style="width:${sortedPercent}%"></span></div>
     ${mechanics.coverBuried || mechanics.lockMoves ? `<div class="colour-sort-mechanic-note"><strong>${escapeHtml(tierForLevel(active.level).name)} mechanic</strong><span>${escapeHtml(mechanics.label)}</span></div>` : ''}
     <div class="colour-sort-board${isAnimating ? ' is-animating-pour' : ''}${solved ? ' is-level-complete' : ''}" role="group" aria-label="Colour Sort bottles">
-      ${solved ? `<div class="colour-sort-complete-banner" aria-hidden="true"><strong>LEVEL ${active.level} COMPLETE</strong><span>${active.moves} moves</span></div>` : ''}
+      ${solved ? `<div class="colour-sort-complete-banner" aria-hidden="true"><strong>GAME COMPLETE</strong><span>${active.moves} moves</span></div>` : ''}
       ${active.bottles.map(bottleHtml).join('')}
     </div>
     <div class="game-window-actions colour-sort-quiet-actions">
       <button class="action ghost" data-colour-action="undo" type="button" ${!undoStack.length || solved || isAnimating ? 'disabled' : ''}>Undo</button>
       <button class="action ghost" data-colour-action="hint" type="button" ${solved || isAnimating ? 'disabled' : ''}>Hint</button>
       <button class="action ghost" data-colour-action="restart" type="button" ${isAnimating ? 'disabled' : ''}>Restart</button>
+      <button class="action ghost start-new-game-toggle" data-colour-action="new" type="button">New Game</button>
       <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
-      ${solved && active.level < LEVELS.length ? `<button class="action primary" data-colour-action="next" type="button">Next Level</button>` : ''}
+      <button class="action ghost" data-colour-action="fullscreen" type="button">Full Screen</button>
     </div>`;
   levelEntranceMotion = false;
   syncAutoNextControl();
 }
 
-function levelButton(level) {
-  const unlocked = level.id <= profile.highestUnlocked;
-  const complete = profile.completedLevels.includes(level.id);
-  const selected = profile.selectedLevel === level.id;
-  const colourCount = levelColours(level).length;
-  const mechanics=mechanicsForLevel(level.id);
-  const mechanicSuffix=mechanics.lockMoves ? ` · ${mechanics.lockMoves}-move lock` : (mechanics.coverBuried ? ' · covered layers' : '');
-  return `<button class="colour-sort-level${selected ? ' is-active' : ''}${complete ? ' is-complete' : ''}" data-colour-level="${level.id}" type="button" ${unlocked ? '' : 'disabled'} aria-pressed="${selected}">
-    <span><strong>Level ${level.id}</strong><small>${colourCount} colours · ${level.bottles.length} bottles${mechanicSuffix}</small></span>
-    <span>${complete ? `✓ ${profile.bestMoves[level.id] || ''}` : unlocked ? 'Open' : 'Locked'}</span>
-  </button>`;
+function tierDescription(tier){
+  const mechanic=mechanicsForLevel(tier.from);
+  return tier.id==='starter'
+    ? 'Open bottles and foundational sorting.'
+    : tier.id==='flow'
+      ? 'More colours and tighter planning.'
+      : tier.id==='strategy'
+        ? 'Covered buried layers add memory and sequencing.'
+        : tier.id==='advanced'
+          ? 'Covered layers plus a temporarily locked spare bottle.'
+          : 'Highest colour count with longer opening locks and dense planning.';
 }
-
 function renderLevels() {
   const root = document.getElementById('colourSortLevelsCard');
   if (!root) return;
-  root.innerHTML = COLOUR_SORT_TIERS.map(tier => {
-    const levels=LEVELS.filter(level=>level.id>=tier.from&&level.id<=tier.to);
-    return `<section class="colour-sort-tier-group"><div class="colour-sort-tier-heading"><strong>${escapeHtml(tier.name)}</strong><span>Puzzles ${tier.from}–${tier.to}</span></div><div class="colour-sort-level-list">${levels.map(levelButton).join('')}</div></section>`;
-  }).join('') +
-    '<div class="summary-box"><strong>Long-form progression</strong><span class="inline-note">Five tiers provide 60 solver-checked puzzles. Strategy introduces covered buried layers; Advanced and Expert also begin with one spare bottle temporarily locked, while bottle and colour complexity continues to rise.</span></div>';
+  root.innerHTML = '<div class="colour-sort-tier-list">' + COLOUR_SORT_TIERS.map(tier => `
+    <button class="colour-sort-tier-choice${profile.selectedTier===tier.id?' is-active':''}" data-colour-tier="${tier.id}" type="button" aria-pressed="${profile.selectedTier===tier.id}">
+      <strong>${escapeHtml(tier.name)} Tier</strong>
+      <span>${escapeHtml(tierDescription(tier))}</span>
+      <small>New Game draws from a varied solver-checked layout pool.</small>
+    </button>`).join('') + '</div><div class="summary-box"><strong>Difficulty tiers, not levels</strong><span class="inline-note">Each tier contains many layouts. New Game selects within the tier while avoiding your most recent layouts, so progression is not a predictable numbered sequence.</span></div>';
 }
 
 function renderProgress() {
@@ -347,26 +374,26 @@ function renderProgress() {
   const remaining = Math.max(0, needed - profile.xp);
   root.innerHTML = `
     <section class="coherent-progress-overview">
-      <div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Colour Sort</span><strong>Level ${profile.level}</strong></div><div class="coherent-progress-next">${remaining} XP to Level ${profile.level + 1}</div></div>
+      <div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Colour Sort</span><strong>Player Rank ${profile.level}</strong></div><div class="coherent-progress-next">${remaining} XP to Player Rank ${profile.level + 1}</div></div>
       <div class="coherent-progress-xp-meta"><span>${profile.xp} / ${needed} XP</span><span>${Math.round(pct)}%</span></div>
       <div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${needed}" aria-valuenow="${profile.xp}"><span style="width:${pct}%"></span></div>
     </section>
     <div class="coherent-progress-grid">
-      <div class="coherent-progress-stat"><span>Puzzles completed</span><strong>${profile.completedLevels.length} / ${LEVELS.length}</strong></div>
+      <div class="coherent-progress-stat"><span>Unique layouts solved</span><strong>${profile.completedLevels.length}</strong></div>
       <div class="coherent-progress-stat"><span>Completed runs</span><strong>${profile.gamesPlayed}</strong></div>
-      <div class="coherent-progress-stat"><span>Highest unlocked</span><strong>${profile.highestUnlocked}</strong></div>
+      <div class="coherent-progress-stat"><span>Difficulty tier</span><strong>${escapeHtml(tierById(profile.selectedTier).name)}</strong></div>
       <div class="coherent-progress-stat"><span>Recorded bests</span><strong>${Object.keys(profile.bestMoves).length}</strong></div>
-      <div class="coherent-progress-stat"><span>Selected level</span><strong>${profile.selectedLevel}</strong></div>
+      <div class="coherent-progress-stat"><span>Recent layout memory</span><strong>${profile.recentLevels.length} games</strong></div>
     </div>`;
 }
 
-const COLOUR_TABS = Object.freeze(['game','levels','progress']);
+const COLOUR_TABS = Object.freeze(['game','tiers','progress']);
 
 function colourTabFromLocation() {
   if (!/^\/baseline-recreation\/games\/colour-sort\/?$/i.test(String(location.pathname || ''))) return 'game';
   try {
     const requested = String(new URLSearchParams(location.search || '').get('view') || '').toLowerCase();
-    return COLOUR_TABS.includes(requested) ? requested : 'game';
+    return requested==='levels' ? 'tiers' : (COLOUR_TABS.includes(requested) ? requested : 'game');
   } catch (_) { return 'game'; }
 }
 
@@ -383,10 +410,8 @@ function colourTabUrl(name) {
 function setTab(name, historyMode = 'none') {
   const next = COLOUR_TABS.includes(name) ? name : 'game';
   document.querySelectorAll('[data-colour-tab]').forEach(button => button.classList.toggle('is-active', button.dataset.colourTab === next));
-  for (const id of ['Game','Levels','Progress']) {
-    const card = document.getElementById(`colourSort${id}Card`);
-    if (card) card.hidden = id.toLowerCase() !== next;
-  }
+  const cards={game:'colourSortGameCard',tiers:'colourSortLevelsCard',progress:'colourSortProgressCard'};
+  Object.entries(cards).forEach(([key,id])=>{ const card=document.getElementById(id); if(card) card.hidden=key!==next; });
   if (historyMode !== 'none' && /^\/baseline-recreation\/games\/colour-sort\/?$/i.test(String(location.pathname || ''))) {
     try {
       const nextUrl = colourTabUrl(next);
@@ -529,8 +554,19 @@ function cleanupBottleDrag({ removeGhost = true } = {}) {
 }
 
 function handleBottlePointerDown(event) {
-  if (isAnimating || bottleDragState || (event.pointerType === 'mouse' && event.button !== 0)) return;
-  const button = event.target instanceof Element ? event.target.closest('#colourSortGameCard [data-colour-bottle]') : null;
+  if (event.pointerType === 'mouse' && event.button !== 0) return;
+  const rawTarget=event.target instanceof Element ? event.target : null;
+  const newGame=rawTarget?.closest('#colourSortGameCard [data-colour-action="new"]');
+  if(newGame){
+    event.preventDefault();
+    event.stopPropagation();
+    if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+    newGamePointerAt=performance.now();
+    startTierGame(profile.selectedTier);
+    return;
+  }
+  if (isAnimating || bottleDragState) return;
+  const button = rawTarget ? rawTarget.closest('#colourSortGameCard [data-colour-bottle]') : null;
   const active = puzzle();
   if (!button || !active || isSolved(active.bottles)) return;
   const from = Number(button.dataset.colourBottle);
@@ -806,13 +842,12 @@ function settleSolvedPuzzle() {
   if (firstCompletion) {
     profile.completedLevels.push(active.level);
     profile.completedLevels.sort((a, b) => a - b);
-    profile.highestUnlocked = Math.min(LEVELS.length, Math.max(profile.highestUnlocked, active.level + 1));
   }
   const colourCount = levelColours(levelById(active.level)).length;
   awardXp(profile, firstCompletion ? 34 + colourCount * 8 + Math.max(0, 30 - active.moves) : 10 + colourCount);
   undoStack = [];
-  const nextLevel = active.level < LEVELS.length ? Math.min(profile.highestUnlocked, active.level + 1) : active.level;
-  try { autoNextApi()?.schedule?.(APP, () => startLevel(nextLevel)); } catch (_) {}
+  const completedTier=tierForLevel(active.level).id;
+  try { autoNextApi()?.schedule?.(APP, () => startTierGame(completedTier)); } catch (_) {}
 }
 
 function selectBottle(index) {
@@ -897,6 +932,19 @@ function toggleFullscreen() {
 function handleClick(event) {
   const target = event.target instanceof Element ? event.target : null;
   if (!target || !document.getElementById('colourSortPanel')?.classList.contains('is-active')) return;
+  const action = target.closest('[data-colour-action]')?.getAttribute('data-colour-action');
+  if(action){
+    suppressBottleClick=false;
+    event.preventDefault();
+    if (action === 'new' || action === 'start') {
+      if(performance.now()-newGamePointerAt>=700) startTierGame(profile.selectedTier);
+    }
+    if (action === 'undo') undo();
+    if (action === 'hint') showHint();
+    if (action === 'restart') startLevel(puzzle()?.level || randomLevelForTier(profile.selectedTier));
+    if (action === 'fullscreen') toggleFullscreen();
+    return;
+  }
   if (suppressBottleClick) {
     suppressBottleClick = false;
     event.preventDefault();
@@ -908,17 +956,10 @@ function handleClick(event) {
   }
   const bottle = target.closest('[data-colour-bottle]');
   if (bottle) { selectBottle(Number(bottle.dataset.colourBottle)); return; }
-  const level = target.closest('[data-colour-level]')?.getAttribute('data-colour-level');
-  if (level) { selectLevel(Number(level)); return; }
+  const tier = target.closest('[data-colour-tier]')?.getAttribute('data-colour-tier');
+  if (tier) { selectTier(tier); return; }
   const tab = target.closest('[data-colour-tab]')?.getAttribute('data-colour-tab');
   if (tab) { setTab(tab, 'push'); return; }
-  const action = target.closest('[data-colour-action]')?.getAttribute('data-colour-action');
-  if (action === 'start') startLevel(profile.selectedLevel);
-  if (action === 'undo') undo();
-  if (action === 'hint') showHint();
-  if (action === 'restart') startLevel(puzzle()?.level || profile.selectedLevel);
-  if (action === 'next') startLevel(Math.min(LEVELS.length, (puzzle()?.level || 1) + 1));
-  if (action === 'fullscreen') toggleFullscreen();
 }
 
 function handleKeydown(event) {
@@ -936,16 +977,15 @@ function panelHtml() {
         <div class="link-actions game-shell-actions" data-nonrealm-game-toolbar="colour-sort">
           <button class="action secondary game-shell-action game-shell-action--icon" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Sequencing, planning, state tracking, inhibition and multi-step problem solving." type="button" aria-label="What Colour Sort develops"><span class="game-shell-action__icon" aria-hidden="true">i</span></button>
           <button class="action secondary game-shell-action" data-bl-info-button data-bl-info-title="How To Play" data-bl-info-text="Move the exposed run of one colour into an empty unlocked bottle or onto the same exposed colour. Later tiers add covered buried layers and temporary spare-bottle locks. Sort every filled bottle into a single colour. Drag bottles or tap a source and then a destination. Undo, Hint and Restart stay available below the board." type="button"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>
-          <button class="action secondary game-shell-action" data-colour-action="fullscreen" type="button"><span class="game-shell-action__icon" aria-hidden="true">⛶</span><span class="game-shell-action__label">Full Screen</span></button>
-          <button class="action secondary game-shell-action" data-close-game-extension="colour-sort" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
+                    <button class="action secondary game-shell-action" data-close-game-extension="colour-sort" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
         </div>
       </div>
-      <details class="game-info-details" data-game-info="coloursort"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
+      <details class="game-info-details" data-game-info="coloursort"><summary><span>Game Info</span><span class="inline-note">Player Rank / XP / stats</span></summary>
         <div id="colourSortGameInfo"></div>
       </details>
       <div class="game-toggle-row">
         <button class="action ghost game-toggle-btn is-active" data-colour-tab="game" type="button">Game</button>
-        <button class="action ghost game-toggle-btn" data-colour-tab="levels" type="button">Levels</button>
+        <button class="action ghost game-toggle-btn" data-colour-tab="tiers" type="button">Tiers</button>
         <button class="action ghost game-toggle-btn" data-colour-tab="progress" type="button">Progress</button>
       </div>
       <div class="game-panel-stack">
@@ -966,7 +1006,7 @@ const shell = createGameExtensionShell({
   styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=GAMES_REVIEW_20261023_1',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
-  progressText:() => profile ? `${tierForLevel(profile.selectedLevel).name} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
+  progressText:() => profile ? `${tierById(profile.selectedTier).name} Tier · ${profile.gamesPlayed} games` : 'Ready',
   panelHtml,
   onOpen:() => { globalThis.BaselineGamesMusic?.selectGame?.('colour-sort'); render(); setTab(colourTabFromLocation(), 'none'); },
   onClose:() => { globalThis.BaselineGamesMusic?.selectGame?.(''); cleanupBottleDrag(); selectedBottle = -1; hint = null; }
@@ -999,7 +1039,7 @@ function init() {
     open:shell.open,
     close:shell.close,
     getProfile:() => clone(profile),
-    reset:() => { profile = normaliseProfile(DEFAULT_PROFILE); startLevel(1); }
+    reset:() => { profile = normaliseProfile(DEFAULT_PROFILE); startTierGame('starter'); }
   });
 }
 

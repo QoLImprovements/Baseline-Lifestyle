@@ -6,7 +6,6 @@ import {
   emptyBoard,
   hasAnyPlacement,
   resolvePlacement,
-  runLevelProgress,
   shapeById,
   validBoard
 } from './block-grid-engine.mjs?v=PUZZLE_GAMES_20261016_1';
@@ -18,9 +17,9 @@ import {
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/game-extension-support.mjs?v=GAME_EXTENSIONS_RECREATION_20261022_1';
+} from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
-const BUILD = 'BLOCK_GRID_GAMES_REVIEW_20261023_1';
+const BUILD = 'BLOCK_GRID_RECREATION_COHERENCE_20261023_2';
 const APP = 'blockgrid';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
@@ -42,6 +41,7 @@ let dragState = null;
 let suppressClick = false;
 let storageAuth = null;
 let specialMode = '';
+let newGamePointerAt = 0;
 let boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false, scoreDelta:0, lines:0, combo:0, newTray:false, perfectClear:false };
 
 function number(value, minimum = 0) {
@@ -243,7 +243,7 @@ function renderGameInfo() {
     <div class="progress-shell progress-shell--trackcoin">
       <div class="xp-row">
         <div>
-          <div class="trackcoin-level-title">Level - ${profile.level}</div>
+          <div class="trackcoin-level-title">Player Rank ${profile.level}</div>
           <div class="xp-bar"><div class="xp-fill" style="width:${pct}%"></div></div>
           <div class="trackcoin-xp-meta-row"><span class="inline-note">${profile.xp} / ${needed} XP</span></div>
         </div>
@@ -263,14 +263,12 @@ function renderGame() {
   if (!root) return;
   const active = run();
   if (!active) {
-    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} selected. Press Start New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-block-action="new" type="button">Start New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button></div></div>`;
+    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-block-action="new" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost" data-block-action="fullscreen" type="button">Full Screen</button></div></div>`;
     syncAutoNextControl();
     return;
   }
-  const progress = runLevelProgress(active.lines);
   const occupancy = boardOccupancy(active);
   const openPercent = Math.max(0, Math.round((1 - occupancy) * 100));
-  const linesToNext = progress.target - progress.current;
   root.innerHTML = `
     <div class="block-grid-active-header">
       <div class="stat-pills">
@@ -280,13 +278,12 @@ function renderGame() {
         <div class="stat-pill">Open Space <span>${openPercent}%</span></div>
       </div>
     </div>
-    <div class="game-live-xp" data-live-xp="blockgrid"><strong>Level ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
+    <div class="game-live-xp" data-live-xp="blockgrid"><strong>Player Rank ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
     <div class="summary-box round-status-card" id="blockGridStatus" aria-live="polite">${statusHtml()}</div>
     <div class="block-grid-run-objective">
-      <div><strong>Run Level ${progress.level}</strong><span>${linesToNext} line${linesToNext === 1 ? '' : 's'} to Level ${progress.level + 1}</span></div>
-      <span>${progress.current} / ${progress.target}</span>
+      <div><strong>${escapeHtml(currentMode().name)} Tier</strong><span>Difficulty tier · random pieces every game</span></div>
+      <span>${active.lines} lines cleared</span>
     </div>
-    <div class="block-grid-level-meter" aria-label="Run level progress"><span style="width:${progress.current / progress.target * 100}%"></span></div>
     <div class="block-grid-skill">
       <div class="block-grid-skill-head"><strong>Special Skill</strong><span>${Math.round(active.skillCharge || 0)}%</span></div>
       <div class="block-grid-skill-meter" role="progressbar" aria-label="Special skill charge" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(active.skillCharge || 0)}"><span style="width:${Math.min(100,active.skillCharge || 0)}%"></span></div>
@@ -301,13 +298,14 @@ function renderGame() {
         ${boardFeedbackHtml()}
       </div>
       <div class="block-grid-tray-wrap">
-        <div class="block-grid-tray-heading"><strong>Available Pieces · ${escapeHtml(currentMode().name)}</strong><span>Drag a shape, or tap it then tap a board cell</span></div>
+        <div class="block-grid-tray-heading"><strong>Available Pieces · ${escapeHtml(currentMode().name)} Tier</strong><span>Drag a shape, or tap it then tap a board cell</span></div>
         <div class="block-grid-tray${boardMotion.newTray ? ' is-new-tray' : ''}" aria-label="Available pieces">${trayHtml()}</div>
       </div>
-    </div>
-    <div class="game-window-actions">
-      <button class="action ghost start-new-game-toggle" data-block-action="new" type="button">Start New Game</button>
-      <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
+      <div class="game-window-actions">
+        <button class="action ghost start-new-game-toggle" data-block-action="new" type="button">New Game</button>
+        <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
+        <button class="action ghost" data-block-action="fullscreen" type="button">Full Screen</button>
+      </div>
     </div>`;
   resetBoardMotion();
   syncAutoNextControl();
@@ -318,9 +316,9 @@ function renderModes() {
   if (!root) return;
   root.innerHTML = `<div class="block-grid-mode-list">${Object.values(MODES).map(mode => `
     <button class="block-grid-mode${profile.selectedMode === mode.id ? ' is-active' : ''}" data-block-mode="${mode.id}" type="button" aria-pressed="${profile.selectedMode === mode.id}">
-      <strong>${escapeHtml(mode.name)}</strong><span>${escapeHtml(mode.description)}</span>
+      <strong>${escapeHtml(mode.name)} Tier</strong><span>${escapeHtml(mode.description)}</span>
     </button>`).join('')}</div>
-    <div class="summary-box"><strong>Shape behaviour</strong><span class="inline-note">Pieces keep their supplied orientation. Planning comes from placement and space management rather than rotating pieces.</span></div>`;
+    <div class="summary-box"><strong>Difficulty tiers</strong><span class="inline-note">Each tier produces many unpredictable games from random piece trays. Difficulty comes from the tier rules, not a fixed sequence of levels.</span></div>`;
 }
 
 function renderProgress() {
@@ -331,7 +329,7 @@ function renderProgress() {
   const remaining = Math.max(0, needed - profile.xp);
   root.innerHTML = `
     <section class="coherent-progress-overview">
-      <div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Block Grid</span><strong>Level ${profile.level}</strong></div><div class="coherent-progress-next">${remaining} XP to Level ${profile.level + 1}</div></div>
+      <div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Block Grid</span><strong>Player Rank ${profile.level}</strong></div><div class="coherent-progress-next">${remaining} XP to Player Rank ${profile.level + 1}</div></div>
       <div class="coherent-progress-xp-meta"><span>${profile.xp} / ${needed} XP</span><span>${Math.round(pct)}%</span></div>
       <div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${needed}" aria-valuenow="${profile.xp}"><span style="width:${pct}%"></span></div>
     </section>
@@ -340,7 +338,7 @@ function renderProgress() {
       <div class="coherent-progress-stat"><span>Games started</span><strong>${profile.gamesPlayed}</strong></div>
       <div class="coherent-progress-stat"><span>Lines cleared</span><strong>${profile.totalLines}</strong></div>
       <div class="coherent-progress-stat"><span>Pieces placed</span><strong>${profile.totalPieces}</strong></div>
-      <div class="coherent-progress-stat"><span>Current mode</span><strong>${escapeHtml(currentMode().name)}</strong></div>
+      <div class="coherent-progress-stat"><span>Current tier</span><strong>${escapeHtml(currentMode().name)}</strong></div>
     </div>`;
 }
 
@@ -413,7 +411,7 @@ function clampAnchorInsideBoard(board, piece, row, col) {
   };
 }
 
-function boardAnchorFromPointer(clientX, clientY) {
+function boardAnchorFromPointer(clientX, clientY, grip = dragState) {
   const active = run();
   const board = document.querySelector('#blockGridGameCard [data-block-board]');
   const piece = active && selectedPiece >= 0 ? shapeById(active.tray[selectedPiece]) : null;
@@ -423,22 +421,37 @@ function boardAnchorFromPointer(clientX, clientY) {
   const tolerance = coarse ? 26 : 10;
   if (clientX < boardRect.left - tolerance || clientX > boardRect.right + tolerance || clientY < boardRect.top - tolerance || clientY > boardRect.bottom + tolerance) return null;
 
-  const cells = [...board.querySelectorAll('[data-block-cell]')];
-  if (!cells.length) return null;
-  let nearest = null;
-  let nearestDistance = Infinity;
-  for (const cell of cells) {
-    const rect = cell.getBoundingClientRect();
-    const dx = clientX - (rect.left + rect.width / 2);
-    const dy = clientY - (rect.top + rect.height / 2);
-    const distance = (dx * dx) + (dy * dy);
-    if (distance < nearestDistance) {
-      nearestDistance = distance;
-      nearest = cell;
-    }
-  }
-  const coords = cellCoordinates(nearest);
-  return coords ? clampAnchorInsideBoard(active.board, piece, coords.row, coords.col) : null;
+  const first = board.querySelector('[data-block-cell="0:0"]');
+  const right = board.querySelector('[data-block-cell="0:1"]');
+  const down = board.querySelector('[data-block-cell="1:0"]');
+  if (!first) return null;
+  const firstRect = first.getBoundingClientRect();
+  const rightRect = right?.getBoundingClientRect();
+  const downRect = down?.getBoundingClientRect();
+  const pitchX = rightRect ? rightRect.left - firstRect.left : firstRect.width;
+  const pitchY = downRect ? downRect.top - firstRect.top : firstRect.height;
+  if (!(pitchX > 0) || !(pitchY > 0)) return null;
+
+  const bounds = boundsForShape(piece);
+  const grabCol = Math.max(0, Math.min(bounds.cols - 1, Number(grip?.grabCol) || 0));
+  const grabRow = Math.max(0, Math.min(bounds.rows - 1, Number(grip?.grabRow) || 0));
+  const rawOffsetX = Number(grip?.grabOffsetX);
+  const rawOffsetY = Number(grip?.grabOffsetY);
+  const offsetX = Number.isFinite(rawOffsetX) ? Math.max(0, Math.min(1, rawOffsetX)) : .5;
+  const offsetY = Number.isFinite(rawOffsetY) ? Math.max(0, Math.min(1, rawOffsetY)) : .5;
+
+  // Project the exact point being held back onto the board grid. The cell under
+  // the pointer is not automatically the piece anchor: the grabbed cell/point
+  // must remain under the pointer all the way through the drop.
+  const heldX = (grabCol * pitchX) + (firstRect.width * offsetX);
+  const heldY = (grabRow * pitchY) + (firstRect.height * offsetY);
+  const pieceLeft = clientX - heldX;
+  const pieceTop = clientY - heldY;
+  const col = Math.round((pieceLeft - firstRect.left) / pitchX);
+  const row = Math.round((pieceTop - firstRect.top) / pitchY);
+
+  if (row < 0 || col < 0 || row + bounds.rows > active.board.length || col + bounds.cols > active.board.length) return null;
+  return { row, col };
 }
 
 function createDragGhost(pieceId) {
@@ -450,23 +463,38 @@ function createDragGhost(pieceId) {
   return ghost;
 }
 
-function positionDragGhost(ghost, clientX, clientY, anchor) {
+function positionDragGhost(ghost, clientX, clientY, anchor, grip = dragState) {
   if (!ghost) return;
+  const active=run();
+  const piece=active && grip ? shapeById(active.tray[grip.index]) : null;
+  const bounds=piece ? boundsForShape(piece) : {rows:1,cols:1};
   const board = document.querySelector('#blockGridGameCard [data-block-board]');
-  const cell = anchor ? board?.querySelector(`[data-block-cell="${anchor.row}:${anchor.col}"]`) : null;
-  if (cell) {
-    const rect = cell.getBoundingClientRect();
+  const anchorCell = anchor ? board?.querySelector(`[data-block-cell="${anchor.row}:${anchor.col}"]`) : null;
+  let cellSize=18;
+  let gap=3;
+  if (anchorCell) {
+    const rect = anchorCell.getBoundingClientRect();
     const adjacent = board.querySelector(`[data-block-cell="${anchor.row}:${Math.min(7, anchor.col + 1)}"]`);
     const adjacentRect = adjacent?.getBoundingClientRect();
-    const gap = adjacentRect && anchor.col < 7 ? Math.max(0, adjacentRect.left - rect.right) : 4;
-    ghost.style.setProperty('--drag-cell', rect.width + 'px');
+    cellSize=rect.width;
+    gap = adjacentRect && anchor.col < 7 ? Math.max(0, adjacentRect.left - rect.right) : 4;
+    ghost.style.setProperty('--drag-cell', cellSize + 'px');
     ghost.style.setProperty('--drag-gap', gap + 'px');
     ghost.classList.add('is-over-board');
   } else {
     ghost.classList.remove('is-over-board');
   }
-  ghost.style.left = clientX + 'px';
-  ghost.style.top = clientY + 'px';
+  const totalWidth=(bounds.cols * cellSize) + (Math.max(0,bounds.cols-1) * gap);
+  const totalHeight=(bounds.rows * cellSize) + (Math.max(0,bounds.rows-1) * gap);
+  const grabCol=Math.max(0,Math.min(bounds.cols-1,Number(grip?.grabCol)||0));
+  const grabRow=Math.max(0,Math.min(bounds.rows-1,Number(grip?.grabRow)||0));
+  const rawOffsetX=Number(grip?.grabOffsetX),rawOffsetY=Number(grip?.grabOffsetY);
+  const grabOffsetX=Number.isFinite(rawOffsetX)?Math.max(0,Math.min(1,rawOffsetX)):.5;
+  const grabOffsetY=Number.isFinite(rawOffsetY)?Math.max(0,Math.min(1,rawOffsetY)):.5;
+  const grabbedX=(grabCol * (cellSize + gap)) + (cellSize * grabOffsetX);
+  const grabbedY=(grabRow * (cellSize + gap)) + (cellSize * grabOffsetY);
+  ghost.style.left = (clientX + (totalWidth / 2) - grabbedX) + 'px';
+  ghost.style.top = (clientY + (totalHeight / 2) - grabbedY) + 'px';
 }
 
 function destroyDragGhost() {
@@ -610,6 +638,19 @@ function cellCoordinates(target) {
 function handleClick(event) {
   const target = event.target instanceof Element ? event.target : null;
   if (!target || !document.getElementById('blockGridPanel')?.classList.contains('is-active')) return;
+  const action = target.closest('[data-block-action]')?.getAttribute('data-block-action');
+  if (action) {
+    suppressClick=false;
+    event.preventDefault();
+    if (action === 'new') {
+    if(performance.now()-newGamePointerAt<700){ event.preventDefault(); return; }
+    startNewGame();
+  }
+    if (action === 'blast') { if((run()?.skillCharge || 0)>=100){ specialMode='blast'; selectedPiece=-1; previewAnchor=null; statusMessage='Special ready: select the centre of the 4 × 4 area to clear.'; render(); } }
+    if (action === 'rows') clearSpecialRows();
+    if (action === 'fullscreen') toggleFullscreen();
+    return;
+  }
   if (suppressClick) { suppressClick = false; event.preventDefault(); return; }
   const piece = target.closest('[data-block-piece]');
   if (piece) { choosePiece(Number(piece.dataset.blockPiece)); return; }
@@ -620,11 +661,6 @@ function handleClick(event) {
     else if (coords) placeSelected(coords.row, coords.col);
     return;
   }
-  const action = target.closest('[data-block-action]')?.getAttribute('data-block-action');
-  if (action === 'new') startNewGame();
-  if (action === 'blast') { if((run()?.skillCharge || 0)>=100){ specialMode='blast'; selectedPiece=-1; previewAnchor=null; statusMessage='Special ready: select the centre of the 4 × 4 area to clear.'; render(); } }
-  if (action === 'rows') clearSpecialRows();
-  if (action === 'fullscreen') toggleFullscreen();
   const mode = target.closest('[data-block-mode]')?.getAttribute('data-block-mode');
   if (mode) changeMode(mode);
   const tab = target.closest('[data-block-tab]')?.getAttribute('data-block-tab');
@@ -633,12 +669,42 @@ function handleClick(event) {
 
 function handlePointerDown(event) {
   if (event.pointerType === 'mouse' && event.button !== 0) return;
-  const piece = event.target instanceof Element ? event.target.closest('[data-block-piece]') : null;
+  const rawTarget=event.target instanceof Element ? event.target : null;
+  const newGame=rawTarget?.closest('[data-block-action="new"]');
+  if(newGame){
+    event.preventDefault();
+    event.stopPropagation();
+    if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+    newGamePointerAt=performance.now();
+    startNewGame();
+    return;
+  }
+  const piece = rawTarget ? rawTarget.closest('[data-block-piece]') : null;
   if (!piece || !document.getElementById('blockGridPanel')?.classList.contains('is-active')) return;
   const index = Number(piece.dataset.blockPiece);
   if (!run()?.tray[index]) return;
   selectedPiece = index;
-  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, moved:false, ghost:null };
+  const pieceId=run()?.tray[index];
+  const shape=pieceId ? shapeById(pieceId) : null;
+  const bounds=shape ? boundsForShape(shape) : {rows:1,cols:1};
+  const shapeNode=piece.querySelector('.block-grid-piece-shape');
+  const allCells=shapeNode ? [...shapeNode.querySelectorAll('.block-grid-piece-cell')] : [];
+  let grabRow=0,grabCol=0,grabOffsetX=.5,grabOffsetY=.5,nearestDistance=Infinity;
+  allCells.forEach((cell,cellIndex)=>{
+    if(!cell.classList.contains('is-filled')) return;
+    const rect=cell.getBoundingClientRect();
+    const dx=event.clientX-(rect.left+rect.width/2);
+    const dy=event.clientY-(rect.top+rect.height/2);
+    const distance=(dx*dx)+(dy*dy);
+    if(distance<nearestDistance){
+      nearestDistance=distance;
+      grabRow=Math.floor(cellIndex/Math.max(1,bounds.cols));
+      grabCol=cellIndex%Math.max(1,bounds.cols);
+      grabOffsetX=Math.max(0,Math.min(1,(event.clientX-rect.left)/Math.max(1,rect.width)));
+      grabOffsetY=Math.max(0,Math.min(1,(event.clientY-rect.top)/Math.max(1,rect.height)));
+    }
+  });
+  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, grabRow, grabCol, grabOffsetX, grabOffsetY, moved:false, ghost:null };
   piece.setPointerCapture?.(event.pointerId);
   piece.classList.add('is-selected');
 }
@@ -668,8 +734,8 @@ function handlePointerMove(event) {
     document.documentElement.classList.add('is-dragging-block-grid-piece');
   }
   event.preventDefault();
-  const anchor = boardAnchorFromPointer(event.clientX, event.clientY);
-  positionDragGhost(dragState.ghost, event.clientX, event.clientY, anchor);
+  const anchor = boardAnchorFromPointer(event.clientX, event.clientY, dragState);
+  positionDragGhost(dragState.ghost, event.clientX, event.clientY, anchor, dragState);
   if ((!anchor && previewAnchor) || (anchor && (!previewAnchor || previewAnchor.row !== anchor.row || previewAnchor.col !== anchor.col))) {
     previewAnchor = anchor;
     paintPreview();
@@ -679,7 +745,7 @@ function handlePointerMove(event) {
 function handlePointerUp(event) {
   if (!dragState || dragState.pointerId !== event.pointerId) return;
   const moved = dragState.moved;
-  const anchor = moved ? boardAnchorFromPointer(event.clientX, event.clientY) : null;
+  const anchor = moved ? boardAnchorFromPointer(event.clientX, event.clientY, dragState) : null;
   destroyDragGhost();
   dragState = null;
   if (moved) {
@@ -707,16 +773,15 @@ function panelHtml() {
         <div class="link-actions game-shell-actions" data-nonrealm-game-toolbar="block-grid">
           <button class="action secondary game-shell-action game-shell-action--icon" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Spatial planning, visual organisation, prospective reasoning and flexible space management." type="button" aria-label="What Block Grid develops"><span class="game-shell-action__icon" aria-hidden="true">i</span></button>
           <button class="action secondary game-shell-action" data-bl-info-button data-bl-info-title="How To Play" data-bl-info-text="Choose one of the three supplied pieces and place it on the 8 × 8 board. Complete an entire row or column to clear it. The run ends when none of the available pieces can fit. Dragging and tap-then-place are both supported." type="button"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>
-          <button class="action secondary game-shell-action" data-block-action="fullscreen" type="button"><span class="game-shell-action__icon" aria-hidden="true">⛶</span><span class="game-shell-action__label">Full Screen</span></button>
           <button class="action secondary game-shell-action" data-close-game-extension="block-grid" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
         </div>
       </div>
-      <details class="game-info-details" data-game-info="blockgrid"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
+      <details class="game-info-details" data-game-info="blockgrid"><summary><span>Game Info</span><span class="inline-note">Player Rank / XP / stats</span></summary>
         <div id="blockGridGameInfo"></div>
       </details>
       <div class="game-toggle-row">
         <button class="action ghost game-toggle-btn is-active" data-block-tab="game" type="button">Game</button>
-        <button class="action ghost game-toggle-btn" data-block-tab="modes" type="button">Modes</button>
+        <button class="action ghost game-toggle-btn" data-block-tab="modes" type="button">Tiers</button>
         <button class="action ghost game-toggle-btn" data-block-tab="progress" type="button">Progress</button>
       </div>
       <div class="game-panel-stack">
@@ -734,10 +799,10 @@ const shell = createGameExtensionShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=GAMES_REVIEW_20261023_1',
+  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=RECREATION_COHERENCE_20261023_2',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
-  progressText:() => profile ? `Level ${profile.level} · Best ${profile.bestScore}` : 'Ready',
+  progressText:() => profile ? `${currentMode().name} Tier · Best ${profile.bestScore}` : 'Ready',
   panelHtml,
   onOpen:() => { globalThis.BaselineGamesMusic?.selectGame?.('block-grid'); render(); setTab(blockTabFromLocation(), 'none'); },
   onClose:() => { globalThis.BaselineGamesMusic?.selectGame?.(''); destroyDragGhost(); previewAnchor = null; dragState = null; }

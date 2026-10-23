@@ -76,7 +76,7 @@ test('Core Games configuration authority is loaded before the controller and sta
   assert.doesNotMatch(source,/addEventListener|createElement|innerHTML|classList/);
 
   const progressionIndex=html.indexOf('/systems/baseline-recreation/js/games-progression.js');
-  const configIndex=html.indexOf('/systems/baseline-recreation/js/games-core-config.js?v=GAMES_CORE_CONFIG_AUTHORITY_20261023_1');
+  const configIndex=html.indexOf('/systems/baseline-recreation/js/games-core-config.js?v=RECREATION_COHERENCE_20261023_2');
   const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js');
   assert.ok(progressionIndex>=0 && configIndex>progressionIndex && coreIndex>configIndex);
 });

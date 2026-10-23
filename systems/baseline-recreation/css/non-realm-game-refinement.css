@@ -641,14 +641,14 @@ body[data-app="recreation"] #pairsPanel .pairs-theme-picker button{
 }
 
 /* --- Rule Shift: stronger categorical colours and centered option groups. --- */
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{background:#c65b5d!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--blue .ruleshift-shape{background:#5074d8!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--green .ruleshift-shape{background:#7f9846!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--yellow .ruleshift-shape{background:#d3aa3d!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--purple .ruleshift-shape{background:#8d67c7!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--orange .ruleshift-shape{background:#db853b!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--teal .ruleshift-shape{background:#249aa8!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--pink .ruleshift-shape{background:#c45f92!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{background:#E21837!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--blue .ruleshift-shape{background:#3264D8!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--green .ruleshift-shape{background:#3E9B55!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--yellow .ruleshift-shape{background:#E4BF32!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--purple .ruleshift-shape{background:#7A55B8!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--orange .ruleshift-shape{background:#D5742E!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--white .ruleshift-shape{background:#F4F7FA!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--pink .ruleshift-shape{background:#C9528C!important}
 
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-options-grid{
   display:grid!important;
@@ -841,14 +841,7 @@ body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#tr
   margin-top:4px!important;
 }
 
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{background:#ff5064!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--blue .ruleshift-shape{background:#3877ff!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--green .ruleshift-shape{background:#63d46f!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--yellow .ruleshift-shape{background:#ffd23f!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--purple .ruleshift-shape{background:#a36dff!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--orange .ruleshift-shape{background:#ff8a32!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--teal .ruleshift-shape{background:#00c7a5!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--pink .ruleshift-shape{background:#ff5bb6!important}
+
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-token-caption{display:none!important}
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-token{
   min-height:124px!important;
@@ -936,4 +929,110 @@ body[data-app="recreation"] #pairsPanel .memory-card-front{
 }
 body[data-app="recreation"] #pairsPanel .memory-card-front>img{
   filter:drop-shadow(0 8px 9px rgba(0,0,0,.30)) saturate(1.08) contrast(1.04)!important;
+}
+
+
+/* 2026-10-23 coherence corrections */
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape--oval{
+  width:clamp(64px,6.4vw,88px)!important;
+  height:clamp(50px,5vw,68px)!important;
+  border-radius:50%!important;
+  clip-path:ellipse(50% 50% at 50% 50%)!important;
+}
+body[data-app="recreation"] #detectwordPanel .letter-cell.absent,
+body[data-app="recreation"] #detectwordPanel .word-feedback-dot--absent{
+  background:linear-gradient(180deg,#401522 0%,#250b14 100%)!important;
+  border-color:rgba(125,65,78,.58)!important;
+  color:rgba(var(--recreation-ink-rgb),.70)!important;
+  -webkit-text-fill-color:rgba(var(--recreation-ink-rgb),.70)!important;
+}
+
+body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trackcoin-cup.is-selectable{
+  pointer-events:auto!important;
+  z-index:12!important;
+}
+body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trackcoin-pick-prompt{
+  pointer-events:none!important;
+  z-index:6!important;
+}
+
+
+/* 2026-10-23 shared Recreation control/tier coherence */
+body[data-app="recreation"] .game-toggle-row{
+  box-sizing:border-box;
+  overflow:visible!important;
+  padding:4px 5px 6px!important;
+  margin-left:-5px!important;
+  margin-right:-5px!important;
+}
+body[data-app="recreation"] .game-toggle-row .game-toggle-btn{
+  margin:2px!important;
+}
+body[data-app="recreation"] .games-music-quick-toggle{
+  display:inline-grid!important;
+  place-items:center!important;
+  width:38px;
+  min-width:38px;
+  height:36px;
+  min-height:36px;
+  padding:7px!important;
+}
+body[data-app="recreation"] .games-music-quick-toggle svg{
+  display:block;
+  width:20px;
+  height:20px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.9;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  pointer-events:none;
+}
+body[data-app="recreation"] .games-music-quick-toggle.is-muted{
+  opacity:.52;
+  box-shadow:inset 0 0 0 1px rgba(var(--recreation-copper-light-rgb),.12);
+}
+body[data-app="recreation"] #colourSortLevelsCard .colour-sort-tier-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:12px;
+}
+body[data-app="recreation"] #colourSortLevelsCard .colour-sort-tier-choice{
+  appearance:none;
+  display:grid;
+  gap:7px;
+  min-height:132px;
+  padding:15px;
+  text-align:left;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.20);
+  border-radius:16px;
+  background:linear-gradient(155deg,rgba(var(--recreation-burgundy-rgb),.48),rgba(var(--recreation-rose-rgb),.36));
+  color:var(--games-ink);
+  cursor:pointer;
+}
+body[data-app="recreation"] #colourSortLevelsCard .colour-sort-tier-choice strong{
+  font-size:1rem;
+}
+body[data-app="recreation"] #colourSortLevelsCard .colour-sort-tier-choice span,
+body[data-app="recreation"] #colourSortLevelsCard .colour-sort-tier-choice small{
+  color:var(--games-muted);
+  line-height:1.42;
+}
+body[data-app="recreation"] #colourSortLevelsCard .colour-sort-tier-choice.is-active{
+  border-color:var(--games-accent);
+  background:linear-gradient(155deg,rgba(var(--recreation-copper-deep-rgb),.34),rgba(var(--recreation-rose-rgb),.54));
+  box-shadow:0 0 0 3px rgba(var(--recreation-copper-light-rgb),.12);
+}
+
+
+/* 2026-10-23 Recreation tab-outline clipping authority */
+body[data-app="recreation"] :is(.tabs,.game-toggle-row,.trackcoin-tab-row,.crossnumber-tab-row,.weight-coherence-tab-row){
+  overflow:visible!important;
+  box-sizing:border-box!important;
+  padding-top:4px!important;
+  padding-bottom:6px!important;
+}
+body[data-app="recreation"] :is(.tabs,.game-toggle-row,.trackcoin-tab-row,.crossnumber-tab-row,.weight-coherence-tab-row) :is(.tab,.game-toggle-btn,[data-jigsaw-panel]){
+  margin-top:2px!important;
+  margin-bottom:2px!important;
 }

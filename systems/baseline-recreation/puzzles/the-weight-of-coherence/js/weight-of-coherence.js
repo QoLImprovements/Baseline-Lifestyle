@@ -13,8 +13,8 @@
   }
   const BOARD_BASE = recreationCssValue('--recreation-panel','#6E2C44');
   const GUIDE_OPACITY = 0.50;
-  const ZOOM_MIN = 1;
-  const PIECE_ZOOM_DEFAULT = 1;
+  const ZOOM_MIN = 2;
+  const PIECE_ZOOM_DEFAULT = 2;
   const PIECE_ZOOM_MAX = 10;
   const ZOOM_STEP = 1;
   const registry = window.BaselinePuzzlesRegistry;
@@ -129,11 +129,12 @@
   let suppressTrayClickUntil = 0;
   let imageReady = false;
   let trayRenderToken = 0;
+  let lastTrayRenderKey = '';
   let sortRenderToken = 0;
   let lastSortRenderKey = '';
   let viewOn = false;
   let zoomLevel = PIECE_ZOOM_DEFAULT;
-  let zoomScale = ZOOM_MIN;
+  let zoomScale = 1;
   let zoomTarget = null;
   let lastZoomTarget = null;
   let lastZoomPoint = null;
@@ -301,7 +302,7 @@
     const needed=jigsawXpNeeded(progression.level);
     const pct=Math.min(100,(progression.xp/Math.max(1,needed))*100);
     refs.liveXp.innerHTML=
-      '<strong>Level '+progression.level+'</strong>' +
+      '<strong>Player Rank '+progression.level+'</strong>' +
       '<div class="game-live-xp__bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+needed+'" aria-valuenow="'+progression.xp+'" aria-label="'+escapeHtml(activePuzzle.title||'Jigsaw')+' experience"><span style="width:'+pct+'%"></span></div>' +
       '<span>'+progression.xp+' / '+needed+' XP</span>';
   }
@@ -326,7 +327,7 @@
 
     refs.progress.innerHTML=
       '<section class="coherent-progress-overview">' +
-        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">'+escapeHtml(activePuzzle.title||'Jigsaw')+'</span><strong>Level '+progression.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Level '+(progression.level+1)+'</div></div>' +
+        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">'+escapeHtml(activePuzzle.title||'Jigsaw')+'</span><strong>Player Rank '+progression.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Player Rank '+(progression.level+1)+'</div></div>' +
         '<div class="coherent-progress-xp-meta"><span>'+progression.xp+' / '+needed+' XP</span><span>'+Math.round(pct)+'%</span></div>' +
         '<div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+needed+'" aria-valuenow="'+progression.xp+'"><span style="width:'+pct+'%"></span></div>' +
       '</section>' +
@@ -717,7 +718,7 @@
     const token=++sortRenderToken;
     const pending=[];
     refs.sortTrays.forEach(function(tray,index){
-      tray.innerHTML='';
+      tray.replaceChildren();
       const ids=state && Array.isArray(state.sortBins?.[index]) ? state.sortBins[index] : [];
       const count=refs.sortCounts.find(function(node){ return Number(node.dataset.sortCount)===index; });
       if(count) count.textContent=String(ids.length);
@@ -774,15 +775,18 @@
     if(!refs.tray) return;
     stabilisePieceFocus();
     if(zoomTarget && zoomTarget!==refs.boardWrap) resetZoom();
-    refs.tray.innerHTML='';
     renderSortTrays();
     if(!state || !state.started){
+      lastTrayRenderKey='';
+      refs.tray.replaceChildren();
       refs.trayMeta.textContent='Choose a piece count and start the puzzle.';
       refs.prev.disabled=true;
       refs.next.disabled=true;
       return;
     }
     if(!imageReady){
+      lastTrayRenderKey='';
+      refs.tray.replaceChildren();
       refs.trayMeta.textContent='Loading artwork…';
       return;
     }
@@ -801,8 +805,22 @@
     refs.prev.disabled=state.page<=0;
     refs.next.disabled=state.page>=pageCount-1;
 
+    const trayKey=[
+      String(activePuzzle.id||''),
+      state.difficulty,
+      state.page,
+      pageSize,
+      mobileLike()?'mobile':'desktop',
+      pageIds.join(',')
+    ].join('|');
+    if(trayKey===lastTrayRenderKey){
+      syncSelectedPieceClasses();
+      return;
+    }
+    lastTrayRenderKey=trayKey;
     const token=++trayRenderToken;
     const pending=[];
+    const fragment=document.createDocumentFragment();
     pageIds.forEach(function(id){
       const btn=document.createElement('button');
       btn.type='button';
@@ -818,10 +836,19 @@
       placeholder.className='weight-coherence-piece-placeholder';
       placeholder.setAttribute('aria-hidden','true');
       btn.appendChild(placeholder);
-      refs.tray.appendChild(btn);
+      fragment.appendChild(btn);
       pending.push({id:id,button:btn});
     });
+    refs.tray.replaceChildren(fragment);
 
+    const revealRestart=function(){
+      if(token!==trayRenderToken || !root.classList.contains('is-restarting')) return;
+      window.requestAnimationFrame(function(){
+        window.requestAnimationFrame(function(){
+          if(token===trayRenderToken) root.classList.remove('is-restarting');
+        });
+      });
+    };
     let index=0;
     const batchSize=mobileLike()?1:6;
     const paintBatch=function(){
@@ -835,8 +862,10 @@
         item.button.removeAttribute('aria-busy');
       }
       if(index<pending.length) window.requestAnimationFrame(paintBatch);
+      else revealRestart();
     };
     if(pending.length) window.requestAnimationFrame(paintBatch);
+    else revealRestart();
   }
 
   function setStatus(message,tone){
@@ -888,6 +917,29 @@
   function gameStorage(){
     const storage=window.BaselineGameStorage;
     return storage&&typeof storage.getProfile==='function'?storage:null;
+  }
+
+  function recreationSettingsProfile(){
+    try{
+      const profile=gameStorage()?.getProfile?.('hubsettings');
+      return profile&&typeof profile==='object' ? profile : {};
+    }catch(_error){ return {}; }
+  }
+  function storedJigsawZoom(){
+    const profile=recreationSettingsProfile();
+    return Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,Number(profile.jigsawZoom)||PIECE_ZOOM_DEFAULT));
+  }
+  function hydrateJigsawZoom(){
+    zoomLevel=storedJigsawZoom();
+    syncZoomControls();
+  }
+  function saveJigsawZoom(){
+    const storage=gameStorage();
+    if(!storage) return false;
+    const profile=Object.assign({},recreationSettingsProfile(),{jigsawZoom:zoomLevel});
+    try{ storage.setTemporaryProfile?.('hubsettings',profile); }catch(_error){}
+    try{ storage.saveProfile?.('hubsettings',profile,{immediate:true,keepalive:false}); }catch(_error){}
+    return true;
   }
 
   function saveState(){
@@ -974,6 +1026,7 @@
   }
 
   function beginPuzzle(){
+    root.classList.add('is-restarting');
     resetZoom();
     viewOn=false;
     syncViewButton();
@@ -992,6 +1045,8 @@
     };
     selectedPieceId=null;
     returnHighlightPieceId=null;
+    lastTrayRenderKey='';
+    lastSortRenderKey='';
     refs.workspace.hidden=false;
     refs.preview.setAttribute('aria-pressed','false');
     syncViewInteractionState();
@@ -1006,6 +1061,8 @@
     renderJigsawProgress();
     saveState();
     startTimer();
+    // renderTray releases the restart veil only after its deferred canvas batch
+    // has painted, preventing the whole tray from flashing through placeholders.
   }
 
   function renderCompletion(){
@@ -1038,7 +1095,7 @@
     if(!priorBest||state.elapsed<priorBest) progression.bestTimes[bestKey]=Math.max(1,Math.round(state.elapsed));
     const levels=awardJigsawXp(reward);
 
-    setStatus('Completed. Every piece is in place. +'+reward+' XP'+(levels?' · Level up +'+levels:'')+'.','success');
+    setStatus('Completed. Every piece is in place. +'+reward+' XP'+(levels?' · Player Rank up +'+levels:'')+'.','success');
     renderCompletion();
     renderTray();
     updateStats();
@@ -1607,7 +1664,7 @@
   function resetPieceZoom(){
     clearZoomTargetStyles(zoomTarget);
     zoomTarget=null;
-    zoomScale=ZOOM_MIN;
+    zoomScale=1;
     if(pieceOverlay) pieceOverlay.hidden=true;
     root.classList.remove('is-zoom-active','is-zooming-piece');
     if(refs.playerCard) refs.playerCard.classList.remove('is-jigsaw-zooming');
@@ -1624,9 +1681,9 @@
     const piece=target && target!==refs.boardWrap ? target : null;
     if(!piece) return false;
     endBoardLens();
-    if(zoomTarget===piece && zoomScale>ZOOM_MIN){
+    if(zoomTarget===piece){
       resetPieceZoom();
-      setStatus('Piece zoom reset to 100%.','');
+      setStatus('Piece zoom reset to 200%.','');
       return true;
     }
     applyPieceZoom(piece,zoomLevel);
@@ -1635,7 +1692,7 @@
   }
 
   function syncZoomControls(){
-    const pieceActive=zoomScale>ZOOM_MIN && !!zoomTarget;
+    const pieceActive=!!zoomTarget;
     const active=pieceActive || boardLensActive;
     const percent=Math.round(zoomLevel*100);
     if(refs.zoomToggle){
@@ -1662,12 +1719,13 @@
     const next=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,zoomLevel+(amount*ZOOM_STEP)));
     if(next===zoomLevel){
       setStatus(zoomLevel<=PIECE_ZOOM_DEFAULT
-        ? 'Zoom is already at the 100% minimum.'
+        ? 'Zoom is already at the 200% minimum.'
         : 'Zoom is already at the 1000% maximum.','');
       syncZoomControls();
       return;
     }
     zoomLevel=next;
+    saveJigsawZoom();
     if(boardLensActive){
       const point=boardLensPoint();
       updateBoardLens(point.x,point.y);
@@ -2152,6 +2210,7 @@
     const authenticated=!!event.detail?.authenticated;
     const authChanged=authenticated!==storageAuthenticated;
     storageAuthenticated=authenticated;
+    hydrateJigsawZoom();
     const untouched=!state || (state.placed && state.placed.size===0 && (state.elapsed||0)<8);
     if(authChanged || untouched){
       if(!restoreState() && !state && imageReady) beginPuzzle();
@@ -2176,6 +2235,7 @@
     }
   });
 
+  hydrateJigsawZoom();
   configurePuzzle(activePuzzle,false);
 
   try{ document.documentElement.setAttribute('data-weight-of-coherence-jigsaw','1'); }catch(_error){}

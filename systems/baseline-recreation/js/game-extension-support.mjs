@@ -152,6 +152,11 @@ export function createGameExtensionShell(config) {
       } catch (_) {}
     }
     document.documentElement.setAttribute('data-game-extension-open', config.id);
+    try{
+      document.dispatchEvent(new CustomEvent('baseline:game-extension-open',{
+        detail:{ id:config.id, panelId:config.panelId }
+      }));
+    }catch(_error){}
     config.onOpen?.();
     panel.querySelector('h2, h3, [tabindex="-1"]')?.focus?.({ preventScroll:true });
     return panel;

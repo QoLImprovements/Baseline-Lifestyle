@@ -11,7 +11,7 @@
     }),
     Object.freeze({
       id:'crossnumber',
-      name:'Crossnumber',
+      name:'Cross Number',
       note:'Procedurally generated interlocking arithmetic layouts with tiers, XP, skills, Bank rewards and Baseline Realm progression.',
       meta:'Many generated layouts',
       preview:'/systems/baseline-recreation/puzzles/shared/art/crossnumber.svg?v=RECREATION_PUZZLE_ART_20261022_2'

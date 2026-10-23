@@ -23,9 +23,7 @@ const EXCLUDED_DIRECTORIES = new Set([
   "docs",
 ]);
 
-const REVIEWED_DEVICE_PREFERENCES = Object.freeze({
-  "systems/baseline-recreation/js/games-music.js": new Set(["baseline.games.music.v1"]),
-});
+const REVIEWED_DEVICE_PREFERENCES = Object.freeze({});
 
 function isReviewedDevicePreference(relativePath, owner, resolvedPattern) {
   const allowed = REVIEWED_DEVICE_PREFERENCES[relativePath];

@@ -2757,9 +2757,10 @@ body[data-app="recreation"] .ruleshift-shape--diamond{
   border-radius:0!important;
 }
 body[data-app="recreation"] .ruleshift-shape--oval{
-  border-radius:999px!important;
-  width:clamp(72px,7.6vw,112px)!important;
-  height:clamp(40px,4.6vw,64px)!important;
+  border-radius:50%!important;
+  clip-path:ellipse(50% 50% at 50% 50%)!important;
+  width:clamp(64px,6.4vw,88px)!important;
+  height:clamp(50px,5vw,68px)!important;
 }
 body[data-app="recreation"] .ruleshift-shape--hexagon{
   clip-path:polygon(25% 4%,75% 4%,100% 50%,75% 96%,25% 96%,0 50%)!important;
@@ -2774,14 +2775,14 @@ body[data-app="recreation"] .ruleshift-shape--cross{
   border-radius:0!important;
 }
 
-body[data-app="recreation"] .ruleshift-colour--red .ruleshift-shape{ background:#9E4A4A!important; }
-body[data-app="recreation"] .ruleshift-colour--blue .ruleshift-shape{ background:#3F5F9C!important; }
-body[data-app="recreation"] .ruleshift-colour--green .ruleshift-shape{ background:#527A57!important; }
-body[data-app="recreation"] .ruleshift-colour--yellow .ruleshift-shape{ background:#C9A646!important; }
-body[data-app="recreation"] .ruleshift-colour--purple .ruleshift-shape{ background:#775A9E!important; }
-body[data-app="recreation"] .ruleshift-colour--orange .ruleshift-shape{ background:#B8753D!important; }
-body[data-app="recreation"] .ruleshift-colour--teal .ruleshift-shape{ background:#3F8C8C!important; }
-body[data-app="recreation"] .ruleshift-colour--pink .ruleshift-shape{ background:#B85F8A!important; }
+body[data-app="recreation"] .ruleshift-colour--red .ruleshift-shape{ background:#E21837!important; }
+body[data-app="recreation"] .ruleshift-colour--blue .ruleshift-shape{ background:#3264D8!important; }
+body[data-app="recreation"] .ruleshift-colour--green .ruleshift-shape{ background:#3E9B55!important; }
+body[data-app="recreation"] .ruleshift-colour--yellow .ruleshift-shape{ background:#E4BF32!important; }
+body[data-app="recreation"] .ruleshift-colour--purple .ruleshift-shape{ background:#7A55B8!important; }
+body[data-app="recreation"] .ruleshift-colour--orange .ruleshift-shape{ background:#D5742E!important; }
+body[data-app="recreation"] .ruleshift-colour--lime .ruleshift-shape{ background:#9EDB35!important; }
+body[data-app="recreation"] .ruleshift-colour--pink .ruleshift-shape{ background:#C9528C!important; }
 
 @media (max-width:820px), (hover:none) and (pointer:coarse){
   body[data-app="recreation"] .game-header .link-actions{
@@ -3432,3 +3433,25 @@ body[data-app="recreation"] [role="tooltip"] *{color:inherit!important;-webkit-t
 html[data-initial-section] body[data-app="recreation"] main.wrap > .section{display:none!important}
 html[data-initial-section="hub"] body[data-app="recreation"] main.wrap > #hub,
 html[data-initial-section="games"] body[data-app="recreation"] main.wrap > #games{display:block!important}
+
+
+/* 2026-10-23 tab highlight breathing room */
+body[data-app="recreation"] .tabs,
+body[data-app="recreation"] .game-toggle-row,
+body[data-app="recreation"] .trackcoin-tab-row{
+  box-sizing:border-box;
+  padding:4px 5px 7px;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] .tabs,
+  body[data-app="recreation"] .game-toggle-row,
+  body[data-app="recreation"] .trackcoin-tab-row{
+    overflow:visible!important;
+  }
+}
+@media(max-width:820px),(hover:none) and (pointer:coarse){
+  body[data-app="recreation"] .is-mobile-game-root .game-toggle-row,
+  body[data-app="recreation"] .is-mobile-game-root .trackcoin-tab-row{
+    padding:4px 4px 8px!important;
+  }
+}

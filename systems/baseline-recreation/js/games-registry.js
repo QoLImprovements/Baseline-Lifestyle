@@ -50,7 +50,8 @@
     'foxjigsaw',
     'elephantsjigsaw',
     'crossnumber',
-    'meridiangrove'
+    'meridiangrove',
+    'hubsettings'
   ]);
 
   const persistentApps = Object.freeze([
