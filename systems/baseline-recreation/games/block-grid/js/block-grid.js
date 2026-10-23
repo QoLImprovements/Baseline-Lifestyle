@@ -263,7 +263,7 @@ function renderGame() {
   if (!root) return;
   const active = run();
   if (!active) {
-    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-block-action="new" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button></div></div>`;
+    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-block-action="new" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost" data-block-action="fullscreen" type="button">Full Screen</button></div></div>`;
     syncAutoNextControl();
     return;
   }
