@@ -702,12 +702,6 @@
     var jigsawHost=document.querySelector('#weightCoherenceWorkspace .weight-coherence-actions');
     if(jigsawHost && !jigsawHost.querySelector('[data-games-music-quick]')) jigsawHost.appendChild(quickMusicButton());
 
-    var realmHost=document.querySelector('#ninjaPanel .realm-utility');
-    if(realmHost && !realmHost.querySelector('[data-games-music-quick]')){
-      var realmMusic=realmQuickMusicButton();
-      var settingsButton=realmHost.querySelector('#realmSettingsBtn');
-      realmHost.insertBefore(realmMusic,settingsButton||null);
-    }
   }
 
   function openSettings(trigger){
