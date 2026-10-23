@@ -119,7 +119,8 @@ test('Recreation music preferences are server-side and quick controls stay insid
   assert.doesNotMatch(music,/new MutationObserver\(function\(\)\{\s*injectSettingsButtons\(\);\s*syncUi\(\);\s*\}\)/);
   assert.match(music,/var roots = \['pairsGameCard','wordGameCard','make24GameCard','trackCoinGamePanel','ruleShiftGameCard','blockGridGameCard','colourSortGameCard','crossnumberGamePanel'\]/);
   assert.match(music,/#weightCoherenceWorkspace \.weight-coherence-actions/);
-  assert.match(music,/#ninjaPanel \.realm-utility/);
+  assert.doesNotMatch(music,/#ninjaPanel \.realm-utility/);
+  assert.match(core,/if\(id !== 'ninja' && !q\(':scope > \.mobile-game-exit', root\)\)/);
   assert.match(music,/Baseline Recreation<\/small><h3 id="gamesMusicSettingsTitle">Settings/);
 });
 
