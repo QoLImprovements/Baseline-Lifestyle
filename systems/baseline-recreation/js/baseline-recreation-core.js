@@ -2765,60 +2765,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     });
   }
 
-  function applyTrackCoinMotionStep(step, onDone, roundToken){
-    if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
-    cancelTrackCoinAnimation();
-    const cups = trackCoinState.cups;
-    const positions = trackCoinCupPositions(cups.length);
-    const order = Array.isArray(step.order) && step.order.length === cups.length ? step.order.slice() : trackCoinGenerateOrder(cups);
-    if(!Array.isArray(step.order) || step.order.length !== cups.length) step.order = order.slice();
-    const targetIndex = Object.fromEntries(order.map((id, index) => [id, index]));
-    const starts = cups.map(cup => ({ left:cup.left, top:cup.top, tilt:cup.tilt }));
-    const targets = cups.map((cup, currentIndex) => {
-      const destIndex = targetIndex[cup.id];
-      const destLeft = positions[destIndex];
-      const direction = destLeft >= cup.left ? 1 : -1;
-      return {
-        left: positions[destIndex],
-        top: trackCoinFinalTop(step.pattern, trackCoinState.baseTop, destIndex),
-        tilt: (destIndex % 2 === 0 ? -1 : 1) * (step.pattern === 'cross' ? 3 : 2),
-        curveLeft: ((cup.left + destLeft) / 2) + (step.pattern === 'orbit' ? (direction * 14 * Math.sin((currentIndex + 1) * 1.4)) : step.pattern === 'sweep' ? (direction * 20) : step.pattern === 'spiral' ? (direction * 16) : step.pattern === 'feint' ? (-direction * 28) : direction * 12),
-        curveTop: trackCoinMidTop(step.pattern, trackCoinState.baseTop, destIndex, cups.length, direction)
-      };
-    });
-    const startAt = performance.now();
-    function frame(now){
-      if(!trackCoinState || trackCoinState.roundToken !== roundToken || trackCoinState.phase !== 'hide') return;
-      const raw = clamp((now - startAt) / step.duration, 0, 1);
-      // Keep velocity through shuffle-step boundaries. The former quintic
-      // ease reached zero velocity at every boundary, which read as move/pause.
-      const eased = raw;
-      cups.forEach((cup, idx) => {
-        const s = starts[idx];
-        const t = targets[idx];
-        const inv = 1 - eased;
-        cup.left = +(inv * inv * s.left + 2 * inv * eased * t.curveLeft + eased * eased * t.left).toFixed(2);
-        cup.top = +(inv * inv * s.top + 2 * inv * eased * t.curveTop + eased * eased * t.top).toFixed(2);
-        cup.tilt = +(s.tilt + ((t.tilt - s.tilt) * eased)).toFixed(2);
-      });
-      syncTrackCoinMotionDom();
-      if(raw < 1){
-        trackCoinAnimationFrame = window.requestAnimationFrame(frame);
-      }else{
-        cups.sort((a, b) => targetIndex[a.id] - targetIndex[b.id]);
-        cups.forEach((cup, slotIndex) => {
-          const target = targets.find(item => Math.abs(item.left - positions[slotIndex]) < 0.01);
-          cup.left = positions[slotIndex];
-          cup.top = target ? target.top : cup.top;
-          cup.tilt = target ? target.tilt : cup.tilt;
-        });
-        trackCoinAnimationFrame = 0;
-        syncTrackCoinMotionDom();
-        if(typeof onDone === 'function' && trackCoinState && trackCoinState.roundToken === roundToken) onDone();
-      }
-    }
-    trackCoinAnimationFrame = window.requestAnimationFrame(frame);
-  }
   function startTrackCoinRound(options){
     clearAutoNextTimer('trackcoin');
     cancelTrackCoinAnimation();
