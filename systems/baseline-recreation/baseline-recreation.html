@@ -317,8 +317,8 @@ These Markdown rules are a human reference point, not live runtime config.
                   <button class="action secondary" type="button" data-crossnumber-action="hint">Hint</button>
                   <button class="action ghost" type="button" data-crossnumber-action="restart">Restart</button>
                   <button class="action ghost auto-next-toggle" type="button" data-auto-next-toggle="crossnumber" aria-pressed="false">Auto-Next Game: Off</button>
-                  <button class="action ghost" type="button" data-crossnumber-action="fullscreen" aria-pressed="false">Full Screen</button>
-                  <button class="action" type="button" data-crossnumber-action="new">New Game</button>
+                  <button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" type="button" data-crossnumber-action="fullscreen" data-hotkey-caption="Alt+F" aria-pressed="false" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button>
+                  <button class="action" type="button" data-crossnumber-action="new" data-hotkey-caption="Alt+N">New Game</button>
                 </div>
               </div>
 
@@ -491,15 +491,15 @@ These Markdown rules are a human reference point, not live runtime config.
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3.2c4.8 0 5.6 10 9.6 10H20"/><path d="M17 14l3 3-3 3M4 17h3.2c1.8 0 2.9-1.4 3.8-3M13 9c1-1.3 2-2 3.8-2H20"/><path d="M17 4l3 3-3 3"/></svg>
                   <kbd class="weight-coherence-hotkey">S</kbd>
                 </button>
-                <button class="action ghost weight-coherence-icon-action" id="weightCoherenceFullscreenBtn" type="button" aria-pressed="false" aria-keyshortcuts="F" aria-label="Enter full screen (F)" title="Full screen · F">
+                <button class="action ghost weight-coherence-icon-action" id="weightCoherenceFullscreenBtn" type="button" aria-pressed="false" aria-keyshortcuts="Alt+F" aria-label="Enter full screen (Alt+F)" title="Full screen · Alt+F">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v4M16 4h4v4M20 16v4h-4M8 20H4v-4"/></svg>
-                  <kbd class="weight-coherence-hotkey">F</kbd>
+                  <kbd class="weight-coherence-hotkey">Alt+F</kbd>
                 </button>
                 <button class="action ghost weight-coherence-icon-action weight-coherence-info-action" id="weightCoherenceHelpBtn" type="button" aria-label="How to play and hotkeys" aria-controls="weightCoherenceHelpDialog" aria-expanded="false" title="How to play & hotkeys">
                   <span class="weight-coherence-info-glyph" aria-hidden="true">i</span>
                 </button>
-                <button class="action ghost weight-coherence-icon-action weight-coherence-settings-trigger" id="weightCoherenceToolbarSettingsBtn" type="button" aria-label="Open puzzle settings" aria-controls="weightCoherenceSettingsDialog" aria-expanded="false" title="Puzzle settings">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 2.8h4.6l.6 2.3c.5.2 1 .5 1.5.9l2.2-.7 2.3 4-1.7 1.6c.1.4.1.8.1 1.2s0 .8-.1 1.2l1.7 1.6-2.3 4-2.2-.7c-.5.4-1 .7-1.5.9l-.6 2.3H9.7l-.6-2.3c-.5-.2-1-.5-1.5-.9l-2.2.7-2.3-4 1.7-1.6a7.4 7.4 0 0 1 0-2.4L3.1 9.3l2.3-4 2.2.7c.5-.4 1-.7 1.5-.9l.6-2.3Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                <button class="action ghost weight-coherence-icon-action weight-coherence-settings-trigger" id="weightCoherenceToolbarSettingsBtn" type="button" aria-keyshortcuts="Alt+S" aria-label="Open puzzle settings (Alt+S)" aria-controls="weightCoherenceSettingsDialog" aria-expanded="false" title="Puzzle settings · Alt+S">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 2.8h4.6l.6 2.3c.5.2 1 .5 1.5.9l2.2-.7 2.3 4-1.7 1.6c.1.4.1.8.1 1.2s0 .8-.1 1.2l1.7 1.6-2.3 4-2.2-.7c-.5.4-1 .7-1.5.9l-.6 2.3H9.7l-.6-2.3c-.5-.2-1-.5-1.5-.9l-2.2.7-2.3-4 1.7-1.6a7.4 7.4 0 0 1 0-2.4L3.1 9.3l2.3-4 2.2.7c.5-.4 1-.7 1.5-.9l.6-2.3Z"/><circle cx="12" cy="12" r="3.2"/></svg><kbd class="weight-coherence-hotkey">Alt+S</kbd>
                 </button>
               </div>
             </div>
