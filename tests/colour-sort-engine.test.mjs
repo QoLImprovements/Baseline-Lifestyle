@@ -29,6 +29,13 @@ test('completed bottles and solved boards are recognised', () => {
   assert.equal(isSolved([[0,0,1,1],[1,1,0,0],[],[]]), false);
 });
 
+test('solver respects temporary locked bottles before unlocking them', () => {
+  const result = findSolution(initialBottles(1), { maxNodes:250000, blockedIndices:[4], blockedMoves:1 });
+  assert.ok(result.solution, 'level 1 should remain solvable with one spare bottle locked for the opening move');
+  assert.notEqual(result.solution[0].from, 4);
+  assert.notEqual(result.solution[0].to, 4);
+});
+
 test('all authored levels have a legal solution', () => {
   for (const level of LEVELS) {
     const result = findSolution(initialBottles(level.id), { maxNodes:250000 });
