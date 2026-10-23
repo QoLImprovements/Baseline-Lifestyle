@@ -150,6 +150,8 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/const boundedHeight=Math\.max\(180,\(scroll\.clientHeight\|\|rect\.height\)-16\)/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen[\s\S]*?height:100dvh!important[\s\S]*?overflow:hidden!important/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-play-layout[\s\S]*?flex:1 1 auto!important/);
+  assert.match(crossnumber,/id:'masterwork'[\s\S]*?nodes:17[\s\S]*?fixed:1/);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-bank[\s\S]*?grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
   assert.match(html,/data-crossnumber-action="restart">Restart</);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*>Full Screen</);
   assert.match(html,/data-crossnumber-action="new">New Game</);
