@@ -24,37 +24,53 @@ test('reviewed core games use game-first side-by-side desktop keypad layouts',()
   assert.match(music,/textScaleFor\(gameId\)/);
 });
 
-test('core round controls switch from Start New Game to Start Next Game at terminal state',()=>{
-  assert.match(core,/function roundIsTerminal\(gameId\)/);
-  assert.match(core,/roundIsTerminal\(gameId\) \? 'Start Next Game' : 'Start New Game'/);
-  assert.match(core,/startButtonLabel\('pairs'\)/);
-  assert.match(core,/startButtonLabel\('detectword'\)/);
-  assert.match(core,/startButtonLabel\('make24'\)/);
-  assert.match(core,/startButtonLabel\('trackcoin'\)/);
-  assert.match(core,/startButtonLabel\('ruleshift'\)/);
+test('core New Game is one-click, opens Pairs idle, and keeps Full Screen inside the game controls',()=>{
+  assert.match(core,/function startButtonLabel\(\)[\s\S]*?const label='New Game'/);
+  assert.doesNotMatch(core,/Start New Game|Start Next Game/);
+  assert.match(core,/document\.addEventListener\('click',[\s\S]*?newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn[\s\S]*?stopImmediatePropagation/);
+  assert.match(core,/opts\.useStored===true && routedGame==='pairs'[\s\S]*?pairsBoardState=null/);
+  assert.match(core,/const windowActions = gameRoot \? gameRoot\.querySelector\('\.game-window-actions'\)/);
+  assert.match(core,/if\(fullBtn && windowActions && fullBtn\.parentElement!==windowActions\) windowActions\.appendChild\(fullBtn\)/);
 });
 
-test('Detect the Word and Make The Number have direct submit and fresher active-round persistence safeguards',()=>{
+test('Detect the Word and Make The Number keep coherent input behavior and active-round persistence',()=>{
   assert.match(core,/explicitWordSubmit[\s\S]*?submitWordGuess/);
   assert.match(core,/explicitMakeSubmit[\s\S]*?submitMake24Expression/);
+  assert.match(core,/make24Board \[data-make24-token\],#make24Board \[data-make24-edit\][\s\S]*?event\.preventDefault\(\)/);
+  assert.match(core,/renderMake24Board\(\);[\s\S]*?focusGameInput\('make24ExpressionInput'\)/);
   assert.match(core,/Object\.prototype\.hasOwnProperty\.call\(temporary,'activeRound'\)/);
   assert.match(core,/profiles\[app\]\.activeRound=temporary\.activeRound/);
+  assert.match(nonRealmCss,/#detectwordPanel \.letter-cell\.absent[\s\S]*?linear-gradient\(180deg,#401522 0%,#250b14 100%\)/);
 });
 
-test('Rule Shift is visual rather than caption matching and migrates Pill to Oval',()=>{
+test('Rule Shift uses a true oval and unmistakably separated red, blue and lime colours',()=>{
   assert.match(config,/\{ id:'oval', name:'Oval' \}/);
-  assert.doesNotMatch(config,/\{ id:'pill', name:'Pill' \}/);
+  assert.match(config,/\{ id:'lime', name:'Lime' \}/);
+  assert.doesNotMatch(config,/\{ id:'pill', name:'Pill' \}|\{ id:'teal', name:'Teal' \}/);
   assert.doesNotMatch(core,/ruleshift-token-caption" aria-hidden/);
   assert.match(core,/if\(rule && rule\.shape==='pill'\) rule\.shape='oval'/);
-  assert.match(nonRealmCss,/ruleshift-colour--blue \.ruleshift-shape\{background:#3877ff/);
-  assert.match(nonRealmCss,/ruleshift-colour--teal \.ruleshift-shape\{background:#00c7a5/);
+  assert.match(core,/if\(rule && rule\.colour==='teal'\) rule\.colour='lime'/);
+  assert.match(nonRealmCss,/ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/);
+  assert.match(nonRealmCss,/ruleshift-colour--lime \.ruleshift-shape\{[\s\S]*?background:#9edb35!important/);
+  assert.match(nonRealmCss,/ruleshift-shape--oval\{[\s\S]*?clip-path:ellipse\(50% 50% at 50% 50%\)!important/);
 });
 
-test('Track the Coin uses continuous segment motion and opaque polished cups',()=>{
-  assert.match(core,/const eased = raw;/);
-  assert.doesNotMatch(core,/const eased = raw < 0\.5 \? 16 \* Math\.pow\(raw, 5\)/);
+test('Track the Coin uses one continuous shuffle timeline and reliably selectable cups',()=>{
+  assert.match(core,/function runTrackCoinShuffle\(_stepIndex, roundToken, onComplete\)/);
+  assert.match(core,/const total=Math\.max\(1,cursor\)/);
+  assert.match(core,/cup\.left=\+\(start\.left\+\(\(target\.left-start\.left\)\*t\)\)/);
+  assert.match(core,/trackCoinAnimationFrame=window\.requestAnimationFrame\(frame\)/);
+  assert.match(core,/pointerup[\s\S]*?trackcoin-cup\.is-selectable\[data-trackcoin-pick\][\s\S]*?chooseTrackCoinCup/);
+  assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-scene\.is-phase-pick \.trackcoin-cup\.is-selectable[\s\S]*?pointer-events:auto!important/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-cup\{[\s\S]*?opacity:1!important/);
-  assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-cup\.is-lifted/);
+});
+
+test('Recreation music preferences are server-side and quick controls stay inside activity controls',()=>{
+  assert.doesNotMatch(music,/\b(?:localStorage|sessionStorage|indexedDB)\b/);
+  assert.match(music,/getProfile\?\.\('hubsettings'\)/);
+  assert.match(music,/saveProfile\?\.\('hubsettings'/);
+  assert.match(music,/data-games-music-quick/);
+  assert.match(music,/var roots = \['pairsGameCard','wordGameCard','make24GameCard','trackCoinGamePanel','ruleShiftGameCard','blockGridGameCard','colourSortGameCard','crossnumberGamePanel'\]/);
 });
 
 test('reported uncomfortable games use the sensory-gentle music replacement set',()=>{
@@ -65,9 +81,13 @@ test('reported uncomfortable games use the sensory-gentle music replacement set'
   assert.match(music,/sensoryGentle \? 0 :/);
 });
 
-test('Block Grid keeps the held piece under the pointer and exposes charged specials',()=>{
-  assert.match(blockGrid,/ghost\.style\.left = clientX \+ 'px'/);
-  assert.match(blockGrid,/ghost\.style\.top = clientY \+ 'px'/);
+test('Block Grid lands from the exact grabbed piece cell and exposes charged specials',()=>{
+  assert.match(blockGrid,/grabRow=Math\.floor\(cellIndex\/Math\.max\(1,bounds\.cols\)\)/);
+  assert.match(blockGrid,/grabCol=cellIndex%Math\.max\(1,bounds\.cols\)/);
+  assert.match(blockGrid,/const row = coords\.row - Math\.max\(0, Number\(grip\?\.grabRow\)/);
+  assert.match(blockGrid,/const col = coords\.col - Math\.max\(0, Number\(grip\?\.grabCol\)/);
+  assert.match(blockGrid,/grabbedX=\(grabCol \* \(cellSize \+ gap\)\)/);
+  assert.match(blockGrid,/const action = target\.closest\('\[data-block-action\]'\)[\s\S]*?if \(suppressClick\)/);
   assert.match(blockGrid,/skillCharge/);
   assert.match(blockGrid,/Clear 4 × 4/);
   assert.match(blockGrid,/Clear 2 Rows/);
@@ -78,9 +98,14 @@ test('Block Grid keeps the held piece under the pointer and exposes charged spec
   assert.match(blockCss,/blockGridGameCard:fullscreen::before[\s\S]*?content:"Block Grid"/);
 });
 
-test('Colour Sort has long-form tier progression, advanced mechanics and verified solution hints',()=>{
+test('Colour Sort exposes difficulty tiers while keeping the 60 authored layouts internal and unpredictable',()=>{
   assert.equal(LEVELS.length,60);
   assert.match(colourSort,/Starter[\s\S]*?Flow[\s\S]*?Strategy[\s\S]*?Advanced[\s\S]*?Expert/);
+  assert.match(colourSort,/function randomLevelForTier\(tierId\)/);
+  assert.match(colourSort,/recentLevels[\s\S]*?slice\(-5\)/);
+  assert.match(colourSort,/data-colour-tier/);
+  assert.doesNotMatch(colourSort,/data-colour-level/);
+  assert.doesNotMatch(colourSort,/Next Level|Level Progress/);
   assert.match(colourSort,/coverBuried=id>=25/);
   assert.match(colourSort,/const exposedStart=Math\.max\(0,bottle\.length-topRunLength\(bottle\)\)/);
   assert.match(colourSort,/id>=49\?2:\(id>=37\?1:0\)/);
@@ -89,7 +114,7 @@ test('Colour Sort has long-form tier progression, advanced mechanics and verifie
   assert.equal(hintMove(solved),null);
 });
 
-test('Cross Numbers avoids recent equation signatures and keeps restart in the game controls',()=>{
+test('Cross Number avoids recent layouts, fits the whole board, and keeps all controls in the game',()=>{
   assert.match(crossnumber,/recentLayouts/);
   assert.match(crossnumber,/chooseDiverseLayout/);
   assert.match(crossnumber,/signatureOverlap/);
