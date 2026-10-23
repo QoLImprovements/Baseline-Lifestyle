@@ -3745,6 +3745,14 @@ function toggleGameFullscreen(gameId){
     syncDesktopKeypadState();
   }
 
+  document.addEventListener('baseline:game-extension-open', function(){
+    // An extension owns the Games surface now. Clear only the core selection;
+    // the extension shell remains responsible for its panel and route.
+    selectedGame='';
+    desktopKeypadOpenGame='';
+    syncDesktopKeypadState();
+    renderGamesList();
+  });
   document.addEventListener('baseline:crossnumber-progress', function(){
     try{ renderSystemSummary(); }catch(_error){}
   });
