@@ -111,7 +111,8 @@ test('Colour Sort exposes difficulty tiers while keeping the 60 authored layouts
   assert.match(colourSort,/recentLevels[\s\S]*?slice\(-5\)/);
   assert.match(colourSort,/data-colour-tier/);
   assert.doesNotMatch(colourSort,/data-colour-level/);
-  assert.doesNotMatch(colourSort,/Next Level|Level Progress/);
+  assert.doesNotMatch(colourSort,/Next Level|Level Progress|trackcoin-level-title">Level -/);
+  assert.match(colourSort,/trackcoin-level-title">Player Rank \$\{profile\.level\}/);
   assert.match(colourSort,/coverBuried=id>=25/);
   assert.match(colourSort,/const exposedStart=Math\.max\(0,bottle\.length-topRunLength\(bottle\)\)/);
   assert.match(colourSort,/id>=49\?2:\(id>=37\?1:0\)/);
