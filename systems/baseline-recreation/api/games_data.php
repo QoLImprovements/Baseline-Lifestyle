@@ -13,7 +13,7 @@ function bl_game_data_apps(): array {
 }
 
 function bl_game_data_file_apps(): array {
-  return ['pairs','make24','detectword','ninja','trackcoin','ruleshift','crossnumber','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','movedalong','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused'];
+  return ['pairs','make24','detectword','ninja','trackcoin','ruleshift','crossnumber','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','movedalong','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused','hubsettings'];
 }
 
 function bl_game_data_app(string $value): string {
@@ -187,7 +187,6 @@ try{
     if($mode === 'saved-data'){
       if($action !== 'save') bl_json(['ok'=>false,'error'=>'invalid_action'], 400);
       $app = bl_game_data_app((string)($payload['app'] ?? ''));
-      if($app === 'hubsettings') bl_json(['ok'=>false,'error'=>'non_persistent_app'], 400);
       $profile = bl_game_data_profile($payload['profile'] ?? null);
       $expected = bl_resource_required_revision_from_input($payload);
       $written = bl_game_file_write($uid, $app, $profile, false, $expected);
