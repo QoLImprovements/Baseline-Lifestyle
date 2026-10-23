@@ -1431,7 +1431,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const tierName = tier ? tier.name : tierId.charAt(0).toUpperCase() + tierId.slice(1);
     const skills = profile.skills || {};
     const needed = xpNeededForLevel(Math.max(1, Number(profile.level || 1)));
-    return '<details class="game-summary-details" data-summary="crossnumber"><summary><span>Cross Number</span><span class="inline-note">Level ' + Math.max(1,Number(profile.level||1)) + '</span></summary><div class="game-summary-body">'
+    return '<details class="game-summary-details" data-summary="crossnumber"><summary><span>Cross Number</span><span class="inline-note">Player Rank ' + Math.max(1,Number(profile.level||1)) + '</span></summary><div class="game-summary-body">'
       + '<div class="game-summary-row"><span>Tier: ' + escapeHtml(tierName) + '</span><span>Puzzles solved: ' + Math.max(0,Number(profile.puzzlesSolved||0)) + '</span></div>'
       + '<div class="game-summary-row"><span>XP: ' + Math.max(0,Number(profile.xp||0)) + ' / ' + needed + '</span><span>Bank: ' + Math.max(0,Number(profile.bank||0)) + '</span></div>'
       + '<div class="game-summary-row"><span>Best streak: ' + Math.max(0,Number(profile.bestStreak||0)) + '</span><span>Clean streak: ' + Math.max(0,Number(profile.cleanWinStreak||0)) + '</span></div>'
@@ -1672,7 +1672,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const locked = profile.level < skill.unlockLevel;
       const maxed = level >= skill.max;
       const canSpend = profile.skillPoints > 0 && !locked && !maxed;
-      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
       return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-pairs-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
     refs.pairsSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Insight ' + profile.skills.insight + ' · Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank · Recall -' + profile.skills.recall + ' repeat loss · Tempo -' + (profile.skills.tempo * 90) + ' ms recovery</span><span class="inline-note">Current streak bonus: +' + trackCoinStreakBonusPct(profile.currentStreak) + '% · clean bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span>';
@@ -1935,7 +1935,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const locked = profile.level < skill.unlockLevel;
       const maxed = level >= skill.max;
       const canSpend = profile.skillPoints > 0 && !locked && !maxed;
-      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
       return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-make24-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
     refs.make24SkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Clarity ' + profile.skills.clarity + ' guide use(s) · Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank · Reserve ' + profile.skills.reserve + ' reroll(s) · Precision -' + profile.skills.precision + ' repeat loss</span>';
@@ -2527,7 +2527,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const locked = profile.level < skill.unlockLevel;
       const maxed = level >= skill.max;
       const canSpend = profile.skillPoints > 0 && !locked && !maxed;
-      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
       return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-word-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
     refs.wordSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank · Reserve +' + profile.skills.reserve + ' guesses · Focus streak scaler ' + profile.skills.focus + '</span>';
@@ -3090,7 +3090,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const locked = profile.level < skill.unlockLevel;
       const maxed = level >= skill.max;
       const canSpend = profile.skillPoints > 0 && !locked && !maxed;
-      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
       return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-trackcoin-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
     refs.trackCoinSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Read ' + profile.skills.read + ' · Banker ' + profile.skills.banker + ' · Flow ' + profile.skills.flow + ' · Discipline ' + profile.skills.discipline + ' · Pace Control -' + (profile.skills.steal * 4) + '%</span><span class="inline-note">Unspent skill points: ' + profile.skillPoints + '</span>';
@@ -3528,7 +3528,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const locked = profile.level < skill.unlockLevel;
       const maxed = level >= skill.max;
       const canSpend = profile.skillPoints > 0 && !locked && !maxed;
-      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
       return '<article class="skill-item"><div class="skill-meta"><h4>' + escapeHtml(skill.name) + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + escapeHtml(skill.description) + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-ruleshift-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
     refs.ruleShiftSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Focus ' + profile.skills.focus + ' · Banker ' + profile.skills.banker + ' · Recovery ' + profile.skills.recovery + ' · Adapt ' + profile.skills.adapt + '</span><span class="inline-note">' + cleanBonusStatusText(profile) + '</span><span class="inline-note">Unspent skill points: ' + profile.skillPoints + '</span>';
