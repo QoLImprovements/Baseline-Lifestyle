@@ -32,7 +32,10 @@ test('core New Game is one-click, opens Pairs idle, and keeps Full Screen inside
   assert.doesNotMatch(core,/Start New Game|Start Next Game/);
   assert.match(core,/document\.addEventListener\('pointerdown',[\s\S]*?newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn[\s\S]*?startCoreGameFromButton\(start\)/);
   assert.match(core,/document\.addEventListener\('click',[\s\S]*?coreNewGamePointerId[\s\S]*?startCoreGameFromButton\(start\)/);
-  assert.match(core,/opts\.useStored===true && routedGame==='pairs'[\s\S]*?pairsBoardState=null/);
+  assert.match(core,/function resetGameRoundToIdle\(gameId\)[\s\S]*?profile\.activeRound=null;[\s\S]*?scheduleSave\(id\)/);
+  for(const stateName of ['pairsBoardState','wordState','make24State','trackCoinState','ruleShiftState']){
+    assert.match(core,new RegExp(stateName+'\\s*=\\s*null'));
+  }
   assert.match(core,/const windowActions = gameRoot \? gameRoot\.querySelector\('\.game-window-actions'\)/);
   assert.match(core,/if\(fullBtn && windowActions && fullBtn\.parentElement!==windowActions\) windowActions\.appendChild\(fullBtn\)/);
 });
@@ -90,6 +93,9 @@ test('Recreation music preferences are server-side and quick controls stay insid
   assert.match(music,/saveProfile\?\.\('hubsettings'/);
   assert.match(music,/data-games-music-quick/);
   assert.match(music,/var roots = \['pairsGameCard','wordGameCard','make24GameCard','trackCoinGamePanel','ruleShiftGameCard','blockGridGameCard','colourSortGameCard','crossnumberGamePanel'\]/);
+  assert.match(music,/#weightCoherenceWorkspace \.weight-coherence-actions/);
+  assert.match(music,/#ninjaPanel \.realm-utility/);
+  assert.match(music,/Baseline Recreation<\/small><h3 id="gamesMusicSettingsTitle">Settings/);
 });
 
 test('reported uncomfortable games use the sensory-gentle music replacement set',()=>{
@@ -150,11 +156,15 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/function toggleFullscreen\(/);
   assert.match(crossnumber,/newGamePointerAt=performance\.now\(\)[\s\S]*?createNewRound\(\{tierId:profile\.selectedTier\}\)/);
   assert.match(crossnumber,/visualViewport\?\.addEventListener\?\.\('resize'/);
-  assert.match(crossnumber,/const boundedHeight=Math\.max\(180,\(scroll\.clientHeight\|\|rect\.height\)-16\)/);
-  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen[\s\S]*?height:100dvh!important[\s\S]*?overflow:hidden!important/);
-  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-play-layout[\s\S]*?flex:1 1 auto!important/);
+  assert.match(crossnumber,/const available=Math\.max\(320,Math\.min\(720,viewportHeight-playTop-14\)\)/);
+  assert.match(crossnumber,/panel\.style\.setProperty\('--crossnumber-play-height'/);
+  assert.match(crossnumberCss,/Cross Number one-screen reachability authority/);
+  assert.equal((crossnumberCss.match(/Cross Number one-screen reachability authority/g)||[]).length,1);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen\{[\s\S]*?height:100dvh!important[\s\S]*?overflow:hidden!important/);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?flex:1 1 auto/);
   assert.match(crossnumber,/id:'masterwork'[\s\S]*?nodes:17[\s\S]*?fixed:1/);
-  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-bank[\s\S]*?grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-bank\{[\s\S]*?grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+  assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart">Restart</);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*>Full Screen</);
   assert.match(html,/data-crossnumber-action="new">New Game</);
