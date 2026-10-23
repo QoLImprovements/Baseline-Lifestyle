@@ -496,3 +496,11 @@ body[data-app="recreation"] #crossnumberGamePanel:fullscreen::before{
 body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-round-toolbar{
   margin:0;
 }
+
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .round-status-card,
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .summary-box{
+  min-height:0!important;
+  height:auto!important;
+  padding:6px 10px!important;
+  margin:0!important;
+}
