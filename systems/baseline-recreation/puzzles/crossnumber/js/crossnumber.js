@@ -470,6 +470,20 @@
     startTimer();
   }
 
+  function syncFullscreenControl(){
+    const button=root.querySelector('[data-crossnumber-action="fullscreen"]');
+    if(!button) return;
+    const active=document.fullscreenElement===document.getElementById('crossnumberGamePanel');
+    button.setAttribute('aria-pressed',String(active));
+    button.textContent=active?'Exit Full Screen':'Full Screen';
+  }
+  function toggleFullscreen(){
+    const gamePanel=document.getElementById('crossnumberGamePanel');
+    if(!gamePanel||!document.fullscreenEnabled) return;
+    if(document.fullscreenElement===gamePanel) document.exitFullscreen?.().catch(function(){});
+    else if(!document.fullscreenElement) gamePanel.requestFullscreen?.().catch(function(){});
+  }
+
   function restartRound(){
     if(!round||!layout) return;
     stopTimer();
@@ -982,6 +996,7 @@
     if(name==='undo') undo();
     if(name==='sort') sortBank();
     if(name==='restart') restartRound();
+    if(name==='fullscreen') toggleFullscreen();
     if(name==='new') createNewRound({tierId:profile.selectedTier});
   });
 
@@ -990,6 +1005,7 @@
     if(!round) createNewRound({tierId:profile.selectedTier});
     else startTimer();
   });
+  document.addEventListener('fullscreenchange',syncFullscreenControl);
   window.addEventListener('popstate',function(){
     if(panel&&panel.hidden) return;
     setCrossnumberPanel(panelFromLocation(),'none');
@@ -1015,6 +1031,7 @@
   round=restoreRound(profile.activeRound);
   layout=round?generateLayout(round.seed,round.tierId):null;
   renderAll();
+  syncFullscreenControl();
   setCrossnumberPanel(panelFromLocation(),'none');
   if(hadSavedRound&&round) setStatus('Your saved Crossnumber layout has been restored.');
   else if(panel&&!panel.hidden&&!round) createNewRound({tierId:profile.selectedTier});
