@@ -14,7 +14,7 @@
   const BOARD_BASE = recreationCssValue('--recreation-panel','#6E2C44');
   const GUIDE_OPACITY = 0.50;
   const ZOOM_MIN = 1;
-  const PIECE_ZOOM_DEFAULT = 2;
+  const PIECE_ZOOM_DEFAULT = 1;
   const PIECE_ZOOM_MAX = 10;
   const ZOOM_STEP = 1;
   const registry = window.BaselinePuzzlesRegistry;
@@ -84,6 +84,7 @@
     difficultyLabel:document.getElementById('weightCoherenceDifficultyLabel'),
     zoomOut:document.getElementById('weightCoherenceZoomOutBtn'),
     zoomToggle:document.getElementById('weightCoherenceZoomBtn'),
+    zoomValue:document.getElementById('weightCoherenceZoomValue'),
     zoomIn:document.getElementById('weightCoherenceZoomInBtn'),
     help:document.getElementById('weightCoherenceHelpBtn'),
     helpDialog:document.getElementById('weightCoherenceHelpDialog'),
@@ -158,6 +159,9 @@
     rebuildPlacedCanvas();
     drawBoard();
     renderTray();
+    const storage=gameStorage();
+    const storageReady=!storage || typeof storage.isReady!=='function' || storage.isReady();
+    if(!state && storageReady) beginPuzzle();
   });
 
   function jigsawXpNeeded(level){
@@ -891,7 +895,7 @@
     const storage=gameStorage();
     if(!payload||!storage) return false;
     storage.setTemporaryProfile?.(APP,payload);
-    storage.saveProfile?.(APP,payload,{immediate:document.hidden,keepalive:document.hidden});
+    storage.saveProfile?.(APP,payload,{immediate:true,keepalive:true});
     return true;
   }
 
@@ -946,7 +950,7 @@
     returnHighlightPieceId=null;
     dragState=null;
     selectedDifficulty=100;
-    refs.workspace.hidden=true;
+    refs.workspace.hidden=false;
     refs.completion.hidden=true;
     refs.preview.setAttribute('aria-pressed','false');
     syncGuideButton();
@@ -956,7 +960,7 @@
     placedCtx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
     drawBoard();
     renderTray();
-    setStatus('Choose a piece count and start the puzzle.','');
+    setStatus('Choose a piece count. A new jigsaw starts automatically and saved progress resumes automatically.','');
     renderJigsawProgress();
   }
 
@@ -1317,14 +1321,20 @@
 
   refs.difficultyButtons.forEach(function(button){
     button.addEventListener('click',function(){
-      selectedDifficulty=Number(button.dataset.jigsawDifficulty)||100;
+      const nextDifficulty=Number(button.dataset.jigsawDifficulty)||100;
+      if(state && state.started && !state.completed && state.difficulty!==nextDifficulty){
+        const replace=window.confirm('Start a new ' + nextDifficulty.toLocaleString('en-GB') + '-piece puzzle? Current progress will be cleared.');
+        if(!replace) return;
+      }
+      selectedDifficulty=nextDifficulty;
       syncDifficultyButtons();
       updateStats();
       renderJigsawProgress();
+      if(imageReady && (!state || state.difficulty!==selectedDifficulty || state.completed)) beginPuzzle();
     });
   });
 
-  refs.start.addEventListener('click',function(){
+  if(refs.start) refs.start.addEventListener('click',function(){
     if(state && state.started && !state.completed){
       const replace=window.confirm('Start a new ' + selectedDifficulty.toLocaleString('en-GB') + '-piece puzzle? Current progress will be cleared.');
       if(!replace) return;
@@ -1631,17 +1641,18 @@
     if(refs.zoomToggle){
       refs.zoomToggle.dataset.active=String(active);
       refs.zoomToggle.setAttribute('aria-label','Zoom hotkey Z. Current magnification ' + percent + ' percent.');
-      refs.zoomToggle.title='Z zoom · current magnification ' + percent + '%';
+      refs.zoomToggle.title='Z zoom';
+      if(refs.zoomValue) refs.zoomValue.textContent=percent + '%';
     }
     if(refs.zoomOut){
       refs.zoomOut.disabled=false;
-      refs.zoomOut.setAttribute('aria-label','Decrease inspection zoom from ' + percent + '%');
-      refs.zoomOut.title='Decrease inspection zoom from ' + percent + '%';
+      refs.zoomOut.setAttribute('aria-label','Decrease inspection zoom');
+      refs.zoomOut.title='Decrease inspection zoom';
     }
     if(refs.zoomIn){
       refs.zoomIn.disabled=false;
-      refs.zoomIn.setAttribute('aria-label','Increase inspection zoom from ' + percent + '%');
-      refs.zoomIn.title='Increase inspection zoom from ' + percent + '%';
+      refs.zoomIn.setAttribute('aria-label','Increase inspection zoom');
+      refs.zoomIn.title='Increase inspection zoom';
     }
   }
 
@@ -1651,7 +1662,7 @@
     const next=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,zoomLevel+(amount*ZOOM_STEP)));
     if(next===zoomLevel){
       setStatus(zoomLevel<=PIECE_ZOOM_DEFAULT
-        ? 'Zoom is already at the 200% minimum.'
+        ? 'Zoom is already at the 100% minimum.'
         : 'Zoom is already at the 1000% maximum.','');
       syncZoomControls();
       return;
@@ -2135,12 +2146,16 @@
     },{passive:true});
   }
   document.addEventListener('visibilitychange',function(){ if(document.hidden) saveState(); });
+  window.addEventListener('pagehide',function(){ saveState(); },{passive:true});
   let storageAuthenticated=!!gameStorage()?.isAuthenticated?.();
   document.addEventListener('baseline:game-storage',function(event){
     const authenticated=!!event.detail?.authenticated;
-    if(authenticated===storageAuthenticated) return;
+    const authChanged=authenticated!==storageAuthenticated;
     storageAuthenticated=authenticated;
-    if(!restoreState()) resetToUnstoredState();
+    const untouched=!state || (state.placed && state.placed.size===0 && (state.elapsed||0)<8);
+    if(authChanged || untouched){
+      if(!restoreState() && !state && imageReady) beginPuzzle();
+    }
   });
 
   document.addEventListener('baseline:jigsaw-select',function(event){

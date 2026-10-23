@@ -5,7 +5,7 @@ import {
 } from '../systems/baseline-recreation/games/colour-sort/js/colour-sort-engine.mjs';
 
 test('every authored colour-sort level has exactly four units of each colour', () => {
-  assert.equal(LEVELS.length, 19);
+  assert.equal(LEVELS.length, 60);
   for (const level of LEVELS) assert.equal(validateLevel(level), true, `level ${level.id}`);
 });
 
@@ -27,6 +27,13 @@ test('completed bottles and solved boards are recognised', () => {
   assert.equal(isBottleComplete([2,2,2,2]), true);
   assert.equal(isSolved([[0,0,0,0],[1,1,1,1],[],[]]), true);
   assert.equal(isSolved([[0,0,1,1],[1,1,0,0],[],[]]), false);
+});
+
+test('solver respects temporary locked bottles before unlocking them', () => {
+  const result = findSolution(initialBottles(1), { maxNodes:250000, blockedIndices:[4], blockedMoves:1 });
+  assert.ok(result.solution, 'level 1 should remain solvable with one spare bottle locked for the opening move');
+  assert.notEqual(result.solution[0].from, 4);
+  assert.notEqual(result.solution[0].to, 4);
 });
 
 test('all authored levels have a legal solution', () => {

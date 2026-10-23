@@ -30,7 +30,7 @@ These Markdown rules are a human reference point, not live runtime config.
 
 
 
-<link href="/systems/baseline-recreation/css/baseline-recreation.css?v=RECREATION_STRUCTURE_20261022_2" rel="stylesheet"/>
+<link href="/systems/baseline-recreation/css/baseline-recreation.css?v=RECREATION_STRUCTURE_20261023_1" rel="stylesheet"/>
 
 
 <link href="/sitewide/css/baseline-protected-access.css?v=PROTECTED_ACCESS_CSS_20261021_1" rel="stylesheet" data-protected-access-style="true"/>
@@ -38,8 +38,8 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-ui-fixes.css?v=SITEWIDE_UI_FIXES_20261021_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
 <link href="/systems/baseline-recreation/css/recreation-theme.css?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2" rel="stylesheet" data-recreation-theme="true"/>
 <link href="/systems/baseline-recreation/puzzles/shared/css/puzzles-library.css?v=RECREATION_PALETTE_20261022_2" rel="stylesheet"/>
-<link href="/systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css?v=RECREATION_PALETTE_20261022_1" rel="stylesheet"/>
-<link href="/systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=RECREATION_JIGSAW_PALETTE_20261022_1" rel="stylesheet"/>
+<link href="/systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css?v=GAMES_REVIEW_20261023_1" rel="stylesheet"/>
+<link href="/systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=JIGSAW_REVIEW_20261023_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/concepts/shared/css/concepts.css?v=CONCEPTS_TEMPLATE_20261022_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/concepts/stroop-effect/css/stroop-effect.css?v=STROOP_COMPARISON_20261022_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
@@ -50,7 +50,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/systems/baseline-recreation/games/baseline-realm/exploration/css/exploration-jrpg.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-style="exploration"/>
 <link href="/systems/baseline-recreation/games/baseline-realm/ninja-training/css/ninja-training.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-style="ninja-training"/>
 <link href="/systems/baseline-recreation/games/baseline-realm/shared/css/realm-mobile.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-mobile="true"/>
-<link href="/systems/baseline-recreation/css/non-realm-game-refinement.css?v=RECREATION_PALETTE_20261022_2" rel="stylesheet" data-nonrealm-game-refinement="true"/>
+<link href="/systems/baseline-recreation/css/non-realm-game-refinement.css?v=GAMES_REVIEW_20261023_1" rel="stylesheet" data-nonrealm-game-refinement="true"/>
 <link href="/systems/baseline-recreation/css/games-music.css?v=RECREATION_MUSIC_PALETTE_20261022_2" rel="stylesheet" data-games-music-style="true"/>
 </head>
 <body data-app="recreation" data-page="baseline-recreation">
@@ -315,7 +315,9 @@ These Markdown rules are a human reference point, not live runtime config.
                   <button class="action ghost" type="button" data-crossnumber-action="sort">Sort Tiles</button>
                   <button class="action ghost" type="button" data-crossnumber-action="undo">Undo</button>
                   <button class="action secondary" type="button" data-crossnumber-action="hint">Hint</button>
+                  <button class="action ghost" type="button" data-crossnumber-action="restart">Restart</button>
                   <button class="action ghost auto-next-toggle" type="button" data-auto-next-toggle="crossnumber" aria-pressed="false">Auto-Next Game: Off</button>
+                  <button class="action ghost" type="button" data-crossnumber-action="fullscreen" aria-pressed="false">Full Screen</button>
                   <button class="action" type="button" data-crossnumber-action="new">New Layout</button>
                 </div>
               </div>
@@ -412,14 +414,13 @@ These Markdown rules are a human reference point, not live runtime config.
 
           <div class="weight-coherence-launch-row">
             <div class="weight-coherence-launch-copy">
-              <strong id="weightCoherenceSelectionLabel">100 pieces selected</strong>
-              <span class="inline-note">Piece count and restart controls are kept in Puzzle Settings.</span>
+              <strong id="weightCoherenceSelectionLabel">100 pieces</strong>
+              <span class="inline-note">The jigsaw starts immediately or resumes your saved progress. Piece count and restart controls are kept in Puzzle Settings.</span>
             </div>
             <div class="weight-coherence-launch-actions">
               <button class="action ghost weight-coherence-icon-action weight-coherence-settings-trigger" id="weightCoherenceSetupSettingsBtn" type="button" aria-label="Open puzzle settings" aria-controls="weightCoherenceSettingsDialog" aria-expanded="false" title="Puzzle settings">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 2.8h4.6l.6 2.3c.5.2 1 .5 1.5.9l2.2-.7 2.3 4-1.7 1.6c.1.4.1.8.1 1.2s0 .8-.1 1.2l1.7 1.6-2.3 4-2.2-.7c-.5.4-1 .7-1.5.9l-.6 2.3H9.7l-.6-2.3c-.5-.2-1-.5-1.5-.9l-2.2.7-2.3-4 1.7-1.6a7.4 7.4 0 0 1 0-2.4L3.1 9.3l2.3-4 2.2.7c.5-.4 1-.7 1.5-.9l.6-2.3Z"/><circle cx="12" cy="12" r="3.2"/></svg>
               </button>
-              <button class="action" id="weightCoherenceStartBtn" type="button">Start Puzzle</button>
             </div>
           </div>
 
@@ -459,12 +460,13 @@ These Markdown rules are a human reference point, not live runtime config.
               </div>
               <div class="weight-coherence-actions" aria-label="Puzzle controls">
                 <div class="weight-coherence-zoom-actions" role="group" aria-label="Inspection zoom">
-                  <button class="action ghost weight-coherence-zoom-step" id="weightCoherenceZoomOutBtn" type="button" aria-label="Decrease inspection zoom from 200%" title="Decrease inspection zoom from 200%">−</button>
-                  <span class="action ghost weight-coherence-icon-action weight-coherence-zoom-indicator" id="weightCoherenceZoomBtn" role="img" aria-keyshortcuts="Z" aria-label="Zoom hotkey Z. Current magnification 200 percent." title="Z zoom · current magnification 200%">
+                  <button class="action ghost weight-coherence-zoom-step" id="weightCoherenceZoomOutBtn" type="button" aria-label="Decrease inspection zoom" title="Decrease inspection zoom">−</button>
+                  <span class="action ghost weight-coherence-icon-action weight-coherence-zoom-indicator" id="weightCoherenceZoomBtn" role="img" aria-keyshortcuts="Z" aria-label="Zoom hotkey Z. Current magnification 100 percent." title="Z zoom">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m14.5 14.5 5 5"/></svg>
+                    <span class="weight-coherence-zoom-value" id="weightCoherenceZoomValue">100%</span>
                     <kbd class="weight-coherence-hotkey">Z</kbd>
                   </span>
-                  <button class="action ghost weight-coherence-zoom-step" id="weightCoherenceZoomInBtn" type="button" aria-label="Increase inspection zoom from 200%" title="Increase inspection zoom from 200%">+</button>
+                  <button class="action ghost weight-coherence-zoom-step" id="weightCoherenceZoomInBtn" type="button" aria-label="Increase inspection zoom" title="Increase inspection zoom">+</button>
                 </div>
                 <button class="action ghost weight-coherence-icon-action" id="weightCoherencePreviewBtn" type="button" aria-pressed="false" aria-keyshortcuts="G" aria-label="Show guide (G)" title="Show guide · G">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.7 12s3.4-5.5 9.3-5.5S21.3 12 21.3 12 17.9 17.5 12 17.5 2.7 12 2.7 12Z"/><circle cx="12" cy="12" r="2.7"/></svg>
@@ -508,7 +510,7 @@ These Markdown rules are a human reference point, not live runtime config.
                 </div>
                 <div class="weight-coherence-help-grid" aria-label="Jigsaw hotkeys">
                   <div class="weight-coherence-help-row"><kbd>Z</kbd><div><strong>Zoom</strong><span>Hover a tray piece and press Z to enlarge the entire jigsaw piece above the workspace while its tray card stays fixed. Hold Z over the jigsaw for the circular board magnifier; release Z to close it. Zoom works on the board and tray pieces while View is enabled.</span></div></div>
-                  <div class="weight-coherence-help-row"><kbd>− / +</kbd><div><strong>Magnification</strong><span>Set one inspection level from 200% to 1000%. Tray-piece Zoom enlarges the complete irregular piece without enlarging its tray card; board Zoom continues to use the circular magnifier.</span></div></div>
+                  <div class="weight-coherence-help-row"><kbd>− / +</kbd><div><strong>Magnification</strong><span>Set one inspection level from 100% to 1000%. Tray-piece Zoom enlarges the complete irregular piece without enlarging its tray card; board Zoom continues to use the circular magnifier.</span></div></div>
                   <div class="weight-coherence-help-row"><kbd>V</kbd><div><strong>View</strong><span>Toggle the full-colour artwork. Piece movement pauses while View is on, but Zoom remains available.</span></div></div>
                   <div class="weight-coherence-help-row"><kbd>G</kbd><div><strong>Guide</strong><span>Toggle the artwork guide on a white background at 50% opacity.</span></div></div>
                   <div class="weight-coherence-help-row"><kbd>S</kbd><div><strong>Shuffle</strong><span>Shuffle the remaining pieces in the Main Tray.</span></div></div>
@@ -995,7 +997,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/sitewide/js/baseline-api.js?v=SITEWIDE_API_JS_20261021_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_JS_20261021_1"></script><script src="/sitewide/js/baseline-shared.js?v=SITEWIDE_SHARED_JS_20261021_1"></script>
 <script src="/systems/baseline-recreation/js/games-registry.js?v=NONREALM_COHERENCE_20261018_1"></script>
 <script src="/systems/baseline-recreation/js/games-progression.js?v=GAMES_PROGRESSION_AUTHORITY_20261021_1"></script>
-<script src="/systems/baseline-recreation/js/games-core-config.js?v=GAMES_CORE_CONFIG_AUTHORITY_20261021_1"></script>
+<script src="/systems/baseline-recreation/js/games-core-config.js?v=GAMES_CORE_CONFIG_AUTHORITY_20261023_1"></script>
 <script src="/systems/baseline-recreation/js/pairs-engine.js?v=PAIRS_ENGINE_AUTHORITY_20261022_1"></script>
 <script src="/systems/baseline-recreation/js/games-profile-rules.js?v=GAMES_PROFILE_RULES_AUTHORITY_20261021_1"></script>
 <script src="/systems/baseline-recreation/js/make-number-engine.js?v=MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1"></script>
@@ -1003,17 +1005,17 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-recreation/js/recreation-legacy-state-migration.js?v=RECREATION_LEGACY_STATE_MIGRATION_20261022_1"></script>
 <script src="/systems/baseline-recreation/js/baseline-recreation-guard.js?v=SERVER_SAVE_COVERAGE_20261018_1"></script>
 <script src="/systems/baseline-recreation/js/games-help-modal.js?v=GAMES_HELP_MODAL_AUTHORITY_20261022_1"></script>
-<script src="/systems/baseline-recreation/js/baseline-recreation-core.js?v=RECREATION_CORE_20261022_1"></script>
-<script src="/systems/baseline-recreation/js/games-music.js?v=PUZZLE_MUSIC_20261019_1"></script>
+<script src="/systems/baseline-recreation/js/baseline-recreation-core.js?v=RECREATION_CORE_20261023_1"></script>
+<script src="/systems/baseline-recreation/js/games-music.js?v=PUZZLE_MUSIC_20261023_1"></script>
 <script src="/systems/baseline-recreation/concepts/shared/js/concepts.js?v=CONCEPTS_TEMPLATE_20261022_2"></script>
 <script src="/systems/baseline-recreation/concepts/stroop-effect/js/stroop-effect.js?v=STROOP_COMPARISON_20261022_1"></script>
 <script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-registry.js?v=RECREATION_PUZZLE_ART_20261022_2"></script>
 <script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-library.js?v=RECREATION_ROUTE_OWNERSHIP_20261022_1"></script>
-<script src="/systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js?v=NONREALM_COHERENCE_20261018_1"></script>
-<script src="/systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=RECREATION_JIGSAW_PALETTE_20261022_1"></script>
+<script src="/systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js?v=GAMES_REVIEW_20261023_1"></script>
+<script src="/systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=JIGSAW_REVIEW_20261023_1"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Recreation shell or another game. -->
-<script type="module" src="/systems/baseline-recreation/games/block-grid/js/block-grid.js?v=RECREATION_ROUTE_20261022_2"></script>
-<script type="module" src="/systems/baseline-recreation/games/colour-sort/js/colour-sort.js?v=RECREATION_ROUTE_20261022_2"></script>
+<script type="module" src="/systems/baseline-recreation/games/block-grid/js/block-grid.js?v=GAMES_REVIEW_20261023_1"></script>
+<script type="module" src="/systems/baseline-recreation/games/colour-sort/js/colour-sort.js?v=GAMES_REVIEW_20261023_1"></script>
 <script type="module" src="/systems/baseline-recreation/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4"></script>
 <script type="module" src="/systems/baseline-recreation/games/badminton-focused/js/badminton-focused.js?v=BADMINTON_FOCUSED_REFINED_20260707_2"></script>
 <script type="module" src="/systems/baseline-recreation/games/baseline-realm/shared/js/realm-entry.js?v=REALM_RECREATION_ROUTE_20261022_1"></script>

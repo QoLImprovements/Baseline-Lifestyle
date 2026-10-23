@@ -207,7 +207,7 @@ test('non-Realm coherence fixes protect the reported gameplay failures', () => {
   assert.match(css, /ruleshift-colour--green \.ruleshift-shape\{background:#7f9846!important\}/);
   assert.match(css, /ruleshift-colour--teal \.ruleshift-shape\{background:#249aa8!important\}/);
   assert.match(css, /#ruleshiftPanel \.ruleshift-options-grid\{[\s\S]*?justify-content:center!important/);
-  assert.match(css, /#detectwordPanel \.game-play-root\.desktop-keypad-open #wordBoard[\s\S]*?grid-template-columns:1fr!important/);
+  assert.match(css, /#detectwordPanel \.game-play-root\.desktop-keypad-open #wordBoard[\s\S]*?grid-template-columns:minmax\(380px,1fr\) minmax\(410px,\.82fr\)!important/);
 });
 
 test('Jigsaws use completion XP with no Jigsaw tier or skill tree and only a Realm passive contribution', () => {

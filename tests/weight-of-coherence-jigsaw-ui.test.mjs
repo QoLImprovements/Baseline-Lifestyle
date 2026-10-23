@@ -17,8 +17,8 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(var\(--recreation-copper-light-rgb\),\.28\)[^}]*background:var\(--recreation-panel\)/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=RECREATION_JIGSAW_PALETTE_20261022_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=RECREATION_JIGSAW_PALETTE_20261022_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_REVIEW_20261023_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_REVIEW_20261023_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
@@ -84,14 +84,17 @@ test('sorting trays use full width, top-fill fixed rows, and no blue piece cards
   assert.doesNotMatch(css, /\.weight-coherence-sort-tray\{[^}]*align-content:stretch/);
 });
 
-test('zoom level is always adjustable from 200 to 1000 percent and the Z icon is not clickable', () => {
-  assert.match(html, /id="weightCoherenceZoomOutBtn"(?![^>]*disabled)[\s\S]*?<span[^>]*id="weightCoherenceZoomBtn"[^>]*aria-keyshortcuts="Z"[\s\S]*?id="weightCoherenceZoomInBtn"(?![^>]*disabled)[\s\S]*?id="weightCoherencePreviewBtn"/);
+test('zoom level is always adjustable from 100 to 1000 percent with the value beside the magnifier', () => {
+  assert.match(html, /id="weightCoherenceZoomOutBtn"(?![^>]*disabled)[\s\S]*?<span[^>]*id="weightCoherenceZoomBtn"[^>]*aria-keyshortcuts="Z"[\s\S]*?id="weightCoherenceZoomValue">100%<\/span>[\s\S]*?id="weightCoherenceZoomInBtn"(?![^>]*disabled)[\s\S]*?id="weightCoherencePreviewBtn"/);
   assert.match(html, /weight-coherence-hotkey">Z<\/kbd>/);
   assert.doesNotMatch(html, /<button[^>]*id="weightCoherenceZoomBtn"/);
+  assert.doesNotMatch(html, /id="weightCoherenceZoom(?:Out|In)Btn"[^>]*(?:title|aria-label)="[^"]*%/);
   assert.match(css, /\.weight-coherence-zoom-indicator\{[^}]*pointer-events:none/);
-  assert.match(js, /const PIECE_ZOOM_DEFAULT = 2/);
+  assert.match(css, /\.weight-coherence-zoom-value\{/);
+  assert.match(js, /const PIECE_ZOOM_DEFAULT = 1/);
   assert.match(js, /const PIECE_ZOOM_MAX = 10/);
   assert.match(js, /const ZOOM_STEP = 1/);
+  assert.match(js, /refs\.zoomValue\.textContent=percent \+ '%'/);
   assert.match(js, /let zoomLevel = PIECE_ZOOM_DEFAULT/);
   assert.match(js, /function adjustZoom\(direction\)\{[\s\S]*?Math\.max\(PIECE_ZOOM_DEFAULT,Math\.min\(PIECE_ZOOM_MAX,zoomLevel\+\(amount\*ZOOM_STEP\)\)\)/);
   assert.match(js, /zoomLevel=next/);
@@ -102,6 +105,13 @@ test('zoom level is always adjustable from 200 to 1000 percent and the Z icon is
   assert.match(js, /refs\.zoomIn\.addEventListener\('click'[\s\S]*?adjustZoom\(1\)/);
   assert.doesNotMatch(js, /refs\.zoomToggle\.addEventListener/);
   assert.match(css, /#weightCoherencePuzzle \.weight-coherence-piece\.is-zoom-target/);
+});
+
+test('jigsaws start or resume without a separate Start button and persist on pagehide', () => {
+  assert.doesNotMatch(html, /id="weightCoherenceStartBtn"/);
+  assert.match(html, /starts immediately or resumes your saved progress/);
+  assert.match(js, /if\(!state && storageReady\) beginPuzzle\(\)/);
+  assert.match(js, /window\.addEventListener\('pagehide',function\(\)\{ saveState\(\); \}/);
 });
 
 test('tray piece Z zoom shows the entire irregular piece above the workspace without scaling its card', () => {

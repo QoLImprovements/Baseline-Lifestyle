@@ -447,3 +447,60 @@ body[data-app="recreation"] .crossnumber-realm-card p{
   body[data-app="recreation"] .crossnumber-symbol-cell{font-size:clamp(12px,3vw,18px)}
   body[data-app="recreation"] .crossnumber-number-cell{font-size:clamp(14px,3.4vw,21px)}
 }
+
+
+/* 2026-10-23 wider number-bank and fullscreen play pass */
+@media(min-width:821px){
+  body[data-app="recreation"] .crossnumber-play-layout{
+    grid-template-columns:minmax(0,1fr) minmax(270px,340px);
+    gap:clamp(14px,2vw,26px);
+  }
+  body[data-app="recreation"] .crossnumber-board{max-width:680px}
+  body[data-app="recreation"] .crossnumber-bank{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+  }
+  body[data-app="recreation"] .crossnumber-bank-panel{
+    max-height:min(76vh,680px);
+    padding:14px;
+  }
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen{
+  padding:clamp(12px,2vw,24px);
+  overflow:auto;
+  background:var(--cn-deep);
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-play-layout{
+  width:min(100%,1220px);
+  margin-inline:auto;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .game-live-xp{
+  padding:5px 9px!important;
+  margin:0!important;
+}
+
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen::before{
+  content:"Cross Numbers";
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  padding:9px 14px;
+  margin:0 0 4px;
+  border:1px solid var(--cn-border);
+  border-radius:12px;
+  background:linear-gradient(90deg,var(--cn-mid),var(--cn-card));
+  color:var(--cn-ink);
+  font-weight:900;
+  letter-spacing:.035em;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-round-toolbar{
+  margin:0;
+}
+
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .round-status-card,
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .summary-box{
+  min-height:0!important;
+  height:auto!important;
+  padding:6px 10px!important;
+  margin:0!important;
+}
