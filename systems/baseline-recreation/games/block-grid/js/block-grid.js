@@ -263,7 +263,7 @@ function renderGame() {
   if (!root) return;
   const active = run();
   if (!active) {
-    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-block-action="new" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost" data-block-action="fullscreen" type="button">Full Screen</button></div></div>`;
+    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-block-action="new" data-hotkey-caption="Alt+N" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-hotkey-caption="Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
     syncAutoNextControl();
     return;
   }
@@ -302,9 +302,9 @@ function renderGame() {
         <div class="block-grid-tray${boardMotion.newTray ? ' is-new-tray' : ''}" aria-label="Available pieces">${trayHtml()}</div>
       </div>
       <div class="game-window-actions">
-        <button class="action ghost start-new-game-toggle" data-block-action="new" type="button">New Game</button>
+        <button class="action ghost start-new-game-toggle" data-block-action="new" data-hotkey-caption="Alt+N" type="button">New Game</button>
         <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
-        <button class="action ghost" data-block-action="fullscreen" type="button">Full Screen</button>
+        <button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-hotkey-caption="Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button>
       </div>
     </div>`;
   resetBoardMotion();
@@ -764,6 +764,11 @@ function handlePointerUp(event) {
 
 function handleKeydown(event) {
   if (!document.getElementById('blockGridPanel')?.classList.contains('is-active')) return;
+  const key=String(event.key||'').toLowerCase();
+  if(event.altKey && !event.ctrlKey && !event.metaKey && !event.isComposing){
+    if(key==='n'){ event.preventDefault(); startNewGame(); return; }
+    if(key==='f'){ event.preventDefault(); toggleFullscreen(); return; }
+  }
   if (event.key === 'Escape' && document.fullscreenElement === document.getElementById('blockGridGameCard')) return;
   if (event.key === 'Escape') shell.close();
 }
