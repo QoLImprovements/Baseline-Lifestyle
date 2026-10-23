@@ -295,13 +295,15 @@ function renderGame() {
         <button class="action ghost" data-block-action="rows" type="button" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}>Clear 2 Rows</button>
       </div>
     </div>
-    <div class="block-grid-board-stage">
-      <div class="block-grid-board${boardMotion.invalid ? ' is-invalid-drop' : ''}${occupancy >= .72 ? ' is-danger' : occupancy >= .55 ? ' is-crowded' : ''}" data-block-board role="grid" aria-label="Block Grid board">${boardHtml()}</div>
-      ${boardFeedbackHtml()}
-    </div>
-    <div class="block-grid-tray-wrap">
-      <div class="block-grid-tray-heading"><strong>Available Pieces · ${escapeHtml(currentMode().name)}</strong><span>Drag a shape, or tap it then tap a board cell</span></div>
-      <div class="block-grid-tray${boardMotion.newTray ? ' is-new-tray' : ''}" aria-label="Available pieces">${trayHtml()}</div>
+    <div class="block-grid-play-cluster">
+      <div class="block-grid-board-stage">
+        <div class="block-grid-board${boardMotion.invalid ? ' is-invalid-drop' : ''}${occupancy >= .72 ? ' is-danger' : occupancy >= .55 ? ' is-crowded' : ''}" data-block-board role="grid" aria-label="Block Grid board">${boardHtml()}</div>
+        ${boardFeedbackHtml()}
+      </div>
+      <div class="block-grid-tray-wrap">
+        <div class="block-grid-tray-heading"><strong>Available Pieces · ${escapeHtml(currentMode().name)}</strong><span>Drag a shape, or tap it then tap a board cell</span></div>
+        <div class="block-grid-tray${boardMotion.newTray ? ' is-new-tray' : ''}" aria-label="Available pieces">${trayHtml()}</div>
+      </div>
     </div>
     <div class="game-window-actions">
       <button class="action ghost start-new-game-toggle" data-block-action="new" type="button">Start New Game</button>
