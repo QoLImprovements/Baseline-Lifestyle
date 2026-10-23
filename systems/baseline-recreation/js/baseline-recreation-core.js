@@ -1337,8 +1337,10 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       if(selectedGame === 'detectword') desktopKeypadOpenGame = '';
       else if(desktopKeypadOpenGame === 'detectword') desktopKeypadOpenGame = '';
     }
-    if(selectedGame && selectedGame !== previousGame && opts.resetRound !== false){
-      resetGameRoundToIdle(selectedGame);
+    // Pairs is deliberately non-resumable. Other core games keep their
+    // account-backed active round when the player leaves and returns.
+    if(selectedGame === 'pairs' && selectedGame !== previousGame && opts.resetRound !== false){
+      resetGameRoundToIdle('pairs');
     }
     if(!selectedGame) exitMobileGameMode();
     const panels = {
@@ -2354,9 +2356,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     return true;
   }
   function restoreSavedCoreRounds(){
-    // Recreation's non-jigsaw games deliberately open idle. Account-backed
-    // progression is restored, but a previous unfinished play surface is not
-    // imposed on the player; New Game is the single explicit entry action.
     clearAutoNextTimer('pairs');
     clearAutoNextTimer('detectword');
     clearAutoNextTimer('make24');
@@ -2364,15 +2363,30 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     clearAutoNextTimer('ruleshift');
     cancelTrackCoinAnimation();
     clearRuleShiftTimer();
+
+    // Pairs deliberately opens idle. Its progression persists, but a partially
+    // played memory board never returns when the activity is opened.
     pairsBoardState=null;
+    pairsIdleMessage='Choose a board tier and press New Game when you are ready.';
+    if(profiles.pairs && profiles.pairs.activeRound!=null){
+      profiles.pairs.activeRound=null;
+      scheduleSave('pairs');
+    }
+
+    // These games are resumable. Their active round is account-backed and is
+    // restored after hydration; New Game remains an explicit one-press reset.
     wordState=null;
     make24State=null;
     trackCoinState=null;
     ruleShiftState=null;
-    pairsIdleMessage='Choose a board tier and press New Game when you are ready.';
-    wordIdleMessage='Choose a letter tier and press New Game when you are ready.';
-    make24IdleMessage='Choose a number tier and press New Game when you are ready.';
-    ruleShiftIdleMessage='Choose a rule tier and press New Game when you are ready.';
+    const wordRestored=restoreSavedWordRound();
+    const makeRestored=restoreSavedMake24Round();
+    const trackRestored=restoreSavedTrackCoinRound();
+    const ruleRestored=restoreSavedRuleShiftRound();
+    if(!wordRestored) wordIdleMessage='Choose a letter tier and press New Game when you are ready.';
+    if(!makeRestored) make24IdleMessage='Choose a number tier and press New Game when you are ready.';
+    if(!ruleRestored) ruleShiftIdleMessage='Choose a rule tier and press New Game when you are ready.';
+    if(trackRestored && trackCoinState && !trackCoinState.resolved) trackCoinState.restoredWaiting=true;
   }
 
   function startWordRound(){
