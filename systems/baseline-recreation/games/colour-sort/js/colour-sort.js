@@ -461,7 +461,11 @@ function createBottleDragGhost(source) {
   ghostBottle.disabled = true;
   ghostBottle.style.width = rect.width + 'px';
   layer.appendChild(ghostBottle);
-  document.body.appendChild(layer);
+  // A body-level clone is not painted while the game card owns the browser
+  // fullscreen top layer. Keep the moving bottle inside that fullscreen subtree.
+  const fullscreenHost = document.fullscreenElement;
+  const host = fullscreenHost && fullscreenHost.contains(source) ? fullscreenHost : document.body;
+  host.appendChild(layer);
   setBottleGhostPosition(layer, rect.left + rect.width / 2, rect.top + rect.height / 2, 0, 1);
   return layer;
 }
