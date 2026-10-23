@@ -114,7 +114,7 @@ test('jigsaw settings expose the shared server-backed music controls and tray re
   assert.match(js, /refs\.tray\.replaceChildren\(fragment\)/);
   assert.match(js, /tray\.replaceChildren\(fragment\)/);
   assert.match(js, /root\.classList\.add\('is-restarting'\)/);
-  assert.match(js, /requestAnimationFrame\(function\(\)\{[\s\S]*?requestAnimationFrame\(function\(\)\{ root\.classList\.remove\('is-restarting'\)/);
+  assert.match(js, /const revealRestart=function\(\)\{[\s\S]*?requestAnimationFrame\(function\(\)\{[\s\S]*?requestAnimationFrame\(function\(\)\{[\s\S]*?root\.classList\.remove\('is-restarting'\)/);
   assert.match(css, /#weightCoherencePuzzle\.is-restarting \.weight-coherence-piece\{[\s\S]*?visibility:hidden!important[\s\S]*?transition:none!important[\s\S]*?animation:none!important/);
 });
 
