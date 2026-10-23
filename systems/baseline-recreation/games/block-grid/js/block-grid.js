@@ -548,6 +548,7 @@ function placeSelected(row, col) {
 function consumeSpecialCharge(active) {
   active.skillCharge = 0;
   active.combo = 0;
+  active.gameOver = !hasAnyPlacement(active.board, active.tray);
   specialMode = '';
   selectedPiece = -1;
   previewAnchor = null;
