@@ -540,3 +540,63 @@ body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board{
 @media(max-width:820px){
   body[data-app="recreation"] .crossnumber-board-scroll{overflow:auto}
 }
+
+
+/* 2026-10-23 Cross Number no-scroll reachability contract */
+@media(min-width:821px){
+  body[data-app="recreation"] .crossnumber-bank-panel{
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  body[data-app="recreation"] .crossnumber-bank{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:6px!important;
+  }
+  body[data-app="recreation"] .crossnumber-number-tile{
+    min-height:36px!important;
+    padding:5px 6px!important;
+  }
+  body[data-app="recreation"] .crossnumber-play-layout{
+    grid-template-columns:minmax(0,1fr) minmax(250px,320px)!important;
+    align-items:start!important;
+  }
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen{
+  display:grid!important;
+  grid-template-rows:auto auto minmax(0,1fr)!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-play-layout{
+  min-height:0!important;
+  height:100%!important;
+  overflow:hidden!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-column,
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-scroll{
+  min-height:0!important;
+  height:100%!important;
+  overflow:hidden!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-bank-panel{
+  position:relative!important;
+  top:auto!important;
+  height:auto!important;
+  max-height:100%!important;
+  overflow:visible!important;
+  align-self:start!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-bank{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-bank-help{
+  display:none!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-status-row{
+  margin-top:4px!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-help{
+  display:none!important;
+}
