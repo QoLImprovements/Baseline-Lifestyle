@@ -82,6 +82,7 @@ test('Colour Sort has long-form tier progression, advanced mechanics and verifie
   assert.equal(LEVELS.length,60);
   assert.match(colourSort,/Starter[\s\S]*?Flow[\s\S]*?Strategy[\s\S]*?Advanced[\s\S]*?Expert/);
   assert.match(colourSort,/coverBuried=id>=25/);
+  assert.match(colourSort,/const exposedStart=Math\.max\(0,bottle\.length-topRunLength\(bottle\)\)/);
   assert.match(colourSort,/id>=49\?2:\(id>=37\?1:0\)/);
   assert.match(colourSort,/blockedIndices:lockedBottleIndices\(active\)/);
   const solved=[[0,0,0,0],[1,1,1,1],[],[]];
