@@ -966,7 +966,7 @@ function panelHtml() {
                     <button class="action secondary game-shell-action" data-close-game-extension="colour-sort" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
         </div>
       </div>
-      <details class="game-info-details" data-game-info="coloursort"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
+      <details class="game-info-details" data-game-info="coloursort"><summary><span>Game Info</span><span class="inline-note">Player Rank / XP / stats</span></summary>
         <div id="colourSortGameInfo"></div>
       </details>
       <div class="game-toggle-row">
