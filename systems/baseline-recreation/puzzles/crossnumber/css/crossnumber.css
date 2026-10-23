@@ -600,3 +600,22 @@ body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-status
 body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-help{
   display:none!important;
 }
+
+
+/* 2026-10-23 fullscreen board-column fit */
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-column{
+  display:grid!important;
+  grid-template-rows:minmax(0,1fr) auto!important;
+  min-height:0!important;
+  height:100%!important;
+  overflow:hidden!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-scroll{
+  min-height:0!important;
+  height:auto!important;
+  align-self:stretch!important;
+  overflow:hidden!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-status-row{
+  min-height:0!important;
+}
