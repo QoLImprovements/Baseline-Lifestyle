@@ -713,3 +713,15 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
   .weight-coherence-audio-row,
   .weight-coherence-audio-row--volume{grid-template-columns:1fr}
 }
+
+
+/* 2026-10-23 restart render stabilization */
+#weightCoherencePuzzle.is-restarting .weight-coherence-piece{
+  visibility:hidden!important;
+  transition:none!important;
+  animation:none!important;
+}
+#weightCoherencePuzzle.is-restarting .weight-coherence-piece-canvas{
+  transition:none!important;
+  animation:none!important;
+}
