@@ -3711,22 +3711,23 @@ function toggleGameFullscreen(gameId){
         actions.insertBefore(howBtn, full || back || null);
       }
 
-      qsa('[data-game-fullscreen="' + id + '"]', actions).forEach(function(existingBtn){
+      const gameRoot = gameCardElement(id) || panel.querySelector('[data-game-play-root="' + id + '"]');
+      const windowActions = gameRoot ? gameRoot.querySelector('.game-window-actions') : null;
+      qsa('[data-game-fullscreen="' + id + '"]', panel).forEach(function(existingBtn){
         if(id === 'ninja' || isMobileGameViewport()) existingBtn.remove();
       });
-      if(id !== 'ninja' && !isMobileGameViewport() && !actions.querySelector('[data-game-fullscreen="' + id + '"]')){
+      if(id !== 'ninja' && !isMobileGameViewport() && !panel.querySelector('[data-game-fullscreen="' + id + '"]')){
         const btn = document.createElement('button');
-        btn.className = 'action secondary game-fullscreen-toggle';
+        btn.className = 'action ghost game-fullscreen-toggle';
         btn.type = 'button';
         btn.setAttribute('data-game-fullscreen', id);
         btn.textContent = 'Full Screen';
-        const back = actions.querySelector('[data-select-game=""]');
-        actions.insertBefore(btn, back || null);
+        (windowActions || actions).appendChild(btn);
       }
 
       const infoBtn = actions.querySelector('[data-game-info-modal="' + id + '"]');
       const howBtn = actions.querySelector('[data-game-howto-modal="' + id + '"]');
-      const fullBtn = actions.querySelector('[data-game-fullscreen="' + id + '"]');
+      const fullBtn = panel.querySelector('[data-game-fullscreen="' + id + '"]');
       const backBtn = actions.querySelector('[data-select-game=""]');
 
       if(id !== 'ninja'){
@@ -3759,8 +3760,7 @@ function toggleGameFullscreen(gameId){
       if(fullBtn) fullBtn.style.order = '3';
       if(backBtn) backBtn.style.order = '5';
 
-      const gameRoot = gameCardElement(id) || panel.querySelector('[data-game-play-root="' + id + '"]');
-      const windowActions = gameRoot ? gameRoot.querySelector('.game-window-actions') : null;
+      if(fullBtn && windowActions && fullBtn.parentElement!==windowActions) windowActions.appendChild(fullBtn);
       if(isDesktopKeypadGame(id) && windowActions && !windowActions.querySelector('[data-desktop-keypad-toggle="' + id + '"]')){
         const keyboardBtn = document.createElement('button');
         keyboardBtn.className = 'action ghost desktop-keypad-toggle';
