@@ -301,7 +301,7 @@
     const needed=jigsawXpNeeded(progression.level);
     const pct=Math.min(100,(progression.xp/Math.max(1,needed))*100);
     refs.liveXp.innerHTML=
-      '<strong>Level '+progression.level+'</strong>' +
+      '<strong>Player Rank '+progression.level+'</strong>' +
       '<div class="game-live-xp__bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+needed+'" aria-valuenow="'+progression.xp+'" aria-label="'+escapeHtml(activePuzzle.title||'Jigsaw')+' experience"><span style="width:'+pct+'%"></span></div>' +
       '<span>'+progression.xp+' / '+needed+' XP</span>';
   }
@@ -326,7 +326,7 @@
 
     refs.progress.innerHTML=
       '<section class="coherent-progress-overview">' +
-        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">'+escapeHtml(activePuzzle.title||'Jigsaw')+'</span><strong>Level '+progression.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Level '+(progression.level+1)+'</div></div>' +
+        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">'+escapeHtml(activePuzzle.title||'Jigsaw')+'</span><strong>Player Rank '+progression.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Player Rank '+(progression.level+1)+'</div></div>' +
         '<div class="coherent-progress-xp-meta"><span>'+progression.xp+' / '+needed+' XP</span><span>'+Math.round(pct)+'%</span></div>' +
         '<div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+needed+'" aria-valuenow="'+progression.xp+'"><span style="width:'+pct+'%"></span></div>' +
       '</section>' +
@@ -1020,7 +1020,7 @@
     if(!priorBest||state.elapsed<priorBest) progression.bestTimes[bestKey]=Math.max(1,Math.round(state.elapsed));
     const levels=awardJigsawXp(reward);
 
-    setStatus('Completed. Every piece is in place. +'+reward+' XP'+(levels?' · Level up +'+levels:'')+'.','success');
+    setStatus('Completed. Every piece is in place. +'+reward+' XP'+(levels?' · Player Rank up +'+levels:'')+'.','success');
     renderCompletion();
     renderTray();
     updateStats();
