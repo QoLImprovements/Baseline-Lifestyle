@@ -111,6 +111,11 @@
     progress:document.getElementById('weightCoherenceProgress')
   };
 
+  root.querySelectorAll('.weight-coherence-actions [title], .weight-coherence-launch-actions [title]').forEach(function(control){
+    const tooltip=String(control.getAttribute('title')||'').trim();
+    if(tooltip) control.setAttribute('data-tooltip',tooltip.replace(/\s+[·—]\s+/g,' · '));
+  });
+
   const ctx = refs.board.getContext('2d');
   const placedCanvas = document.createElement('canvas');
   placedCanvas.width = BOARD_WIDTH;

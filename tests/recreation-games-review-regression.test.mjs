@@ -117,8 +117,9 @@ test('Recreation music preferences are server-side and quick controls stay insid
   assert.match(music,/data-games-music-quick/);
   assert.match(music,/function quickMusicMarkup\(label\)/);
   assert.match(music,/btn\.innerHTML=quickMusicMarkup\(settings\.enabled\?'Music on':'Music off'\)/);
-  assert.match(music,/btn\.setAttribute\('data-hotkey-caption','Alt\+M'\)/);
-  assert.match(music,/btn\.setAttribute\('data-hotkey-caption','Alt\+S'\)/);
+  assert.match(music,/btn\.setAttribute\('data-tooltip',tooltip\)/);
+  assert.match(music,/btn\.setAttribute\('data-tooltip','Settings · Alt\+S'\)/);
+  assert.doesNotMatch(music,/setAttribute\('data-hotkey-caption'/);
   assert.match(music,/games-settings-trigger__icon[\s\S]*?<span class="sr-only">Settings<\/span>/);
   assert.match(music,/if\(key === 'm'\)[\s\S]*?setEnabled\(!settings\.enabled\)/);
   assert.match(music,/if\(key === 's'\)[\s\S]*?if\(activeGame === 'jigsaw'\) return;/);
@@ -221,9 +222,9 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-bank\{[\s\S]*?grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart">Restart</);
-  assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-hotkey-caption="Alt\+F"[^>]*aria-label="Full screen"/);
+  assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);
   assert.doesNotMatch(html,/data-crossnumber-action="fullscreen"[^>]*>Full Screen<\/button>/);
-  assert.match(html,/data-crossnumber-action="new"[^>]*data-hotkey-caption="Alt\+N"[^>]*>New Game<\/button>/);
+  assert.match(html,/data-crossnumber-action="new"[^>]*data-tooltip="New Game · Alt\+N"[^>]*>New Game<\/button>/);
   assert.match(crossnumber,/if\(key==='n'\)[\s\S]*?createNewRound\(\{tierId:profile\.selectedTier\}\)/);
   assert.match(crossnumber,/if\(key==='f'\)[\s\S]*?toggleFullscreen\(\)/);
   assert.match(html,/<h2>Cross Number<\/h2>/);
@@ -241,18 +242,25 @@ test('Jigsaw uses server-saved 200 percent minimum zoom, coherent music controls
   assert.match(jigsawCss,/#weightCoherencePuzzle\.is-restarting \.weight-coherence-piece\{[\s\S]*?visibility:hidden!important[\s\S]*?animation:none!important/);
   assert.match(html,/id="weightCoherenceFullscreenBtn"[^>]*aria-keyshortcuts="Alt\+F"/);
   assert.match(html,/id="weightCoherenceToolbarSettingsBtn"[^>]*aria-keyshortcuts="Alt\+S"/);
-  assert.match(jigsawCss,/\.weight-coherence-hotkey\{[\s\S]*?top:calc\(100% \+ 3px\)!important/);
+  assert.match(jigsawCss,/\.weight-coherence-hotkey\{[\s\S]*?clip-path:inset\(50%\)!important/);
+  assert.match(jigsaw,/setAttribute\('data-tooltip',tooltip\.replace/);
 });
 
-test('common Recreation actions use compact icons with separate hotkey captions',()=>{
+test('common Recreation actions use compact icons with hover/focus hotkey tooltips',()=>{
   assert.match(core,/function setHotkeyCaption\(button, hotkey\)/);
+  assert.match(core,/button\.removeAttribute\('data-hotkey-caption'\)/);
+  assert.match(core,/button\.setAttribute\('data-tooltip',tooltip\)/);
   assert.match(core,/function startButtonLabel\(_gameId\)\{ return 'New Game'; \}/);
   assert.match(core,/function keyboardIconMarkup\(open\)/);
   assert.match(core,/function fullscreenIconMarkup\(label\)/);
   assert.match(core,/SITEWIDE_FULLSCREEN_HOTKEY_LABEL = 'Alt\+F'/);
   assert.match(core,/setHotkeyCaption\(btn,SITEWIDE_KEYBOARD_HOTKEY_LABEL\)/);
   assert.match(core,/setHotkeyCaption\(btn,SITEWIDE_FULLSCREEN_HOTKEY_LABEL\)/);
-  assert.match(nonRealmCss,/\[data-hotkey-caption\]::after\{[\s\S]*?content:attr\(data-hotkey-caption\)/);
+  assert.match(nonRealmCss,/\[data-tooltip\]:is\(:hover,:focus-visible\)::after\{[\s\S]*?content:attr\(data-tooltip\)/);
+  assert.match(nonRealmCss,/\[data-hotkey-caption\]::after\{[\s\S]*?content:none!important/);
+  assert.match(nonRealmCss,/\.sr-only\{[\s\S]*?clip-path:inset\(50%\)!important/);
+  assert.match(nonRealmCss,/\.games-music-quick-toggle\{[\s\S]*?margin-left:auto!important/);
+  assert.match(nonRealmCss,/\.games-settings-trigger\{[\s\S]*?margin-left:0!important/);
   assert.match(nonRealmCss,/\.game-shell-action__svg\{/);
   assert.doesNotMatch(core,/label \+ ' \[' \+ SITEWIDE_START_HOTKEY_LABEL/);
 });

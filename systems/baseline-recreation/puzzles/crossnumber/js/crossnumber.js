@@ -477,8 +477,9 @@
     const active=document.fullscreenElement===document.getElementById('crossnumberGamePanel');
     button.setAttribute('aria-pressed',String(active));
     button.setAttribute('aria-label',active?'Exit full screen':'Full screen');
-    button.title=(active?'Exit full screen':'Full screen')+' — Alt+F';
-    button.setAttribute('data-hotkey-caption','Alt+F');
+    button.title=(active?'Exit full screen':'Full screen')+' · Alt+F';
+    button.removeAttribute('data-hotkey-caption');
+    button.setAttribute('data-tooltip',(active?'Exit full screen':'Full screen')+' · Alt+F');
     button.classList.add('game-shell-action','game-shell-action--icon','game-fullscreen-toggle');
     button.innerHTML='<svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">'+(active?'Exit full screen':'Full screen')+'</span>';
   }

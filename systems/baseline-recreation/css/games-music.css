@@ -3,7 +3,7 @@
    Loaded last in the Recreation head to preserve the former runtime-injected cascade order. */
 
 .games-settings-trigger{
-  margin-left:auto;
+  margin-left:0;
   display:inline-flex;
   align-items:center;
   gap:.45rem;

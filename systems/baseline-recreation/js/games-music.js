@@ -628,12 +628,14 @@
   function syncQuickMusicButton(btn){
     var stateLabel=settings.enabled?'Music on':'Music off';
     btn.setAttribute('aria-label',settings.enabled?'Mute game music':'Enable game music');
-    btn.title=settings.enabled?'Music on — press to mute':'Music off — press to enable';
+    var tooltip=(settings.enabled?'Music on':'Music off')+' · Alt+M';
+    btn.title=tooltip;
+    btn.setAttribute('data-tooltip',tooltip);
     if(!btn.querySelector('svg') || !btn.querySelector('.sr-only')) btn.innerHTML=quickMusicMarkup(stateLabel);
     var hiddenLabel=btn.querySelector('.sr-only');
     if(hiddenLabel && hiddenLabel.textContent!==stateLabel) hiddenLabel.textContent=stateLabel;
     btn.classList.toggle('is-muted',!settings.enabled);
-    btn.setAttribute('data-hotkey-caption','Alt+M');
+    btn.removeAttribute('data-hotkey-caption');
   }
   function syncUi(){
     document.querySelectorAll('[data-games-music-toggle]').forEach(function(btn){
@@ -720,8 +722,9 @@
       btn.setAttribute('aria-haspopup','dialog');
       btn.setAttribute('aria-controls','gamesMusicSettingsPanel');
       btn.setAttribute('aria-label','Game settings');
-      btn.title = 'Game settings — Alt+S';
-      btn.setAttribute('data-hotkey-caption','Alt+S');
+      btn.title = 'Settings · Alt+S';
+      btn.setAttribute('data-tooltip','Settings · Alt+S');
+      btn.removeAttribute('data-hotkey-caption');
       btn.innerHTML = '<span class="games-settings-trigger__icon game-shell-action__icon" aria-hidden="true">⚙</span><span class="sr-only">Settings</span>';
       host.appendChild(btn);
     });

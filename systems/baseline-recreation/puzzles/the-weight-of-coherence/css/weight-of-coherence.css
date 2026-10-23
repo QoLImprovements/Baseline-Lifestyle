@@ -727,29 +727,24 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
 }
 
 
-/* Common Recreation hotkeys are captions, not badges inside the control face. */
+/* Common Recreation hotkeys use shared hover/focus tooltips, not persistent labels. */
 .weight-coherence-actions{
   overflow:visible;
-  align-items:flex-start;
-  padding-bottom:18px;
+  align-items:center;
+  padding-bottom:0;
 }
 .weight-coherence-icon-action{overflow:visible}
 .weight-coherence-hotkey{
-  right:50%!important;
-  bottom:auto!important;
-  top:calc(100% + 3px)!important;
-  transform:translateX(50%);
-  display:block!important;
-  min-width:0!important;
-  width:max-content;
-  height:auto!important;
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
   padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0 0 0 0)!important;
+  clip-path:inset(50%)!important;
+  white-space:nowrap!important;
   border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  color:rgba(var(--recreation-ink-rgb),.68)!important;
-  font:700 9px/1 system-ui,sans-serif!important;
-  white-space:nowrap;
 }
 #weightCoherenceWorkspace [data-games-music-quick]{
   position:relative!important;
@@ -757,20 +752,4 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
   width:44px!important;
   min-width:44px!important;
   height:44px!important;
-}
-#weightCoherenceWorkspace [data-games-music-quick][data-hotkey-caption]::after{
-  content:attr(data-hotkey-caption);
-  position:absolute;
-  left:50%;
-  top:calc(100% + 3px);
-  transform:translateX(-50%);
-  color:rgba(var(--recreation-ink-rgb),.68);
-  font:700 9px/1 system-ui,sans-serif;
-  white-space:nowrap;
-  pointer-events:none;
-}
-@media(max-width:820px){
-  .weight-coherence-actions{padding-bottom:0}
-  .weight-coherence-hotkey,
-  #weightCoherenceWorkspace [data-games-music-quick][data-hotkey-caption]::after{display:none!important}
 }
