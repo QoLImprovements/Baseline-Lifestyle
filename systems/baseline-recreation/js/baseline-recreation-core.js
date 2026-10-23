@@ -3752,7 +3752,7 @@ function toggleGameFullscreen(gameId){
     selectedGame='';
     desktopKeypadOpenGame='';
     syncDesktopKeypadState();
-    renderGamesList();
+    if(refs.gamesList) renderGamesList();
   });
   document.addEventListener('baseline:crossnumber-progress', function(){
     try{ renderSystemSummary(); }catch(_error){}
