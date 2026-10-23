@@ -2105,63 +2105,12 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     return WORD_TIERS.find(t => t.id === profiles.detectword.selectedTier) || WORD_TIERS[0];
   }
   function nextWordTierToUnlock(){ return WORD_TIERS.find(t => profiles.detectword.level < t.unlockLevel) || null; }
-  function savedPairsRoundSnapshot(){
-    if(!pairsBoardState || !profiles.pairs) return null;
-    return {
-      tierId:currentPairsTier().id,
-      cards:(pairsBoardState.cards || []).map(function(card){
-        return { id:card.id, face:card.face, matched:Boolean(card.matched), selections:Math.max(0,Number(card.selections||0)) };
-      }),
-      matchedPairs:Math.max(0,Number(pairsBoardState.matchedPairs||0)),
-      moves:Math.max(0,Number(pairsBoardState.moves||0)),
-      roundBank:Number(pairsBoardState.roundBank||0),
-      hintsLeft:Math.max(0,Number(pairsBoardState.hintsLeft||0)),
-      hadFailure:Boolean(pairsBoardState.hadFailure),
-      completed:Boolean(pairsBoardState.completed),
-      lastMessage:String(pairsBoardState.lastMessage||'').slice(0,260)
-    };
-  }
   function persistPairsRound(){
     if(!profiles.pairs) return;
     // Pairs deliberately opens idle. Keep progression, tier and rewards
     // server-side, but do not persist a half-played board between openings.
     profiles.pairs.activeRound = null;
     scheduleSave('pairs');
-  }
-  function restoreSavedPairsRound(){
-    const saved = profiles.pairs && profiles.pairs.activeRound;
-    if(!saved || typeof saved !== 'object') return false;
-    const tier = PAIRS_TIERS.find(function(item){ return item.id === saved.tierId; });
-    if(!tier || profiles.pairs.level < tier.unlockLevel) return false;
-    const cards = Array.isArray(saved.cards) ? saved.cards.slice(0,tier.pairs*2).map(function(card,index){
-      const face=String(card&&card.face||'');
-      if(!PAIRS_FACES.includes(face)) return null;
-      return {
-        id:String(card&&card.id||('restored-'+index)),
-        face:face,
-        open:Boolean(card&&card.matched),
-        matched:Boolean(card&&card.matched),
-        wasKnown:false,
-        selections:Math.max(0,Math.round(Number(card&&card.selections||0)))
-      };
-    }).filter(Boolean) : [];
-    if(cards.length !== tier.pairs*2) return false;
-    profiles.pairs.selectedTier=tier.id;
-    pairsBoardState={
-      roundToken:++pairsRoundToken,
-      cards:cards,
-      selected:[],
-      matchedPairs:Math.max(0,Math.min(tier.pairs,Math.round(Number(saved.matchedPairs||0)))),
-      moves:Math.max(0,Math.round(Number(saved.moves||0))),
-      roundBank:Number(saved.roundBank||0),
-      flipLock:false,
-      hintsLeft:Math.max(0,Math.round(Number(saved.hintsLeft||0))),
-      hadFailure:Boolean(saved.hadFailure),
-      hintBusy:false,
-      completed:Boolean(saved.completed),
-      lastMessage:String(saved.lastMessage||'Board restored. Continue matching pairs.').slice(0,260)
-    };
-    return true;
   }
 
   function savedMake24RoundSnapshot(){
