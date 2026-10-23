@@ -769,16 +769,12 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261022_1';
     try{
       const path = String(window.location.pathname || '').toLowerCase().replace(/\/+$/,'');
       const base = '/baseline-recreation';
-      const legacyBase = '/baseline-games-hub/games-hub';
       if(path === base || path === base + '/system') return { tab:'system', game:'', panel:'' };
       if(path === base + '/concepts' || path.indexOf(base + '/concepts/') === 0) return { tab:'concepts', game:'', panel:'' };
-      if(path === base + '/puzzles' || path.indexOf(base + '/puzzles/') === 0 || path === legacyBase + '/puzzles' || path.indexOf(legacyBase + '/puzzles/') === 0) return { tab:'puzzles', game:'', panel:'' };
-      if(path === base + '/games' || path === legacyBase || path === legacyBase + '/games-list') return { tab:'games', game:'', panel:'' };
-      const canonicalPrefix = base + '/games/';
-      const legacyPrefix = legacyBase + '/';
-      const prefix = path.indexOf(canonicalPrefix) === 0 ? canonicalPrefix : (path.indexOf(legacyPrefix) === 0 ? legacyPrefix : '');
-      if(!prefix) return null;
-      const rest = path.slice(prefix.length).replace(/^\/+/, '');
+      if(path === base + '/puzzles' || path.indexOf(base + '/puzzles/') === 0) return { tab:'puzzles', game:'', panel:'' };
+      if(path === base + '/games') return { tab:'games', game:'', panel:'' };
+      if(path.indexOf(base + '/games/') !== 0) return null;
+      const rest = path.slice((base + '/games/').length).replace(/^\/+/, '');
       const game = normaliseGameId(rest.split('/')[0]);
       let requestedPanel = '';
       try{ requestedPanel = new URLSearchParams(window.location.search || '').get('panel') || ''; }catch(_error){}
