@@ -25,9 +25,10 @@ test('reviewed core games use game-first side-by-side desktop keypad layouts',()
 });
 
 test('core New Game is one-click, opens Pairs idle, and keeps Full Screen inside the game controls',()=>{
-  assert.match(core,/function startButtonLabel\(\)[\s\S]*?const label='New Game'/);
+  assert.match(core,/function startButtonLabel\(gameId\)[\s\S]*?\? 'Next Game' : 'New Game'/);
   assert.doesNotMatch(core,/Start New Game|Start Next Game/);
-  assert.match(core,/document\.addEventListener\('click',[\s\S]*?newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn[\s\S]*?stopImmediatePropagation/);
+  assert.match(core,/document\.addEventListener\('pointerdown',[\s\S]*?newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn[\s\S]*?startCoreGameFromButton\(start\)/);
+  assert.match(core,/document\.addEventListener\('click',[\s\S]*?coreNewGamePointerId[\s\S]*?startCoreGameFromButton\(start\)/);
   assert.match(core,/opts\.useStored===true && routedGame==='pairs'[\s\S]*?pairsBoardState=null/);
   assert.match(core,/const windowActions = gameRoot \? gameRoot\.querySelector\('\.game-window-actions'\)/);
   assert.match(core,/if\(fullBtn && windowActions && fullBtn\.parentElement!==windowActions\) windowActions\.appendChild\(fullBtn\)/);
@@ -84,9 +85,12 @@ test('reported uncomfortable games use the sensory-gentle music replacement set'
 test('Block Grid lands from the exact grabbed piece cell and exposes charged specials',()=>{
   assert.match(blockGrid,/grabRow=Math\.floor\(cellIndex\/Math\.max\(1,bounds\.cols\)\)/);
   assert.match(blockGrid,/grabCol=cellIndex%Math\.max\(1,bounds\.cols\)/);
-  assert.match(blockGrid,/const row = coords\.row - Math\.max\(0, Number\(grip\?\.grabRow\)/);
-  assert.match(blockGrid,/const col = coords\.col - Math\.max\(0, Number\(grip\?\.grabCol\)/);
-  assert.match(blockGrid,/grabbedX=\(grabCol \* \(cellSize \+ gap\)\)/);
+  assert.match(blockGrid,/const heldX = \(grabCol \* pitchX\) \+ \(firstRect\.width \* offsetX\)/);
+  assert.match(blockGrid,/const heldY = \(grabRow \* pitchY\) \+ \(firstRect\.height \* offsetY\)/);
+  assert.match(blockGrid,/const pieceLeft = clientX - heldX/);
+  assert.match(blockGrid,/const pieceTop = clientY - heldY/);
+  assert.match(blockGrid,/const col = Math\.round\(\(pieceLeft - firstRect\.left\) \/ pitchX\)/);
+  assert.match(blockGrid,/const row = Math\.round\(\(pieceTop - firstRect\.top\) \/ pitchY\)/);
   assert.match(blockGrid,/const action = target\.closest\('\[data-block-action\]'\)[\s\S]*?if \(suppressClick\)/);
   assert.match(blockGrid,/skillCharge/);
   assert.match(blockGrid,/Clear 4 × 4/);
@@ -120,8 +124,13 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/signatureOverlap/);
   assert.match(crossnumber,/function restartRound\(/);
   assert.match(crossnumber,/function toggleFullscreen\(/);
+  assert.match(crossnumber,/newGamePointerAt=performance\.now\(\)[\s\S]*?createNewRound\(\{tierId:profile\.selectedTier\}\)/);
+  assert.match(crossnumber,/visualViewport\?\.addEventListener\?\.\('resize'/);
   assert.match(html,/data-crossnumber-action="restart">Restart</);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*>Full Screen</);
+  assert.match(html,/data-crossnumber-action="new">New Game</);
+  assert.match(html,/<h2>Cross Number<\/h2>/);
+  assert.match(html,/data-crossnumber-level>Player Rank 1<\/div>/);
 });
 
 test('canonical and legacy recreation routes preserve direct game destinations on refresh',()=>{
