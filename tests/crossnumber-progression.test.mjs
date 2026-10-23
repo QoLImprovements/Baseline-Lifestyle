@@ -121,14 +121,18 @@ test('Cross Number keeps the entire puzzle and answer bank reachable without ful
   assert.match(html,/class="crossnumber-bank-panel"/);
   assert.match(crossnumber,/function fitCrossNumberBoard\(\)/);
   assert.match(crossnumber,/availableHeight\*ratio/);
+  assert.match(crossnumber,/const playTop=play\.getBoundingClientRect\(\)\.top/);
+  assert.match(crossnumber,/--crossnumber-play-height/);
   assert.match(crossnumber,/window\.requestAnimationFrame\(fitCrossNumberBoard\)/);
   assert.match(crossnumber,/fullscreenchange[\s\S]*?requestAnimationFrame\(fitCrossNumberBoard\)/);
   assert.match(crossnumber,/visualViewport\?\.addEventListener\?\.\('resize'[\s\S]*?requestAnimationFrame\(fitCrossNumberBoard\)/);
-  assert.match(css,/#crossnumberGamePanel:fullscreen\{[\s\S]*?overflow:hidden!important[\s\S]*?height:100dvh/);
-  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?height:100%/);
-  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-board-column\{[\s\S]*?grid-template-rows:minmax\(0,1fr\) auto!important/);
-  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-board-scroll\{[\s\S]*?overflow:hidden!important/);
-  assert.match(css,/@media\(max-width:820px\)[\s\S]*?crossnumber-board-scroll\{overflow:auto\}/);
+  assert.match(css,/Cross Number one-screen reachability authority/);
+  assert.equal((css.match(/Cross Number one-screen reachability authority/g)||[]).length,1);
+  assert.match(css,/#crossnumberGamePanel:fullscreen\{[\s\S]*?height:100dvh!important[\s\S]*?overflow:hidden!important/);
+  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?flex:1 1 auto[\s\S]*?min-height:0/);
+  assert.match(css,/#crossnumberGamePanel \.crossnumber-board-column\{[\s\S]*?grid-template-rows:minmax\(0,1fr\) auto/);
+  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-board-scroll,[\s\S]*?overflow:hidden/);
+  assert.match(css,/@media\(max-width:820px\)[\s\S]*?crossnumber-board-scroll\{[\s\S]*?overflow:auto/);
 });
 
 test('Cross Number uses shared Auto-Next and keeps larger type inside the tighter cells',()=>{
