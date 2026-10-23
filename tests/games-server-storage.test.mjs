@@ -148,9 +148,9 @@ test('storage layer does not become a second controller for game interactions',(
 });
 
 test('Baseline Realm play loop runs independently of saving availability',()=>{
-  assert.match(loader,/host\.applyOfflineProgress\(\);host\.render\(\)/);
-  assert.match(loader,/host\.startLoop\(\)/);
-  assert.doesNotMatch(loader,/if\s*\(\s*(?:progressAllowed|canSave\(\))\s*\)\s*host\.(?:applyOfflineProgress|startLoop)/);
+  assert.match(core,/restoreSavedCoreRounds\(\);[\s\S]*?applyOfflineNinjaProgress\(\)/);
+  assert.match(core,/safeRenderAll\(\);\s*startNinjaLoop\(\)/);
+  assert.doesNotMatch(core,/if\s*\(\s*(?:progressAllowed|canSave\(\))\s*\)\s*(?:applyOfflineNinjaProgress|startNinjaLoop)/);
 });
 
 test('every current game and jigsaw save app is covered by the server authority contract',()=>{
