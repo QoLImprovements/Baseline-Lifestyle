@@ -2833,24 +2833,74 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       }, 700);
     }, startWindowMs);
   }
-  function runTrackCoinShuffle(stepIndex, roundToken, onComplete){
-    if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
-    if(stepIndex >= trackCoinState.sequence.length){
-      if(typeof onComplete === 'function'){
-        onComplete();
-        return;
-      }
-      trackCoinState.phase = 'pick';
-      trackCoinState.pickLocked = false;
-      trackCoinState.message = 'Select the cup holding the coin.';
+  function runTrackCoinShuffle(_stepIndex, roundToken, onComplete){
+    if(!trackCoinState || trackCoinState.roundToken !== roundToken || trackCoinState.phase !== 'hide') return;
+    cancelTrackCoinAnimation();
+    const cups=trackCoinState.cups;
+    const positions=trackCoinCupPositions(cups.length);
+    const byId=Object.create(null);
+    cups.forEach(function(cup){ byId[cup.id]={left:cup.left,top:cup.top,tilt:cup.tilt}; });
+    const plans=[];
+    let cursor=0;
+    trackCoinState.sequence.forEach(function(step){
+      const order=Array.isArray(step.order)&&step.order.length===cups.length ? step.order.slice() : trackCoinGenerateOrder(cups);
+      step.order=order.slice();
+      const targetIndex=Object.fromEntries(order.map(function(id,index){return [id,index];}));
+      const duration=Math.max(120,Number(step.duration)||600);
+      const transitions={};
+      cups.forEach(function(cup,currentIndex){
+        const start=Object.assign({},byId[cup.id]);
+        const destIndex=targetIndex[cup.id];
+        const destLeft=positions[destIndex];
+        const direction=destLeft>=start.left?1:-1;
+        const target={
+          left:destLeft,
+          top:trackCoinFinalTop(step.pattern,trackCoinState.baseTop,destIndex),
+          tilt:(destIndex%2===0?-1:1)*(step.pattern==='cross'?3:2)
+        };
+        transitions[cup.id]={
+          start:start,
+          target:target,
+          arc:trackCoinMidTop(step.pattern,trackCoinState.baseTop,destIndex,cups.length,direction)-((start.top+target.top)/2)
+        };
+        byId[cup.id]=target;
+      });
+      plans.push({startAt:cursor,endAt:cursor+duration,duration:duration,transitions:transitions});
+      cursor+=duration;
+    });
+    const total=Math.max(1,cursor);
+    const started=performance.now();
+    function finish(){
+      cups.sort(function(a,b){return a.left-b.left;});
+      trackCoinAnimationFrame=0;
+      syncTrackCoinMotionDom();
+      if(typeof onComplete==='function'){ onComplete(); return; }
+      if(!trackCoinState || trackCoinState.roundToken!==roundToken) return;
+      trackCoinState.phase='pick';
+      trackCoinState.pickLocked=false;
+      trackCoinState.message='Select the cup holding the coin.';
       persistTrackCoinRound();
       renderTrackCoin();
-      return;
     }
-    const step = trackCoinState.sequence[stepIndex];
-    applyTrackCoinMotionStep(step, function(){
-      runTrackCoinShuffle(stepIndex + 1, roundToken, onComplete);
-    }, roundToken);
+    function frame(now){
+      if(!trackCoinState || trackCoinState.roundToken!==roundToken || trackCoinState.phase!=='hide') return;
+      const elapsed=Math.min(total,Math.max(0,now-started));
+      let plan=plans[plans.length-1];
+      for(let i=0;i<plans.length;i+=1){ if(elapsed<=plans[i].endAt){plan=plans[i];break;} }
+      const t=clamp((elapsed-plan.startAt)/plan.duration,0,1);
+      cups.forEach(function(cup){
+        const motion=plan.transitions[cup.id];
+        if(!motion) return;
+        const start=motion.start,target=motion.target;
+        cup.left=+(start.left+((target.left-start.left)*t)).toFixed(2);
+        cup.top=+(start.top+((target.top-start.top)*t)+(Math.sin(Math.PI*t)*motion.arc)).toFixed(2);
+        cup.tilt=+(start.tilt+((target.tilt-start.tilt)*t)).toFixed(2);
+      });
+      syncTrackCoinMotionDom();
+      if(elapsed<total) trackCoinAnimationFrame=window.requestAnimationFrame(frame);
+      else finish();
+    }
+    trackCoinAnimationFrame=window.requestAnimationFrame(frame);
   }
   function grantTrackCoinRewards(correct){
     const profile = profiles.trackcoin;
@@ -3912,6 +3962,14 @@ function toggleGameFullscreen(gameId){
     document.addEventListener('pointerdown',function(event){
       const button=event.target instanceof Element ? event.target.closest('#make24Board [data-make24-token],#make24Board [data-make24-edit]') : null;
       if(button) event.preventDefault();
+    },true);
+    document.addEventListener('pointerup',function(event){
+      const cup=event.target instanceof Element ? event.target.closest('#trackCoinBoard .trackcoin-cup.is-selectable[data-trackcoin-pick]') : null;
+      if(!cup) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+      chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
     },true);
     document.addEventListener('input', function(event){
       const target = event.target;
