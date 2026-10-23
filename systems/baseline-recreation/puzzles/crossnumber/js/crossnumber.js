@@ -1044,8 +1044,17 @@
 
   document.addEventListener('baseline:crossnumber-open',function(){
     setCrossnumberPanel(panelFromLocation(),'none');
-    if(round) startTimer();
-    else setStatus('Choose a difficulty tier and press New Game when you are ready.');
+    if(profile.activeRound!=null){
+      profile.activeRound=null;
+      saveProfile();
+    }
+    round=null;
+    layout=null;
+    selectedTile='';
+    undoStack=[];
+    stopTimer();
+    renderAll();
+    setStatus('Choose a difficulty tier and press New Game when you are ready.');
   });
   document.addEventListener('fullscreenchange',function(){
     syncFullscreenControl();
