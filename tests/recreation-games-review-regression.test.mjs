@@ -59,7 +59,9 @@ test('Rule Shift uses a true oval and unmistakably separated red, blue and lime 
 test('Track the Coin uses one continuous shuffle timeline and reliably selectable cups',()=>{
   assert.match(core,/function runTrackCoinShuffle\(_stepIndex, roundToken, onComplete\)/);
   assert.match(core,/const total=Math\.max\(1,cursor\)/);
-  assert.match(core,/cup\.left=\+\(start\.left\+\(\(target\.left-start\.left\)\*t\)\)/);
+  assert.match(core,/const h00=\(2\*t3\)-\(3\*t2\)\+1/);
+  assert.match(core,/cup\.left=\+\(h00\*start\.left\+h10\*m0Left\+h01\*target\.left\+h11\*m1Left\)/);
+  assert.match(core,/trackCoinState\.phase='pick';[\s\S]*?trackCoinState\.pickLocked=false;[\s\S]*?renderTrackCoin\(\)/);
   assert.match(core,/trackCoinAnimationFrame=window\.requestAnimationFrame\(frame\)/);
   assert.match(core,/pointerup[\s\S]*?trackcoin-cup\.is-selectable\[data-trackcoin-pick\][\s\S]*?chooseTrackCoinCup/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-scene\.is-phase-pick \.trackcoin-cup\.is-selectable[\s\S]*?pointer-events:auto!important/);
