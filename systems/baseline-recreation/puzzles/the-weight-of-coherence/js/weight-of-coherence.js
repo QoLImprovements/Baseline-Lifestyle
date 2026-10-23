@@ -129,6 +129,7 @@
   let suppressTrayClickUntil = 0;
   let imageReady = false;
   let trayRenderToken = 0;
+  let lastTrayRenderKey = '';
   let sortRenderToken = 0;
   let lastSortRenderKey = '';
   let viewOn = false;
@@ -754,15 +755,18 @@
     if(!refs.tray) return;
     stabilisePieceFocus();
     if(zoomTarget && zoomTarget!==refs.boardWrap) resetZoom();
-    refs.tray.innerHTML='';
     renderSortTrays();
     if(!state || !state.started){
+      lastTrayRenderKey='';
+      refs.tray.replaceChildren();
       refs.trayMeta.textContent='Choose a piece count and start the puzzle.';
       refs.prev.disabled=true;
       refs.next.disabled=true;
       return;
     }
     if(!imageReady){
+      lastTrayRenderKey='';
+      refs.tray.replaceChildren();
       refs.trayMeta.textContent='Loading artwork…';
       return;
     }
@@ -781,6 +785,19 @@
     refs.prev.disabled=state.page<=0;
     refs.next.disabled=state.page>=pageCount-1;
 
+    const trayKey=[
+      String(activePuzzle.id||''),
+      state.difficulty,
+      state.page,
+      pageSize,
+      mobileLike()?'mobile':'desktop',
+      pageIds.join(',')
+    ].join('|');
+    if(trayKey===lastTrayRenderKey){
+      syncSelectedPieceClasses();
+      return;
+    }
+    lastTrayRenderKey=trayKey;
     ++trayRenderToken;
     const fragment=document.createDocumentFragment();
     pageIds.forEach(function(id){
@@ -974,6 +991,8 @@
     };
     selectedPieceId=null;
     returnHighlightPieceId=null;
+    lastTrayRenderKey='';
+    lastSortRenderKey='';
     refs.workspace.hidden=false;
     refs.preview.setAttribute('aria-pressed','false');
     syncViewInteractionState();
