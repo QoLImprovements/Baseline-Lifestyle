@@ -147,6 +147,7 @@ function bl_saved_game_files(): array {
     'meridian-grove' => 'meridian-grove.json',
     'badmintonfocused' => 'badminton-focused.json',
     'badminton-focused' => 'badminton-focused.json',
+    'hubsettings' => 'recreation-settings.json',
   ];
 }
 
