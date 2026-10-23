@@ -184,3 +184,15 @@ html.is-dragging-colour-sort-bottle,html.is-dragging-colour-sort-bottle body{ove
 @media(max-width:620px){
   #colourSortPanel .colour-sort-mechanic-note{align-items:flex-start;flex-direction:column;gap:3px}
 }
+
+#colourSortPanel #colourSortGameCard:fullscreen .game-live-xp,
+#colourSortPanel #colourSortGameCard:fullscreen .round-status-card{
+  min-height:0!important;
+  height:auto!important;
+  align-self:start!important;
+  padding:6px 10px!important;
+  margin:0!important;
+}
+#colourSortPanel #colourSortGameCard:fullscreen .colour-sort-active-header{
+  margin:0!important;
+}
