@@ -65,9 +65,12 @@ test('Block Grid keeps the held piece under the pointer and exposes charged spec
   assert.match(blockCss,/cursor:none!important;user-select:none!important/);
 });
 
-test('Colour Sort has long-form tier progression and hints never fall back to an arbitrary legal move',()=>{
+test('Colour Sort has long-form tier progression, advanced mechanics and verified solution hints',()=>{
   assert.equal(LEVELS.length,60);
   assert.match(colourSort,/Starter[\s\S]*?Flow[\s\S]*?Strategy[\s\S]*?Advanced[\s\S]*?Expert/);
+  assert.match(colourSort,/coverBuried=id>=25/);
+  assert.match(colourSort,/id>=49\?2:\(id>=37\?1:0\)/);
+  assert.match(colourSort,/blockedIndices:lockedBottleIndices\(active\)/);
   const solved=[[0,0,0,0],[1,1,1,1],[],[]];
   assert.equal(hintMove(solved),null);
 });
