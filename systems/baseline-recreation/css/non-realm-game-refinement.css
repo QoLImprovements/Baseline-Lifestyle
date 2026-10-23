@@ -641,14 +641,14 @@ body[data-app="recreation"] #pairsPanel .pairs-theme-picker button{
 }
 
 /* --- Rule Shift: stronger categorical colours and centered option groups. --- */
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{background:#c65b5d!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--blue .ruleshift-shape{background:#5074d8!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--green .ruleshift-shape{background:#7f9846!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--yellow .ruleshift-shape{background:#d3aa3d!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--purple .ruleshift-shape{background:#8d67c7!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--orange .ruleshift-shape{background:#db853b!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--teal .ruleshift-shape{background:#249aa8!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--pink .ruleshift-shape{background:#c45f92!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{background:#E21837!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--blue .ruleshift-shape{background:#3264D8!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--green .ruleshift-shape{background:#3E9B55!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--yellow .ruleshift-shape{background:#E4BF32!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--purple .ruleshift-shape{background:#7A55B8!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--orange .ruleshift-shape{background:#D5742E!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--lime .ruleshift-shape{background:#9EDB35!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--pink .ruleshift-shape{background:#C9528C!important}
 
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-options-grid{
   display:grid!important;
@@ -841,14 +841,14 @@ body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#tr
   margin-top:4px!important;
 }
 
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{background:#ff5064!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--blue .ruleshift-shape{background:#3877ff!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--green .ruleshift-shape{background:#63d46f!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--yellow .ruleshift-shape{background:#ffd23f!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--purple .ruleshift-shape{background:#a36dff!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--orange .ruleshift-shape{background:#ff8a32!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--teal .ruleshift-shape{background:#00c7a5!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--pink .ruleshift-shape{background:#ff5bb6!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{background:#E21837!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--blue .ruleshift-shape{background:#3264D8!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--green .ruleshift-shape{background:#3E9B55!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--yellow .ruleshift-shape{background:#E4BF32!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--purple .ruleshift-shape{background:#7A55B8!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--orange .ruleshift-shape{background:#D5742E!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--lime .ruleshift-shape{background:#9EDB35!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--pink .ruleshift-shape{background:#C9528C!important}
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-token-caption{display:none!important}
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-token{
   min-height:124px!important;
@@ -1035,4 +1035,17 @@ body[data-app="recreation"] #colourSortLevelsCard .colour-sort-tier-choice.is-ac
   border-color:var(--games-accent);
   background:linear-gradient(155deg,rgba(var(--recreation-copper-deep-rgb),.34),rgba(var(--recreation-rose-rgb),.54));
   box-shadow:0 0 0 3px rgba(var(--recreation-copper-light-rgb),.12);
+}
+
+
+/* 2026-10-23 Recreation tab-outline clipping authority */
+body[data-app="recreation"] :is(.tabs,.game-toggle-row,.trackcoin-tab-row,.crossnumber-tab-row,.weight-coherence-tab-row){
+  overflow:visible!important;
+  box-sizing:border-box!important;
+  padding-top:4px!important;
+  padding-bottom:6px!important;
+}
+body[data-app="recreation"] :is(.tabs,.game-toggle-row,.trackcoin-tab-row,.crossnumber-tab-row,.weight-coherence-tab-row) :is(.tab,.game-toggle-btn,[data-jigsaw-panel]){
+  margin-top:2px!important;
+  margin-bottom:2px!important;
 }
