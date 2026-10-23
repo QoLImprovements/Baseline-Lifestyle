@@ -17,7 +17,7 @@ import {
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/game-extension-support.mjs?v=GAME_EXTENSIONS_RECREATION_20261022_1';
+} from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
 const BUILD = 'BLOCK_GRID_RECREATION_COHERENCE_20261023_2';
 const APP = 'blockgrid';
