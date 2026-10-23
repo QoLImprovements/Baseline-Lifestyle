@@ -17,8 +17,8 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(var\(--recreation-copper-light-rgb\),\.28\)[^}]*background:var\(--recreation-panel\)/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_REVIEW_20261023_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_REVIEW_20261023_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=RECREATION_COHERENCE_20261023_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=RECREATION_COHERENCE_20261023_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
