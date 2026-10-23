@@ -105,6 +105,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_1';
   let autoNextSettings = readAutoNextSettings();
   const autoNextTimers = Object.create(null);
   let desktopKeypadOpenGame = '';
+  let coreNewGamePointerId = '';
+  let coreNewGamePointerAt = 0;
   const GAME_IDS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.runtimeId; }) : ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
 
   const GAME_ID_TO_ROUTE_SLUG = Object.freeze((function(){
@@ -163,8 +165,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_1';
     if(gameId === 'ruleshift') return Boolean(ruleShiftState && ruleShiftState.finished);
     return false;
   }
-  function startButtonLabel(){
-    const label='New Game';
+  function startButtonLabel(gameId){
+    const label=roundIsTerminal(gameId) ? 'Next Game' : 'New Game';
     return isMobileGameViewport() ? label : label + ' [' + SITEWIDE_START_HOTKEY_LABEL + ']';
   }
   function autoNextButtonLabel(gameId){
@@ -2097,7 +2099,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_1';
   }
   function persistPairsRound(){
     if(!profiles.pairs) return;
-    profiles.pairs.activeRound = savedPairsRoundSnapshot();
+    // Pairs deliberately opens idle. Keep progression, tier and rewards
+    // server-side, but do not persist a half-played board between openings.
+    profiles.pairs.activeRound = null;
     scheduleSave('pairs');
   }
   function restoreSavedPairsRound(){
@@ -2377,7 +2381,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_1';
     return true;
   }
   function restoreSavedCoreRounds(){
-    if(!pairsBoardState) restoreSavedPairsRound();
+    if(profiles.pairs) profiles.pairs.activeRound=null;
+    pairsBoardState=null;
     if(!make24State) restoreSavedMake24Round();
     if(!wordState) restoreSavedWordRound();
     if(!trackCoinState) restoreSavedTrackCoinRound();
@@ -3832,7 +3837,32 @@ function toggleGameFullscreen(gameId){
     }
   }
 
+  function startCoreGameFromButton(start){
+    if(!start) return false;
+    if(start.id==='newPairsBoardBtn'){ startPairsBoard(); focusGamePlaySurface('pairs',{scroll:false,mobileMode:true}); return true; }
+    if(start.id==='newWordRoundBtn'){ startWordRound(); focusGamePlaySurface('detectword',{scroll:false,mobileMode:true}); return true; }
+    if(start.id==='newMake24Btn'){ startMake24Puzzle(); focusGamePlaySurface('make24',{scroll:false,mobileMode:true}); return true; }
+    if(start.id==='newTrackCoinRoundBtn'){ startTrackCoinRound(); focusGamePlaySurface('trackcoin',{scroll:false,mobileMode:true}); return true; }
+    if(start.id==='newRuleShiftBtn'){ startRuleShiftRound(); focusGamePlaySurface('ruleshift',{scroll:false,mobileMode:true}); return true; }
+    return false;
+  }
+
   function bindEvents(){
+    // Pointer activation owns New Game so an already-focused game surface can
+    // never consume the first press. The following click is suppressed; a
+    // keyboard-generated click still works normally.
+    document.addEventListener('pointerdown', function(event){
+      if(event.pointerType==='mouse' && event.button!==0) return;
+      const target=event.target instanceof Element ? event.target : null;
+      const start=target?.closest('#newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn');
+      if(!start) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+      coreNewGamePointerId=start.id;
+      coreNewGamePointerAt=performance.now();
+      startCoreGameFromButton(start);
+    }, true);
     document.addEventListener('click', function(event){
       const target=event.target instanceof Element ? event.target : null;
       const start=target?.closest('#newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn');
@@ -3840,11 +3870,8 @@ function toggleGameFullscreen(gameId){
       event.preventDefault();
       event.stopPropagation();
       if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
-      if(start.id==='newPairsBoardBtn'){ startPairsBoard(); focusGamePlaySurface('pairs',{scroll:false,mobileMode:true}); return; }
-      if(start.id==='newWordRoundBtn'){ startWordRound(); focusGamePlaySurface('detectword',{scroll:false,mobileMode:true}); return; }
-      if(start.id==='newMake24Btn'){ startMake24Puzzle(); focusGamePlaySurface('make24',{scroll:false,mobileMode:true}); return; }
-      if(start.id==='newTrackCoinRoundBtn'){ startTrackCoinRound(); focusGamePlaySurface('trackcoin',{scroll:false,mobileMode:true}); return; }
-      if(start.id==='newRuleShiftBtn'){ startRuleShiftRound(); focusGamePlaySurface('ruleshift',{scroll:false,mobileMode:true}); return; }
+      if(start.id===coreNewGamePointerId && performance.now()-coreNewGamePointerAt<800) return;
+      startCoreGameFromButton(start);
     }, true);
     document.addEventListener('click', function(event){
       const modalClose = event.target.closest('[data-close-games-modal]');
