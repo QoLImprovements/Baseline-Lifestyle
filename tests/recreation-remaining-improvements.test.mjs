@@ -18,13 +18,14 @@ const lazyScenes=fs.readFileSync(new URL('../systems/baseline-recreation/games/b
 const calorieGame=fs.readFileSync(new URL('../systems/baseline-recreation/games/baseline-realm/calorie-escape/js/calorie-escape-game.js',import.meta.url),'utf8');
 const calorieDir=new URL('../systems/baseline-recreation/games/baseline-realm/calorie-escape/js/',import.meta.url);
 
-test('Detect The Word can persist a live round but opens idle under the shared New Game contract',()=>{
+test('Detect The Word persists and resumes its live round while New Game remains an explicit reset',()=>{
   assert.match(profileRules,/activeRound:null/);
   assert.match(core,/function persistWordRound\(/);
   assert.match(core,/function restoreSavedWordRound\(/);
-  assert.match(core,/restoreSavedCoreRounds\(\)/);
+  assert.match(core,/const wordRestored=restoreSavedWordRound\(\)/);
   assert.match(core,/function resetGameRoundToIdle\(gameId\)[\s\S]*?profile\.activeRound=null;[\s\S]*?scheduleSave\(id\)/);
-  assert.match(core,/if\(selectedGame && selectedGame !== previousGame && opts\.resetRound !== false\)[\s\S]*?resetGameRoundToIdle\(selectedGame\)/);
+  assert.match(core,/if\(selectedGame === 'pairs'[\s\S]*?resetGameRoundToIdle\('pairs'\)/);
+  assert.doesNotMatch(core,/resetGameRoundToIdle\(selectedGame\)/);
 });
 
 test('Make The Number generation is explicitly seedable and generated-bank fill is deterministic',()=>{
