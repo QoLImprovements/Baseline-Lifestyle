@@ -649,3 +649,88 @@ body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-
 body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-bank-panel{
   max-height:none!important;
 }
+
+
+/* 2026-10-23 Cross Number one-screen reachability authority */
+@media(min-width:821px){
+  body[data-app="recreation"] #crossnumberGamePanel{
+    max-height:none!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-play-layout{
+    height:clamp(420px,calc(100dvh - 300px),690px)!important;
+    min-height:0!important;
+    grid-template-columns:minmax(0,1fr) minmax(250px,330px)!important;
+    align-items:stretch!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board-column{
+    min-height:0!important;
+    height:100%!important;
+    display:grid!important;
+    grid-template-rows:minmax(0,1fr) auto!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board-scroll{
+    display:grid!important;
+    place-items:center!important;
+    width:100%!important;
+    height:100%!important;
+    max-height:none!important;
+    overflow:hidden!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-bank-panel{
+    position:relative!important;
+    top:auto!important;
+    height:100%!important;
+    max-height:none!important;
+    overflow:hidden!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-bank{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    align-content:start!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-number-tile{
+    min-height:38px!important;
+    padding:6px!important;
+    font-size:18px!important;
+  }
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen{
+  display:flex!important;
+  flex-direction:column!important;
+  width:100vw!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  overflow:hidden!important;
+  gap:8px!important;
+  padding:10px 12px!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-round-toolbar,
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .game-live-xp{
+  flex:0 0 auto!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-play-layout{
+  flex:1 1 auto!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  grid-template-columns:minmax(0,1fr) minmax(260px,340px)!important;
+  overflow:hidden!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-column,
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-scroll,
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-bank-panel{
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:hidden!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-scroll{
+  display:grid!important;
+  place-items:center!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-bank{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-status-row{
+  padding-top:4px!important;
+  margin:0!important;
+}
