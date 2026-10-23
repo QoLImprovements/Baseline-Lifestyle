@@ -107,6 +107,9 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/const heldY = \(grabRow \* pitchY\) \+ \(firstRect\.height \* offsetY\)/);
   assert.match(blockGrid,/const pieceLeft = clientX - heldX/);
   assert.match(blockGrid,/const pieceTop = clientY - heldY/);
+  assert.match(blockGrid,/const grabbedX=\(grabCol \* \(cellSize \+ gap\)\) \+ \(cellSize \* grabOffsetX\)/);
+  assert.match(blockGrid,/ghost\.style\.left = \(clientX \+ \(totalWidth \/ 2\) - grabbedX\) \+ 'px'/);
+  assert.match(blockGrid,/ghost\.style\.top = \(clientY \+ \(totalHeight \/ 2\) - grabbedY\) \+ 'px'/);
   assert.match(blockGrid,/const col = Math\.round\(\(pieceLeft - firstRect\.left\) \/ pitchX\)/);
   assert.match(blockGrid,/const row = Math\.round\(\(pieceTop - firstRect\.top\) \/ pitchY\)/);
   assert.match(blockGrid,/const action = target\.closest\('\[data-block-action\]'\)[\s\S]*?if \(suppressClick\)/);
