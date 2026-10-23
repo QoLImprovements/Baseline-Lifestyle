@@ -120,7 +120,7 @@ test('puzzle games expose visible gameplay motion and contained Block Grid dragg
   assert.match(colour, /dragVisual/);
   assert.doesNotMatch(colourCss, /will-change:left,top/);
   assert.match(colour, /colour-sort-complete-banner/);
-  assert.match(colour, /Level Progress/);
+  assert.match(colour, /Game Progress/);
 
   assert.match(block, /PERFECT CLEAR/);
   assert.match(block, /perfectBonus = perfectClear \? 100 : 0/);
@@ -146,19 +146,21 @@ test('Block Grid and Colour Sort follow the Core Games presentation contract', (
   assert.match(support, /if \(testing\) list\.insertBefore\(node, testing\)/);
 
   assert.match(block, /data-game-info="blockgrid"/);
-  assert.match(block, /<span>Game Info<\/span><span class="inline-note">Level \/ XP \/ stats<\/span>/);
+  assert.match(block, /<span>Game Info<\/span><span class="inline-note">Player Rank \/ XP \/ stats<\/span>/);
   assert.match(block, /function renderGameInfo\(\)/);
   assert.match(block, /onOpen:\(\) => \{[^}]*selectGame\?\.\('block-grid'\); render\(\); setTab\(blockTabFromLocation\(\), 'none'\); \}/);
   assert.doesNotMatch(block, /function ensureRun\(/);
-  assert.match(block, />Start New Game<\/button>/);
+  assert.match(block, />New Game<\/button>/);
 
   assert.match(colour, /data-game-info="coloursort"/);
-  assert.match(colour, /<span>Game Info<\/span><span class="inline-note">Level \/ XP \/ stats<\/span>/);
+  assert.match(colour, /<span>Game Info<\/span><span class="inline-note">Player Rank \/ XP \/ stats<\/span>/);
   assert.match(colour, /function renderGameInfo\(\)/);
   assert.match(colour, /onOpen:\(\) => \{[^}]*selectGame\?\.\('colour-sort'\); render\(\); setTab\(colourTabFromLocation\(\), 'none'\); \}/);
   assert.doesNotMatch(colour, /function ensurePuzzle\(/);
-  assert.match(colour, />Start New Game<\/button>/);
-  assert.match(colour, /startLevel\(profile\.selectedLevel\)/);
+  assert.match(colour, />New Game<\/button>/);
+  assert.match(colour, /function startTierGame\(tierId=profile\.selectedTier\)/);
+  assert.match(colour, /function randomLevelForTier\(tierId\)/);
+  assert.doesNotMatch(colour, /data-colour-level/);
 
   for (const source of [blockCss, colourCss]) {
     assert.doesNotMatch(source, /244,197,108/);
@@ -183,7 +185,7 @@ test('Block Grid and Colour Sort use the shared Recreation Auto-Next authority',
   assert.match(block, /autoNextApi\(\)\?\.clear\?\.\(APP\)/);
 
   assert.match(colour, /data-auto-next-toggle="\$\{APP\}"/);
-  assert.match(colour, /autoNextApi\(\)\?\.schedule\?\.\(APP, \(\) => startLevel\(nextLevel\)\)/);
+  assert.match(colour, /autoNextApi\(\)\?\.schedule\?\.\(APP, \(\) => startTierGame\(completedTier\)\)/);
   assert.match(colour, /autoNextApi\(\)\?\.clear\?\.\(APP\)/);
 });
 
@@ -204,8 +206,9 @@ test('non-Realm coherence fixes protect the reported gameplay failures', () => {
 
   assert.match(css, /#pairsPanel \.memory-card-front\{[\s\S]*?opacity:0!important;[\s\S]*?visibility:hidden!important/);
   assert.match(css, /#pairsPanel \.memory-card\.is-open \.memory-card-front,[\s\S]*?opacity:1!important/);
-  assert.match(css, /ruleshift-colour--green \.ruleshift-shape\{background:#7f9846!important\}/);
-  assert.match(css, /ruleshift-colour--teal \.ruleshift-shape\{background:#249aa8!important\}/);
+  assert.match(css, /ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/);
+  assert.match(css, /ruleshift-colour--lime \.ruleshift-shape\{[\s\S]*?background:#9edb35!important/);
+  assert.match(css, /ruleshift-shape--oval\{[\s\S]*?clip-path:ellipse\(50% 50% at 50% 50%\)!important/);
   assert.match(css, /#ruleshiftPanel \.ruleshift-options-grid\{[\s\S]*?justify-content:center!important/);
   assert.match(css, /#detectwordPanel \.game-play-root\.desktop-keypad-open #wordBoard[\s\S]*?grid-template-columns:minmax\(380px,1fr\) minmax\(410px,\.82fr\)!important/);
 });
