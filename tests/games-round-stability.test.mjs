@@ -28,19 +28,18 @@ test('Pairs delayed callbacks are bound to the board that created them', () => {
   assert.match(hint, /pairsBoardState\.roundToken !== roundToken/);
 });
 
-test('Track the Coin animation and shuffle callbacks cannot cross round boundaries', () => {
+test('Track the Coin continuous animation cannot cross round boundaries', () => {
   const start = functionBody('startTrackCoinRound', 'runTrackCoinShuffle');
   const run = functionBody('runTrackCoinShuffle', 'grantTrackCoinRewards');
-  const motion = functionBody('applyTrackCoinMotionStep', 'startTrackCoinRound');
 
   assert.match(core, /let trackCoinRoundToken = 0;/);
   assert.match(start, /const roundToken = \+\+trackCoinRoundToken;/);
   assert.match(start, /trackCoinState\.roundToken = roundToken;/);
   assert.match(start, /trackCoinState\.roundToken !== roundToken/);
   assert.match(run, /trackCoinState\.roundToken !== roundToken/);
-  assert.match(run, /applyTrackCoinMotionStep\(step,[\s\S]*roundToken\);/);
-  assert.match(motion, /trackCoinState\.roundToken !== roundToken/);
-  assert.match(motion, /trackCoinState\.phase !== 'hide'/);
+  assert.match(run, /trackCoinState\.phase!=='hide'/);
+  assert.match(run, /trackCoinAnimationFrame=window\.requestAnimationFrame\(frame\)/);
+  assert.doesNotMatch(core, /function applyTrackCoinMotionStep\(/);
 });
 
 test('Rule Shift preserves the remaining answer window while the document is hidden', () => {
@@ -60,11 +59,11 @@ test('Rule Shift preserves the remaining answer window while the document is hid
 
 
 test('Track the Coin replay records and reuses the original cup permutation without granting rewards', () => {
-  const motion = functionBody('applyTrackCoinMotionStep', 'startTrackCoinRound');
+  const run = functionBody('runTrackCoinShuffle', 'grantTrackCoinRewards');
   const replay = functionBody('replayTrackCoinShuffle', 'renderTrackCoinTierList');
 
-  assert.match(motion, /Array\.isArray\(step\.order\)/);
-  assert.match(motion, /step\.order = order\.slice\(\)/);
+  assert.match(run, /Array\.isArray\(step\.order\)/);
+  assert.match(run, /step\.order=order\.slice\(\)/);
   assert.match(replay, /trackCoinState\.cups\.sort/);
   assert.match(replay, /runTrackCoinShuffle\(0, roundToken,/);
   assert.doesNotMatch(replay, /grantTrackCoinRewards\(/);
