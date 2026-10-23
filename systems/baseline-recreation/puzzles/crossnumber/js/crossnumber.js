@@ -1034,7 +1034,12 @@
     if(!round) createNewRound({tierId:profile.selectedTier});
     else startTimer();
   });
-  document.addEventListener('fullscreenchange',syncFullscreenControl);
+  document.addEventListener('fullscreenchange',function(){
+    syncFullscreenControl();
+    window.requestAnimationFrame(fitCrossNumberBoard);
+  });
+  window.addEventListener('resize',function(){ window.requestAnimationFrame(fitCrossNumberBoard); },{passive:true});
+  try{ window.visualViewport?.addEventListener?.('resize',function(){ window.requestAnimationFrame(fitCrossNumberBoard); },{passive:true}); }catch(_error){}
   window.addEventListener('popstate',function(){
     if(panel&&panel.hidden) return;
     setCrossnumberPanel(panelFromLocation(),'none');
