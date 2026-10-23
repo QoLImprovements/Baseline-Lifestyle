@@ -206,8 +206,8 @@ test('non-Realm coherence fixes protect the reported gameplay failures', () => {
 
   assert.match(css, /#pairsPanel \.memory-card-front\{[\s\S]*?opacity:0!important;[\s\S]*?visibility:hidden!important/);
   assert.match(css, /#pairsPanel \.memory-card\.is-open \.memory-card-front,[\s\S]*?opacity:1!important/);
-  assert.match(css, /ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/);
-  assert.match(css, /ruleshift-colour--lime \.ruleshift-shape\{[\s\S]*?background:#9edb35!important/);
+  assert.match(css, /ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/i);
+  assert.match(css, /ruleshift-colour--lime \.ruleshift-shape\{[\s\S]*?background:#9edb35!important/i);
   assert.match(css, /ruleshift-shape--oval\{[\s\S]*?clip-path:ellipse\(50% 50% at 50% 50%\)!important/);
   assert.match(css, /#ruleshiftPanel \.ruleshift-options-grid\{[\s\S]*?justify-content:center!important/);
   assert.match(css, /#detectwordPanel \.game-play-root\.desktop-keypad-open #wordBoard[\s\S]*?grid-template-columns:minmax\(380px,1fr\) minmax\(410px,\.82fr\)!important/);
