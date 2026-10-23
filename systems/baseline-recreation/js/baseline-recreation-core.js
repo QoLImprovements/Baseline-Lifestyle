@@ -2927,7 +2927,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     return { xpGain, coinGain, levelUps, bonusPct:streakPct, cleanPct, previousSpeed, roundSpeed, nextSpeed:trackCoinCurrentSpeedPercent(profile) };
   }
   function chooseTrackCoinCup(choiceRaw){
-    if(!trackCoinState || trackCoinState.pickLocked || trackCoinState.resolved) return;
+    if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
     cancelTrackCoinAnimation();
     const choice = Number(choiceRaw);
     if(Number.isNaN(choice)) return;
@@ -3109,7 +3109,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const isCorrect = trackCoinState.revealAll && cup.id === trackCoinState.coinCupId;
       const isPicked = trackCoinState.revealAll && cup.id === trackCoinState.pickedCupId;
       const cupClass = 'trackcoin-cup' + ((((trackCoinState.phase === 'show' || trackCoinState.revealAll) && cup.id === trackCoinState.coinCupId) ? ' is-lifted' : '')) + (selectable ? ' is-selectable' : '') + (isCorrect ? ' is-correct' : '') + (isPicked ? ' is-picked' : '') + (trackCoinState.revealAll && cup.id !== trackCoinState.coinCupId ? ' is-wrong' : '');
-      return '<button class="' + cupClass + '" data-trackcoin-pick="' + idx + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" aria-disabled="' + String(!selectable) + '" tabindex="' + (selectable ? '0' : '-1') + '" style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"></button>';
+      return '<button class="' + cupClass + '" data-trackcoin-pick="' + idx + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" aria-disabled="' + String(!selectable) + '" tabindex="' + (selectable ? '0' : '-1') + '"' + (selectable ? '' : ' disabled') + ' style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"></button>';
     }).join('');
     const phaseClass=' is-phase-' + escapeHtml(trackCoinState.phase || 'show');
     const resumeHtml=trackCoinState.restoredWaiting
@@ -3967,8 +3967,8 @@ function toggleGameFullscreen(gameId){
       const button=event.target instanceof Element ? event.target.closest('#make24Board [data-make24-token],#make24Board [data-make24-edit]') : null;
       if(button) event.preventDefault();
     },true);
-    document.addEventListener('pointerup',function(event){
-      const cup=event.target instanceof Element ? event.target.closest('#trackCoinBoard .trackcoin-cup.is-selectable[data-trackcoin-pick]') : null;
+    document.addEventListener('pointerdown',function(event){
+      const cup=event.target instanceof Element ? event.target.closest('#trackCoinBoard .trackcoin-cup.is-selectable[data-trackcoin-pick]:not(:disabled)') : null;
       if(!cup) return;
       event.preventDefault();
       event.stopPropagation();
