@@ -632,7 +632,7 @@
     panel.hidden = true;
     panel.innerHTML =
       '<section class="games-music-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="gamesMusicSettingsTitle">' +
-        '<header><div><small>Baseline Games</small><h3 id="gamesMusicSettingsTitle">Settings</h3></div><button class="games-music-settings-close" type="button" data-games-settings-close aria-label="Close settings">×</button></header>' +
+        '<header><div><small>Baseline Recreation</small><h3 id="gamesMusicSettingsTitle">Settings</h3></div><button class="games-music-settings-close" type="button" data-games-settings-close aria-label="Close settings">×</button></header>' +
         '<div class="games-music-settings-list">' +
           '<section class="games-music-setting-row"><div><strong>Music</strong><small>Play the three-minute game theme.</small></div><button class="action ghost" type="button" data-games-music-toggle aria-pressed="true">On</button></section>' +
           '<label class="games-music-setting-row games-music-setting-row--slider"><span><strong>Music volume</strong><small>Game music level. 100% is the full normalized mix.</small></span><input data-games-music-volume type="range" min="0" max="1" step="0.05" value="0.58" aria-label="Game music volume"></label>' +
@@ -656,6 +656,13 @@
     btn.setAttribute('data-games-music-toggle','');
     btn.setAttribute('data-games-music-quick','');
     btn.setAttribute('aria-pressed',settings.enabled?'true':'false');
+    return btn;
+  }
+  function realmQuickMusicButton(){
+    var btn=quickMusicButton();
+    btn.className='realm-fab games-music-quick-toggle';
+    btn.setAttribute('aria-label',settings.enabled?'Mute game music':'Enable game music');
+    btn.title=settings.enabled?'Music on — press to mute':'Music off — press to enable';
     return btn;
   }
   function injectSettingsButtons(){
@@ -684,6 +691,13 @@
     });
     var jigsawHost=document.querySelector('#weightCoherenceWorkspace .weight-coherence-actions');
     if(jigsawHost && !jigsawHost.querySelector('[data-games-music-quick]')) jigsawHost.appendChild(quickMusicButton());
+
+    var realmHost=document.querySelector('#ninjaPanel .realm-utility');
+    if(realmHost && !realmHost.querySelector('[data-games-music-quick]')){
+      var realmMusic=realmQuickMusicButton();
+      var settingsButton=realmHost.querySelector('#realmSettingsBtn');
+      realmHost.insertBefore(realmMusic,settingsButton||null);
+    }
   }
 
   function openSettings(trigger){
