@@ -588,28 +588,38 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   function resetGameRoundToIdle(gameId){
     const id = normaliseGameId(gameId);
     if(!id) return;
+    const profile=profiles[id];
+    const clearSavedRound=function(){
+      if(!profile || profile.activeRound==null) return;
+      profile.activeRound=null;
+      scheduleSave(id);
+    };
     if(id === 'pairs'){
       clearAutoNextTimer('pairs');
       pairsBoardState = null;
       pairsIdleMessage = 'Choose a board tier and press New Game when you are ready.';
+      clearSavedRound();
       return;
     }
     if(id === 'detectword'){
       clearAutoNextTimer('detectword');
       wordState = null;
       wordIdleMessage = 'Choose a letter tier and press New Game when you are ready.';
+      clearSavedRound();
       return;
     }
     if(id === 'make24'){
       clearAutoNextTimer('make24');
       make24State = null;
       make24IdleMessage = 'Choose a number tier and press New Game when you are ready.';
+      clearSavedRound();
       return;
     }
     if(id === 'trackcoin'){
       clearAutoNextTimer('trackcoin');
       cancelTrackCoinAnimation();
       trackCoinState = null;
+      clearSavedRound();
       return;
     }
     if(id === 'ruleshift'){
@@ -617,6 +627,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       clearRuleShiftTimer();
       ruleShiftState = null;
       ruleShiftIdleMessage = 'Choose a rule tier and press New Game when you are ready.';
+      clearSavedRound();
     }
   }
   function toggleAutoNext(gameId){
