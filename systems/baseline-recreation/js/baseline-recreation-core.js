@@ -26,6 +26,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   const SITEWIDE_START_HOTKEY_LABEL = 'Alt+N';
   const SITEWIDE_AUTONEXT_HOTKEY_LABEL = 'Alt+A';
   const SITEWIDE_KEYBOARD_HOTKEY_LABEL = 'Alt+K';
+  const SITEWIDE_FULLSCREEN_HOTKEY_LABEL = 'Alt+F';
   const TRACKCOIN_BASE_SPEED_PERCENT = 100;
   const TRACKCOIN_START_SPEED_SCALE = 0.60;
   const TRACKCOIN_SPEED_STEP_PERCENT = 10;
@@ -107,7 +108,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   let desktopKeypadOpenGame = '';
   let coreNewGamePointerId = '';
   let coreNewGamePointerAt = 0;
-  let trackCoinPointerPickAt = 0;
   const GAME_IDS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.runtimeId; }) : ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
 
   const GAME_ID_TO_ROUTE_SLUG = Object.freeze((function(){
@@ -166,26 +166,24 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(gameId === 'ruleshift') return Boolean(ruleShiftState && ruleShiftState.finished);
     return false;
   }
-  function startButtonLabel(_gameId){
-    const label='New Game';
-    return isMobileGameViewport() ? label : label + ' [' + SITEWIDE_START_HOTKEY_LABEL + ']';
+  function setHotkeyCaption(button, hotkey){
+    if(!button) return;
+    if(isMobileGameViewport()) button.removeAttribute('data-hotkey-caption');
+    else button.setAttribute('data-hotkey-caption', String(hotkey || ''));
   }
+  function startButtonLabel(_gameId){ return 'New Game'; }
   function autoNextButtonLabel(gameId){
-    const enabled = autoNextEnabled(gameId);
-    return isMobileGameViewport()
-      ? 'Auto-Next: ' + (enabled ? 'On' : 'Off')
-      : 'Auto-Next Game: ' + (enabled ? 'On' : 'Off') + ' [' + SITEWIDE_AUTONEXT_HOTKEY_LABEL + ']';
+    return 'Auto-Next: ' + (autoNextEnabled(gameId) ? 'On' : 'Off');
   }
-  function keypadButtonLabel(open){
-    return isMobileGameViewport()
-      ? (open ? 'Close Keypad' : 'Open Keypad')
-      : (open ? 'Close Keypad [' + SITEWIDE_KEYBOARD_HOTKEY_LABEL + ']' : 'Open Keypad [' + SITEWIDE_KEYBOARD_HOTKEY_LABEL + ']');
+  function keypadButtonLabel(open){ return open ? 'Close keypad' : 'Open keypad'; }
+  function hotkeyActionLabel(label, _hotkey){ return label; }
+  function countedHotkeyActionLabel(label, _hotkey, count){ return label + ' (' + count + ')'; }
+  function keyboardIconMarkup(open){
+    const label=keypadButtonLabel(open);
+    return '<svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M6 9h1m2 0h1m2 0h1m2 0h1m2 0h1M6 12h1m2 0h1m2 0h1m2 0h1m2 0h1M7 15h10"></path></svg><span class="sr-only">'+label+'</span>';
   }
-  function hotkeyActionLabel(label, hotkey){
-    return isMobileGameViewport() ? label : label + ' [' + hotkey + ']';
-  }
-  function countedHotkeyActionLabel(label, hotkey, count){
-    return hotkeyActionLabel(label, hotkey) + ' (' + count + ')';
+  function fullscreenIconMarkup(label){
+    return '<svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">'+label+'</span>';
   }
   function mobileSubmitButtonHtml(){
     return isMobileGameViewport() ? '' : '<div class="game-input-submit-row"><button class="action ghost submit-game-toggle" type="submit">Submit</button></div>';
@@ -417,7 +415,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
         btn.hidden = mobileViewport;
         btn.setAttribute('aria-hidden', String(mobileViewport));
         btn.setAttribute('aria-pressed', String(open));
-        btn.textContent = keypadButtonLabel(open);
+        btn.setAttribute('aria-label', keypadButtonLabel(open));
+        btn.title = keypadButtonLabel(open) + ' — ' + SITEWIDE_KEYBOARD_HOTKEY_LABEL;
+        btn.classList.add('game-shell-action','game-shell-action--icon','game-shell-action--keyboard');
+        btn.innerHTML = keyboardIconMarkup(open);
+        setHotkeyCaption(btn, SITEWIDE_KEYBOARD_HOTKEY_LABEL);
       });
       qsa('.mobile-game-keypad[data-keypad="' + gameId + '"]').forEach(function(keypad){
         keypad.setAttribute('aria-hidden', String(!(open || shownByMobileRoot)));
@@ -652,16 +654,37 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     return method ? method() : undefined;
   }
   function syncGameButtonLabels(){
-    if(refs.newPairsBoardBtn) refs.newPairsBoardBtn.textContent = startButtonLabel('pairs');
-    if(refs.newWordRoundBtn) refs.newWordRoundBtn.textContent = startButtonLabel('detectword');
-    if(refs.newTrackCoinRoundBtn) refs.newTrackCoinRoundBtn.textContent = startButtonLabel('trackcoin');
-    if(refs.newRuleShiftBtn) refs.newRuleShiftBtn.textContent = startButtonLabel('ruleshift');
-    if(refs.newMake24Btn) refs.newMake24Btn.textContent = startButtonLabel('make24');
+    [
+      [refs.newPairsBoardBtn,'pairs'],
+      [refs.newWordRoundBtn,'detectword'],
+      [refs.newTrackCoinRoundBtn,'trackcoin'],
+      [refs.newRuleShiftBtn,'ruleshift'],
+      [refs.newMake24Btn,'make24']
+    ].forEach(function(entry){
+      const btn=entry[0];
+      if(!btn) return;
+      btn.textContent=startButtonLabel(entry[1]);
+      setHotkeyCaption(btn,SITEWIDE_START_HOTKEY_LABEL);
+    });
     qsa('[data-desktop-keypad-toggle]').forEach(function(btn){
       const id = btn.getAttribute('data-desktop-keypad-toggle') || '';
       const root = gamePlayRootElement(id);
       const open = !!(root && root.classList.contains('desktop-keypad-open'));
-      btn.textContent = keypadButtonLabel(open);
+      btn.setAttribute('aria-label',keypadButtonLabel(open));
+      btn.title=keypadButtonLabel(open)+' — '+SITEWIDE_KEYBOARD_HOTKEY_LABEL;
+      btn.innerHTML=keyboardIconMarkup(open);
+      setHotkeyCaption(btn,SITEWIDE_KEYBOARD_HOTKEY_LABEL);
+    });
+    qsa('[data-game-fullscreen]').forEach(function(btn){
+      const id=btn.getAttribute('data-game-fullscreen')||'';
+      if(id==='ninja') return;
+      const root=gamePlayRootElement(id);
+      const active=!!(root && document.fullscreenElement===root);
+      const label=active?'Exit full screen':'Full screen';
+      btn.setAttribute('aria-label',label);
+      btn.title=label+' — '+SITEWIDE_FULLSCREEN_HOTKEY_LABEL;
+      btn.innerHTML=fullscreenIconMarkup(label);
+      setHotkeyCaption(btn,SITEWIDE_FULLSCREEN_HOTKEY_LABEL);
     });
     syncRealmFullscreenControls();
   }
@@ -672,6 +695,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       btn.setAttribute('aria-pressed', String(enabled));
       btn.classList.toggle('is-active', enabled);
       btn.textContent = autoNextButtonLabel(gameId);
+      setHotkeyCaption(btn, SITEWIDE_AUTONEXT_HOTKEY_LABEL);
     });
   }
   function scheduleAutoNext(gameId, starter, delayMs){
@@ -2922,9 +2946,13 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   function chooseTrackCoinCup(choiceRaw){
     if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
     cancelTrackCoinAnimation();
-    const choice = Number(choiceRaw);
-    if(Number.isNaN(choice)) return;
-    const pickedCup = trackCoinState.cups[choice];
+    const choice=String(choiceRaw==null?'':choiceRaw);
+    let pickedCup=trackCoinState.cups.find(function(cup){ return cup.id===choice; });
+    if(!pickedCup){
+      const choiceIndex=Number(choiceRaw);
+      if(Number.isNaN(choiceIndex)) return;
+      pickedCup=trackCoinState.cups[choiceIndex];
+    }
     if(!pickedCup) return;
     trackCoinState.pickLocked = true;
     trackCoinState.resolved = true;
@@ -3102,7 +3130,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const isCorrect = trackCoinState.revealAll && cup.id === trackCoinState.coinCupId;
       const isPicked = trackCoinState.revealAll && cup.id === trackCoinState.pickedCupId;
       const cupClass = 'trackcoin-cup' + ((((trackCoinState.phase === 'show' || trackCoinState.revealAll) && cup.id === trackCoinState.coinCupId) ? ' is-lifted' : '')) + (selectable ? ' is-selectable' : '') + (isCorrect ? ' is-correct' : '') + (isPicked ? ' is-picked' : '') + (trackCoinState.revealAll && cup.id !== trackCoinState.coinCupId ? ' is-wrong' : '');
-      return '<button class="' + cupClass + '" data-trackcoin-pick="' + idx + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" aria-disabled="' + String(!selectable) + '" tabindex="' + (selectable ? '0' : '-1') + '"' + (selectable ? '' : ' disabled') + ' style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"></button>';
+      return '<button class="' + cupClass + '" data-trackcoin-pick="' + escapeHtml(cup.id) + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" aria-disabled="' + String(!selectable) + '" tabindex="' + (selectable ? '0' : '-1') + '" style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"></button>';
     }).join('');
     const phaseClass=' is-phase-' + escapeHtml(trackCoinState.phase || 'show');
     const resumeHtml=trackCoinState.restoredWaiting
@@ -3719,9 +3747,11 @@ function toggleGameFullscreen(gameId){
           howBtn.innerHTML = '<span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span>';
         }
         if(fullBtn){
-          fullBtn.classList.add('game-shell-action','game-shell-action--full');
+          fullBtn.classList.add('game-shell-action','game-shell-action--icon','game-shell-action--full');
           fullBtn.setAttribute('aria-label','Full screen');
-          fullBtn.innerHTML = '<span class="game-shell-action__icon" aria-hidden="true">⛶</span><span class="game-shell-action__label">Full Screen</span>';
+          fullBtn.title='Full screen — '+SITEWIDE_FULLSCREEN_HOTKEY_LABEL;
+          fullBtn.innerHTML=fullscreenIconMarkup('Full screen');
+          setHotkeyCaption(fullBtn,SITEWIDE_FULLSCREEN_HOTKEY_LABEL);
         }
         if(backBtn){
           backBtn.classList.add('game-shell-action','game-shell-action--back');
@@ -3742,7 +3772,11 @@ function toggleGameFullscreen(gameId){
         keyboardBtn.type = 'button';
         keyboardBtn.setAttribute('data-desktop-keypad-toggle', id);
         keyboardBtn.setAttribute('aria-pressed', 'false');
-        keyboardBtn.textContent = keypadButtonLabel(false);
+        keyboardBtn.setAttribute('aria-label', keypadButtonLabel(false));
+        keyboardBtn.title=keypadButtonLabel(false)+' — '+SITEWIDE_KEYBOARD_HOTKEY_LABEL;
+        keyboardBtn.classList.add('game-shell-action','game-shell-action--icon','game-shell-action--keyboard');
+        keyboardBtn.innerHTML = keyboardIconMarkup(false);
+        setHotkeyCaption(keyboardBtn,SITEWIDE_KEYBOARD_HOTKEY_LABEL);
         const autoNextBtn = windowActions.querySelector('[data-auto-next-toggle]');
         windowActions.insertBefore(keyboardBtn, autoNextBtn || null);
       }
@@ -3955,7 +3989,13 @@ function toggleGameFullscreen(gameId){
       const make24BoardRerollBtn = event.target.closest('#make24BoardRerollBtn'); if(make24BoardRerollBtn){ rerollMake24Puzzle(); return; }
       const trackCoinResume = event.target.closest('[data-action="resume-trackcoin"]'); if(trackCoinResume){ if(event){ event.preventDefault(); event.stopPropagation(); } resumeRestoredTrackCoinRound(); return; }
             const trackCoinReplay = event.target.closest('[data-action="replay-trackcoin"], #replayTrackCoinShuffleBtn'); if(trackCoinReplay){ if(event){ event.preventDefault(); event.stopPropagation(); } replayTrackCoinShuffle(); return; }
-      const trackCoinCup = event.target.closest('[data-trackcoin-pick]'); if(trackCoinCup){ if(performance.now()-trackCoinPointerPickAt>=700) chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick')); return; }
+      const trackCoinCup = event.target.closest('[data-trackcoin-pick]');
+      if(trackCoinCup){
+        // Pointer selection is owned by the board's pointerup handler below.
+        // Keep click as the keyboard/assistive-technology activation path.
+        if(event.detail===0) chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick'));
+        return;
+      }
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
 
     });
@@ -3964,15 +4004,6 @@ function toggleGameFullscreen(gameId){
       if(!button) return;
       event.preventDefault();
       window.requestAnimationFrame(keepMake24InputFocused);
-    },true);
-    document.addEventListener('pointerdown',function(event){
-      const cup=event.target instanceof Element ? event.target.closest('#trackCoinBoard .trackcoin-cup.is-selectable[data-trackcoin-pick]:not(:disabled)') : null;
-      if(!cup) return;
-      event.preventDefault();
-      event.stopPropagation();
-      if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
-      trackCoinPointerPickAt=performance.now();
-      chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
     },true);
     document.addEventListener('input', function(event){
       const target = event.target;
@@ -4012,6 +4043,14 @@ function toggleGameFullscreen(gameId){
         toggleDesktopKeypad(hotkeyGame);
         return;
       }
+      if(event.altKey && key === 'f'){
+        const id=normaliseGameId(hotkeyGame);
+        if(['pairs','detectword','make24','trackcoin','ruleshift'].includes(id)){
+          event.preventDefault();
+          toggleGameFullscreen(id);
+        }
+        return;
+      }
       if(event.altKey) return;
 
       if(hotkeyGame === 'pairs' && !typing){
@@ -4038,15 +4077,23 @@ function toggleGameFullscreen(gameId){
         handlePairsCardFlip(pairCard.getAttribute('data-card'));
       });
     }
-    if(refs.pairsHintBtn){ refs.pairsHintBtn.textContent = hotkeyActionLabel('Use Hint', 'H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
+    if(refs.trackCoinBoard){
+      refs.trackCoinBoard.addEventListener('pointerup',function(event){
+        const cup=event.target instanceof Element ? event.target.closest('.trackcoin-cup.is-selectable[data-trackcoin-pick]') : null;
+        if(!cup || !refs.trackCoinBoard.contains(cup)) return;
+        event.preventDefault();
+        chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
+      });
+    }
+    if(refs.pairsHintBtn){ refs.pairsHintBtn.textContent = hotkeyActionLabel('Use Hint', 'H'); setHotkeyCaption(refs.pairsHintBtn,'H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
     if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard', 'push'); });
     if(refs.newWordRoundBtn) refs.newWordRoundBtn.textContent = startButtonLabel('detectword');
     if(refs.newTrackCoinRoundBtn) refs.newTrackCoinRoundBtn.textContent = startButtonLabel('trackcoin');
     if(refs.newRuleShiftBtn) refs.newRuleShiftBtn.textContent = startButtonLabel('ruleshift');
     if(refs.wordSkillAlertBtn) refs.wordSkillAlertBtn.addEventListener('click', function(){ if(profiles.detectword.skillPoints > 0) setWordPanel('wordSkillCard', 'push'); });
     if(refs.newMake24Btn) refs.newMake24Btn.textContent = startButtonLabel('make24');
-    if(refs.make24HintBtn){ refs.make24HintBtn.textContent = hotkeyActionLabel('Use Guide', 'H'); refs.make24HintBtn.addEventListener('click', useMake24Hint); }
-    if(refs.make24RerollBtn){ refs.make24RerollBtn.textContent = hotkeyActionLabel('Reroll', 'J'); refs.make24RerollBtn.addEventListener('click', rerollMake24Puzzle); }
+    if(refs.make24HintBtn){ refs.make24HintBtn.textContent = hotkeyActionLabel('Use Guide', 'H'); setHotkeyCaption(refs.make24HintBtn,'H'); refs.make24HintBtn.addEventListener('click', useMake24Hint); }
+    if(refs.make24RerollBtn){ refs.make24RerollBtn.textContent = hotkeyActionLabel('Reroll', 'J'); setHotkeyCaption(refs.make24RerollBtn,'J'); refs.make24RerollBtn.addEventListener('click', rerollMake24Puzzle); }
     if(refs.make24SkillAlertBtn) refs.make24SkillAlertBtn.addEventListener('click', function(){ if(profiles.make24.skillPoints > 0) setMake24Panel('make24SkillCard', 'push'); });
     if(refs.gamesSummaryWrap) refs.gamesSummaryWrap.addEventListener('toggle', function(event){ const details = event.target.closest('details[data-summary]'); if(!details) return; const id = details.getAttribute('data-summary'); if(details.open) openSummaryIds.add(id); else openSummaryIds.delete(id); }, true);
   }

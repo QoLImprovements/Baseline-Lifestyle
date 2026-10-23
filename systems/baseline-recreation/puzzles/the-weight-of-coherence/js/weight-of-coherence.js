@@ -1824,8 +1824,8 @@
     if(!refs.fullscreen) return;
     const active=fullscreenActive();
     refs.fullscreen.setAttribute('aria-pressed',String(active));
-    refs.fullscreen.setAttribute('aria-label',active?'Exit full screen (F)':'Enter full screen (F)');
-    refs.fullscreen.title=active?'Exit full screen · F':'Full screen · F';
+    refs.fullscreen.setAttribute('aria-label',active?'Exit full screen (Alt+F)':'Enter full screen (Alt+F)');
+    refs.fullscreen.title=active?'Exit full screen · Alt+F':'Full screen · Alt+F';
     scheduleFullscreenBoardFit();
   }
 
@@ -2122,8 +2122,20 @@
   });
 
   document.addEventListener('keydown',function(event){
-    if(!event || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || editableTarget(event.target) || !puzzleHotkeysActive()) return;
+    if(!event || event.defaultPrevented || event.ctrlKey || event.metaKey || editableTarget(event.target) || !puzzleHotkeysActive()) return;
     const key=String(event.key||'').toLowerCase();
+    if(event.altKey){
+      if(key==='f'){
+        event.preventDefault();
+        toggleFullscreen();
+        return;
+      }
+      if(key==='s'){
+        event.preventDefault();
+        openSettings();
+      }
+      return;
+    }
     if(key==='g'){
       event.preventDefault();
       toggleGuide();
@@ -2149,11 +2161,6 @@
     if(key==='s'){
       event.preventDefault();
       shuffleTray();
-      return;
-    }
-    if(key==='f'){
-      event.preventDefault();
-      toggleFullscreen();
       return;
     }
     if(key==='arrowleft'){

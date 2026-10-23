@@ -476,7 +476,11 @@
     if(!button) return;
     const active=document.fullscreenElement===document.getElementById('crossnumberGamePanel');
     button.setAttribute('aria-pressed',String(active));
-    button.textContent=active?'Exit Full Screen':'Full Screen';
+    button.setAttribute('aria-label',active?'Exit full screen':'Full screen');
+    button.title=(active?'Exit full screen':'Full screen')+' — Alt+F';
+    button.setAttribute('data-hotkey-caption','Alt+F');
+    button.classList.add('game-shell-action','game-shell-action--icon','game-fullscreen-toggle');
+    button.innerHTML='<svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">'+(active?'Exit full screen':'Full screen')+'</span>';
   }
   function toggleFullscreen(){
     const gamePanel=document.getElementById('crossnumberGamePanel');
@@ -1055,6 +1059,21 @@
     stopTimer();
     renderAll();
     setStatus('Choose a difficulty tier and press New Game when you are ready.');
+  });
+  document.addEventListener('keydown',function(event){
+    if(!event || event.defaultPrevented || event.ctrlKey || event.metaKey || event.isComposing) return;
+    if(!root || root.closest('#crossnumberPanel')?.hidden) return;
+    const key=String(event.key||'').toLowerCase();
+    if(!event.altKey) return;
+    if(key==='n'){
+      event.preventDefault();
+      createNewRound({tierId:profile.selectedTier});
+      return;
+    }
+    if(key==='f'){
+      event.preventDefault();
+      toggleFullscreen();
+    }
   });
   document.addEventListener('fullscreenchange',function(){
     syncFullscreenControl();
