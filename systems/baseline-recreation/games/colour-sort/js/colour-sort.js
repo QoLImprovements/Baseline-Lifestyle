@@ -10,7 +10,7 @@ import {
   isSolved,
   levelById,
   levelColours
-} from './colour-sort-engine.mjs?v=PUZZLE_GAMES_20261016_1';
+} from './colour-sort-engine.mjs?v=GAMES_REVIEW_20261023_1';
 import {
   awardXp,
   clone,
@@ -21,7 +21,7 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=GAME_EXTENSIONS_RECREATION_20261022_1';
 
-const BUILD = 'COLOUR_SORT_AUTO_NEXT_COHERENCE_20261018_1';
+const BUILD = 'COLOUR_SORT_GAMES_REVIEW_20261023_1';
 const APP = 'coloursort';
 const COLOUR_SORT_TIERS = Object.freeze([
   { id:'starter', name:'Starter', from:1, to:12 },
@@ -961,7 +961,7 @@ const shell = createGameExtensionShell({
   name:'Colour Sort',
   order:20,
   art:'/systems/baseline-recreation/games/colour-sort/art/colour-sort-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
+  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=GAMES_REVIEW_20261023_1',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `${tierForLevel(profile.selectedLevel).name} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
