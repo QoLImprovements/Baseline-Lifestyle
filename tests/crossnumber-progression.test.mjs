@@ -102,7 +102,7 @@ test('Cross Number follows the Recreation single-panel navigation contract',()=>
   });
   assert.doesNotMatch(html,/class="crossnumber-hero"/);
   assert.doesNotMatch(html,/class="crossnumber-progression-strip"/);
-  assert.match(crossnumber,/setCrossNumberPanel/);
+  assert.match(crossnumber,/setCrossnumberPanel/);
   assert.match(crossnumber,/crosspanel/);
   assert.match(crossnumber,/panelFromLocation/);
 });
