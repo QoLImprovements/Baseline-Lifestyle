@@ -9,7 +9,8 @@ import {
   isBottleComplete,
   isSolved,
   levelById,
-  levelColours
+  levelColours,
+  topRunLength
 } from './colour-sort-engine.mjs?v=GAMES_REVIEW_20261023_1';
 import {
   awardXp,
@@ -215,8 +216,9 @@ function bottleHtml(bottle, index) {
   const hintedFrom = hint?.from === index;
   const hintedTo = hint?.to === index;
   const validTarget = selectedBottle >= 0 && selectedBottle !== index && Boolean(active && !locked && !isBottleLocked(active,selectedBottle) && canPour(active.bottles, selectedBottle, index));
+  const exposedStart=Math.max(0,bottle.length-topRunLength(bottle));
   const layers=bottle.map((colour,layerIndex)=>{
-    const covered=mechanics.coverBuried && !complete && layerIndex < bottle.length-1;
+    const covered=mechanics.coverBuried && !complete && layerIndex < exposedStart;
     return segmentHtml(colour,covered);
   }).join('');
   const label=locked
