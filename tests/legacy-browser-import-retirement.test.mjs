@@ -12,7 +12,7 @@ test('browser import/save authorities are fully retired from production runtime'
   const inventory=collectBrowserStorageInventory(root);
   assert.equal(inventory.unreviewedOccurrenceCount,0);
   assert.deepEqual(inventory.unreviewedGroups,[]);
-  assert.deepEqual(inventory.reviewedGroups.map((group)=>group.pattern),['baseline.games.music.v1']);
+  assert.deepEqual(inventory.reviewedGroups.map((group)=>group.pattern),[]);
 });
 
 test('current system save paths remain server-authoritative and revision protected',()=>{
