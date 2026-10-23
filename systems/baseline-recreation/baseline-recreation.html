@@ -445,6 +445,17 @@ These Markdown rules are a human reference point, not live runtime config.
                 </div>
                 <span class="inline-note">100 pieces is the balanced default. Larger puzzles use smaller paged trays on mobile to keep rendering stable.</span>
               </div>
+              <div class="weight-coherence-settings-section">
+                <strong>Music</strong>
+                <div class="weight-coherence-audio-row">
+                  <span><strong>Background music</strong><small>Use the same Recreation music preference on every game and puzzle.</small></span>
+                  <button class="action ghost" data-games-music-toggle type="button" aria-pressed="true">On</button>
+                </div>
+                <label class="weight-coherence-audio-row weight-coherence-audio-row--volume">
+                  <span><strong>Music volume</strong><small>Saved to your Recreation account settings when signed in.</small></span>
+                  <input data-games-music-volume type="range" min="0" max="1" step="0.05" value="0.58" aria-label="Jigsaw music volume">
+                </label>
+              </div>
               <div class="weight-coherence-settings-actions">
                 <button class="action ghost" id="weightCoherenceResetBtn" type="button" disabled>Restart Puzzle</button>
               </div>
@@ -461,9 +472,9 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="weight-coherence-actions" aria-label="Puzzle controls">
                 <div class="weight-coherence-zoom-actions" role="group" aria-label="Inspection zoom">
                   <button class="action ghost weight-coherence-zoom-step" id="weightCoherenceZoomOutBtn" type="button" aria-label="Decrease inspection zoom" title="Decrease inspection zoom">−</button>
-                  <span class="action ghost weight-coherence-icon-action weight-coherence-zoom-indicator" id="weightCoherenceZoomBtn" role="img" aria-keyshortcuts="Z" aria-label="Zoom hotkey Z. Current magnification 100 percent." title="Z zoom">
+                  <span class="action ghost weight-coherence-icon-action weight-coherence-zoom-indicator" id="weightCoherenceZoomBtn" role="img" aria-keyshortcuts="Z" aria-label="Zoom hotkey Z. Current magnification 200 percent." title="Z zoom">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m14.5 14.5 5 5"/></svg>
-                    <span class="weight-coherence-zoom-value" id="weightCoherenceZoomValue">100%</span>
+                    <span class="weight-coherence-zoom-value" id="weightCoherenceZoomValue">200%</span>
                     <kbd class="weight-coherence-hotkey">Z</kbd>
                   </span>
                   <button class="action ghost weight-coherence-zoom-step" id="weightCoherenceZoomInBtn" type="button" aria-label="Increase inspection zoom" title="Increase inspection zoom">+</button>
@@ -510,7 +521,7 @@ These Markdown rules are a human reference point, not live runtime config.
                 </div>
                 <div class="weight-coherence-help-grid" aria-label="Jigsaw hotkeys">
                   <div class="weight-coherence-help-row"><kbd>Z</kbd><div><strong>Zoom</strong><span>Hover a tray piece and press Z to enlarge the entire jigsaw piece above the workspace while its tray card stays fixed. Hold Z over the jigsaw for the circular board magnifier; release Z to close it. Zoom works on the board and tray pieces while View is enabled.</span></div></div>
-                  <div class="weight-coherence-help-row"><kbd>− / +</kbd><div><strong>Magnification</strong><span>Set one inspection level from 100% to 1000%. Tray-piece Zoom enlarges the complete irregular piece without enlarging its tray card; board Zoom continues to use the circular magnifier.</span></div></div>
+                  <div class="weight-coherence-help-row"><kbd>− / +</kbd><div><strong>Magnification</strong><span>Set one inspection level from 200% to 1000%. Tray-piece Zoom enlarges the complete irregular piece without enlarging its tray card; board Zoom continues to use the circular magnifier.</span></div></div>
                   <div class="weight-coherence-help-row"><kbd>V</kbd><div><strong>View</strong><span>Toggle the full-colour artwork. Piece movement pauses while View is on, but Zoom remains available.</span></div></div>
                   <div class="weight-coherence-help-row"><kbd>G</kbd><div><strong>Guide</strong><span>Toggle the artwork guide on a white background at 50% opacity.</span></div></div>
                   <div class="weight-coherence-help-row"><kbd>S</kbd><div><strong>Shuffle</strong><span>Shuffle the remaining pieces in the Main Tray.</span></div></div>
