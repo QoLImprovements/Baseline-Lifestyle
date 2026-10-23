@@ -732,7 +732,7 @@
 
   function selectTier(id){
     const tier=tierDefinition(id);
-    if(profile.level<tier.unlockLevel){setStatus(tier.name+' unlocks at level '+tier.unlockLevel+'.');return;}
+    if(profile.level<tier.unlockLevel){setStatus(tier.name+' unlocks at Player Rank '+tier.unlockLevel+'.');return;}
     profile.selectedTier=tier.id;
     saveProfile();
     createNewRound({tierId:tier.id});
@@ -812,7 +812,7 @@
       const selected=(round?.tierId||profile.selectedTier)===tier.id;
       return '<button class="crossnumber-tier-button'+(selected?' is-active':'')+'" type="button" data-crossnumber-tier="'+tier.id+'"'+(locked?' disabled':'')+'>'+
         '<strong>'+escapeHtml(tier.name)+'</strong>'+
-        '<span>'+(locked?'Unlock L'+tier.unlockLevel:(tier.nodes+' numbers · '+tier.operators.join(' ')))+'</span>'+
+        '<span>'+(locked?'Unlock Rank '+tier.unlockLevel:(tier.nodes+' numbers · '+tier.operators.join(' ')))+'</span>'+
       '</button>';
     }).join('');
   }
