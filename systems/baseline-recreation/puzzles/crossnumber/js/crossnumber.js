@@ -926,17 +926,31 @@
   function fitCrossNumberBoard(){
     if(!refs.board || !layout) return;
     const scroll=refs.board.closest('.crossnumber-board-scroll');
-    if(!scroll) return;
+    const play=refs.board.closest('.crossnumber-play-layout');
     const panel=document.getElementById('crossnumberGamePanel');
+    if(!scroll || !play || !panel) return;
     const full=document.fullscreenElement===panel;
+    const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
+
+    // Outside fullscreen, size the whole play area from its actual on-screen
+    // position. This keeps the number bank and the entire puzzle reachable at
+    // once instead of relying on a guessed vh subtraction.
+    if(!full && window.matchMedia?.('(min-width:821px)').matches){
+      const playTop=play.getBoundingClientRect().top;
+      const available=Math.max(320,Math.min(720,viewportHeight-playTop-14));
+      panel.style.setProperty('--crossnumber-play-height',Math.floor(available)+'px');
+    }else{
+      panel.style.removeProperty('--crossnumber-play-height');
+    }
+
+    // Re-read after the play-area constraint has been applied.
     const rect=scroll.getBoundingClientRect();
     const ratio=Math.max(.25,Number(layout.cols||1)/Math.max(1,Number(layout.rows||1)));
-    const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
-    const availableWidth=Math.max(180,(scroll.clientWidth||rect.width)-16);
-    const viewportBottom=Math.max(180,viewportHeight-rect.top-(full?8:18));
-    const boundedHeight=Math.max(180,(scroll.clientHeight||rect.height)-16);
+    const availableWidth=Math.max(180,(scroll.clientWidth||rect.width)-12);
+    const viewportBottom=Math.max(180,viewportHeight-rect.top-(full?6:12));
+    const boundedHeight=Math.max(180,(scroll.clientHeight||rect.height)-12);
     const availableHeight=Math.max(180,Math.min(boundedHeight,viewportBottom));
-    const width=Math.max(180,Math.min(availableWidth,availableHeight*ratio,full?1280:900));
+    const width=Math.max(180,Math.min(availableWidth,availableHeight*ratio,full?1280:980));
     refs.board.style.width=Math.floor(width)+'px';
     refs.board.style.height=Math.floor(width/ratio)+'px';
     refs.board.style.maxWidth='none';
