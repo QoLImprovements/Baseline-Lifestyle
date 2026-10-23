@@ -1442,7 +1442,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_1';
   function renderSystemSummary(){
     const existing = refs.gamesSummaryWrap ? Array.from(refs.gamesSummaryWrap.querySelectorAll('details[open][data-summary]')).map(function(el){ return el.getAttribute('data-summary'); }) : [];
     openSummaryIds.clear(); existing.forEach(function(id){ openSummaryIds.add(id); });
-    refs.bankSummary.innerHTML = '<strong>Bank</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Core games, Crossnumber, Darts Focused and Badminton Focused feed the shared Recreation Bank/coins. Baseline Realm uses its own connected campaign coin economy.</span>';
+    refs.bankSummary.innerHTML = '<strong>Bank</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Core games, Cross Number, Darts Focused and Badminton Focused feed the shared Recreation Bank/coins. Baseline Realm uses its own connected campaign coin economy.</span>';
     refs.gamesSummaryWrap.innerHTML = [renderDetectWordSummary(), renderMake24Summary(), renderPairsSummary(), renderTrackCoinSummary(), renderRuleShiftSummary(), renderCrossnumberSummary(), renderNinjaSummary()].join('');
     Array.from(refs.gamesSummaryWrap.querySelectorAll('details[data-summary]')).forEach(function(el){ el.open = openSummaryIds.has(el.getAttribute('data-summary')); });
   }
