@@ -71,6 +71,7 @@ test('Block Grid keeps the held piece under the pointer and exposes charged spec
   assert.match(blockGrid,/skillCharge/);
   assert.match(blockGrid,/Clear 4 × 4/);
   assert.match(blockGrid,/Clear 2 Rows/);
+  assert.match(blockGrid,/active\.gameOver = !hasAnyPlacement\(active\.board, active\.tray\)/);
   assert.match(blockGrid,/class="block-grid-play-cluster"/);
   assert.match(blockGrid,/addEventListener\('dragstart'[\s\S]*?preventDefault/);
   assert.match(blockCss,/cursor:none!important;user-select:none!important/);
