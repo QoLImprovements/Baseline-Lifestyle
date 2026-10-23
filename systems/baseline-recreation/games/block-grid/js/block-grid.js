@@ -459,7 +459,10 @@ function createDragGhost(pieceId) {
   ghost.className = 'block-grid-drag-ghost';
   ghost.setAttribute('aria-hidden', 'true');
   ghost.innerHTML = pieceMiniHtml(pieceId);
-  document.body.appendChild(ghost);
+  const card=document.getElementById('blockGridGameCard');
+  const fullscreenHost=document.fullscreenElement;
+  const host=fullscreenHost && card && fullscreenHost===card ? fullscreenHost : document.body;
+  host.appendChild(ghost);
   return ghost;
 }
 
