@@ -480,7 +480,7 @@ body[data-app="recreation"] #crossnumberGamePanel:fullscreen .game-live-xp{
 }
 
 body[data-app="recreation"] #crossnumberGamePanel:fullscreen::before{
-  content:"Cross Numbers";
+  content:"Cross Number";
   display:block;
   width:100%;
   box-sizing:border-box;
@@ -618,4 +618,34 @@ body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-
 }
 body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-status-row{
   min-height:0!important;
+}
+
+
+/* 2026-10-23 Cross Number final viewport-fit contract */
+@media(min-width:821px){
+  body[data-app="recreation"] #crossnumberGamePanel{
+    max-height:calc(100dvh - 132px);
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-play-layout{
+    min-height:0;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board-column{
+    min-height:0;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board-scroll{
+    min-height:0;
+    max-height:calc(100dvh - 255px);
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-bank-panel{
+    align-self:start;
+    max-height:calc(100dvh - 255px)!important;
+    overflow:auto!important;
+  }
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen{
+  max-height:100dvh!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-scroll,
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-bank-panel{
+  max-height:none!important;
 }
