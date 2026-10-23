@@ -2004,6 +2004,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     make24State.draftExpression=raw;
     persistMake24Round();
     renderMake24Board();
+    focusGameInput('make24ExpressionInput');
   }
   function editMake24Builder(action){
     if(!make24State||make24State.completed) return;
@@ -2016,6 +2017,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     make24State.draftExpression=raw;
     persistMake24Round();
     renderMake24Board();
+    focusGameInput('make24ExpressionInput');
   }
 
   function renderMake24Board(){
@@ -3905,6 +3907,10 @@ function toggleGameFullscreen(gameId){
       const make24Start = event.target.closest('[data-action="start-make24"], #newMake24Btn'); if(make24Start){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startMake24Puzzle(); focusGamePlaySurface('make24', { scroll:false, mobileMode:true }); return; }
 
     });
+    document.addEventListener('pointerdown',function(event){
+      const button=event.target instanceof Element ? event.target.closest('#make24Board [data-make24-token],#make24Board [data-make24-edit]') : null;
+      if(button) event.preventDefault();
+    },true);
     document.addEventListener('input', function(event){
       const target = event.target;
       if(!target || !target.id) return;
