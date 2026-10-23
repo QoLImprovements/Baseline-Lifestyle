@@ -2902,15 +2902,31 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_1';
     function frame(now){
       if(!trackCoinState || trackCoinState.roundToken!==roundToken || trackCoinState.phase!=='hide') return;
       const elapsed=Math.min(total,Math.max(0,now-started));
-      let plan=plans[plans.length-1];
-      for(let i=0;i<plans.length;i+=1){ if(elapsed<=plans[i].endAt){plan=plans[i];break;} }
+      let planIndex=plans.length-1;
+      for(let i=0;i<plans.length;i+=1){ if(elapsed<=plans[i].endAt){planIndex=i;break;} }
+      const plan=plans[planIndex];
       const t=clamp((elapsed-plan.startAt)/plan.duration,0,1);
+      const t2=t*t,t3=t2*t;
+      const h00=(2*t3)-(3*t2)+1;
+      const h10=t3-(2*t2)+t;
+      const h01=(-2*t3)+(3*t2);
+      const h11=t3-t2;
       cups.forEach(function(cup){
         const motion=plan.transitions[cup.id];
         if(!motion) return;
         const start=motion.start,target=motion.target;
-        cup.left=+(start.left+((target.left-start.left)*t)).toFixed(2);
-        cup.top=+(start.top+((target.top-start.top)*t)+(Math.sin(Math.PI*t)*motion.arc)).toFixed(2);
+        const prevMotion=planIndex>0 ? plans[planIndex-1].transitions[cup.id] : null;
+        const nextMotion=planIndex<plans.length-1 ? plans[planIndex+1].transitions[cup.id] : null;
+        const prevPoint=prevMotion ? prevMotion.start : start;
+        const nextPoint=nextMotion ? nextMotion.target : target;
+        const m0Left=(target.left-prevPoint.left)/2;
+        const m1Left=(nextPoint.left-start.left)/2;
+        const m0Top=(target.top-prevPoint.top)/2;
+        const m1Top=(nextPoint.top-start.top)/2;
+        cup.left=+(h00*start.left+h10*m0Left+h01*target.left+h11*m1Left).toFixed(2);
+        const baseTop=(h00*start.top)+(h10*m0Top)+(h01*target.top)+(h11*m1Top);
+        const arcEnvelope=Math.sin(Math.PI*t);
+        cup.top=+(baseTop+(arcEnvelope*arcEnvelope*motion.arc)).toFixed(2);
         cup.tilt=+(start.tilt+((target.tilt-start.tilt)*t)).toFixed(2);
       });
       syncTrackCoinMotionDom();
@@ -3144,7 +3160,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_1';
       const isCorrect = trackCoinState.revealAll && cup.id === trackCoinState.coinCupId;
       const isPicked = trackCoinState.revealAll && cup.id === trackCoinState.pickedCupId;
       const cupClass = 'trackcoin-cup' + ((((trackCoinState.phase === 'show' || trackCoinState.revealAll) && cup.id === trackCoinState.coinCupId) ? ' is-lifted' : '')) + (selectable ? ' is-selectable' : '') + (isCorrect ? ' is-correct' : '') + (isPicked ? ' is-picked' : '') + (trackCoinState.revealAll && cup.id !== trackCoinState.coinCupId ? ' is-wrong' : '');
-      return '<button class="' + cupClass + '" data-trackcoin-pick="' + idx + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"' + (selectable ? '' : ' disabled') + '></button>';
+      return '<button class="' + cupClass + '" data-trackcoin-pick="' + idx + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" aria-disabled="' + String(!selectable) + '" tabindex="' + (selectable ? '0' : '-1') + '" style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"></button>';
     }).join('');
     const phaseClass=' is-phase-' + escapeHtml(trackCoinState.phase || 'show');
     const resumeHtml=trackCoinState.restoredWaiting
