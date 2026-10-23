@@ -41,6 +41,7 @@ let dragState = null;
 let suppressClick = false;
 let storageAuth = null;
 let specialMode = '';
+let newGamePointerAt = 0;
 let boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false, scoreDelta:0, lines:0, combo:0, newTray:false, perfectClear:false };
 
 function number(value, minimum = 0) {
@@ -242,7 +243,7 @@ function renderGameInfo() {
     <div class="progress-shell progress-shell--trackcoin">
       <div class="xp-row">
         <div>
-          <div class="trackcoin-level-title">Level - ${profile.level}</div>
+          <div class="trackcoin-level-title">Player Rank ${profile.level}</div>
           <div class="xp-bar"><div class="xp-fill" style="width:${pct}%"></div></div>
           <div class="trackcoin-xp-meta-row"><span class="inline-note">${profile.xp} / ${needed} XP</span></div>
         </div>
@@ -297,14 +298,14 @@ function renderGame() {
         ${boardFeedbackHtml()}
       </div>
       <div class="block-grid-tray-wrap">
-        <div class="block-grid-tray-heading"><strong>Available Pieces · ${escapeHtml(currentMode().name)}</strong><span>Drag a shape, or tap it then tap a board cell</span></div>
+        <div class="block-grid-tray-heading"><strong>Available Pieces · ${escapeHtml(currentMode().name)} Tier</strong><span>Drag a shape, or tap it then tap a board cell</span></div>
         <div class="block-grid-tray${boardMotion.newTray ? ' is-new-tray' : ''}" aria-label="Available pieces">${trayHtml()}</div>
       </div>
-    </div>
-    <div class="game-window-actions">
-      <button class="action ghost start-new-game-toggle" data-block-action="new" type="button">New Game</button>
-      <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
-      <button class="action ghost" data-block-action="fullscreen" type="button">Full Screen</button>
+      <div class="game-window-actions">
+        <button class="action ghost start-new-game-toggle" data-block-action="new" type="button">New Game</button>
+        <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
+        <button class="action ghost" data-block-action="fullscreen" type="button">Full Screen</button>
+      </div>
     </div>`;
   resetBoardMotion();
   syncAutoNextControl();
@@ -477,8 +478,11 @@ function positionDragGhost(ghost, clientX, clientY, anchor, grip = dragState) {
   const totalHeight=(bounds.rows * cellSize) + (Math.max(0,bounds.rows-1) * gap);
   const grabCol=Math.max(0,Math.min(bounds.cols-1,Number(grip?.grabCol)||0));
   const grabRow=Math.max(0,Math.min(bounds.rows-1,Number(grip?.grabRow)||0));
-  const grabbedX=(grabCol * (cellSize + gap)) + (cellSize / 2);
-  const grabbedY=(grabRow * (cellSize + gap)) + (cellSize / 2);
+  const rawOffsetX=Number(grip?.grabOffsetX),rawOffsetY=Number(grip?.grabOffsetY);
+  const grabOffsetX=Number.isFinite(rawOffsetX)?Math.max(0,Math.min(1,rawOffsetX)):.5;
+  const grabOffsetY=Number.isFinite(rawOffsetY)?Math.max(0,Math.min(1,rawOffsetY)):.5;
+  const grabbedX=(grabCol * (cellSize + gap)) + (cellSize * grabOffsetX);
+  const grabbedY=(grabRow * (cellSize + gap)) + (cellSize * grabOffsetY);
   ghost.style.left = (clientX + (totalWidth / 2) - grabbedX) + 'px';
   ghost.style.top = (clientY + (totalHeight / 2) - grabbedY) + 'px';
 }
@@ -628,7 +632,10 @@ function handleClick(event) {
   if (action) {
     suppressClick=false;
     event.preventDefault();
-    if (action === 'new') startNewGame();
+    if (action === 'new') {
+    if(performance.now()-newGamePointerAt<700){ event.preventDefault(); return; }
+    startNewGame();
+  }
     if (action === 'blast') { if((run()?.skillCharge || 0)>=100){ specialMode='blast'; selectedPiece=-1; previewAnchor=null; statusMessage='Special ready: select the centre of the 4 × 4 area to clear.'; render(); } }
     if (action === 'rows') clearSpecialRows();
     if (action === 'fullscreen') toggleFullscreen();
@@ -652,7 +659,17 @@ function handleClick(event) {
 
 function handlePointerDown(event) {
   if (event.pointerType === 'mouse' && event.button !== 0) return;
-  const piece = event.target instanceof Element ? event.target.closest('[data-block-piece]') : null;
+  const rawTarget=event.target instanceof Element ? event.target : null;
+  const newGame=rawTarget?.closest('[data-block-action="new"]');
+  if(newGame){
+    event.preventDefault();
+    event.stopPropagation();
+    if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+    newGamePointerAt=performance.now();
+    startNewGame();
+    return;
+  }
+  const piece = rawTarget ? rawTarget.closest('[data-block-piece]') : null;
   if (!piece || !document.getElementById('blockGridPanel')?.classList.contains('is-active')) return;
   const index = Number(piece.dataset.blockPiece);
   if (!run()?.tray[index]) return;
@@ -662,7 +679,7 @@ function handlePointerDown(event) {
   const bounds=shape ? boundsForShape(shape) : {rows:1,cols:1};
   const shapeNode=piece.querySelector('.block-grid-piece-shape');
   const allCells=shapeNode ? [...shapeNode.querySelectorAll('.block-grid-piece-cell')] : [];
-  let grabRow=0,grabCol=0,nearestDistance=Infinity;
+  let grabRow=0,grabCol=0,grabOffsetX=.5,grabOffsetY=.5,nearestDistance=Infinity;
   allCells.forEach((cell,cellIndex)=>{
     if(!cell.classList.contains('is-filled')) return;
     const rect=cell.getBoundingClientRect();
@@ -673,9 +690,11 @@ function handlePointerDown(event) {
       nearestDistance=distance;
       grabRow=Math.floor(cellIndex/Math.max(1,bounds.cols));
       grabCol=cellIndex%Math.max(1,bounds.cols);
+      grabOffsetX=Math.max(0,Math.min(1,(event.clientX-rect.left)/Math.max(1,rect.width)));
+      grabOffsetY=Math.max(0,Math.min(1,(event.clientY-rect.top)/Math.max(1,rect.height)));
     }
   });
-  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, grabRow, grabCol, moved:false, ghost:null };
+  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, grabRow, grabCol, grabOffsetX, grabOffsetY, moved:false, ghost:null };
   piece.setPointerCapture?.(event.pointerId);
   piece.classList.add('is-selected');
 }
@@ -773,7 +792,7 @@ const shell = createGameExtensionShell({
   styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=GAMES_REVIEW_20261023_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
-  progressText:() => profile ? `Level ${profile.level} · Best ${profile.bestScore}` : 'Ready',
+  progressText:() => profile ? `${currentMode().name} Tier · Best ${profile.bestScore}` : 'Ready',
   panelHtml,
   onOpen:() => { globalThis.BaselineGamesMusic?.selectGame?.('block-grid'); render(); setTab(blockTabFromLocation(), 'none'); },
   onClose:() => { globalThis.BaselineGamesMusic?.selectGame?.(''); destroyDragGhost(); previewAnchor = null; dragState = null; }
