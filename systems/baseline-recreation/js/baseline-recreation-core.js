@@ -2713,17 +2713,20 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   }
   function trackCoinGenerateOrder(cups){
     const current = cups.map(cup => cup.id);
+    if(current.length < 2) return current.slice();
     let order = shuffle(current);
     let attempts = 0;
-    while(attempts < 10){
-      const moved = order.filter((id, index) => id !== current[index]).length;
-      const longJump = order.some((id, index) => Math.abs(current.indexOf(id) - index) >= 2);
-      if(moved >= Math.max(2, Math.floor(current.length * 0.66)) && longJump) break;
+    while(attempts < 24){
+      const everyCupMoves = order.every((id, index) => id !== current[index]);
+      const longJump = current.length < 3 || order.some((id, index) => Math.abs(current.indexOf(id) - index) >= 2);
+      if(everyCupMoves && longJump) return order;
       order = shuffle(current);
       attempts += 1;
     }
-    if(order.every((id, index) => id === current[index])) order = current.slice(1).concat(current[0]);
-    return order;
+    // A non-zero rotation is a guaranteed derangement: no cup pauses in place
+    // while the next shuffle segment begins.
+    const offset = 1 + Math.floor(Math.random() * Math.max(1,current.length - 1));
+    return current.slice(offset).concat(current.slice(0, offset));
   }
   function trackCoinMidTop(pattern, baseTop, slotIndex, count, direction){
     const centered = slotIndex - ((count - 1) / 2);
