@@ -959,3 +959,12 @@ body[data-app="recreation"] #detectwordPanel .word-feedback-dot--absent{
   color:rgba(var(--recreation-ink-rgb),.70)!important;
   -webkit-text-fill-color:rgba(var(--recreation-ink-rgb),.70)!important;
 }
+
+body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trackcoin-cup.is-selectable{
+  pointer-events:auto!important;
+  z-index:12!important;
+}
+body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trackcoin-pick-prompt{
+  pointer-events:none!important;
+  z-index:6!important;
+}
