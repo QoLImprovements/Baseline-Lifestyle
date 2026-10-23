@@ -1038,45 +1038,78 @@ body[data-app="recreation"] :is(.tabs,.game-toggle-row,.trackcoin-tab-row,.cross
 }
 
 
-/* 2026-10-23 compact control + hotkey-caption authority.
-   Hotkeys describe controls without becoming part of the button label. */
-body[data-app="recreation"] :is(
-  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
-  #blockGridPanel,#colourSortPanel,#crossnumberPanel
-) .game-window-actions{
-  overflow:visible!important;
-  align-items:flex-start!important;
-  padding-bottom:18px!important;
+/* 2026-10-24 compact common-control + tooltip authority.
+   Hotkeys are discoverable on hover/focus, never permanently printed below controls. */
+body[data-app="recreation"] .sr-only{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0 0 0 0)!important;
+  clip-path:inset(50%)!important;
+  white-space:nowrap!important;
+  border:0!important;
 }
+
 body[data-app="recreation"] :is(
   #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
   #blockGridPanel,#colourSortPanel,#crossnumberPanel
-) [data-hotkey-caption]{
-  position:relative!important;
+) :is(.game-window-actions,.crossnumber-actions){
+  overflow:visible!important;
+  align-items:center!important;
+  padding-bottom:0!important;
+}
+
+body[data-app="recreation"] [data-hotkey-caption]::after{
+  content:none!important;
+  display:none!important;
+}
+
+body[data-app="recreation"] [data-tooltip]{
+  position:relative;
   overflow:visible!important;
 }
-body[data-app="recreation"] :is(
-  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
-  #blockGridPanel,#colourSortPanel,#crossnumberPanel
-) [data-hotkey-caption]::after{
-  content:attr(data-hotkey-caption);
+body[data-app="recreation"] [data-tooltip]:is(:hover,:focus-visible)::after{
+  content:attr(data-tooltip);
   position:absolute;
   left:50%;
-  top:calc(100% + 3px);
+  bottom:calc(100% + 9px);
   transform:translateX(-50%);
+  z-index:13050;
   display:block;
   width:max-content;
-  max-width:90px;
-  font-size:9px;
-  line-height:1;
-  font-weight:700;
-  letter-spacing:.025em;
-  color:var(--games-muted);
-  opacity:.82;
-  pointer-events:none;
-  white-space:nowrap;
+  max-width:min(260px,80vw);
+  padding:7px 9px;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.30);
+  border-radius:8px;
+  background:rgba(var(--recreation-shadow-rgb),.96);
+  box-shadow:0 8px 22px rgba(0,0,0,.34);
+  color:var(--recreation-ink);
+  font:700 11px/1.15 system-ui,sans-serif;
+  letter-spacing:.01em;
+  text-align:center;
   text-transform:none;
+  white-space:nowrap;
+  pointer-events:none;
 }
+body[data-app="recreation"] [data-tooltip]:is(:hover,:focus-visible)::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:calc(100% + 4px);
+  transform:translateX(-50%);
+  z-index:13051;
+  width:8px;
+  height:8px;
+  border-right:1px solid rgba(var(--recreation-copper-light-rgb),.30);
+  border-bottom:1px solid rgba(var(--recreation-copper-light-rgb),.30);
+  background:rgba(var(--recreation-shadow-rgb),.96);
+  rotate:45deg;
+  pointer-events:none;
+}
+
 body[data-app="recreation"] :is(
   #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
   #blockGridPanel,#colourSortPanel,#crossnumberPanel
@@ -1092,6 +1125,7 @@ body[data-app="recreation"] :is(
   place-items:center!important;
   flex:0 0 42px!important;
 }
+
 body[data-app="recreation"] .game-shell-action__svg{
   width:21px;
   height:21px;
@@ -1103,20 +1137,26 @@ body[data-app="recreation"] .game-shell-action__svg{
   stroke-linejoin:round;
   pointer-events:none;
 }
-@media(max-width:820px){
-  body[data-app="recreation"] [data-hotkey-caption]::after{display:none!important}
-  body[data-app="recreation"] :is(
-    #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
-    #blockGridPanel,#colourSortPanel,#crossnumberPanel
-  ) .game-window-actions{padding-bottom:0!important}
+
+/* Keep ordinary game actions together on the left and the shared icon controls
+   together on the right, without the previous large visual split. */
+body[data-app="recreation"] :is(
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel
+) .game-window-actions .games-music-quick-toggle{
+  margin-left:auto!important;
+}
+body[data-app="recreation"] :is(
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
+) .games-settings-trigger{
+  margin-left:0!important;
 }
 
+@media(hover:none),(pointer:coarse){
+  body[data-app="recreation"] [data-tooltip]::before,
+  body[data-app="recreation"] [data-tooltip]::after{
+    display:none!important;
+  }
+}
 
-body[data-app="recreation"] #crossnumberPanel .crossnumber-actions{
-  overflow:visible!important;
-  align-items:flex-start!important;
-  padding-bottom:18px!important;
-}
-@media(max-width:820px){
-  body[data-app="recreation"] #crossnumberPanel .crossnumber-actions{padding-bottom:0!important}
-}
