@@ -937,3 +937,25 @@ body[data-app="recreation"] #pairsPanel .memory-card-front{
 body[data-app="recreation"] #pairsPanel .memory-card-front>img{
   filter:drop-shadow(0 8px 9px rgba(0,0,0,.30)) saturate(1.08) contrast(1.04)!important;
 }
+
+
+/* 2026-10-23 coherence corrections */
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{
+  background:#e21837!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--lime .ruleshift-shape{
+  background:#9edb35!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape--oval{
+  width:clamp(64px,6.4vw,88px)!important;
+  height:clamp(50px,5vw,68px)!important;
+  border-radius:50%!important;
+  clip-path:ellipse(50% 50% at 50% 50%)!important;
+}
+body[data-app="recreation"] #detectwordPanel .letter-cell.absent,
+body[data-app="recreation"] #detectwordPanel .word-feedback-dot--absent{
+  background:linear-gradient(180deg,#401522 0%,#250b14 100%)!important;
+  border-color:rgba(125,65,78,.58)!important;
+  color:rgba(var(--recreation-ink-rgb),.70)!important;
+  -webkit-text-fill-color:rgba(var(--recreation-ink-rgb),.70)!important;
+}
