@@ -77,7 +77,9 @@ test('Cross Numbers avoids recent equation signatures and keeps restart in the g
   assert.match(crossnumber,/chooseDiverseLayout/);
   assert.match(crossnumber,/signatureOverlap/);
   assert.match(crossnumber,/function restartRound\(/);
+  assert.match(crossnumber,/function toggleFullscreen\(/);
   assert.match(html,/data-crossnumber-action="restart">Restart</);
+  assert.match(html,/data-crossnumber-action="fullscreen"[^>]*>Full Screen</);
 });
 
 test('canonical and legacy recreation routes preserve direct game destinations on refresh',()=>{
