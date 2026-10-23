@@ -1,7 +1,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='RECREATION_SERVER_AUTHORITY_20261022_1';
+  const BUILD='RECREATION_COHERENCE_20261023_2';
   const DATA_API='/systems/baseline-recreation/api/games_data.php';
   const registryApps=global.BASELINE_GAMES_REGISTRY?.persistentApps?.() || [];
   const ALL_APPS=Object.freeze(registryApps.length ? registryApps.slice() : ['pairs','detectword','make24','trackcoin','ruleshift','ninja','crossnumber','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','movedalong','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused','hubsettings']);
