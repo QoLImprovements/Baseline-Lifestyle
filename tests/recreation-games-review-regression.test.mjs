@@ -34,6 +34,17 @@ test('core New Game is one-click, opens Pairs idle, and keeps Full Screen inside
   assert.match(core,/if\(fullBtn && windowActions && fullBtn\.parentElement!==windowActions\) windowActions\.appendChild\(fullBtn\)/);
 });
 
+test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
+  assert.doesNotMatch(html,/Game Info<\/span><span class="inline-note">Level \/ XP \/ stats/);
+  assert.match(html,/Game Info<\/span><span class="inline-note">Player Rank \/ XP \/ stats/);
+  for(const id of ['pairsLevelHeading','wordLevelHeading','make24LevelHeading','trackCoinLevelHeading','ruleShiftLevelHeading']){
+    assert.match(html,new RegExp('id="'+id+'">Player Rank 1<\\/div>'));
+  }
+  assert.doesNotMatch(colourSort,/trackcoin-level-title">Level -/);
+  assert.match(colourSort,/trackcoin-level-title">Player Rank \$\{profile\.level\}/);
+  assert.match(crossnumber,/data-crossnumber-tier-label|tierDefinition/);
+});
+
 test('Detect the Word and Make The Number keep coherent input behavior and active-round persistence',()=>{
   assert.match(core,/explicitWordSubmit[\s\S]*?submitWordGuess/);
   assert.match(core,/explicitMakeSubmit[\s\S]*?submitMake24Expression/);
