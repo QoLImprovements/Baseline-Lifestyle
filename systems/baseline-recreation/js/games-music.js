@@ -785,6 +785,7 @@
       return;
     }
     if(key === 's'){
+      if(activeGame === 'jigsaw') return;
       event.preventDefault();
       var trigger=document.querySelector('[data-games-settings]');
       openSettings(trigger || null);
