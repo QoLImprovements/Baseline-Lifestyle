@@ -82,14 +82,14 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
   let currentTab = 'system';
   let pairsBoardState = null;
   let pairsRoundToken = 0;
-  let pairsIdleMessage = 'Choose a board tier and press Start New Game when you are ready.';
+  let pairsIdleMessage = 'Choose a board tier and press New Game when you are ready.';
   let make24State = null;
-  let make24IdleMessage = 'Choose a number tier and press Start New Game when you are ready.';
+  let make24IdleMessage = 'Choose a number tier and press New Game when you are ready.';
   let wordState = null;
-  let wordIdleMessage = 'Choose a letter tier and press Start New Game when you are ready.';
+  let wordIdleMessage = 'Choose a letter tier and press New Game when you are ready.';
   let ruleShiftState = null;
   let ruleShiftTimer = 0;
-  let ruleShiftIdleMessage = 'Choose a rule tier and press Start New Game when you are ready.';
+  let ruleShiftIdleMessage = 'Choose a rule tier and press New Game when you are ready.';
   let trackCoinState = null;
   let trackCoinRoundToken = 0;
   let trackCoinAnimationFrame = 0;
@@ -163,8 +163,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     if(gameId === 'ruleshift') return Boolean(ruleShiftState && ruleShiftState.finished);
     return false;
   }
-  function startButtonLabel(gameId){
-    const label=roundIsTerminal(gameId) ? 'Start Next Game' : 'Start New Game';
+  function startButtonLabel(){
+    const label='New Game';
     return isMobileGameViewport() ? label : label + ' [' + SITEWIDE_START_HOTKEY_LABEL + ']';
   }
   function autoNextButtonLabel(gameId){
@@ -589,19 +589,19 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     if(id === 'pairs'){
       clearAutoNextTimer('pairs');
       pairsBoardState = null;
-      pairsIdleMessage = 'Choose a board tier and press Start New Game when you are ready.';
+      pairsIdleMessage = 'Choose a board tier and press New Game when you are ready.';
       return;
     }
     if(id === 'detectword'){
       clearAutoNextTimer('detectword');
       wordState = null;
-      wordIdleMessage = 'Choose a letter tier and press Start New Game when you are ready.';
+      wordIdleMessage = 'Choose a letter tier and press New Game when you are ready.';
       return;
     }
     if(id === 'make24'){
       clearAutoNextTimer('make24');
       make24State = null;
-      make24IdleMessage = 'Choose a number tier and press Start New Game when you are ready.';
+      make24IdleMessage = 'Choose a number tier and press New Game when you are ready.';
       return;
     }
     if(id === 'trackcoin'){
@@ -614,7 +614,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
       clearAutoNextTimer('ruleshift');
       clearRuleShiftTimer();
       ruleShiftState = null;
-      ruleShiftIdleMessage = 'Choose a rule tier and press Start New Game when you are ready.';
+      ruleShiftIdleMessage = 'Choose a rule tier and press New Game when you are ready.';
     }
   }
   function toggleAutoNext(gameId){
@@ -842,11 +842,17 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     currentTab = 'system';
     selectedGame = '';
   }
-  function restoreFromHashState(){
+  function restoreFromHashState(options){
+    const opts=options||{};
     suspendHashSync = true;
     applyHashState();
     activateTab(currentTab);
-    selectGame(selectedGame);
+    const routedGame=selectedGame;
+    if(opts.useStored===true && routedGame==='pairs'){
+      pairsBoardState=null;
+      pairsIdleMessage='Choose a board tier and press New Game when you are ready.';
+    }
+    selectGame(routedGame);
     suspendHashSync = false;
     if(window.location.hash) syncHashState('replace');
     safeRenderAll();
@@ -3049,12 +3055,12 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     const trackCoinStatusTitle = trackCoinState && trackCoinState.reviewActive
       ? 'Round Status — Reviewing'
       : (trackCoinState && trackCoinState.resolved ? (trackCoinState.lastResult === 'correct' ? 'Round Status — Correct' : 'Round Status — Missed') : 'Round Status');
-    const trackCoinStatusMessage = trackCoinState ? trackCoinState.message : 'No round active yet. Press Start New Game when you are ready.';
+    const trackCoinStatusMessage = trackCoinState ? trackCoinState.message : 'No round active yet. Press New Game when you are ready.';
     const passiveText = 'Passive to Ninja Training: +' + Math.round((Math.min(0.10, profile.level * 0.0025) + Math.min(0.04, (profile.skills.read || 0) * 0.01)) * 100) + '% efficiency from Track the Coin progression.';
     const roundStatusHtml = '<div class="summary-box round-status-card trackcoin-game-status' + trackCoinResultClass + '" id="trackCoinSummary"><strong>' + escapeHtml(trackCoinStatusTitle) + '</strong><span class="inline-note">' + escapeHtml(trackCoinStatusMessage) + '</span><span class="inline-note">' + escapeHtml(passiveText) + '</span></div>';
 
     if(!trackCoinState){
-      refs.trackCoinBoard.innerHTML = '<div class="empty-box trackcoin-idle-card"><strong>Track the Coin is idle.</strong><span class="inline-note">Choose a tier and press Start New Game when you are ready.</span><span class="inline-note">The coin will be shown first, then covered, then shuffled. ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '.</span><span class="inline-note">Use the Start New Game control at the bottom-right of the game window.</span></div>';
+      refs.trackCoinBoard.innerHTML = '<div class="empty-box trackcoin-idle-card"><strong>Track the Coin is idle.</strong><span class="inline-note">Choose a tier and press New Game when you are ready.</span><span class="inline-note">The coin will be shown first, then covered, then shuffled. ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '.</span><span class="inline-note">Use the New Game control at the bottom-right of the game window.</span></div>';
       ensureGamePlayContract();
       return;
     }
@@ -3456,7 +3462,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_CORE_20261023_1';
     refs.ruleShiftRoundSummary.innerHTML = '<strong>Game Status</strong><span class="inline-note">' + escapeHtml(ruleShiftState.lastMessage) + '</span>';
     if(ruleShiftState.finished){
       const finishedTitle = ruleShiftState.failed ? 'Run failed.' : 'Run complete.';
-      const finishedPrompt = ruleShiftState.failed ? 'Incorrect answers end the run. Press Start New Game to try again.' : 'Press Start New Game to begin another switching run.';
+      const finishedPrompt = ruleShiftState.failed ? 'Incorrect answers end the run. Press New Game to try again.' : 'Press New Game to begin another switching run.';
       refs.ruleShiftBoard.innerHTML = '<div class="ruleshift-complete-card' + (ruleShiftState.failed ? ' ruleshift-failed-card' : '') + '"><strong>' + finishedTitle + '</strong><span class="inline-note">' + escapeHtml(ruleShiftState.lastMessage) + '</span><span class="inline-note">' + finishedPrompt + '</span></div>';
       return;
     }
@@ -3774,6 +3780,19 @@ function toggleGameFullscreen(gameId){
 
   function bindEvents(){
     document.addEventListener('click', function(event){
+      const target=event.target instanceof Element ? event.target : null;
+      const start=target?.closest('#newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn');
+      if(!start) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+      if(start.id==='newPairsBoardBtn'){ startPairsBoard(); focusGamePlaySurface('pairs',{scroll:false,mobileMode:true}); return; }
+      if(start.id==='newWordRoundBtn'){ startWordRound(); focusGamePlaySurface('detectword',{scroll:false,mobileMode:true}); return; }
+      if(start.id==='newMake24Btn'){ startMake24Puzzle(); focusGamePlaySurface('make24',{scroll:false,mobileMode:true}); return; }
+      if(start.id==='newTrackCoinRoundBtn'){ startTrackCoinRound(); focusGamePlaySurface('trackcoin',{scroll:false,mobileMode:true}); return; }
+      if(start.id==='newRuleShiftBtn'){ startRuleShiftRound(); focusGamePlaySurface('ruleshift',{scroll:false,mobileMode:true}); return; }
+    }, true);
+    document.addEventListener('click', function(event){
       const modalClose = event.target.closest('[data-close-games-modal]');
       if(modalClose){ GAMES_HELP_MODAL.close(); return; }
       const infoModal = event.target.closest('[data-game-info-modal]');
@@ -3827,13 +3846,13 @@ function toggleGameFullscreen(gameId){
       const pairTier = event.target.closest('[data-pairs-tier]');
       if(pairTier){
         const tier = PAIRS_TIERS.find(item => item.id === pairTier.getAttribute('data-pairs-tier'));
-        if(tier && profiles.pairs.level >= tier.unlockLevel){ profiles.pairs.selectedTier = tier.id; profiles.pairs.activeRound = null; pairsBoardState = null; pairsIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('pairs'); renderAll(); }
+        if(tier && profiles.pairs.level >= tier.unlockLevel){ profiles.pairs.selectedTier = tier.id; profiles.pairs.activeRound = null; pairsBoardState = null; pairsIdleMessage = tier.name + ' selected. Press New Game when ready.'; scheduleSave('pairs'); renderAll(); }
         return;
       }
       const wordTier = event.target.closest('[data-word-tier]');
       if(wordTier){
         const tier = WORD_TIERS.find(item => item.id === wordTier.getAttribute('data-word-tier'));
-        if(tier && profiles.detectword.level >= tier.unlockLevel){ profiles.detectword.selectedTier = tier.id; profiles.detectword.activeRound = null; wordState = null; wordIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('detectword'); renderAll(); }
+        if(tier && profiles.detectword.level >= tier.unlockLevel){ profiles.detectword.selectedTier = tier.id; profiles.detectword.activeRound = null; wordState = null; wordIdleMessage = tier.name + ' selected. Press New Game when ready.'; scheduleSave('detectword'); renderAll(); }
         return;
       }
       const make24Tier = event.target.closest('[data-make24-tier]');
@@ -3841,7 +3860,7 @@ function toggleGameFullscreen(gameId){
       if(trackCoinTier){ const tier = TRACKCOIN_TIERS.find(item => item.id === trackCoinTier.getAttribute('data-trackcoin-tier')); if(tier && profiles.trackcoin.level >= tier.unlockLevel){ profiles.trackcoin.selectedTier = tier.id; profiles.trackcoin.currentTier = tier.id; profiles.trackcoin.activeRound = null; cancelTrackCoinAnimation(); trackCoinState = null; scheduleSave('trackcoin'); renderAll(); } return; }
       if(make24Tier){
         const tier = MAKE24_TIERS.find(item => item.id === make24Tier.getAttribute('data-make24-tier'));
-        if(tier && profiles.make24.level >= tier.unlockLevel){ profiles.make24.selectedTier = tier.id; profiles.make24.activeRound = null; make24State = null; make24IdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('make24'); renderAll(); }
+        if(tier && profiles.make24.level >= tier.unlockLevel){ profiles.make24.selectedTier = tier.id; profiles.make24.activeRound = null; make24State = null; make24IdleMessage = tier.name + ' selected. Press New Game when ready.'; scheduleSave('make24'); renderAll(); }
         return;
       }
       const pairSkill = event.target.closest('[data-pairs-skill]'); if(pairSkill){ spendPairsSkill(pairSkill.getAttribute('data-pairs-skill')); return; }
@@ -3852,7 +3871,7 @@ function toggleGameFullscreen(gameId){
       const make24PanelBtn = event.target.closest('[data-make24-panel]'); if(make24PanelBtn){ setMake24Panel(make24PanelBtn.getAttribute('data-make24-panel'), 'push'); return; }
       const trackCoinSkill = event.target.closest('[data-trackcoin-skill]'); if(trackCoinSkill){ spendTrackCoinSkill(trackCoinSkill.getAttribute('data-trackcoin-skill')); return; }
       const trackCoinPanelBtn = event.target.closest('[data-trackcoin-panel]'); if(trackCoinPanelBtn){ setTrackCoinPanel(trackCoinPanelBtn.getAttribute('data-trackcoin-panel'), 'push'); return; }
-      const ruleShiftTier = event.target.closest('[data-ruleshift-tier]'); if(ruleShiftTier){ const tier = RULESHIFT_TIERS.find(item => item.id === ruleShiftTier.getAttribute('data-ruleshift-tier')); if(tier && profiles.ruleshift.level >= tier.unlockLevel){ profiles.ruleshift.selectedTier = tier.id; profiles.ruleshift.activeRound = null; clearRuleShiftTimer(); ruleShiftState = null; ruleShiftIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('ruleshift'); renderAll(); } return; }
+      const ruleShiftTier = event.target.closest('[data-ruleshift-tier]'); if(ruleShiftTier){ const tier = RULESHIFT_TIERS.find(item => item.id === ruleShiftTier.getAttribute('data-ruleshift-tier')); if(tier && profiles.ruleshift.level >= tier.unlockLevel){ profiles.ruleshift.selectedTier = tier.id; profiles.ruleshift.activeRound = null; clearRuleShiftTimer(); ruleShiftState = null; ruleShiftIdleMessage = tier.name + ' selected. Press New Game when ready.'; scheduleSave('ruleshift'); renderAll(); } return; }
       const ruleShiftSkill = event.target.closest('[data-ruleshift-skill]'); if(ruleShiftSkill){ spendRuleShiftSkill(ruleShiftSkill.getAttribute('data-ruleshift-skill')); return; }
       const ruleShiftPanelBtn = event.target.closest('[data-ruleshift-panel]'); if(ruleShiftPanelBtn){ setRuleShiftPanel(ruleShiftPanelBtn.getAttribute('data-ruleshift-panel'), 'push'); return; }
       const ninjaPanelBtn = event.target.closest('[data-ninja-panel]'); if(ninjaPanelBtn){ setNinjaPanel(ninjaPanelBtn.getAttribute('data-ninja-panel'), 'push'); return; }
