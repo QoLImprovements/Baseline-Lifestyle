@@ -19,7 +19,7 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=GAME_EXTENSIONS_RECREATION_20261022_1';
 
-const BUILD = 'BLOCK_GRID_GAMES_REVIEW_20261023_1';
+const BUILD = 'BLOCK_GRID_RECREATION_COHERENCE_20261023_1';
 const APP = 'blockgrid';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
