@@ -5,7 +5,7 @@ import {
 } from '../systems/baseline-recreation/games/colour-sort/js/colour-sort-engine.mjs';
 
 test('every authored colour-sort level has exactly four units of each colour', () => {
-  assert.equal(LEVELS.length, 19);
+  assert.equal(LEVELS.length, 60);
   for (const level of LEVELS) assert.equal(validateLevel(level), true, `level ${level.id}`);
 });
 
