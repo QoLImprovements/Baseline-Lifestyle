@@ -112,6 +112,11 @@ test('Recreation music preferences are server-side and quick controls stay insid
   assert.match(music,/getProfile\?\.\('hubsettings'\)/);
   assert.match(music,/saveProfile\?\.\('hubsettings'/);
   assert.match(music,/data-games-music-quick/);
+  assert.match(music,/function quickMusicMarkup\(label\)/);
+  assert.match(music,/btn\.innerHTML=quickMusicMarkup\(settings\.enabled\?'Music on':'Music off'\)/);
+  assert.match(music,/function mutationAddsElement\(records\)[\s\S]*?node\.nodeType===1/);
+  assert.match(music,/new MutationObserver\(function\(records\)\{[\s\S]*?if\(!mutationAddsElement\(records\)\) return;[\s\S]*?injectSettingsButtons\(\);[\s\S]*?syncUi\(\)/);
+  assert.doesNotMatch(music,/new MutationObserver\(function\(\)\{\s*injectSettingsButtons\(\);\s*syncUi\(\);\s*\}\)/);
   assert.match(music,/var roots = \['pairsGameCard','wordGameCard','make24GameCard','trackCoinGamePanel','ruleShiftGameCard','blockGridGameCard','colourSortGameCard','crossnumberGamePanel'\]/);
   assert.match(music,/#weightCoherenceWorkspace \.weight-coherence-actions/);
   assert.match(music,/#ninjaPanel \.realm-utility/);

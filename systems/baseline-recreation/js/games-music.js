@@ -598,14 +598,23 @@
     syncUi();
   }
 
+  function quickMusicMarkup(label){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span class="sr-only">'+label+'</span>';
+  }
+  function syncQuickMusicButton(btn){
+    var stateLabel=settings.enabled?'Music on':'Music off';
+    btn.setAttribute('aria-label',settings.enabled?'Mute game music':'Enable game music');
+    btn.title=settings.enabled?'Music on — press to mute':'Music off — press to enable';
+    if(!btn.querySelector('svg') || !btn.querySelector('.sr-only')) btn.innerHTML=quickMusicMarkup(stateLabel);
+    var hiddenLabel=btn.querySelector('.sr-only');
+    if(hiddenLabel && hiddenLabel.textContent!==stateLabel) hiddenLabel.textContent=stateLabel;
+    btn.classList.toggle('is-muted',!settings.enabled);
+  }
   function syncUi(){
     document.querySelectorAll('[data-games-music-toggle]').forEach(function(btn){
       var pressed = settings.enabled ? 'true' : 'false';
       if(btn.matches('[data-games-music-quick]')){
-        btn.setAttribute('aria-label',settings.enabled?'Mute game music':'Enable game music');
-        btn.title=settings.enabled?'Music on — press to mute':'Music off — press to enable';
-        btn.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span class="sr-only">'+(settings.enabled?'Music on':'Music off')+'</span>';
-        btn.classList.toggle('is-muted',!settings.enabled);
+        syncQuickMusicButton(btn);
       }else{
         var label = settings.enabled ? 'On' : 'Off';
         if(btn.textContent !== label) btn.textContent = label;
@@ -656,6 +665,7 @@
     btn.setAttribute('data-games-music-toggle','');
     btn.setAttribute('data-games-music-quick','');
     btn.setAttribute('aria-pressed',settings.enabled?'true':'false');
+    btn.innerHTML=quickMusicMarkup(settings.enabled?'Music on':'Music off');
     return btn;
   }
   function realmQuickMusicButton(){
@@ -764,11 +774,20 @@
     syncUi();
   });
 
+  function mutationAddsElement(records){
+    return Array.prototype.some.call(records||[],function(record){
+      return Array.prototype.some.call(record.addedNodes||[],function(node){ return !!node && node.nodeType===1; });
+    });
+  }
   function init(){
     ensureSettingsPanel();
     injectSettingsButtons();
     syncUi();
-    var observer = new MutationObserver(function(){ injectSettingsButtons(); syncUi(); });
+    var observer = new MutationObserver(function(records){
+      if(!mutationAddsElement(records)) return;
+      injectSettingsButtons();
+      syncUi();
+    });
     observer.observe(document.body,{childList:true,subtree:true});
   }
 
