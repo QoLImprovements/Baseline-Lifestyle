@@ -204,3 +204,37 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
   font-weight:900;
   letter-spacing:.035em;
 }
+
+
+/* 2026-10-23 tray-fit correction.
+   Three pieces share the play width; mini-cells shrink before the tray wraps or clips. */
+#blockGridPanel .block-grid-tray{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-items:stretch!important;
+  width:100%;
+  gap:clamp(7px,1.4vw,16px)!important;
+}
+#blockGridPanel .block-grid-piece{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  overflow:visible;
+  padding:clamp(8px,1.4vw,12px)!important;
+}
+#blockGridPanel .block-grid-piece-shape{
+  --block-piece-mini-cell:clamp(12px,2.05vw,18px);
+  grid-template-columns:repeat(var(--piece-cols),var(--block-piece-mini-cell))!important;
+  grid-template-rows:repeat(var(--piece-rows),var(--block-piece-mini-cell))!important;
+  gap:clamp(2px,.35vw,3px)!important;
+  max-width:100%;
+}
+#blockGridPanel .block-grid-piece-cell{
+  width:var(--block-piece-mini-cell)!important;
+  height:var(--block-piece-mini-cell)!important;
+}
+@media(max-width:520px){
+  #blockGridPanel .block-grid-tray{gap:6px!important;padding:8px!important}
+  #blockGridPanel .block-grid-piece{min-height:70px!important;padding:6px!important}
+  #blockGridPanel .block-grid-piece-shape{--block-piece-mini-cell:clamp(9px,3vw,13px)}
+}
