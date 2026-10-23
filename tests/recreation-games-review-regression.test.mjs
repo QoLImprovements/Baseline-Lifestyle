@@ -35,9 +35,13 @@ test('core New Game is one-click, opens Pairs idle, and keeps Full Screen inside
   assert.match(core,/function resetGameRoundToIdle\(gameId\)[\s\S]*?profile\.activeRound=null;[\s\S]*?scheduleSave\(id\)/);
   assert.doesNotMatch(core,/function restoreSavedPairsRound\(/);
   assert.doesNotMatch(core,/function savedPairsRoundSnapshot\(/);
-  for(const stateName of ['pairsBoardState','wordState','make24State','trackCoinState','ruleShiftState']){
-    assert.match(core,new RegExp(stateName+'\\s*=\\s*null'));
-  }
+  assert.match(core,/pairsBoardState=null;[\s\S]*?profiles\.pairs\.activeRound=null/);
+  assert.match(core,/const wordRestored=restoreSavedWordRound\(\)/);
+  assert.match(core,/const makeRestored=restoreSavedMake24Round\(\)/);
+  assert.match(core,/const trackRestored=restoreSavedTrackCoinRound\(\)/);
+  assert.match(core,/const ruleRestored=restoreSavedRuleShiftRound\(\)/);
+  assert.match(core,/if\(selectedGame === 'pairs'[\s\S]*?resetGameRoundToIdle\('pairs'\)/);
+  assert.doesNotMatch(core,/resetGameRoundToIdle\(selectedGame\)/);
   assert.match(core,/const windowActions = gameRoot \? gameRoot\.querySelector\('\.game-window-actions'\)/);
   assert.match(core,/if\(fullBtn && windowActions && fullBtn\.parentElement!==windowActions\) windowActions\.appendChild\(fullBtn\)/);
 });
