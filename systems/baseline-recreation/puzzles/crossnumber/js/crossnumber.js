@@ -112,7 +112,7 @@
     const storage=storageAuthority();
     try{
       storage?.setTemporaryProfile?.(APP,profile);
-      storage?.saveProfile?.(APP,profile);
+      storage?.saveProfile?.(APP,profile,{immediate:true,keepalive:false});
     }catch(_error){}
     if(options.progress){
       try{document.dispatchEvent(new CustomEvent('baseline:crossnumber-progress',{detail:{profile:clone(profile),contribution:getRealmContribution(profile)}}));}catch(_error){}
@@ -735,7 +735,7 @@
     profile.selectedTier=tier.id;
     saveProfile();
     createNewRound({tierId:tier.id});
-    setCross NumberPanel(PANEL_ROUTES.game,'push');
+    setCrossnumberPanel(PANEL_ROUTES.game,'push');
   }
 
   function sortBank(){
@@ -762,10 +762,10 @@
       else url.searchParams.set('crosspanel',key);
       const next=url.pathname+(url.searchParams.toString()?'?'+url.searchParams.toString():'')+url.hash;
       const method=mode==='replace'?'replaceState':'pushState';
-      window.history[method]({baselineCross Number:true,panel:key},'',next);
+      window.history[method]({baselineCrossnumber:true,panel:key},'',next);
     }catch(_error){}
   }
-  function setCross NumberPanel(targetId,historyMode){
+  function setCrossnumberPanel(targetId,historyMode){
     const valid=panelViews.some(function(view){return view.id===targetId;})?targetId:PANEL_ROUTES.game;
     activePanel=valid;
     panelViews.forEach(function(view){view.hidden=view.id!==valid;});
@@ -932,8 +932,8 @@
     const ratio=Math.max(.25,Number(layout.cols||1)/Math.max(1,Number(layout.rows||1)));
     const availableWidth=Math.max(220,rect.width-16);
     const viewportBottom=Math.max(260,(window.visualViewport?.height||window.innerHeight||800)-rect.top-(full?10:22));
-    const availableHeight=full ? Math.max(220,rect.height-16) : viewportBottom;
-    const width=Math.max(220,Math.min(availableWidth,availableHeight*ratio,full?1400:900));
+    const availableHeight=full ? Math.max(220,rect.height-16) : Math.max(220,Math.min(viewportBottom,(window.visualViewport?.height||window.innerHeight||800)*0.72));
+    const width=Math.max(220,Math.min(availableWidth,availableHeight*ratio,full?1200:820));
     refs.board.style.width=Math.floor(width)+'px';
     refs.board.style.maxWidth='none';
   }
@@ -1001,7 +1001,7 @@
 
   root.addEventListener('click',function(event){
     const panelButton=event.target.closest('button[data-crossnumber-panel]');
-    if(panelButton){setCross NumberPanel(panelButton.dataset.crossnumberPanel,'push');return;}
+    if(panelButton){setCrossnumberPanel(panelButton.dataset.crossnumberPanel,'push');return;}
     const tierButton=event.target.closest('[data-crossnumber-tier]');
     if(tierButton){selectTier(tierButton.dataset.crossnumberTier);return;}
     const skillButton=event.target.closest('[data-crossnumber-skill]');
@@ -1018,14 +1018,14 @@
   });
 
   document.addEventListener('baseline:crossnumber-open',function(){
-    setCross NumberPanel(panelFromLocation(),'none');
+    setCrossnumberPanel(panelFromLocation(),'none');
     if(!round) createNewRound({tierId:profile.selectedTier});
     else startTimer();
   });
   document.addEventListener('fullscreenchange',syncFullscreenControl);
   window.addEventListener('popstate',function(){
     if(panel&&panel.hidden) return;
-    setCross NumberPanel(panelFromLocation(),'none');
+    setCrossnumberPanel(panelFromLocation(),'none');
   });
   document.addEventListener('baseline:game-storage',function(){
     if(storageReloaded) return;
@@ -1049,12 +1049,12 @@
   layout=round?generateLayout(round.seed,round.tierId):null;
   renderAll();
   syncFullscreenControl();
-  setCross NumberPanel(panelFromLocation(),'none');
+  setCrossnumberPanel(panelFromLocation(),'none');
   if(hadSavedRound&&round) setStatus('Your saved Cross Number game has been restored.');
   else setStatus('Open Cross Number and press New Game when you are ready.');
   startTimer();
 
-  globalThis.BaselineCross Number=Object.freeze({
+  globalThis.BaselineCrossnumber=Object.freeze({
     build:BUILD,
     getProfile:function(){return clone(profile);},
     getRealmContribution:function(){return getRealmContribution(profile);},
