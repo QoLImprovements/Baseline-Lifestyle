@@ -51,6 +51,13 @@ test('non-Realm progression uses Player Rank while Tier remains the difficulty l
   assert.match(crossnumber,/data-crossnumber-tier-label|tierDefinition/);
 });
 
+test('core skill trees distinguish skill Rank from Player Rank progression',()=>{
+  assert.doesNotMatch(core,/<span>Level ' \+ level \+ ' \/ '/);
+  assert.doesNotMatch(core,/Requires level ' \+ skill\.unlockLevel/);
+  assert.match(core,/<span>Rank ' \+ level \+ ' \/ ' \+ skill\.max/);
+  assert.match(core,/Requires Player Rank ' \+ skill\.unlockLevel/);
+});
+
 test('Detect the Word and Make The Number keep coherent input behavior and active-round persistence',()=>{
   assert.match(core,/explicitWordSubmit[\s\S]*?submitWordGuess/);
   assert.match(core,/explicitMakeSubmit[\s\S]*?submitMake24Expression/);
