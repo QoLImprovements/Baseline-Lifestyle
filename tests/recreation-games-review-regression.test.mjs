@@ -33,6 +33,8 @@ test('core New Game is one-click, opens Pairs idle, and keeps Full Screen inside
   assert.match(core,/document\.addEventListener\('pointerdown',[\s\S]*?newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn[\s\S]*?startCoreGameFromButton\(start\)/);
   assert.match(core,/document\.addEventListener\('click',[\s\S]*?coreNewGamePointerId[\s\S]*?startCoreGameFromButton\(start\)/);
   assert.match(core,/function resetGameRoundToIdle\(gameId\)[\s\S]*?profile\.activeRound=null;[\s\S]*?scheduleSave\(id\)/);
+  assert.doesNotMatch(core,/function restoreSavedPairsRound\(/);
+  assert.doesNotMatch(core,/function savedPairsRoundSnapshot\(/);
   for(const stateName of ['pairsBoardState','wordState','make24State','trackCoinState','ruleShiftState']){
     assert.match(core,new RegExp(stateName+'\\s*=\\s*null'));
   }
