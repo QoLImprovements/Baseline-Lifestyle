@@ -657,3 +657,59 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
     grid-template-columns:minmax(0,1fr) auto;
   }
 }
+
+
+/* 2026-10-23 coherent settings and unclipped tab controls */
+#weightCoherencePuzzle .jigsaw-tab-row{
+  box-sizing:border-box;
+  overflow:visible!important;
+  padding:4px 5px 6px!important;
+  margin:6px -5px 4px!important;
+}
+#weightCoherencePuzzle .jigsaw-tab-row .game-toggle-btn{
+  margin:2px!important;
+}
+.weight-coherence-audio-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:14px;
+}
+.weight-coherence-audio-row>span{
+  display:grid;
+  gap:3px;
+}
+.weight-coherence-audio-row small{
+  color:rgba(var(--recreation-ink-rgb),.66);
+  line-height:1.38;
+}
+.weight-coherence-audio-row--volume{
+  grid-template-columns:minmax(0,1fr) minmax(150px,220px);
+}
+.weight-coherence-audio-row input[type="range"]{
+  width:100%;
+  accent-color:var(--recreation-copper-light);
+}
+#weightCoherencePuzzle .games-music-quick-toggle{
+  width:44px;
+  min-width:44px;
+  height:44px;
+  min-height:44px;
+  padding:9px;
+}
+#weightCoherencePuzzle .games-music-quick-toggle svg{
+  width:22px;
+  height:22px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+#weightCoherencePuzzle .games-music-quick-toggle.is-muted{
+  opacity:.58;
+}
+@media(max-width:600px){
+  .weight-coherence-audio-row,
+  .weight-coherence-audio-row--volume{grid-template-columns:1fr}
+}
