@@ -54,7 +54,7 @@ test('non-Realm progression uses Player Rank while Tier remains the difficulty l
 test('Detect the Word and Make The Number keep coherent input behavior and active-round persistence',()=>{
   assert.match(core,/explicitWordSubmit[\s\S]*?submitWordGuess/);
   assert.match(core,/explicitMakeSubmit[\s\S]*?submitMake24Expression/);
-  assert.match(core,/make24Board \[data-make24-token\],#make24Board \[data-make24-edit\][\s\S]*?event\.preventDefault\(\)/);
+  assert.match(core,/#make24GameCard \[data-make24-token\],#make24GameCard \[data-make24-edit\][\s\S]*?event\.preventDefault\(\)[\s\S]*?requestAnimationFrame\(keepMake24InputFocused\)/);
   assert.match(core,/renderMake24Board\(\);[\s\S]*?focusGameInput\('make24ExpressionInput'\)/);
   assert.match(core,/Object\.prototype\.hasOwnProperty\.call\(temporary,'activeRound'\)/);
   assert.match(core,/profiles\[app\]\.activeRound=temporary\.activeRound/);
@@ -80,7 +80,8 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/cup\.left=\+\(h00\*start\.left\+h10\*m0Left\+h01\*target\.left\+h11\*m1Left\)/);
   assert.match(core,/trackCoinState\.phase='pick';[\s\S]*?trackCoinState\.pickLocked=false;[\s\S]*?renderTrackCoin\(\)/);
   assert.match(core,/trackCoinAnimationFrame=window\.requestAnimationFrame\(frame\)/);
-  assert.match(core,/pointerdown[\s\S]*?trackcoin-cup\.is-selectable\[data-trackcoin-pick\]:not\(:disabled\)[\s\S]*?chooseTrackCoinCup/);
+  assert.match(core,/pointerdown[\s\S]*?trackcoin-cup\.is-selectable\[data-trackcoin-pick\]:not\(:disabled\)[\s\S]*?trackCoinPointerPickAt=performance\.now\(\)[\s\S]*?chooseTrackCoinCup/);
+  assert.match(core,/const trackCoinCup = event\.target\.closest\('\[data-trackcoin-pick\]'\); if\(trackCoinCup\)\{ if\(performance\.now\(\)-trackCoinPointerPickAt>=700\) chooseTrackCoinCup/);
   assert.match(core,/trackCoinState\.phase!==\'pick\'/);
   assert.match(core,/everyCupMoves/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-scene\.is-phase-pick \.trackcoin-cup\.is-selectable[\s\S]*?pointer-events:auto!important/);
