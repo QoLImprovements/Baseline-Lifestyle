@@ -167,6 +167,7 @@ test('every current game and jigsaw save app is covered by the server authority 
   assert.match(registry,/profileApp:'badmintonfocused'/);
   assert.match(registry,/persistentApps:storageApps/);
   assert.match(guard,/BASELINE_GAMES_REGISTRY\?\.persistentApps\?\.\(\)/);
+  assert.match(guard,/\['pairs'[\s\S]*?'crossnumber'[\s\S]*?'hubsettings'\]/);
   for(const app of ['weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw']){
     assert.ok(puzzlesRegistry.includes("app:'"+app+"'"));
   }
