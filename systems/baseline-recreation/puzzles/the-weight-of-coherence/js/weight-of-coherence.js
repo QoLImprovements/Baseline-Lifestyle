@@ -715,30 +715,50 @@
       return;
     }
     lastSortRenderKey=key;
-    ++sortRenderToken;
+    const token=++sortRenderToken;
+    const pending=[];
     refs.sortTrays.forEach(function(tray,index){
-      const fragment=document.createDocumentFragment();
+      tray.replaceChildren();
       const ids=state && Array.isArray(state.sortBins?.[index]) ? state.sortBins[index] : [];
       const count=refs.sortCounts.find(function(node){ return Number(node.dataset.sortCount)===index; });
       if(count) count.textContent=String(ids.length);
-      if(state && state.started && imageReady){
-        ids.forEach(function(id){
-          if(state.placed.has(id)) return;
-          const btn=document.createElement('button');
-          btn.type='button';
-          btn.className='weight-coherence-piece';
-          btn.dataset.pieceId=String(id);
-          btn.dataset.pieceSource='sort-' + index;
-          btn.setAttribute('aria-label','Jigsaw piece ' + (id+1) + ' in Sort ' + (index+1));
-          if(selectedPieceId===id) btn.classList.add('is-selected');
-          if(returnHighlightPieceId===id) btn.classList.add('is-return-highlight');
-          btn.setAttribute('aria-disabled',String(viewOn));
-          btn.appendChild(createPieceCanvas(id));
-          fragment.appendChild(btn);
-        });
-      }
-      tray.replaceChildren(fragment);
+      if(!state || !state.started || !imageReady) return;
+      ids.forEach(function(id){
+        if(state.placed.has(id)) return;
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.className='weight-coherence-piece';
+        btn.dataset.pieceId=String(id);
+        btn.dataset.pieceSource='sort-' + index;
+        btn.setAttribute('aria-label','Jigsaw piece ' + (id+1) + ' in Sort ' + (index+1));
+        btn.disabled=true;
+        btn.setAttribute('aria-busy','true');
+        if(selectedPieceId===id) btn.classList.add('is-selected');
+        if(returnHighlightPieceId===id) btn.classList.add('is-return-highlight');
+        btn.setAttribute('aria-disabled',String(viewOn));
+        const placeholder=document.createElement('span');
+        placeholder.className='weight-coherence-piece-placeholder';
+        placeholder.setAttribute('aria-hidden','true');
+        btn.appendChild(placeholder);
+        tray.appendChild(btn);
+        pending.push({id:id,button:btn});
+      });
     });
+    let index=0;
+    const batchSize=mobileLike()?1:6;
+    const paintBatch=function(){
+      if(token!==sortRenderToken) return;
+      const stop=Math.min(pending.length,index+batchSize);
+      for(;index<stop;index++){
+        const item=pending[index];
+        if(!item.button.isConnected) continue;
+        item.button.replaceChildren(createPieceCanvas(item.id));
+        item.button.disabled=false;
+        item.button.removeAttribute('aria-busy');
+      }
+      if(index<pending.length) window.requestAnimationFrame(paintBatch);
+    };
+    if(pending.length) window.requestAnimationFrame(paintBatch);
   }
 
   function stabilisePieceFocus(){
@@ -798,7 +818,8 @@
       return;
     }
     lastTrayRenderKey=trayKey;
-    ++trayRenderToken;
+    const token=++trayRenderToken;
+    const pending=[];
     const fragment=document.createDocumentFragment();
     pageIds.forEach(function(id){
       const btn=document.createElement('button');
@@ -806,13 +827,45 @@
       btn.className='weight-coherence-piece';
       btn.dataset.pieceId=String(id);
       btn.setAttribute('aria-label','Jigsaw piece ' + (id+1));
+      btn.disabled=true;
+      btn.setAttribute('aria-busy','true');
       if(selectedPieceId===id) btn.classList.add('is-selected');
       if(returnHighlightPieceId===id) btn.classList.add('is-return-highlight');
       btn.setAttribute('aria-disabled',String(viewOn));
-      btn.appendChild(createPieceCanvas(id));
+      const placeholder=document.createElement('span');
+      placeholder.className='weight-coherence-piece-placeholder';
+      placeholder.setAttribute('aria-hidden','true');
+      btn.appendChild(placeholder);
       fragment.appendChild(btn);
+      pending.push({id:id,button:btn});
     });
     refs.tray.replaceChildren(fragment);
+
+    const revealRestart=function(){
+      if(token!==trayRenderToken || !root.classList.contains('is-restarting')) return;
+      window.requestAnimationFrame(function(){
+        window.requestAnimationFrame(function(){
+          if(token===trayRenderToken) root.classList.remove('is-restarting');
+        });
+      });
+    };
+    let index=0;
+    const batchSize=mobileLike()?1:6;
+    const paintBatch=function(){
+      if(token!==trayRenderToken) return;
+      const stop=Math.min(pending.length,index+batchSize);
+      for(;index<stop;index++){
+        const item=pending[index];
+        if(!item.button.isConnected) continue;
+        item.button.replaceChildren(createPieceCanvas(item.id));
+        item.button.disabled=false;
+        item.button.removeAttribute('aria-busy');
+      }
+      if(index<pending.length) window.requestAnimationFrame(paintBatch);
+      else revealRestart();
+    };
+    if(pending.length) window.requestAnimationFrame(paintBatch);
+    else revealRestart();
   }
 
   function setStatus(message,tone){
@@ -1008,9 +1061,8 @@
     renderJigsawProgress();
     saveState();
     startTimer();
-    window.requestAnimationFrame(function(){
-      window.requestAnimationFrame(function(){ root.classList.remove('is-restarting'); });
-    });
+    // renderTray releases the restart veil only after its deferred canvas batch
+    // has painted, preventing the whole tray from flashing through placeholders.
   }
 
   function renderCompletion(){
