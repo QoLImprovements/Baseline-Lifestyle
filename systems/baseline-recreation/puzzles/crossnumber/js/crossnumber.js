@@ -2,7 +2,7 @@
   'use strict';
 
   const APP='crossnumber';
-  const BUILD='CROSS_NUMBER_RECREATION_COHERENCE_20261023_1';
+  const BUILD='CROSS_NUMBER_RECREATION_COHERENCE_20261023_2';
   const root=document.getElementById('crossnumberGame');
   if(!root) return;
   const panel=root.closest('#crossnumberPanel');
