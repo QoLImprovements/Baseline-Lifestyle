@@ -91,7 +91,7 @@ test('Cross Number inherits the Recreation Indigo Circuit palette instead of own
     assert.ok(css.includes('var('+token),token);
   });
   ['#fff7d2','#eadb9b','#fbf3d0','#f5f2e8'].forEach(retired=>assert.doesNotMatch(css,new RegExp(retired,'i')));
-  assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_(?:PROGRESSION|COHERENT_UI|SCALE_AUTONEXT)_/);
+  assert.match(html,/crossnumber\.css\?v=RECREATION_COHERENCE_20261023_/);
 });
 
 test('Cross Number follows the Recreation single-panel navigation contract',()=>{
@@ -102,9 +102,17 @@ test('Cross Number follows the Recreation single-panel navigation contract',()=>
   });
   assert.doesNotMatch(html,/class="crossnumber-hero"/);
   assert.doesNotMatch(html,/class="crossnumber-progression-strip"/);
-  assert.match(crossnumber,/setCross NumberPanel/);
+  assert.match(crossnumber,/setCrossNumberPanel/);
   assert.match(crossnumber,/crosspanel/);
   assert.match(crossnumber,/panelFromLocation/);
+});
+
+test('Cross Number visible naming is two words while internal identifiers remain valid JavaScript',()=>{
+  assert.match(html,/<h2>Cross Number<\/h2>/);
+  assert.match(html,/data-crossnumber-level>Player Rank 1<\/div>/);
+  assert.doesNotMatch(html,/>Crossnumber</);
+  assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
+  assert.doesNotThrow(()=>new Function(crossnumber));
 });
 
 test('Cross Number keeps the entire puzzle and answer bank reachable without fullscreen scrolling',()=>{
@@ -114,9 +122,12 @@ test('Cross Number keeps the entire puzzle and answer bank reachable without ful
   assert.match(crossnumber,/function fitCrossNumberBoard\(\)/);
   assert.match(crossnumber,/availableHeight\*ratio/);
   assert.match(crossnumber,/window\.requestAnimationFrame\(fitCrossNumberBoard\)/);
+  assert.match(crossnumber,/fullscreenchange[\s\S]*?requestAnimationFrame\(fitCrossNumberBoard\)/);
+  assert.match(crossnumber,/visualViewport\?\.addEventListener\?\.\('resize'[\s\S]*?requestAnimationFrame\(fitCrossNumberBoard\)/);
   assert.match(css,/#crossnumberGamePanel:fullscreen\{[\s\S]*?overflow:hidden!important[\s\S]*?height:100dvh/);
   assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?height:100%/);
-  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-bank-panel\{[\s\S]*?height:100%/);
+  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-board-column\{[\s\S]*?grid-template-rows:minmax\(0,1fr\) auto!important/);
+  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-board-scroll\{[\s\S]*?overflow:hidden!important/);
   assert.match(css,/@media\(max-width:820px\)[\s\S]*?crossnumber-board-scroll\{overflow:auto\}/);
 });
 
