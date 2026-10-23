@@ -413,7 +413,7 @@ function clampAnchorInsideBoard(board, piece, row, col) {
   };
 }
 
-function boardAnchorFromPointer(clientX, clientY) {
+function boardAnchorFromPointer(clientX, clientY, grip = dragState) {
   const active = run();
   const board = document.querySelector('#blockGridGameCard [data-block-board]');
   const piece = active && selectedPiece >= 0 ? shapeById(active.tray[selectedPiece]) : null;
@@ -438,7 +438,12 @@ function boardAnchorFromPointer(clientX, clientY) {
     }
   }
   const coords = cellCoordinates(nearest);
-  return coords ? clampAnchorInsideBoard(active.board, piece, coords.row, coords.col) : null;
+  if (!coords) return null;
+  const bounds = boundsForShape(piece);
+  const row = coords.row - Math.max(0, Number(grip?.grabRow) || 0);
+  const col = coords.col - Math.max(0, Number(grip?.grabCol) || 0);
+  if (row < 0 || col < 0 || row + bounds.rows > active.board.length || col + bounds.cols > active.board.length) return null;
+  return { row, col };
 }
 
 function createDragGhost(pieceId) {
@@ -450,23 +455,35 @@ function createDragGhost(pieceId) {
   return ghost;
 }
 
-function positionDragGhost(ghost, clientX, clientY, anchor) {
+function positionDragGhost(ghost, clientX, clientY, anchor, grip = dragState) {
   if (!ghost) return;
+  const active=run();
+  const piece=active && grip ? shapeById(active.tray[grip.index]) : null;
+  const bounds=piece ? boundsForShape(piece) : {rows:1,cols:1};
   const board = document.querySelector('#blockGridGameCard [data-block-board]');
-  const cell = anchor ? board?.querySelector(`[data-block-cell="${anchor.row}:${anchor.col}"]`) : null;
-  if (cell) {
-    const rect = cell.getBoundingClientRect();
+  const anchorCell = anchor ? board?.querySelector(`[data-block-cell="${anchor.row}:${anchor.col}"]`) : null;
+  let cellSize=18;
+  let gap=3;
+  if (anchorCell) {
+    const rect = anchorCell.getBoundingClientRect();
     const adjacent = board.querySelector(`[data-block-cell="${anchor.row}:${Math.min(7, anchor.col + 1)}"]`);
     const adjacentRect = adjacent?.getBoundingClientRect();
-    const gap = adjacentRect && anchor.col < 7 ? Math.max(0, adjacentRect.left - rect.right) : 4;
-    ghost.style.setProperty('--drag-cell', rect.width + 'px');
+    cellSize=rect.width;
+    gap = adjacentRect && anchor.col < 7 ? Math.max(0, adjacentRect.left - rect.right) : 4;
+    ghost.style.setProperty('--drag-cell', cellSize + 'px');
     ghost.style.setProperty('--drag-gap', gap + 'px');
     ghost.classList.add('is-over-board');
   } else {
     ghost.classList.remove('is-over-board');
   }
-  ghost.style.left = clientX + 'px';
-  ghost.style.top = clientY + 'px';
+  const totalWidth=(bounds.cols * cellSize) + (Math.max(0,bounds.cols-1) * gap);
+  const totalHeight=(bounds.rows * cellSize) + (Math.max(0,bounds.rows-1) * gap);
+  const grabCol=Math.max(0,Math.min(bounds.cols-1,Number(grip?.grabCol)||0));
+  const grabRow=Math.max(0,Math.min(bounds.rows-1,Number(grip?.grabRow)||0));
+  const grabbedX=(grabCol * (cellSize + gap)) + (cellSize / 2);
+  const grabbedY=(grabRow * (cellSize + gap)) + (cellSize / 2);
+  ghost.style.left = (clientX + (totalWidth / 2) - grabbedX) + 'px';
+  ghost.style.top = (clientY + (totalHeight / 2) - grabbedY) + 'px';
 }
 
 function destroyDragGhost() {
@@ -610,6 +627,16 @@ function cellCoordinates(target) {
 function handleClick(event) {
   const target = event.target instanceof Element ? event.target : null;
   if (!target || !document.getElementById('blockGridPanel')?.classList.contains('is-active')) return;
+  const action = target.closest('[data-block-action]')?.getAttribute('data-block-action');
+  if (action) {
+    suppressClick=false;
+    event.preventDefault();
+    if (action === 'new') startNewGame();
+    if (action === 'blast') { if((run()?.skillCharge || 0)>=100){ specialMode='blast'; selectedPiece=-1; previewAnchor=null; statusMessage='Special ready: select the centre of the 4 × 4 area to clear.'; render(); } }
+    if (action === 'rows') clearSpecialRows();
+    if (action === 'fullscreen') toggleFullscreen();
+    return;
+  }
   if (suppressClick) { suppressClick = false; event.preventDefault(); return; }
   const piece = target.closest('[data-block-piece]');
   if (piece) { choosePiece(Number(piece.dataset.blockPiece)); return; }
@@ -620,11 +647,6 @@ function handleClick(event) {
     else if (coords) placeSelected(coords.row, coords.col);
     return;
   }
-  const action = target.closest('[data-block-action]')?.getAttribute('data-block-action');
-  if (action === 'new') startNewGame();
-  if (action === 'blast') { if((run()?.skillCharge || 0)>=100){ specialMode='blast'; selectedPiece=-1; previewAnchor=null; statusMessage='Special ready: select the centre of the 4 × 4 area to clear.'; render(); } }
-  if (action === 'rows') clearSpecialRows();
-  if (action === 'fullscreen') toggleFullscreen();
   const mode = target.closest('[data-block-mode]')?.getAttribute('data-block-mode');
   if (mode) changeMode(mode);
   const tab = target.closest('[data-block-tab]')?.getAttribute('data-block-tab');
@@ -638,7 +660,25 @@ function handlePointerDown(event) {
   const index = Number(piece.dataset.blockPiece);
   if (!run()?.tray[index]) return;
   selectedPiece = index;
-  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, moved:false, ghost:null };
+  const pieceId=run()?.tray[index];
+  const shape=pieceId ? shapeById(pieceId) : null;
+  const bounds=shape ? boundsForShape(shape) : {rows:1,cols:1};
+  const shapeNode=piece.querySelector('.block-grid-piece-shape');
+  const allCells=shapeNode ? [...shapeNode.querySelectorAll('.block-grid-piece-cell')] : [];
+  let grabRow=0,grabCol=0,nearestDistance=Infinity;
+  allCells.forEach((cell,cellIndex)=>{
+    if(!cell.classList.contains('is-filled')) return;
+    const rect=cell.getBoundingClientRect();
+    const dx=event.clientX-(rect.left+rect.width/2);
+    const dy=event.clientY-(rect.top+rect.height/2);
+    const distance=(dx*dx)+(dy*dy);
+    if(distance<nearestDistance){
+      nearestDistance=distance;
+      grabRow=Math.floor(cellIndex/Math.max(1,bounds.cols));
+      grabCol=cellIndex%Math.max(1,bounds.cols);
+    }
+  });
+  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, grabRow, grabCol, moved:false, ghost:null };
   piece.setPointerCapture?.(event.pointerId);
   piece.classList.add('is-selected');
 }
@@ -668,8 +708,8 @@ function handlePointerMove(event) {
     document.documentElement.classList.add('is-dragging-block-grid-piece');
   }
   event.preventDefault();
-  const anchor = boardAnchorFromPointer(event.clientX, event.clientY);
-  positionDragGhost(dragState.ghost, event.clientX, event.clientY, anchor);
+  const anchor = boardAnchorFromPointer(event.clientX, event.clientY, dragState);
+  positionDragGhost(dragState.ghost, event.clientX, event.clientY, anchor, dragState);
   if ((!anchor && previewAnchor) || (anchor && (!previewAnchor || previewAnchor.row !== anchor.row || previewAnchor.col !== anchor.col))) {
     previewAnchor = anchor;
     paintPreview();
@@ -679,7 +719,7 @@ function handlePointerMove(event) {
 function handlePointerUp(event) {
   if (!dragState || dragState.pointerId !== event.pointerId) return;
   const moved = dragState.moved;
-  const anchor = moved ? boardAnchorFromPointer(event.clientX, event.clientY) : null;
+  const anchor = moved ? boardAnchorFromPointer(event.clientX, event.clientY, dragState) : null;
   destroyDragGhost();
   dragState = null;
   if (moved) {
