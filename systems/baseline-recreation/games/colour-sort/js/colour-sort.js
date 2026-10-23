@@ -283,7 +283,7 @@ function renderGameInfo() {
     <div class="progress-shell progress-shell--trackcoin">
       <div class="xp-row">
         <div>
-          <div class="trackcoin-level-title">Level - ${profile.level}</div>
+          <div class="trackcoin-level-title">Player Rank ${profile.level}</div>
           <div class="xp-bar"><div class="xp-fill" style="width:${pct}%"></div></div>
           <div class="trackcoin-xp-meta-row"><span class="inline-note">${profile.xp} / ${needed} XP</span></div>
         </div>
