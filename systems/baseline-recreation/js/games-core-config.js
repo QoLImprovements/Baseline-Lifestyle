@@ -92,7 +92,7 @@
     { id:'yellow', name:'Yellow' },
     { id:'purple', name:'Purple' },
     { id:'orange', name:'Orange' },
-    { id:'lime', name:'Lime' },
+    { id:'white', name:'White' },
     { id:'pink', name:'Pink' }
   ]);
   const RULESHIFT_SHAPES = Object.freeze([

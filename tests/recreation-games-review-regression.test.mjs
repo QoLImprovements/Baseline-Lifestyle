@@ -75,15 +75,15 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(nonRealmCss,/#detectwordPanel \.letter-cell\.absent[\s\S]*?linear-gradient\(180deg,#401522 0%,#250b14 100%\)/);
 });
 
-test('Rule Shift uses a true oval and unmistakably separated red, blue and lime colours',()=>{
+test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
   assert.match(config,/\{ id:'oval', name:'Oval' \}/);
-  assert.match(config,/\{ id:'lime', name:'Lime' \}/);
+  assert.match(config,/\{ id:'white', name:'White' \}/);
   assert.doesNotMatch(config,/\{ id:'pill', name:'Pill' \}|\{ id:'teal', name:'Teal' \}/);
   assert.doesNotMatch(core,/ruleshift-token-caption" aria-hidden/);
   assert.match(core,/if\(rule && rule\.shape==='pill'\) rule\.shape='oval'/);
-  assert.match(core,/if\(rule && rule\.colour==='teal'\) rule\.colour='lime'/);
+  assert.match(core,/if\(rule && \(rule\.colour==='teal'\|\|rule\.colour==='lime'\)\) rule\.colour='white'/);
   assert.match(nonRealmCss,/ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/i);
-  assert.match(nonRealmCss,/ruleshift-colour--lime \.ruleshift-shape\{[\s\S]*?background:#9edb35!important/i);
+  assert.match(nonRealmCss,/ruleshift-colour--white \.ruleshift-shape\{[\s\S]*?background:#f4f7fa!important/i);
   assert.match(nonRealmCss,/ruleshift-shape--oval\{[\s\S]*?clip-path:ellipse\(50% 50% at 50% 50%\)!important/);
 });
 

@@ -2286,12 +2286,12 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const validTypes=['colour','shape','size','notColour','notShape','colourShape','colourSize','shapeSize'];
     const rule=saved.currentRule&&typeof saved.currentRule==='object'?Object.assign({},saved.currentRule):null;
     if(rule && rule.shape==='pill') rule.shape='oval';
-    if(rule && rule.colour==='teal') rule.colour='lime';
+    if(rule && (rule.colour==='teal'||rule.colour==='lime')) rule.colour='white';
     const options=Array.isArray(saved.options)?saved.options.map(function(option){
       if(!option||typeof option!=='object') return null;
       const next=Object.assign({},option);
       if(next.shape==='pill') next.shape='oval';
-      if(next.colour==='teal') next.colour='lime';
+      if(next.colour==='teal'||next.colour==='lime') next.colour='white';
       return next;
     }).filter(function(option){
       return option&&RULESHIFT_COLOURS.some(function(item){return item.id===option.colour;})&&RULESHIFT_SHAPES.some(function(item){return item.id===option.shape;})&&RULESHIFT_SIZES.some(function(item){return item.id===option.size;});
