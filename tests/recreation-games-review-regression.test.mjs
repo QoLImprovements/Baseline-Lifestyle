@@ -84,6 +84,8 @@ test('Rule Shift uses a true oval and unmistakably separated categorical colours
   assert.match(core,/if\(rule && \(rule\.colour==='teal'\|\|rule\.colour==='lime'\)\) rule\.colour='white'/);
   assert.match(nonRealmCss,/ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/i);
   assert.match(nonRealmCss,/ruleshift-colour--white \.ruleshift-shape\{[\s\S]*?background:#f4f7fa!important/i);
+  assert.equal((nonRealmCss.match(/ruleshift-colour--red \.ruleshift-shape\{/gi)||[]).length,1);
+  assert.equal((nonRealmCss.match(/ruleshift-colour--white \.ruleshift-shape\{/gi)||[]).length,1);
   assert.match(nonRealmCss,/ruleshift-shape--oval\{[\s\S]*?clip-path:ellipse\(50% 50% at 50% 50%\)!important/);
 });
 

@@ -841,14 +841,7 @@ body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#tr
   margin-top:4px!important;
 }
 
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{background:#E21837!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--blue .ruleshift-shape{background:#3264D8!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--green .ruleshift-shape{background:#3E9B55!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--yellow .ruleshift-shape{background:#E4BF32!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--purple .ruleshift-shape{background:#7A55B8!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--orange .ruleshift-shape{background:#D5742E!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--white .ruleshift-shape{background:#F4F7FA!important}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--pink .ruleshift-shape{background:#C9528C!important}
+
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-token-caption{display:none!important}
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-token{
   min-height:124px!important;
@@ -940,12 +933,6 @@ body[data-app="recreation"] #pairsPanel .memory-card-front>img{
 
 
 /* 2026-10-23 coherence corrections */
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{
-  background:#e21837!important;
-}
-body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--white .ruleshift-shape{
-  background:#f4f7fa!important;
-}
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape--oval{
   width:clamp(64px,6.4vw,88px)!important;
   height:clamp(50px,5vw,68px)!important;
