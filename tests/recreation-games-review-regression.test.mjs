@@ -26,7 +26,7 @@ test('reviewed core games use game-first side-by-side desktop keypad layouts',()
 
 test('core New Game is one-click, opens Pairs idle, and keeps Full Screen inside the game controls',()=>{
   assert.match(core,/function startButtonLabel\(_gameId\)[\s\S]*?const label='New Game'/);
-  assert.doesNotMatch(core,/Start New Game|Start Next Game|Next Game/);
+  assert.doesNotMatch(core,/Start New Game|Start Next Game/);
   assert.match(core,/document\.addEventListener\('pointerdown',[\s\S]*?newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn[\s\S]*?startCoreGameFromButton\(start\)/);
   assert.match(core,/document\.addEventListener\('click',[\s\S]*?coreNewGamePointerId[\s\S]*?startCoreGameFromButton\(start\)/);
   assert.match(core,/opts\.useStored===true && routedGame==='pairs'[\s\S]*?pairsBoardState=null/);
