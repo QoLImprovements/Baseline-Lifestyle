@@ -140,14 +140,16 @@ export function applyPour(bottles, from, to, capacity = BOTTLE_CAPACITY) {
   return { bottles:next, amount, colour, from, to };
 }
 
-export function legalMoves(bottles, capacity = BOTTLE_CAPACITY) {
+export function legalMoves(bottles, capacity = BOTTLE_CAPACITY, { blockedIndices = [] } = {}) {
+  const blocked = new Set((Array.isArray(blockedIndices) ? blockedIndices : []).map(Number));
   const moves = [];
   for (let from = 0; from < bottles.length; from += 1) {
+    if (blocked.has(from)) continue;
     const source = bottles[from];
     if (!source.length) continue;
     let usedEmpty = false;
     for (let to = 0; to < bottles.length; to += 1) {
-      if (from === to) continue;
+      if (from === to || blocked.has(to)) continue;
       const target = bottles[to];
       const amount = pourAmount(bottles, from, to, capacity);
       if (!amount) continue;
@@ -177,34 +179,42 @@ function moveScore(bottles, move, capacity) {
   return score;
 }
 
-export function findSolution(bottles, { capacity = BOTTLE_CAPACITY, maxNodes = 120000 } = {}) {
+export function findSolution(bottles, {
+  capacity = BOTTLE_CAPACITY,
+  maxNodes = 120000,
+  blockedIndices = [],
+  blockedMoves = 0
+} = {}) {
   const start = cloneBottles(bottles);
+  const blocked = (Array.isArray(blockedIndices) ? blockedIndices : []).map(Number).filter(Number.isInteger);
+  const startBlockedMoves = Math.max(0, Math.floor(Number(blockedMoves) || 0));
   const visited = new Set();
   const path = [];
   let nodes = 0;
 
-  function search(state) {
+  function search(state, remainingBlockedMoves) {
     nodes += 1;
     if (nodes > maxNodes) return null;
     if (isSolved(state, capacity)) return path.slice();
-    const key = stateKey(state);
+    const key = stateKey(state) + '#lock:' + remainingBlockedMoves;
     if (visited.has(key)) return null;
     visited.add(key);
 
-    const moves = legalMoves(state, capacity)
-      .sort((a, b) => moveScore(state, b, capacity) - moveScore(state, a, capacity));
+    const moves = legalMoves(state, capacity, {
+      blockedIndices:remainingBlockedMoves > 0 ? blocked : []
+    }).sort((a, b) => moveScore(state, b, capacity) - moveScore(state, a, capacity));
     for (const move of moves) {
       const result = applyPour(state, move.from, move.to, capacity);
       if (!result) continue;
       path.push(move);
-      const solution = search(result.bottles);
+      const solution = search(result.bottles, Math.max(0, remainingBlockedMoves - 1));
       if (solution) return solution;
       path.pop();
     }
     return null;
   }
 
-  const solution = search(start);
+  const solution = search(start, startBlockedMoves);
   return { solution, nodes, exhausted:nodes > maxNodes };
 }
 
