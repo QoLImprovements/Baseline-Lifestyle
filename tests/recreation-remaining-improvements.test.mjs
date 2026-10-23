@@ -18,12 +18,13 @@ const lazyScenes=fs.readFileSync(new URL('../systems/baseline-recreation/games/b
 const calorieGame=fs.readFileSync(new URL('../systems/baseline-recreation/games/baseline-realm/calorie-escape/js/calorie-escape-game.js',import.meta.url),'utf8');
 const calorieDir=new URL('../systems/baseline-recreation/games/baseline-realm/calorie-escape/js/',import.meta.url);
 
-test('Detect The Word persists and restores an unresolved active round',()=>{
+test('Detect The Word can persist a live round but opens idle under the shared New Game contract',()=>{
   assert.match(profileRules,/activeRound:null/);
   assert.match(core,/function persistWordRound\(/);
   assert.match(core,/function restoreSavedWordRound\(/);
   assert.match(core,/restoreSavedCoreRounds\(\)/);
-  assert.match(core,/profiles\.detectword\.activeRound = null/);
+  assert.match(core,/function resetGameRoundToIdle\(gameId\)[\s\S]*?profile\.activeRound=null;[\s\S]*?scheduleSave\(id\)/);
+  assert.match(core,/if\(selectedGame && selectedGame !== previousGame && opts\.resetRound !== false\)[\s\S]*?resetGameRoundToIdle\(selectedGame\)/);
 });
 
 test('Make The Number generation is explicitly seedable and generated-bank fill is deterministic',()=>{
