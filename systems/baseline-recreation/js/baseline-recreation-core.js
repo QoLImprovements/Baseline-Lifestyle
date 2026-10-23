@@ -1967,6 +1967,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_1';
   }
   function syncMake24BuilderUi(){
     if(!make24State) return;
+    const input=refs.make24ExpressionInput || document.getElementById('make24ExpressionInput');
+    if(input && input.value!==String(make24State.draftExpression||'')) input.value=String(make24State.draftExpression||'');
     const usage=make24ExpressionNumberUsage(make24State.draftExpression||'');
     qsa('[data-make24-number-key]',refs.make24Board||document).forEach(function(button){
       const key=button.getAttribute('data-make24-number-key')||'';
@@ -1977,6 +1979,16 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_1';
     });
     const note=q('.make-number-builder-note',refs.make24Board||document);
     if(note) note.textContent=make24BuilderStatus();
+  }
+  function keepMake24InputFocused(){
+    if(isMobileGameViewport()) return;
+    const input=refs.make24ExpressionInput || document.getElementById('make24ExpressionInput');
+    if(!input || input.disabled) return;
+    try{
+      input.focus({preventScroll:true});
+      const end=String(input.value||'').length;
+      if(typeof input.setSelectionRange==='function') input.setSelectionRange(end,end);
+    }catch(_error){}
   }
   function appendMake24BuilderToken(token){
     if(!make24State||make24State.completed) return;
@@ -2005,8 +2017,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_1';
     }else return;
     make24State.draftExpression=raw;
     persistMake24Round();
-    renderMake24Board();
-    focusGameInput('make24ExpressionInput');
+    syncMake24BuilderUi();
+    keepMake24InputFocused();
   }
   function editMake24Builder(action){
     if(!make24State||make24State.completed) return;
@@ -2018,8 +2030,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_1';
     }
     make24State.draftExpression=raw;
     persistMake24Round();
-    renderMake24Board();
-    focusGameInput('make24ExpressionInput');
+    syncMake24BuilderUi();
+    keepMake24InputFocused();
   }
 
   function renderMake24Board(){
