@@ -82,6 +82,7 @@
   let timerId=0;
   let dragTile='';
   let storageReloaded=false;
+  let newGamePointerAt=0;
 
   function clone(value){
     try{return JSON.parse(JSON.stringify(value));}catch(_error){return null;}
@@ -999,6 +1000,17 @@
     }else setStatus('Select a number tile from the bank first.');
   });
 
+  root.addEventListener('pointerdown',function(event){
+    if(event.pointerType==='mouse' && event.button!==0) return;
+    const button=event.target instanceof Element ? event.target.closest('[data-crossnumber-action="new"]') : null;
+    if(!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+    newGamePointerAt=performance.now();
+    createNewRound({tierId:profile.selectedTier});
+  },true);
+
   root.addEventListener('click',function(event){
     const panelButton=event.target.closest('button[data-crossnumber-panel]');
     if(panelButton){setCrossnumberPanel(panelButton.dataset.crossnumberPanel,'push');return;}
@@ -1014,7 +1026,7 @@
     if(name==='sort') sortBank();
     if(name==='restart') restartRound();
     if(name==='fullscreen') toggleFullscreen();
-    if(name==='new') createNewRound({tierId:profile.selectedTier});
+    if(name==='new' && performance.now()-newGamePointerAt>=700) createNewRound({tierId:profile.selectedTier});
   });
 
   document.addEventListener('baseline:crossnumber-open',function(){
