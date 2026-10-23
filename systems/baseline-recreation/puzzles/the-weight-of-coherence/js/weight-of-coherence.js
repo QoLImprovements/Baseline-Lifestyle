@@ -13,8 +13,8 @@
   }
   const BOARD_BASE = recreationCssValue('--recreation-panel','#6E2C44');
   const GUIDE_OPACITY = 0.50;
-  const ZOOM_MIN = 1;
-  const PIECE_ZOOM_DEFAULT = 1;
+  const ZOOM_MIN = 2;
+  const PIECE_ZOOM_DEFAULT = 2;
   const PIECE_ZOOM_MAX = 10;
   const ZOOM_STEP = 1;
   const registry = window.BaselinePuzzlesRegistry;
@@ -133,7 +133,7 @@
   let lastSortRenderKey = '';
   let viewOn = false;
   let zoomLevel = PIECE_ZOOM_DEFAULT;
-  let zoomScale = ZOOM_MIN;
+  let zoomScale = 1;
   let zoomTarget = null;
   let lastZoomTarget = null;
   let lastZoomPoint = null;
@@ -714,50 +714,30 @@
       return;
     }
     lastSortRenderKey=key;
-    const token=++sortRenderToken;
-    const pending=[];
+    ++sortRenderToken;
     refs.sortTrays.forEach(function(tray,index){
-      tray.innerHTML='';
+      const fragment=document.createDocumentFragment();
       const ids=state && Array.isArray(state.sortBins?.[index]) ? state.sortBins[index] : [];
       const count=refs.sortCounts.find(function(node){ return Number(node.dataset.sortCount)===index; });
       if(count) count.textContent=String(ids.length);
-      if(!state || !state.started || !imageReady) return;
-      ids.forEach(function(id){
-        if(state.placed.has(id)) return;
-        const btn=document.createElement('button');
-        btn.type='button';
-        btn.className='weight-coherence-piece';
-        btn.dataset.pieceId=String(id);
-        btn.dataset.pieceSource='sort-' + index;
-        btn.setAttribute('aria-label','Jigsaw piece ' + (id+1) + ' in Sort ' + (index+1));
-        btn.disabled=true;
-        btn.setAttribute('aria-busy','true');
-        if(selectedPieceId===id) btn.classList.add('is-selected');
-        if(returnHighlightPieceId===id) btn.classList.add('is-return-highlight');
-        btn.setAttribute('aria-disabled',String(viewOn));
-        const placeholder=document.createElement('span');
-        placeholder.className='weight-coherence-piece-placeholder';
-        placeholder.setAttribute('aria-hidden','true');
-        btn.appendChild(placeholder);
-        tray.appendChild(btn);
-        pending.push({id:id,button:btn});
-      });
-    });
-    let index=0;
-    const batchSize=mobileLike()?1:6;
-    const paintBatch=function(){
-      if(token!==sortRenderToken) return;
-      const stop=Math.min(pending.length,index+batchSize);
-      for(;index<stop;index++){
-        const item=pending[index];
-        if(!item.button.isConnected) continue;
-        item.button.replaceChildren(createPieceCanvas(item.id));
-        item.button.disabled=false;
-        item.button.removeAttribute('aria-busy');
+      if(state && state.started && imageReady){
+        ids.forEach(function(id){
+          if(state.placed.has(id)) return;
+          const btn=document.createElement('button');
+          btn.type='button';
+          btn.className='weight-coherence-piece';
+          btn.dataset.pieceId=String(id);
+          btn.dataset.pieceSource='sort-' + index;
+          btn.setAttribute('aria-label','Jigsaw piece ' + (id+1) + ' in Sort ' + (index+1));
+          if(selectedPieceId===id) btn.classList.add('is-selected');
+          if(returnHighlightPieceId===id) btn.classList.add('is-return-highlight');
+          btn.setAttribute('aria-disabled',String(viewOn));
+          btn.appendChild(createPieceCanvas(id));
+          fragment.appendChild(btn);
+        });
       }
-      if(index<pending.length) window.requestAnimationFrame(paintBatch);
-    };
-    if(pending.length) window.requestAnimationFrame(paintBatch);
+      tray.replaceChildren(fragment);
+    });
   }
 
   function stabilisePieceFocus(){
@@ -801,42 +781,21 @@
     refs.prev.disabled=state.page<=0;
     refs.next.disabled=state.page>=pageCount-1;
 
-    const token=++trayRenderToken;
-    const pending=[];
+    ++trayRenderToken;
+    const fragment=document.createDocumentFragment();
     pageIds.forEach(function(id){
       const btn=document.createElement('button');
       btn.type='button';
       btn.className='weight-coherence-piece';
       btn.dataset.pieceId=String(id);
       btn.setAttribute('aria-label','Jigsaw piece ' + (id+1));
-      btn.disabled=true;
-      btn.setAttribute('aria-busy','true');
       if(selectedPieceId===id) btn.classList.add('is-selected');
       if(returnHighlightPieceId===id) btn.classList.add('is-return-highlight');
       btn.setAttribute('aria-disabled',String(viewOn));
-      const placeholder=document.createElement('span');
-      placeholder.className='weight-coherence-piece-placeholder';
-      placeholder.setAttribute('aria-hidden','true');
-      btn.appendChild(placeholder);
-      refs.tray.appendChild(btn);
-      pending.push({id:id,button:btn});
+      btn.appendChild(createPieceCanvas(id));
+      fragment.appendChild(btn);
     });
-
-    let index=0;
-    const batchSize=mobileLike()?1:6;
-    const paintBatch=function(){
-      if(token!==trayRenderToken) return;
-      const stop=Math.min(pending.length,index+batchSize);
-      for(;index<stop;index++){
-        const item=pending[index];
-        if(!item.button.isConnected) continue;
-        item.button.replaceChildren(createPieceCanvas(item.id));
-        item.button.disabled=false;
-        item.button.removeAttribute('aria-busy');
-      }
-      if(index<pending.length) window.requestAnimationFrame(paintBatch);
-    };
-    if(pending.length) window.requestAnimationFrame(paintBatch);
+    refs.tray.replaceChildren(fragment);
   }
 
   function setStatus(message,tone){
@@ -888,6 +847,29 @@
   function gameStorage(){
     const storage=window.BaselineGameStorage;
     return storage&&typeof storage.getProfile==='function'?storage:null;
+  }
+
+  function recreationSettingsProfile(){
+    try{
+      const profile=gameStorage()?.getProfile?.('hubsettings');
+      return profile&&typeof profile==='object' ? profile : {};
+    }catch(_error){ return {}; }
+  }
+  function storedJigsawZoom(){
+    const profile=recreationSettingsProfile();
+    return Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,Number(profile.jigsawZoom)||PIECE_ZOOM_DEFAULT));
+  }
+  function hydrateJigsawZoom(){
+    zoomLevel=storedJigsawZoom();
+    syncZoomControls();
+  }
+  function saveJigsawZoom(){
+    const storage=gameStorage();
+    if(!storage) return false;
+    const profile=Object.assign({},recreationSettingsProfile(),{jigsawZoom:zoomLevel});
+    try{ storage.setTemporaryProfile?.('hubsettings',profile); }catch(_error){}
+    try{ storage.saveProfile?.('hubsettings',profile,{immediate:true,keepalive:false}); }catch(_error){}
+    return true;
   }
 
   function saveState(){
@@ -1607,7 +1589,7 @@
   function resetPieceZoom(){
     clearZoomTargetStyles(zoomTarget);
     zoomTarget=null;
-    zoomScale=ZOOM_MIN;
+    zoomScale=1;
     if(pieceOverlay) pieceOverlay.hidden=true;
     root.classList.remove('is-zoom-active','is-zooming-piece');
     if(refs.playerCard) refs.playerCard.classList.remove('is-jigsaw-zooming');
@@ -1624,9 +1606,9 @@
     const piece=target && target!==refs.boardWrap ? target : null;
     if(!piece) return false;
     endBoardLens();
-    if(zoomTarget===piece && zoomScale>ZOOM_MIN){
+    if(zoomTarget===piece){
       resetPieceZoom();
-      setStatus('Piece zoom reset to 100%.','');
+      setStatus('Piece zoom reset to 200%.','');
       return true;
     }
     applyPieceZoom(piece,zoomLevel);
@@ -1635,7 +1617,7 @@
   }
 
   function syncZoomControls(){
-    const pieceActive=zoomScale>ZOOM_MIN && !!zoomTarget;
+    const pieceActive=!!zoomTarget;
     const active=pieceActive || boardLensActive;
     const percent=Math.round(zoomLevel*100);
     if(refs.zoomToggle){
@@ -1662,12 +1644,13 @@
     const next=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,zoomLevel+(amount*ZOOM_STEP)));
     if(next===zoomLevel){
       setStatus(zoomLevel<=PIECE_ZOOM_DEFAULT
-        ? 'Zoom is already at the 100% minimum.'
+        ? 'Zoom is already at the 200% minimum.'
         : 'Zoom is already at the 1000% maximum.','');
       syncZoomControls();
       return;
     }
     zoomLevel=next;
+    saveJigsawZoom();
     if(boardLensActive){
       const point=boardLensPoint();
       updateBoardLens(point.x,point.y);
@@ -2152,6 +2135,7 @@
     const authenticated=!!event.detail?.authenticated;
     const authChanged=authenticated!==storageAuthenticated;
     storageAuthenticated=authenticated;
+    hydrateJigsawZoom();
     const untouched=!state || (state.placed && state.placed.size===0 && (state.elapsed||0)<8);
     if(authChanged || untouched){
       if(!restoreState() && !state && imageReady) beginPuzzle();
@@ -2176,6 +2160,7 @@
     }
   });
 
+  hydrateJigsawZoom();
   configurePuzzle(activePuzzle,false);
 
   try{ document.documentElement.setAttribute('data-weight-of-coherence-jigsaw','1'); }catch(_error){}
