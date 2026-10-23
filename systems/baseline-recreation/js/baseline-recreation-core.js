@@ -108,7 +108,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   let desktopKeypadOpenGame = '';
   let coreNewGamePointerId = '';
   let coreNewGamePointerAt = 0;
-  let trackCoinPointerPickAt = 0;
   const GAME_IDS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.runtimeId; }) : ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
 
   const GAME_ID_TO_ROUTE_SLUG = Object.freeze((function(){
@@ -2947,9 +2946,13 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   function chooseTrackCoinCup(choiceRaw){
     if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
     cancelTrackCoinAnimation();
-    const choice = Number(choiceRaw);
-    if(Number.isNaN(choice)) return;
-    const pickedCup = trackCoinState.cups[choice];
+    const choice=String(choiceRaw==null?'':choiceRaw);
+    let pickedCup=trackCoinState.cups.find(function(cup){ return cup.id===choice; });
+    if(!pickedCup){
+      const choiceIndex=Number(choiceRaw);
+      if(Number.isNaN(choiceIndex)) return;
+      pickedCup=trackCoinState.cups[choiceIndex];
+    }
     if(!pickedCup) return;
     trackCoinState.pickLocked = true;
     trackCoinState.resolved = true;
@@ -3127,7 +3130,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const isCorrect = trackCoinState.revealAll && cup.id === trackCoinState.coinCupId;
       const isPicked = trackCoinState.revealAll && cup.id === trackCoinState.pickedCupId;
       const cupClass = 'trackcoin-cup' + ((((trackCoinState.phase === 'show' || trackCoinState.revealAll) && cup.id === trackCoinState.coinCupId) ? ' is-lifted' : '')) + (selectable ? ' is-selectable' : '') + (isCorrect ? ' is-correct' : '') + (isPicked ? ' is-picked' : '') + (trackCoinState.revealAll && cup.id !== trackCoinState.coinCupId ? ' is-wrong' : '');
-      return '<button class="' + cupClass + '" data-trackcoin-pick="' + idx + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" aria-disabled="' + String(!selectable) + '" tabindex="' + (selectable ? '0' : '-1') + '"' + (selectable ? '' : ' disabled') + ' style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"></button>';
+      return '<button class="' + cupClass + '" data-trackcoin-pick="' + escapeHtml(cup.id) + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" aria-disabled="' + String(!selectable) + '" tabindex="' + (selectable ? '0' : '-1') + '" style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"></button>';
     }).join('');
     const phaseClass=' is-phase-' + escapeHtml(trackCoinState.phase || 'show');
     const resumeHtml=trackCoinState.restoredWaiting
@@ -3986,7 +3989,13 @@ function toggleGameFullscreen(gameId){
       const make24BoardRerollBtn = event.target.closest('#make24BoardRerollBtn'); if(make24BoardRerollBtn){ rerollMake24Puzzle(); return; }
       const trackCoinResume = event.target.closest('[data-action="resume-trackcoin"]'); if(trackCoinResume){ if(event){ event.preventDefault(); event.stopPropagation(); } resumeRestoredTrackCoinRound(); return; }
             const trackCoinReplay = event.target.closest('[data-action="replay-trackcoin"], #replayTrackCoinShuffleBtn'); if(trackCoinReplay){ if(event){ event.preventDefault(); event.stopPropagation(); } replayTrackCoinShuffle(); return; }
-      const trackCoinCup = event.target.closest('[data-trackcoin-pick]'); if(trackCoinCup){ if(performance.now()-trackCoinPointerPickAt>=700) chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick')); return; }
+      const trackCoinCup = event.target.closest('[data-trackcoin-pick]');
+      if(trackCoinCup){
+        // Pointer selection is owned by the board's pointerup handler below.
+        // Keep click as the keyboard/assistive-technology activation path.
+        if(event.detail===0) chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick'));
+        return;
+      }
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
 
     });
@@ -3995,15 +4004,6 @@ function toggleGameFullscreen(gameId){
       if(!button) return;
       event.preventDefault();
       window.requestAnimationFrame(keepMake24InputFocused);
-    },true);
-    document.addEventListener('pointerdown',function(event){
-      const cup=event.target instanceof Element ? event.target.closest('#trackCoinBoard .trackcoin-cup.is-selectable[data-trackcoin-pick]:not(:disabled)') : null;
-      if(!cup) return;
-      event.preventDefault();
-      event.stopPropagation();
-      if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
-      trackCoinPointerPickAt=performance.now();
-      chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
     },true);
     document.addEventListener('input', function(event){
       const target = event.target;
@@ -4075,6 +4075,14 @@ function toggleGameFullscreen(gameId){
         event.preventDefault();
         event.stopPropagation();
         handlePairsCardFlip(pairCard.getAttribute('data-card'));
+      });
+    }
+    if(refs.trackCoinBoard){
+      refs.trackCoinBoard.addEventListener('pointerup',function(event){
+        const cup=event.target instanceof Element ? event.target.closest('.trackcoin-cup.is-selectable[data-trackcoin-pick]') : null;
+        if(!cup || !refs.trackCoinBoard.contains(cup)) return;
+        event.preventDefault();
+        chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
       });
     }
     if(refs.pairsHintBtn){ refs.pairsHintBtn.textContent = hotkeyActionLabel('Use Hint', 'H'); setHotkeyCaption(refs.pairsHintBtn,'H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
