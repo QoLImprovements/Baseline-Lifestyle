@@ -6,7 +6,6 @@ import {
   emptyBoard,
   hasAnyPlacement,
   resolvePlacement,
-  runLevelProgress,
   shapeById,
   validBoard
 } from './block-grid-engine.mjs?v=PUZZLE_GAMES_20261016_1';
@@ -263,14 +262,12 @@ function renderGame() {
   if (!root) return;
   const active = run();
   if (!active) {
-    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} selected. Press Start New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-block-action="new" type="button">Start New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button></div></div>`;
+    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-block-action="new" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button></div></div>`;
     syncAutoNextControl();
     return;
   }
-  const progress = runLevelProgress(active.lines);
   const occupancy = boardOccupancy(active);
   const openPercent = Math.max(0, Math.round((1 - occupancy) * 100));
-  const linesToNext = progress.target - progress.current;
   root.innerHTML = `
     <div class="block-grid-active-header">
       <div class="stat-pills">
@@ -280,13 +277,12 @@ function renderGame() {
         <div class="stat-pill">Open Space <span>${openPercent}%</span></div>
       </div>
     </div>
-    <div class="game-live-xp" data-live-xp="blockgrid"><strong>Level ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
+    <div class="game-live-xp" data-live-xp="blockgrid"><strong>Player Rank ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
     <div class="summary-box round-status-card" id="blockGridStatus" aria-live="polite">${statusHtml()}</div>
     <div class="block-grid-run-objective">
-      <div><strong>Run Level ${progress.level}</strong><span>${linesToNext} line${linesToNext === 1 ? '' : 's'} to Level ${progress.level + 1}</span></div>
-      <span>${progress.current} / ${progress.target}</span>
+      <div><strong>${escapeHtml(currentMode().name)} Tier</strong><span>Difficulty tier · random pieces every game</span></div>
+      <span>${active.lines} lines cleared</span>
     </div>
-    <div class="block-grid-level-meter" aria-label="Run level progress"><span style="width:${progress.current / progress.target * 100}%"></span></div>
     <div class="block-grid-skill">
       <div class="block-grid-skill-head"><strong>Special Skill</strong><span>${Math.round(active.skillCharge || 0)}%</span></div>
       <div class="block-grid-skill-meter" role="progressbar" aria-label="Special skill charge" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(active.skillCharge || 0)}"><span style="width:${Math.min(100,active.skillCharge || 0)}%"></span></div>
@@ -306,8 +302,9 @@ function renderGame() {
       </div>
     </div>
     <div class="game-window-actions">
-      <button class="action ghost start-new-game-toggle" data-block-action="new" type="button">Start New Game</button>
+      <button class="action ghost start-new-game-toggle" data-block-action="new" type="button">New Game</button>
       <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
+      <button class="action ghost" data-block-action="fullscreen" type="button">Full Screen</button>
     </div>`;
   resetBoardMotion();
   syncAutoNextControl();
@@ -318,9 +315,9 @@ function renderModes() {
   if (!root) return;
   root.innerHTML = `<div class="block-grid-mode-list">${Object.values(MODES).map(mode => `
     <button class="block-grid-mode${profile.selectedMode === mode.id ? ' is-active' : ''}" data-block-mode="${mode.id}" type="button" aria-pressed="${profile.selectedMode === mode.id}">
-      <strong>${escapeHtml(mode.name)}</strong><span>${escapeHtml(mode.description)}</span>
+      <strong>${escapeHtml(mode.name)} Tier</strong><span>${escapeHtml(mode.description)}</span>
     </button>`).join('')}</div>
-    <div class="summary-box"><strong>Shape behaviour</strong><span class="inline-note">Pieces keep their supplied orientation. Planning comes from placement and space management rather than rotating pieces.</span></div>`;
+    <div class="summary-box"><strong>Difficulty tiers</strong><span class="inline-note">Each tier produces many unpredictable games from random piece trays. Difficulty comes from the tier rules, not a fixed sequence of levels.</span></div>`;
 }
 
 function renderProgress() {
@@ -331,7 +328,7 @@ function renderProgress() {
   const remaining = Math.max(0, needed - profile.xp);
   root.innerHTML = `
     <section class="coherent-progress-overview">
-      <div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Block Grid</span><strong>Level ${profile.level}</strong></div><div class="coherent-progress-next">${remaining} XP to Level ${profile.level + 1}</div></div>
+      <div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Block Grid</span><strong>Player Rank ${profile.level}</strong></div><div class="coherent-progress-next">${remaining} XP to Player Rank ${profile.level + 1}</div></div>
       <div class="coherent-progress-xp-meta"><span>${profile.xp} / ${needed} XP</span><span>${Math.round(pct)}%</span></div>
       <div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${needed}" aria-valuenow="${profile.xp}"><span style="width:${pct}%"></span></div>
     </section>
@@ -340,7 +337,7 @@ function renderProgress() {
       <div class="coherent-progress-stat"><span>Games started</span><strong>${profile.gamesPlayed}</strong></div>
       <div class="coherent-progress-stat"><span>Lines cleared</span><strong>${profile.totalLines}</strong></div>
       <div class="coherent-progress-stat"><span>Pieces placed</span><strong>${profile.totalPieces}</strong></div>
-      <div class="coherent-progress-stat"><span>Current mode</span><strong>${escapeHtml(currentMode().name)}</strong></div>
+      <div class="coherent-progress-stat"><span>Current tier</span><strong>${escapeHtml(currentMode().name)}</strong></div>
     </div>`;
 }
 
@@ -747,7 +744,6 @@ function panelHtml() {
         <div class="link-actions game-shell-actions" data-nonrealm-game-toolbar="block-grid">
           <button class="action secondary game-shell-action game-shell-action--icon" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Spatial planning, visual organisation, prospective reasoning and flexible space management." type="button" aria-label="What Block Grid develops"><span class="game-shell-action__icon" aria-hidden="true">i</span></button>
           <button class="action secondary game-shell-action" data-bl-info-button data-bl-info-title="How To Play" data-bl-info-text="Choose one of the three supplied pieces and place it on the 8 × 8 board. Complete an entire row or column to clear it. The run ends when none of the available pieces can fit. Dragging and tap-then-place are both supported." type="button"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>
-          <button class="action secondary game-shell-action" data-block-action="fullscreen" type="button"><span class="game-shell-action__icon" aria-hidden="true">⛶</span><span class="game-shell-action__label">Full Screen</span></button>
           <button class="action secondary game-shell-action" data-close-game-extension="block-grid" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
         </div>
       </div>
@@ -756,7 +752,7 @@ function panelHtml() {
       </details>
       <div class="game-toggle-row">
         <button class="action ghost game-toggle-btn is-active" data-block-tab="game" type="button">Game</button>
-        <button class="action ghost game-toggle-btn" data-block-tab="modes" type="button">Modes</button>
+        <button class="action ghost game-toggle-btn" data-block-tab="modes" type="button">Tiers</button>
         <button class="action ghost game-toggle-btn" data-block-tab="progress" type="button">Progress</button>
       </div>
       <div class="game-panel-stack">
