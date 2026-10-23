@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  var MIX_VERSION = 2;
+  var MIX_VERSION = 3;
   var DEFAULTS = { enabled:true, volume:0.58 };
   var MUSIC_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
   var ctx = null;
@@ -122,14 +122,14 @@
     var endAt = startAt + duration;
 
     if(kind === 'bass'){
-      osc.type = 'sawtooth';
+      osc.type = 'triangle';
       filter.type = 'lowpass';
-      filter.frequency.value = 780;
+      filter.frequency.value = 680;
       filter.Q.value = 0.8;
     }else if(kind === 'lead'){
       osc.type = 'triangle';
       filter.type = 'lowpass';
-      filter.frequency.value = 3200;
+      filter.frequency.value = 2450;
     }else if(kind === 'mallet'){
       osc.type = 'sine';
       filter.type = 'bandpass';
@@ -191,9 +191,9 @@
     var osc = ctx.createOscillator();
     var gain = ctx.createGain();
     var filter = ctx.createBiquadFilter();
-    osc.type = 'square';
-    osc.frequency.value = 1700;
-    filter.type = 'highpass'; filter.frequency.value = 1200;
+    osc.type = 'triangle';
+    osc.frequency.value = 1180;
+    filter.type = 'highpass'; filter.frequency.value = 760;
     gain.gain.setValueAtTime(level, start);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.035);
     osc.connect(filter); filter.connect(gain); gain.connect(master);
@@ -325,42 +325,67 @@
     }
   };
 
-  // Replacement themes for games whose former arrangements were reported as
-  // physically fatiguing. These use slower movement, lower density, no hard
-  // percussion, and near-mono placement so the sound does not sweep ear-to-ear.
+  // Third-generation Recreation themes: energetic enough to support play while
+  // keeping the timbre rounded and avoiding the piercing/highly lateral mixes
+  // that were previously uncomfortable. These intentionally replace both the
+  // original harsh arrangements and the later over-slowed "gentle" versions.
   Object.assign(TRACKS,{
-    pairs:{bpm:78,bars:32,sections:[
-      {bars:8,prog:[[60,64,67],[57,60,64]],motif:[72,67,69,64],density:4,style:'quiet'},
-      {bars:8,prog:[[53,57,60],[55,59,62],[60,64,67]],motif:[69,72,67,71],density:4,style:'warm'},
-      {bars:8,prog:[[57,60,64],[53,57,60]],motif:[72,69,67,64],density:4,style:'quiet'},
-      {bars:8,prog:[[60,64,67],[55,59,62]],motif:[67,71,69,64],density:4,style:'warm'}]},
-    detectword:{bpm:76,bars:32,sections:[
-      {bars:8,prog:[[50,57,62],[53,60,65]],motif:[69,71,74,71],density:4,style:'quiet'},
-      {bars:8,prog:[[48,55,60],[50,57,62]],motif:[67,69,72,69],density:4,style:'warm'},
-      {bars:8,prog:[[53,60,65],[50,57,62]],motif:[72,74,69,71],density:4,style:'quiet'},
-      {bars:8,prog:[[50,57,62],[48,55,60]],motif:[69,67,64,67],density:4,style:'warm'}]},
-    make24:{bpm:80,bars:32,sections:[
-      {bars:8,prog:[[48,55,60],[53,60,65]],motif:[64,67,72,67],density:4,style:'quiet'},
-      {bars:8,prog:[[50,57,62],[48,55,60]],motif:[65,69,67,62],density:4,style:'warm'},
-      {bars:8,prog:[[53,60,65],[55,62,67]],motif:[69,72,74,69],density:4,style:'quiet'},
-      {bars:8,prog:[[48,55,60],[50,57,62]],motif:[67,64,62,60],density:4,style:'warm'}]},
-    trackcoin:{bpm:82,bars:32,sections:[
-      {bars:8,prog:[[45,52,57],[48,55,60]],motif:[64,69,67,64],density:4,style:'quiet'},
-      {bars:8,prog:[[43,50,55],[45,52,57]],motif:[62,67,64,69],density:4,style:'warm'},
-      {bars:8,prog:[[48,55,60],[45,52,57]],motif:[67,72,69,67],density:4,style:'quiet'},
-      {bars:8,prog:[[45,52,57],[43,50,55]],motif:[64,62,67,64],density:4,style:'warm'}]},
-    ruleshift:{bpm:78,bars:32,sections:[
-      {bars:8,prog:[[48,55,60],[51,58,63]],motif:[67,70,72,67],density:4,style:'quiet'},
-      {bars:8,prog:[[46,53,58],[48,55,60]],motif:[65,69,67,72],density:4,style:'warm'},
-      {bars:8,prog:[[51,58,63],[48,55,60]],motif:[70,72,67,65],density:4,style:'quiet'},
-      {bars:8,prog:[[48,55,60],[46,53,58]],motif:[67,65,62,65],density:4,style:'warm'}]},
-    crossnumber:{bpm:76,bars:32,sections:[
-      {bars:8,prog:[[48,55,60],[53,60,65]],motif:[67,72,69,67],density:4,style:'quiet'},
-      {bars:8,prog:[[50,57,62],[48,55,60]],motif:[65,69,72,69],density:4,style:'warm'},
-      {bars:8,prog:[[53,60,65],[50,57,62]],motif:[69,72,74,69],density:4,style:'quiet'},
-      {bars:8,prog:[[48,55,60],[53,60,65]],motif:[67,64,69,67],density:4,style:'warm'}]}
+    pairs:{bpm:110,bars:40,sections:[
+      {bars:8,prog:[[60,64,67],[57,60,64],[65,69,72],[55,59,62]],motif:[72,76,74,79,76,72,74,71],density:8,style:'warm'},
+      {bars:8,prog:[[62,65,69],[59,62,67],[64,67,71],[57,60,64]],motif:[74,77,76,81,79,76,72,74],density:8,style:'drive'},
+      {bars:8,prog:[[53,57,60],[55,59,62],[57,60,64]],motif:[69,72,71,74,72,69,67,71],density:8,style:'quiet'},
+      {bars:8,prog:[[65,69,72],[60,64,69],[62,65,69],[55,60,64]],motif:[76,79,81,79,76,74,72,74],density:8,style:'lift'},
+      {bars:8,prog:[[60,64,67],[57,60,64],[65,69,72],[55,59,62]],motif:[72,74,76,79,76,74,71,67],density:8,style:'full'}]},
+    detectword:{bpm:116,bars:40,sections:[
+      {bars:8,prog:[[50,57,62],[48,55,60],[53,60,65],[46,53,58]],motif:[69,74,73,71,74,76,71,73],density:8,style:'warm'},
+      {bars:8,prog:[[52,59,64],[49,56,61],[55,62,67],[48,55,60]],motif:[71,76,74,73,78,76,74,71],density:8,style:'drive'},
+      {bars:8,prog:[[45,52,57],[47,54,59],[48,55,60]],motif:[69,71,73,72,69,71,67,69],density:8,style:'quiet'},
+      {bars:8,prog:[[53,60,65],[50,57,62],[55,62,67],[46,53,58]],motif:[74,78,76,73,71,76,79,74],density:8,style:'lift'},
+      {bars:8,prog:[[50,57,62],[48,55,60],[53,60,65],[46,53,58]],motif:[74,73,76,71,78,74,76,71],density:8,style:'full'}]},
+    make24:{bpm:124,bars:40,sections:[
+      {bars:8,prog:[[48,55,60,64],[50,57,62,65],[52,59,64,67],[47,55,59,62]],motif:[60,67,64,72,62,69,65,74],density:8,style:'drive'},
+      {bars:8,prog:[[53,60,65,69],[50,57,62,65],[55,62,67,71],[52,59,64,67]],motif:[65,72,69,77,67,74,71,79],density:8,style:'full'},
+      {bars:8,prog:[[45,52,57,60],[47,54,59,62],[48,55,60,64]],motif:[57,60,64,67,62,65,69,72],density:8,style:'quiet'},
+      {bars:8,prog:[[52,59,64,67],[53,60,65,69],[50,57,62,65],[55,62,67,71]],motif:[64,71,67,76,65,72,69,77],density:8,style:'lift'},
+      {bars:8,prog:[[48,55,60,64],[52,59,64,67],[50,57,62,65],[47,55,59,62]],motif:[60,64,67,72,62,65,69,74],density:8,style:'drive'}]},
+    trackcoin:{bpm:126,bars:40,sections:[
+      {bars:8,prog:[[45,52,57],[43,50,55],[48,55,60],[50,57,62]],motif:[69,72,76,72,71,74,79,74],density:8,style:'drive'},
+      {bars:8,prog:[[48,55,60],[46,53,58],[43,50,55],[50,57,62]],motif:[72,76,81,76,74,79,83,79],density:8,style:'full'},
+      {bars:8,prog:[[41,48,53],[43,50,55],[45,52,57]],motif:[64,67,69,72,69,67,64,69],density:8,style:'quiet'},
+      {bars:8,prog:[[50,57,62],[48,55,60],[46,53,58],[43,50,55]],motif:[76,81,79,74,79,83,81,76],density:8,style:'lift'},
+      {bars:8,prog:[[45,52,57],[43,50,55],[48,55,60],[50,57,62]],motif:[69,74,76,72,79,74,81,76],density:8,style:'drive'}]},
+    ruleshift:{bpm:122,bars:40,sections:[
+      {bars:8,prog:[[48,55,60],[51,58,63],[46,53,58],[49,56,61]],motif:[72,75,67,70,74,65,69,76],density:8,style:'drive'},
+      {bars:8,prog:[[50,57,62],[53,60,65],[47,54,59],[51,58,63]],motif:[76,69,65,74,70,75,67,72],density:8,style:'full'},
+      {bars:8,prog:[[45,52,57],[48,55,60],[50,57,62]],motif:[67,69,72,70,65,67,64,69],density:8,style:'quiet'},
+      {bars:8,prog:[[53,60,65],[49,56,61],[51,58,63],[46,53,58]],motif:[79,72,75,67,74,70,76,69],density:8,style:'lift'},
+      {bars:8,prog:[[48,55,60],[46,53,58],[51,58,63],[49,56,61]],motif:[72,67,75,70,65,74,76,69],density:8,style:'drive'}]},
+    crossnumber:{bpm:116,bars:40,sections:[
+      {bars:8,prog:[[48,55,60,64],[51,58,63,67],[53,60,65,69],[46,53,58,62]],motif:[67,72,75,70,74,77,69,74],density:8,style:'warm'},
+      {bars:8,prog:[[50,57,62,65],[53,60,65,69],[55,62,67,70],[48,55,60,64]],motif:[70,74,77,72,76,79,71,76],density:8,style:'drive'},
+      {bars:8,prog:[[45,52,57,60],[48,55,60,64],[50,57,62,65]],motif:[69,72,75,71,74,72,69,71],density:8,style:'quiet'},
+      {bars:8,prog:[[53,60,65,69],[55,62,67,70],[51,58,63,67],[48,55,60,64]],motif:[72,77,81,75,79,77,74,79],density:8,style:'lift'},
+      {bars:8,prog:[[48,55,60,64],[50,57,62,65],[46,53,58,62],[51,58,63,67]],motif:[72,75,79,74,70,77,74,71],density:8,style:'full'}]},
+    'block-grid':{bpm:118,bars:40,sections:[
+      {bars:8,prog:[[48,55,60],[50,57,62],[45,52,57],[53,60,65]],motif:[60,67,64,69,62,67,65,72],density:8,style:'warm'},
+      {bars:8,prog:[[50,57,62],[53,60,65],[48,55,60],[55,62,67]],motif:[62,69,65,72,67,74,69,76],density:8,style:'drive'},
+      {bars:8,prog:[[45,52,57],[48,55,60],[43,50,55]],motif:[57,64,60,67,62,65,60,64],density:8,style:'quiet'},
+      {bars:8,prog:[[53,60,65],[55,62,67],[50,57,62],[48,55,60]],motif:[65,72,67,74,69,76,72,67],density:8,style:'lift'},
+      {bars:8,prog:[[48,55,60],[50,57,62],[53,60,65],[45,52,57]],motif:[60,67,64,72,69,65,62,67],density:8,style:'full'}]},
+    'colour-sort':{bpm:114,bars:40,sections:[
+      {bars:8,prog:[[50,57,62],[47,54,59],[52,59,64],[55,62,67]],motif:[62,69,66,71,67,74,69,72],density:8,style:'warm'},
+      {bars:8,prog:[[54,61,66],[50,57,62],[52,59,64],[47,54,59]],motif:[66,73,69,74,71,76,69,73],density:8,style:'drive'},
+      {bars:8,prog:[[47,54,59],[50,57,62],[52,59,64]],motif:[59,66,62,69,64,67,62,66],density:8,style:'quiet'},
+      {bars:8,prog:[[54,61,66],[57,64,69],[52,59,64],[55,62,67]],motif:[66,73,69,76,71,78,74,69],density:8,style:'lift'},
+      {bars:8,prog:[[50,57,62],[52,59,64],[47,54,59],[55,62,67]],motif:[62,69,64,71,66,73,69,67],density:8,style:'full'}]},
+    jigsaw:{bpm:104,bars:40,sections:[
+      {bars:8,prog:[[55,62,67],[52,59,64],[48,55,60],[50,57,62]],motif:[67,71,69,74,71,67,64,69],density:8,style:'warm'},
+      {bars:8,prog:[[57,64,69],[53,60,65],[55,62,67],[50,57,62]],motif:[69,72,71,76,72,69,67,71],density:8,style:'full'},
+      {bars:8,prog:[[48,55,60],[50,57,62],[52,59,64]],motif:[64,67,66,69,67,64,62,66],density:8,style:'quiet'},
+      {bars:8,prog:[[53,60,65],[55,62,67],[57,64,69],[52,59,64]],motif:[65,69,72,69,67,71,74,69],density:8,style:'lift'},
+      {bars:8,prog:[[55,62,67],[52,59,64],[48,55,60],[50,57,62]],motif:[67,69,71,74,71,69,67,64],density:8,style:'warm'}]}
   });
-  var SENSORY_GENTLE_GAMES = new Set(['pairs','detectword','make24','trackcoin','ruleshift','crossnumber']);
+  var SOFT_TIMBRE_GAMES = new Set(['block-grid','colour-sort','jigsaw']);
 
   function sectionAt(track, bar){
     var cursor = 0;
@@ -388,18 +413,18 @@
     var isColourSort = activeGame === 'colour-sort';
     var isBlockGrid = activeGame === 'block-grid';
     var isCrossnumber = activeGame === 'crossnumber';
-    var sensoryGentle = SENSORY_GENTLE_GAMES.has(activeGame);
+    var softTimbre = SOFT_TIMBRE_GAMES.has(activeGame);
 
     chordNotes.forEach(function(n, idx){
       var padLevel = quiet ? 0.017 : 0.022;
       if(isJigsaw) padLevel *= 0.92;
       if(isColourSort) padLevel *= 0.96;
-      if(sensoryGentle) padLevel *= 0.72;
-      makeVoice('pad', n, start + idx * 0.012, beat * 3.92, padLevel, sensoryGentle ? 0 : (idx - 1) * 0.28);
+      if(softTimbre) padLevel *= 0.82;
+      makeVoice('pad', n, start + idx * 0.012, beat * 3.92, padLevel, softTimbre ? 0 : (idx - 1) * 0.22);
     });
 
-    if(sec.style !== 'quiet' && !sensoryGentle){
-      var bassLevel = isJigsaw ? 0.010 : (isColourSort ? 0.013 : (isBlockGrid ? 0.017 : 0.016));
+    if(sec.style !== 'quiet'){
+      var bassLevel = isJigsaw ? 0.008 : (isColourSort ? 0.010 : (isBlockGrid ? 0.011 : 0.014));
       makeVoice('bass', chordNotes[0] - 12, start, beat * 1.8, bassLevel, 0);
       makeVoice('bass', chordNotes[0] - 12, start + beat * 2, beat * 1.75, bassLevel * 0.82, 0);
     }
@@ -411,7 +436,7 @@
       if(sec.style === 'lift' && (k === 2 || k === Math.max(3, steps-2))) pitch += 12;
 
       var kind;
-      if(sensoryGentle) kind = k % 3 === 0 ? 'mallet' : 'pad';
+      if(softTimbre) kind = k % 3 === 0 ? 'mallet' : 'lead';
       else if(activeGame === 'detectword' || isCrossnumber) kind = k % 4 === 3 ? 'lead' : 'mallet';
       else if(activeGame === 'trackcoin' || isBlockGrid) kind = k % 3 === 0 ? 'mallet' : 'lead';
       else if(isColourSort) kind = k % 2 === 0 ? 'mallet' : 'lead';
@@ -421,14 +446,13 @@
       var voiceLevel = quiet ? 0.014 : 0.019;
       if(isJigsaw) voiceLevel *= 0.78;
       if(isColourSort) voiceLevel *= 0.90;
-      if(sensoryGentle) voiceLevel *= 0.62;
-      makeVoice(kind, pitch, start + k * stepDur + tinyHuman(bar,k), Math.min(stepDur * (sensoryGentle ? 0.92 : 0.76), beat * (sensoryGentle ? 0.72 : 0.44)), voiceLevel, sensoryGentle ? 0 : (k % 2 ? 0.26 : -0.26));
+      if(softTimbre) voiceLevel *= 0.78;
+      if(softTimbre) pitch = Math.min(pitch, 76);
+      makeVoice(kind, pitch, start + k * stepDur + tinyHuman(bar,k), Math.min(stepDur * 0.76, beat * 0.44), voiceLevel, softTimbre ? 0 : (k % 2 ? 0.18 : -0.18));
     }
 
-    if(sensoryGentle) return;
-
     if(isJigsaw){
-      if(!quiet && bar % 2 === 0) kick(start, 0.009);
+      if(!quiet && bar % 2 === 0) kick(start, 0.006);
       return;
     }
 
@@ -436,7 +460,7 @@
       if(full){
         kick(start, 0.016);
         if(sec.style === 'lift') kick(start + beat * 2, 0.011);
-        for(var c=0;c<4;c++) tick(start + (c + 0.5) * beat + tinyHuman(bar,c), 0.0032);
+        for(var c=0;c<4;c++) tick(start + (c + 0.5) * beat + tinyHuman(bar,c), 0.0018);
       }else if(sec.style === 'warm' && bar % 2 === 0){
         kick(start, 0.010);
       }
@@ -453,9 +477,9 @@
     }
 
     if(full){
-      kick(start, sec.style === 'drive' ? (isBlockGrid ? 0.039 : 0.035) : 0.027);
-      kick(start + beat * 2, isBlockGrid ? 0.024 : 0.021);
-      for(var q=0;q<4;q++) tick(start + (q + 0.5) * beat + tinyHuman(bar,q), isBlockGrid ? 0.0052 : 0.0045);
+      kick(start, sec.style === 'drive' ? (isBlockGrid ? 0.022 : 0.030) : 0.024);
+      kick(start + beat * 2, isBlockGrid ? 0.014 : 0.018);
+      for(var q=0;q<4;q++) tick(start + (q + 0.5) * beat + tinyHuman(bar,q), isBlockGrid ? 0.0020 : 0.0036);
     }else if(sec.style === 'warm' && bar % 2 === 0){
       kick(start, 0.018);
     }
@@ -609,6 +633,7 @@
     var hiddenLabel=btn.querySelector('.sr-only');
     if(hiddenLabel && hiddenLabel.textContent!==stateLabel) hiddenLabel.textContent=stateLabel;
     btn.classList.toggle('is-muted',!settings.enabled);
+    btn.setAttribute('data-hotkey-caption','Alt+M');
   }
   function syncUi(){
     document.querySelectorAll('[data-games-music-toggle]').forEach(function(btn){
@@ -695,8 +720,9 @@
       btn.setAttribute('aria-haspopup','dialog');
       btn.setAttribute('aria-controls','gamesMusicSettingsPanel');
       btn.setAttribute('aria-label','Game settings');
-      btn.title = 'Game settings';
-      btn.innerHTML = '<span class="games-settings-trigger__icon game-shell-action__icon" aria-hidden="true">⚙</span><span class="games-settings-trigger__label game-shell-action__label">Settings</span>';
+      btn.title = 'Game settings — Alt+S';
+      btn.setAttribute('data-hotkey-caption','Alt+S');
+      btn.innerHTML = '<span class="games-settings-trigger__icon game-shell-action__icon" aria-hidden="true">⚙</span><span class="sr-only">Settings</span>';
       host.appendChild(btn);
     });
     var jigsawHost=document.querySelector('#weightCoherenceWorkspace .weight-coherence-actions');
@@ -749,6 +775,19 @@
     if(event.key === 'Escape'){
       var panel=document.getElementById('gamesMusicSettingsPanel');
       if(panel && !panel.hidden) closeSettings();
+      return;
+    }
+    if(!event.altKey || event.ctrlKey || event.metaKey || event.isComposing || !activeGame || activeGame === 'ninja') return;
+    var key=String(event.key||'').toLowerCase();
+    if(key === 'm'){
+      event.preventDefault();
+      setEnabled(!settings.enabled);
+      return;
+    }
+    if(key === 's'){
+      event.preventDefault();
+      var trigger=document.querySelector('[data-games-settings]');
+      openSettings(trigger || null);
     }
   });
 
@@ -761,10 +800,19 @@
     if(!document.hidden) recoverPlayback();
   }, { passive:true });
   document.addEventListener('baseline:game-storage',function(){
+    var wasEnabled=settings.enabled;
     settings=readSettings();
     applyGain();
-    if(settings.enabled && activeGame) startActive();
-    else if(!settings.enabled){ if(timer){ clearTimeout(timer); timer=0; } stopLiveNodes(); }
+    if(settings.enabled && activeGame){
+      // Ordinary game/profile saves must never restart the composition. They can
+      // happen on every keypress. Only an actual disabled -> enabled transition
+      // needs a fresh start; otherwise recoverPlayback leaves healthy audio alone.
+      if(!wasEnabled) startActive();
+      else recoverPlayback();
+    }else if(!settings.enabled){
+      if(timer){ clearTimeout(timer); timer=0; }
+      stopLiveNodes();
+    }
     syncUi();
   });
 
