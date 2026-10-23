@@ -860,7 +860,7 @@
         '<div><span>Clue discovery</span><strong>+'+Math.round(contribution.clueDropChance*1000)/10+'%</strong></div>'+
         '<div><span>Upgrade efficiency</span><strong>−'+Math.round((1-contribution.upgradeCostMult)*1000)/10+'%</strong></div>'+
       '</div>'+
-      '<p>Milestones: Level 5 Constraint Reading · Level 10 Linked Planning · Level 20 Resource Arithmetic. Cross Number helps Realm, but its contribution is capped so it never becomes mandatory.</p>';
+      '<p>Milestones: Player Rank 5 Constraint Reading · Player Rank 10 Linked Planning · Player Rank 20 Resource Arithmetic. Cross Number helps Realm, but its contribution is capped so it never becomes mandatory.</p>';
   }
 
   function renderStats(){
@@ -882,7 +882,7 @@
     ];
     refs.stats.innerHTML=
       '<section class="coherent-progress-overview">' +
-        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Cross Number</span><strong>Level '+profile.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Level '+(profile.level+1)+'</div></div>' +
+        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Cross Number</span><strong>Player Rank '+profile.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Player Rank '+(profile.level+1)+'</div></div>' +
         '<div class="coherent-progress-xp-meta"><span>'+profile.xp+' / '+needed+' XP</span><span>'+Math.round(pct)+'%</span></div>' +
         '<div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+needed+'" aria-valuenow="'+profile.xp+'"><span style="width:'+pct+'%"></span></div>' +
       '</section>' +
@@ -895,7 +895,7 @@
     profile=normaliseProfile(profile);
     const tier=tierDefinition(round?.tierId||profile.selectedTier);
     const needed=xpNeededForLevel(profile.level);
-    if(refs.level) refs.level.textContent='Level - '+profile.level;
+    if(refs.level) refs.level.textContent='Player Rank - '+profile.level;
     if(refs.tier) refs.tier.textContent=tier.name;
     if(refs.bankValue) refs.bankValue.textContent=String(profile.bank);
     if(refs.cleanStreak) refs.cleanStreak.textContent=String(profile.cleanWinStreak);
@@ -915,7 +915,7 @@
         else gamePanel.prepend(live);
       }
       const pct=clamp((profile.xp/Math.max(1,needed))*100,0,100);
-      live.innerHTML='<strong>Level '+profile.level+'</strong><div class="game-live-xp__bar"><span style="width:'+pct+'%"></span></div><span>'+profile.xp+' / '+needed+' XP</span>';
+      live.innerHTML='<strong>Player Rank '+profile.level+'</strong><div class="game-live-xp__bar"><span style="width:'+pct+'%"></span></div><span>'+profile.xp+' / '+needed+' XP</span>';
     }
 
     renderTiers();renderSkills();renderRealmContribution();renderStats();
