@@ -267,12 +267,12 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(typeof document === 'undefined') return;
 
     // Sitewide game contract:
-    // - every game opens idle until Start New Game is pressed;
+    // - every game opens idle until New Game is pressed;
     // - every authenticated game profile saves through the account API;
     // - the game card is always the game window / mobile root;
     // - the board/scene is only the play surface;
-    // - controls, Round Status, Start New Game, and Auto-Next stay inside the same root;
-    // - Start New Game uses Alt+N and Auto-Next uses Alt+A so typing games do not clash.
+    // - controls, Round Status, New Game, and Auto-Next stay inside the same root;
+    // - New Game uses Alt+N and Auto-Next uses Alt+A so typing games do not clash.
     ['pairs','detectword','make24','trackcoin','ruleshift','ninja'].forEach(function(gameId){
       markGameNode(defaultGamePanelId(gameId), 'data-game-panel', gameId, 'game-panel-shell');
       markGameNode(defaultGameCardId(gameId), 'data-game-card', gameId, 'game-card-shell');
