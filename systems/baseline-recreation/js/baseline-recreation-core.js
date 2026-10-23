@@ -107,6 +107,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   let desktopKeypadOpenGame = '';
   let coreNewGamePointerId = '';
   let coreNewGamePointerAt = 0;
+  let trackCoinPointerPickAt = 0;
   const GAME_IDS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.runtimeId; }) : ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
 
   const GAME_ID_TO_ROUTE_SLUG = Object.freeze((function(){
@@ -3978,13 +3979,15 @@ function toggleGameFullscreen(gameId){
       const make24BoardRerollBtn = event.target.closest('#make24BoardRerollBtn'); if(make24BoardRerollBtn){ rerollMake24Puzzle(); return; }
       const trackCoinResume = event.target.closest('[data-action="resume-trackcoin"]'); if(trackCoinResume){ if(event){ event.preventDefault(); event.stopPropagation(); } resumeRestoredTrackCoinRound(); return; }
             const trackCoinReplay = event.target.closest('[data-action="replay-trackcoin"], #replayTrackCoinShuffleBtn'); if(trackCoinReplay){ if(event){ event.preventDefault(); event.stopPropagation(); } replayTrackCoinShuffle(); return; }
-      const trackCoinCup = event.target.closest('[data-trackcoin-pick]'); if(trackCoinCup){ chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick')); return; }
+      const trackCoinCup = event.target.closest('[data-trackcoin-pick]'); if(trackCoinCup){ if(performance.now()-trackCoinPointerPickAt>=700) chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick')); return; }
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
 
     });
     document.addEventListener('pointerdown',function(event){
-      const button=event.target instanceof Element ? event.target.closest('#make24Board [data-make24-token],#make24Board [data-make24-edit]') : null;
-      if(button) event.preventDefault();
+      const button=event.target instanceof Element ? event.target.closest('#make24GameCard [data-make24-token],#make24GameCard [data-make24-edit]') : null;
+      if(!button) return;
+      event.preventDefault();
+      window.requestAnimationFrame(keepMake24InputFocused);
     },true);
     document.addEventListener('pointerdown',function(event){
       const cup=event.target instanceof Element ? event.target.closest('#trackCoinBoard .trackcoin-cup.is-selectable[data-trackcoin-pick]:not(:disabled)') : null;
@@ -3992,6 +3995,7 @@ function toggleGameFullscreen(gameId){
       event.preventDefault();
       event.stopPropagation();
       if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
+      trackCoinPointerPickAt=performance.now();
       chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
     },true);
     document.addEventListener('input', function(event){
