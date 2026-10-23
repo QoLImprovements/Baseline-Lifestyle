@@ -165,8 +165,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(gameId === 'ruleshift') return Boolean(ruleShiftState && ruleShiftState.finished);
     return false;
   }
-  function startButtonLabel(gameId){
-    const label=roundIsTerminal(gameId) ? 'Next Game' : 'New Game';
+  function startButtonLabel(_gameId){
+    const label='New Game';
     return isMobileGameViewport() ? label : label + ' [' + SITEWIDE_START_HOTKEY_LABEL + ']';
   }
   function autoNextButtonLabel(gameId){
