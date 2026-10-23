@@ -944,10 +944,6 @@
 
   function renderAll(){
     if(!round){
-      round=restoreRound(profile.activeRound);
-      if(round) layout=generateLayout(round.seed,round.tierId);
-    }
-    if(!round){
       layout=null;
       refs.board.innerHTML='<div class="crossnumber-empty-board">Open Cross Number or choose New Game to generate a puzzle.</div>';
       refs.board.style.removeProperty('--crossnumber-cols');
@@ -1034,8 +1030,8 @@
 
   document.addEventListener('baseline:crossnumber-open',function(){
     setCrossnumberPanel(panelFromLocation(),'none');
-    if(!round) createNewRound({tierId:profile.selectedTier});
-    else startTimer();
+    if(round) startTimer();
+    else setStatus('Choose a difficulty tier and press New Game when you are ready.');
   });
   document.addEventListener('fullscreenchange',function(){
     syncFullscreenControl();
@@ -1054,8 +1050,8 @@
     storageReloaded=true;
     stopTimer();
     profile=normaliseProfile(stored);
-    round=restoreRound(profile.activeRound);
-    layout=round?generateLayout(round.seed,round.tierId):null;
+    round=null;
+    layout=null;
     selectedTile='';
     undoStack=[];
     renderAll();
@@ -1063,16 +1059,13 @@
     startTimer();
   });
 
-  const hadSavedRound=Boolean(profile.activeRound);
   profile=normaliseProfile(profile);
-  round=restoreRound(profile.activeRound);
-  layout=round?generateLayout(round.seed,round.tierId):null;
+  round=null;
+  layout=null;
   renderAll();
   syncFullscreenControl();
   setCrossnumberPanel(panelFromLocation(),'none');
-  if(hadSavedRound&&round) setStatus('Your saved Cross Number game has been restored.');
-  else setStatus('Open Cross Number and press New Game when you are ready.');
-  startTimer();
+  setStatus('Choose a difficulty tier and press New Game when you are ready.');
 
   globalThis.BaselineCrossnumber=Object.freeze({
     build:BUILD,
