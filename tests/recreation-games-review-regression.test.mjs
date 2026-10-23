@@ -14,6 +14,9 @@ const blockGrid=read('systems/baseline-recreation/games/block-grid/js/block-grid
 const blockCss=read('systems/baseline-recreation/games/block-grid/css/block-grid.css');
 const colourSort=read('systems/baseline-recreation/games/colour-sort/js/colour-sort.js');
 const crossnumber=read('systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js');
+const crossnumberCss=read('systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css');
+const jigsaw=read('systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
+const jigsawCss=read('systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css');
 const htaccess=read('.htaccess');
 
 test('reviewed core games use game-first side-by-side desktop keypad layouts',()=>{
@@ -74,7 +77,9 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/cup\.left=\+\(h00\*start\.left\+h10\*m0Left\+h01\*target\.left\+h11\*m1Left\)/);
   assert.match(core,/trackCoinState\.phase='pick';[\s\S]*?trackCoinState\.pickLocked=false;[\s\S]*?renderTrackCoin\(\)/);
   assert.match(core,/trackCoinAnimationFrame=window\.requestAnimationFrame\(frame\)/);
-  assert.match(core,/pointerup[\s\S]*?trackcoin-cup\.is-selectable\[data-trackcoin-pick\][\s\S]*?chooseTrackCoinCup/);
+  assert.match(core,/pointerdown[\s\S]*?trackcoin-cup\.is-selectable\[data-trackcoin-pick\]:not\(:disabled\)[\s\S]*?chooseTrackCoinCup/);
+  assert.match(core,/trackCoinState\.phase!==\'pick\'/);
+  assert.match(core,/everyCupMoves/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-scene\.is-phase-pick \.trackcoin-cup\.is-selectable[\s\S]*?pointer-events:auto!important/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-cup\{[\s\S]*?opacity:1!important/);
 });
@@ -112,6 +117,8 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/class="block-grid-play-cluster"/);
   assert.match(blockGrid,/addEventListener\('dragstart'[\s\S]*?preventDefault/);
   assert.match(blockCss,/cursor:none!important;user-select:none!important/);
+  assert.match(blockCss,/\.block-grid-drag-ghost\{[^}]*transform:translate\(-50%,-50%\);/);
+  assert.doesNotMatch(blockCss,/\.block-grid-drag-ghost(?:\.is-over-board)?\{[^}]*scale\(/);
   assert.match(blockCss,/blockGridGameCard:fullscreen::before[\s\S]*?content:"Block Grid"/);
 });
 
@@ -140,11 +147,30 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/function toggleFullscreen\(/);
   assert.match(crossnumber,/newGamePointerAt=performance\.now\(\)[\s\S]*?createNewRound\(\{tierId:profile\.selectedTier\}\)/);
   assert.match(crossnumber,/visualViewport\?\.addEventListener\?\.\('resize'/);
+  assert.match(crossnumber,/const boundedHeight=Math\.max\(180,\(scroll\.clientHeight\|\|rect\.height\)-16\)/);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen[\s\S]*?height:100dvh!important[\s\S]*?overflow:hidden!important/);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-play-layout[\s\S]*?flex:1 1 auto!important/);
   assert.match(html,/data-crossnumber-action="restart">Restart</);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*>Full Screen</);
   assert.match(html,/data-crossnumber-action="new">New Game</);
   assert.match(html,/<h2>Cross Number<\/h2>/);
   assert.match(html,/data-crossnumber-level>Player Rank 1<\/div>/);
+});
+
+test('Jigsaw uses server-saved 200 percent minimum zoom, coherent music controls, and stable restart rendering',()=>{
+  assert.match(jigsaw,/const PIECE_ZOOM_DEFAULT = 2/);
+  assert.match(jigsaw,/jigsawZoom:zoomLevel/);
+  assert.match(jigsaw,/saveProfile\?\.\('hubsettings',profile,\{immediate:true,keepalive:false\}\)/);
+  assert.match(html,/weightCoherenceZoomValue">200%<\/span>/);
+  assert.match(html,/weight-coherence-settings-section[\s\S]*?<strong>Music<\/strong>[\s\S]*?data-games-music-toggle[\s\S]*?data-games-music-volume/);
+  assert.match(music,/#weightCoherenceWorkspace \.weight-coherence-actions/);
+  assert.match(jigsaw,/root\.classList\.add\('is-restarting'\)/);
+  assert.match(jigsawCss,/#weightCoherencePuzzle\.is-restarting \.weight-coherence-piece\{[\s\S]*?visibility:hidden!important[\s\S]*?animation:none!important/);
+});
+
+test('Recreation tab rows leave room for selected outlines instead of clipping them',()=>{
+  assert.match(nonRealmCss,/\.game-toggle-row[\s\S]*?overflow:visible!important/);
+  assert.match(nonRealmCss,/Recreation tab-outline clipping authority[\s\S]*?:is\(\.tabs,\.game-toggle-row,\.trackcoin-tab-row,\.crossnumber-tab-row,\.weight-coherence-tab-row\)/);
 });
 
 test('canonical and legacy recreation routes preserve direct game destinations on refresh',()=>{
