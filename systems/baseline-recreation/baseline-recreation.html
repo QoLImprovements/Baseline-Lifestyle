@@ -663,8 +663,8 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="board-wrap game-play-window" data-game-play-window="pairs">
                 <div class="summary-box round-status-card" id="pairsRoundSummary"></div>
                 <div class="board-grid game-play-surface" id="pairsBoard" data-game-play-surface="pairs"></div>
+                <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newPairsBoardBtn" data-action="start-pairs" type="button">New Game</button><button class="action ghost" id="pairsHintBtn" type="button" disabled>Use Hint</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="pairs" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
               </div>
-              <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newPairsBoardBtn" data-action="start-pairs" type="button">Start New Game</button><button class="action ghost" id="pairsHintBtn" type="button" disabled>Use Hint</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="pairs" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
             </section>
             <section class="card game-card" id="pairsSkillCard" hidden>
               <div class="skill-tree open" id="pairsSkillTree">
@@ -734,8 +734,8 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="board-wrap game-play-window" data-game-play-window="detectword">
                 <div class="summary-box round-status-card" id="wordRoundSummary"></div>
                 <div class="stack game-play-surface" id="wordBoard" data-game-play-surface="detectword"></div>
+                <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newWordRoundBtn" data-action="start-word" type="button">New Game</button><button class="action ghost desktop-keypad-toggle" data-desktop-keypad-toggle="detectword" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="detectword" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
               </div>
-              <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newWordRoundBtn" data-action="start-word" type="button">Start New Game</button><button class="action ghost desktop-keypad-toggle" data-desktop-keypad-toggle="detectword" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="detectword" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
             </section>
             <section class="card game-card" id="wordSkillCard" hidden>
               <div class="skill-tree open" id="wordSkillTree">
@@ -804,8 +804,8 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="board-wrap game-play-window" data-game-play-window="make24">
                 <div class="summary-box round-status-card" id="make24RoundSummary"></div>
                 <div class="stack game-play-surface" id="make24Board" data-game-play-surface="make24"></div>
+                <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newMake24Btn" data-action="start-make24" type="button">New Game</button><button class="action ghost desktop-keypad-toggle" data-desktop-keypad-toggle="make24" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="make24" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
               </div>
-              <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newMake24Btn" data-action="start-make24" type="button">Start New Game</button><button class="action ghost desktop-keypad-toggle" data-desktop-keypad-toggle="make24" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="make24" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
             </section>
             <section class="card game-card" id="make24SkillCard" hidden>
               <div class="skill-tree open" id="make24SkillTree">
@@ -868,8 +868,10 @@ These Markdown rules are a human reference point, not live runtime config.
                 </div>
                 <div class="game-toolbar-spacer" aria-hidden="true"></div>
               </div>
-              <div class="trackcoin-board game-play-surface" id="trackCoinBoard" data-game-play-surface="trackcoin"></div>
-              <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newTrackCoinRoundBtn" data-action="start-trackcoin" type="button">Start New Game</button><button class="action ghost" id="replayTrackCoinShuffleBtn" data-action="replay-trackcoin" type="button" hidden>Replay Last Shuffle</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="trackcoin" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+              <div class="game-play-window" data-game-play-window="trackcoin">
+                <div class="trackcoin-board game-play-surface" id="trackCoinBoard" data-game-play-surface="trackcoin"></div>
+                <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newTrackCoinRoundBtn" data-action="start-trackcoin" type="button">New Game</button><button class="action ghost" id="replayTrackCoinShuffleBtn" data-action="replay-trackcoin" type="button" hidden>Replay Last Shuffle</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="trackcoin" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+              </div>
             </section>
             <section class="card game-card" id="trackCoinSkillPanel" hidden>
               <div class="skill-head"><h3>Track the Coin Skill Tree</h3><div class="inline-note">Spend one point per level gained.</div></div>
@@ -945,8 +947,8 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="board-wrap game-play-window" data-game-play-window="ruleshift">
                 <div class="summary-box round-status-card" id="ruleShiftRoundSummary"></div>
                 <div class="ruleshift-board game-play-surface" id="ruleShiftBoard" data-game-play-surface="ruleshift"></div>
+                <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newRuleShiftBtn" data-action="start-ruleshift" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="ruleshift" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
               </div>
-              <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newRuleShiftBtn" data-action="start-ruleshift" type="button">Start New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="ruleshift" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
             </section>
             <section class="card game-card" id="ruleShiftSkillCard" hidden>
               <div class="skill-head"><h3>Rule Shift Skill Tree</h3><div class="inline-note">Spend one point per level gained.</div></div>
