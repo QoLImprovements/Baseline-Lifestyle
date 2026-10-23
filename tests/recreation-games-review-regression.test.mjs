@@ -29,7 +29,7 @@ test('reviewed core games use game-first side-by-side desktop keypad layouts',()
 });
 
 test('core New Game is one-click, opens Pairs idle, and keeps Full Screen inside the game controls',()=>{
-  assert.match(core,/function startButtonLabel\(_gameId\)[\s\S]*?const label='New Game'/);
+  assert.match(core,/function startButtonLabel\(_gameId\)\{ return 'New Game'; \}/);
   assert.doesNotMatch(core,/Start New Game|Start Next Game/);
   assert.match(core,/document\.addEventListener\('pointerdown',[\s\S]*?newPairsBoardBtn,#newWordRoundBtn,#newMake24Btn,#newTrackCoinRoundBtn,#newRuleShiftBtn[\s\S]*?startCoreGameFromButton\(start\)/);
   assert.match(core,/document\.addEventListener\('click',[\s\S]*?coreNewGamePointerId[\s\S]*?startCoreGameFromButton\(start\)/);
@@ -99,8 +99,11 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/restoredWaiting:!resolved&&!pickReady/);
   assert.doesNotMatch(core,/trackCoinState\.restoredWaiting=true/);
   assert.match(core,/trackCoinAnimationFrame=window\.requestAnimationFrame\(frame\)/);
-  assert.match(core,/pointerdown[\s\S]*?trackcoin-cup\.is-selectable\[data-trackcoin-pick\]:not\(:disabled\)[\s\S]*?trackCoinPointerPickAt=performance\.now\(\)[\s\S]*?chooseTrackCoinCup/);
-  assert.match(core,/const trackCoinCup = event\.target\.closest\('\[data-trackcoin-pick\]'\); if\(trackCoinCup\)\{ if\(performance\.now\(\)-trackCoinPointerPickAt>=700\) chooseTrackCoinCup/);
+  assert.match(core,/data-trackcoin-pick="' \+ escapeHtml\(cup\.id\) \+ '"/);
+  assert.match(core,/trackCoinState\.cups\.find\(function\(cup\)\{ return cup\.id===choice; \}\)/);
+  assert.match(core,/refs\.trackCoinBoard\.addEventListener\('pointerup'[\s\S]*?\.trackcoin-cup\.is-selectable\[data-trackcoin-pick\][\s\S]*?chooseTrackCoinCup/);
+  assert.match(core,/if\(event\.detail===0\) chooseTrackCoinCup/);
+  assert.doesNotMatch(core,/trackCoinPointerPickAt/);
   assert.match(core,/trackCoinState\.phase!==\'pick\'/);
   assert.match(core,/everyCupMoves/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-scene\.is-phase-pick \.trackcoin-cup\.is-selectable[\s\S]*?pointer-events:auto!important/);
@@ -114,6 +117,14 @@ test('Recreation music preferences are server-side and quick controls stay insid
   assert.match(music,/data-games-music-quick/);
   assert.match(music,/function quickMusicMarkup\(label\)/);
   assert.match(music,/btn\.innerHTML=quickMusicMarkup\(settings\.enabled\?'Music on':'Music off'\)/);
+  assert.match(music,/btn\.setAttribute\('data-hotkey-caption','Alt\+M'\)/);
+  assert.match(music,/btn\.setAttribute\('data-hotkey-caption','Alt\+S'\)/);
+  assert.match(music,/games-settings-trigger__icon[\s\S]*?<span class="sr-only">Settings<\/span>/);
+  assert.match(music,/if\(key === 'm'\)[\s\S]*?setEnabled\(!settings\.enabled\)/);
+  assert.match(music,/if\(key === 's'\)[\s\S]*?if\(activeGame === 'jigsaw'\) return;/);
+  assert.match(music,/document\.addEventListener\('baseline:game-storage'[\s\S]*?if\(!wasEnabled\) startActive\(\);[\s\S]*?else recoverPlayback\(\)/);
+  assert.doesNotMatch(music,/document\.addEventListener\('baseline:game-storage'[\s\S]{0,260}?if\(settings\.enabled && activeGame\) startActive\(\)/);
+  assert.match(music,/if\(timer && nextBarTime > c\.currentTime \+ 0\.25\) return;/);
   assert.match(music,/function mutationAddsElement\(records\)[\s\S]*?node\.nodeType===1/);
   assert.match(music,/new MutationObserver\(function\(records\)\{[\s\S]*?if\(!mutationAddsElement\(records\)\) return;[\s\S]*?injectSettingsButtons\(\);[\s\S]*?syncUi\(\)/);
   assert.doesNotMatch(music,/new MutationObserver\(function\(\)\{\s*injectSettingsButtons\(\);\s*syncUi\(\);\s*\}\)/);
@@ -124,12 +135,17 @@ test('Recreation music preferences are server-side and quick controls stay insid
   assert.match(music,/Baseline Recreation<\/small><h3 id="gamesMusicSettingsTitle">Settings/);
 });
 
-test('reported uncomfortable games use the sensory-gentle music replacement set',()=>{
-  for(const id of ['pairs','detectword','make24','trackcoin','ruleshift','crossnumber']){
-    assert.match(music,new RegExp("SENSORY_GENTLE_GAMES[\\s\\S]*?'"+id+"'"));
+test('reported uncomfortable games use energetic replacement themes with softened timbre',()=>{
+  const bpms={pairs:110,detectword:116,make24:124,trackcoin:126,ruleshift:122,crossnumber:116,'block-grid':118,'colour-sort':114,jigsaw:104};
+  for(const [id,bpm] of Object.entries(bpms)){
+    assert.match(music,new RegExp("(?:'"+id+"'|"+id+"):\\{bpm:"+bpm));
   }
-  assert.match(music,/if\(sensoryGentle\) return;/);
-  assert.match(music,/sensoryGentle \? 0 :/);
+  assert.match(music,/var MIX_VERSION = 3/);
+  assert.match(music,/SOFT_TIMBRE_GAMES = new Set\(\['block-grid','colour-sort','jigsaw'\]\)/);
+  assert.match(music,/osc\.type = 'triangle';[\s\S]*?filter\.frequency\.value = 680/);
+  assert.match(music,/filter\.frequency\.value = 2450/);
+  assert.doesNotMatch(music,/SENSORY_GENTLE_GAMES|sensoryGentle/);
+  assert.doesNotMatch(music,/detectword:\{bpm:76|make24:\{bpm:80|trackcoin:\{bpm:82|ruleshift:\{bpm:78/);
 });
 
 test('extension-game routes clear stale core selection without surrendering extension panel ownership',()=>{
@@ -163,6 +179,9 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockCss,/\.block-grid-drag-ghost\{[^}]*transform:translate\(-50%,-50%\);/);
   assert.doesNotMatch(blockCss,/\.block-grid-drag-ghost(?:\.is-over-board)?\{[^}]*scale\(/);
   assert.match(blockCss,/blockGridGameCard:fullscreen::before[\s\S]*?content:"Block Grid"/);
+  assert.match(blockGrid,/const fullscreenHost=document\.fullscreenElement;[\s\S]*?host\.appendChild\(ghost\)/);
+  assert.match(blockCss,/\.block-grid-tray\{[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
+  assert.match(blockCss,/--block-piece-mini-cell:clamp\(12px,2\.05vw,18px\)/);
 });
 
 test('Colour Sort exposes difficulty tiers while keeping the 60 authored layouts internal and unpredictable',()=>{
@@ -178,6 +197,8 @@ test('Colour Sort exposes difficulty tiers while keeping the 60 authored layouts
   assert.match(colourSort,/const exposedStart=Math\.max\(0,bottle\.length-topRunLength\(bottle\)\)/);
   assert.match(colourSort,/id>=49\?2:\(id>=37\?1:0\)/);
   assert.match(colourSort,/blockedIndices:lockedBottleIndices\(active\)/);
+  assert.match(colourSort,/const fullscreenHost = document\.fullscreenElement;[\s\S]*?fullscreenHost\.contains\(source\)[\s\S]*?host\.appendChild\(layer\)/);
+  assert.match(colourSort,/if\(key==='f'\)\{ event\.preventDefault\(\); toggleFullscreen\(\); return; \}/);
   const solved=[[0,0,0,0],[1,1,1,1],[],[]];
   assert.equal(hintMove(solved),null);
 });
@@ -200,8 +221,11 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-bank\{[\s\S]*?grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart">Restart</);
-  assert.match(html,/data-crossnumber-action="fullscreen"[^>]*>Full Screen</);
-  assert.match(html,/data-crossnumber-action="new">New Game</);
+  assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-hotkey-caption="Alt\+F"[^>]*aria-label="Full screen"/);
+  assert.doesNotMatch(html,/data-crossnumber-action="fullscreen"[^>]*>Full Screen<\/button>/);
+  assert.match(html,/data-crossnumber-action="new"[^>]*data-hotkey-caption="Alt\+N"[^>]*>New Game<\/button>/);
+  assert.match(crossnumber,/if\(key==='n'\)[\s\S]*?createNewRound\(\{tierId:profile\.selectedTier\}\)/);
+  assert.match(crossnumber,/if\(key==='f'\)[\s\S]*?toggleFullscreen\(\)/);
   assert.match(html,/<h2>Cross Number<\/h2>/);
   assert.match(html,/data-crossnumber-level>Player Rank 1<\/div>/);
 });
@@ -215,6 +239,22 @@ test('Jigsaw uses server-saved 200 percent minimum zoom, coherent music controls
   assert.match(music,/#weightCoherenceWorkspace \.weight-coherence-actions/);
   assert.match(jigsaw,/root\.classList\.add\('is-restarting'\)/);
   assert.match(jigsawCss,/#weightCoherencePuzzle\.is-restarting \.weight-coherence-piece\{[\s\S]*?visibility:hidden!important[\s\S]*?animation:none!important/);
+  assert.match(html,/id="weightCoherenceFullscreenBtn"[^>]*aria-keyshortcuts="Alt\+F"/);
+  assert.match(html,/id="weightCoherenceToolbarSettingsBtn"[^>]*aria-keyshortcuts="Alt\+S"/);
+  assert.match(jigsawCss,/\.weight-coherence-hotkey\{[\s\S]*?top:calc\(100% \+ 3px\)!important/);
+});
+
+test('common Recreation actions use compact icons with separate hotkey captions',()=>{
+  assert.match(core,/function setHotkeyCaption\(button, hotkey\)/);
+  assert.match(core,/function startButtonLabel\(_gameId\)\{ return 'New Game'; \}/);
+  assert.match(core,/function keyboardIconMarkup\(open\)/);
+  assert.match(core,/function fullscreenIconMarkup\(label\)/);
+  assert.match(core,/SITEWIDE_FULLSCREEN_HOTKEY_LABEL = 'Alt\+F'/);
+  assert.match(core,/setHotkeyCaption\(btn,SITEWIDE_KEYBOARD_HOTKEY_LABEL\)/);
+  assert.match(core,/setHotkeyCaption\(btn,SITEWIDE_FULLSCREEN_HOTKEY_LABEL\)/);
+  assert.match(nonRealmCss,/\[data-hotkey-caption\]::after\{[\s\S]*?content:attr\(data-hotkey-caption\)/);
+  assert.match(nonRealmCss,/\.game-shell-action__svg\{/);
+  assert.doesNotMatch(core,/label \+ ' \[' \+ SITEWIDE_START_HOTKEY_LABEL/);
 });
 
 test('Recreation tab rows leave room for selected outlines instead of clipping them',()=>{
