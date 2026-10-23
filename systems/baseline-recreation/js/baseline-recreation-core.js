@@ -518,8 +518,12 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     document.body.setAttribute('data-mobile-game', id);
     root.classList.add('is-mobile-game-root');
     root.setAttribute('data-mobile-game-root', id);
-    if(!q(':scope > .mobile-game-exit', root)){
+    if(id !== 'ninja' && !q(':scope > .mobile-game-exit', root)){
       root.insertAdjacentHTML('afterbegin', '<button class="mobile-game-exit" data-exit-mobile-game-mode type="button" aria-label="Back to Games Overview">Back To Games Overview</button>');
+    }
+    if(id === 'ninja'){
+      const genericExit=q(':scope > .mobile-game-exit',root);
+      if(genericExit) genericExit.remove();
     }
     injectMobileGameControls(id);
     desktopKeypadOpenGame = '';
