@@ -1,8 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
 const PATH = '/systems/baseline-recreation/baseline-recreation.html';
-const PROFILE_KEY = '__bl_games_guest_profiles_v1__';
-
 function ninjaProfile() {
   return {
     app: 'ninja', coins: 678, xp: 345, level: 12, stage: 37,
@@ -16,27 +14,26 @@ function ninjaProfile() {
 }
 
 async function prepare(page) {
-  await page.addInitScript(({ key, profile }) => {
-    localStorage.setItem(key, JSON.stringify({ ninja: profile }));
-  }, { key: PROFILE_KEY, profile: ninjaProfile() });
-
-  await page.route('**/systems/baseline-recreation/api/games_profile.php**', async route => {
+  const profiles = { ninja:ninjaProfile() };
+  const revisions = { ninja:1 };
+  await page.route('**/systems/baseline-recreation/api/games_data.php**', async route => {
     const request = route.request();
     const url = new URL(request.url());
-    let app = url.searchParams.get('app') || 'ninja';
-    let profile = app === 'ninja' ? ninjaProfile() : { app, level: 1, xp: 0, bank: 0, coins: 0, skillPoints: 1, skills: {} };
-    if (request.method() === 'POST') {
-      try {
-        const body = request.postDataJSON();
-        app = body.app || app;
-        profile = body.profile || profile;
-      } catch (_) {}
+    if(request.method() === 'GET'){
+      if(url.searchParams.has('bootstrap')){
+        await route.fulfill({ status:200, contentType:'application/json', body:JSON.stringify({ ok:true, authed:true, accountId:7, profiles, revisions }) });
+        return;
+      }
+      const app=url.searchParams.get('app')||'';
+      await route.fulfill({ status:200, contentType:'application/json', body:JSON.stringify({ ok:true, app, found:Boolean(profiles[app]), profile:profiles[app]||{}, revision:revisions[app]||0 }) });
+      return;
     }
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ ok: true, app, profile })
-    });
+    let body={};
+    try{ body=request.postDataJSON(); }catch(_){}
+    const app=String(body.app||'');
+    if(app && body.profile) profiles[app]=body.profile;
+    if(app) revisions[app]=(revisions[app]||0)+1;
+    await route.fulfill({ status:200, contentType:'application/json', body:JSON.stringify({ ok:true, app, profile:profiles[app]||body.profile||{}, revision:revisions[app]||0 }) });
   });
 
   await page.goto(PATH, { waitUntil: 'domcontentloaded' });
@@ -44,6 +41,7 @@ async function prepare(page) {
     const shell = document.documentElement.getAttribute('data-baseline-realm-stage-one') || '';
     return shell.includes('COMPLETE') && Boolean(globalThis.BaselineRealmHost?.sceneRouter);
   });
+
 }
 
 async function enterRealmThroughRealHandler(page) {
