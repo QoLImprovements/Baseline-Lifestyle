@@ -1526,7 +1526,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
     profile.cleanWinStreak = rewards.nextClean;
     const levels = levelUpFromGain(profile, rewards.xp);
-    pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · clean bonus +' + rewards.cleanPct + '%' : '') + (rewards.streakPct ? ' · streak bonus +' + rewards.streakPct + '%' : '') + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
+    pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · clean bonus +' + rewards.cleanPct + '%' : '') + (rewards.streakPct ? ' · streak bonus +' + rewards.streakPct + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
     pairsBoardState.roundBank += rewards.bank;
     pairsBoardState.completed = true;
     persistPairsRound();
@@ -1826,7 +1826,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       profiles.make24.cleanWinStreak = nextClean;
       const levels = levelUpFromGain(profiles.make24, xpGain);
       make24State.roundBank += bankGain;
-      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + (nextClean ? ' · clean bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
+      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + (nextClean ? ' · clean bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
       make24State.revealSolution = '';
       make24State.draftExpression = '';
       make24State.completed = true;
@@ -2446,7 +2446,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       profile.bank += bankGain;
       const levels = levelUpFromGain(profile, xpGain);
       wordState.roundBank += bankGain;
-      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
+      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · Player Rank +' + levels : '') + '.';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
       resolveNinjaBonuses();
@@ -2992,7 +2992,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     trackCoinState.lastResult = correct ? 'correct' : 'missed';
     const reward = grantTrackCoinRewards(correct);
     trackCoinState.message = correct
-      ? 'Correct. The coin was under the cup you chose. Cup speed rises from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. +' + reward.xpGain + ' XP · +' + reward.coinGain + ' coins' + (reward.bonusPct ? ' · streak bonus +' + reward.bonusPct + '%' : '') + (reward.cleanPct ? ' · clean bonus +' + reward.cleanPct + '%' : '') + (reward.levelUps ? ' · +' + reward.levelUps + ' level' + (reward.levelUps > 1 ? 's' : '') : '') + '.'
+      ? 'Correct. The coin was under the cup you chose. Cup speed rises from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. +' + reward.xpGain + ' XP · +' + reward.coinGain + ' coins' + (reward.bonusPct ? ' · streak bonus +' + reward.bonusPct + '%' : '') + (reward.cleanPct ? ' · clean bonus +' + reward.cleanPct + '%' : '') + (reward.levelUps ? ' · Player Rank +' + reward.levelUps : '') + '.'
       : 'Missed. The coin has been revealed under the correct cup. Cup speed falls from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. Streak bonus reset. +' + reward.xpGain + ' XP · +' + reward.coinGain + ' coins.';
     persistTrackCoinRound();
     resolveNinjaBonuses();
@@ -3129,7 +3129,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     renderCompactGameXp('trackcoin',profile);
     refs.trackCoinRpgState.textContent = trackCoinRpgUnlocked(profile)
       ? 'Pace unlock threshold reached for RPG integration.'
-      : 'Reach level 10, maintain high accuracy, or push a major streak to unlock Pace Control.';
+      : 'Reach Player Rank 10, maintain high accuracy, or push a major streak to unlock Pace Control.';
     setTrackCoinPanel(trackCoinOpenPanel || 'trackCoinGamePanel');
 
     const replayButton = document.getElementById('replayTrackCoinShuffleBtn');
