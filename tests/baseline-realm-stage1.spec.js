@@ -1,8 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
 const PATH = '/systems/baseline-recreation/baseline-recreation.html';
-const GUEST_PROFILE_KEY = '__bl_games_guest_profiles_v1__';
-
 function profileFor(app) {
   if (app === 'ninja') {
     return {
@@ -19,29 +17,28 @@ function profileFor(app) {
 }
 
 async function mockProfiles(page) {
-  const savedNinja = profileFor('ninja');
-  await page.addInitScript(({ key, profile }) => {
-    localStorage.setItem(key, JSON.stringify({ ninja: profile }));
-  }, { key: GUEST_PROFILE_KEY, profile: savedNinja });
-
-  await page.route('**/systems/baseline-recreation/api/games_profile.php**', async route => {
+  const profiles = { ninja:profileFor('ninja') };
+  const revisions = { ninja:1 };
+  await page.route('**/systems/baseline-recreation/api/games_data.php**', async route => {
     const request = route.request();
     const url = new URL(request.url());
-    let app = url.searchParams.get('app') || 'pairs';
-    let profile = profileFor(app);
-    if (request.method() === 'POST') {
-      try {
-        const body = request.postDataJSON();
-        app = body.app || app;
-        profile = body.profile || profileFor(app);
-      } catch (_) {}
+    if(request.method() === 'GET'){
+      if(url.searchParams.has('bootstrap')){
+        await route.fulfill({ status:200, contentType:'application/json', body:JSON.stringify({ ok:true, authed:true, accountId:7, profiles, revisions }) });
+        return;
+      }
+      const app=url.searchParams.get('app')||'';
+      await route.fulfill({ status:200, contentType:'application/json', body:JSON.stringify({ ok:true, app, found:Boolean(profiles[app]), profile:profiles[app]||{}, revision:revisions[app]||0 }) });
+      return;
     }
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ ok: true, app, profile })
-    });
+    let body={};
+    try{ body=request.postDataJSON(); }catch(_){}
+    const app=String(body.app||'');
+    if(app && body.profile) profiles[app]=body.profile;
+    if(app) revisions[app]=(revisions[app]||0)+1;
+    await route.fulfill({ status:200, contentType:'application/json', body:JSON.stringify({ ok:true, app, profile:profiles[app]||body.profile||{}, revision:revisions[app]||0 }) });
   });
+
 }
 
 async function openRealm(page, { mobile = false } = {}) {
@@ -63,7 +60,8 @@ async function openRealm(page, { mobile = false } = {}) {
   }, { mobile });
   await expect(page.locator('#realmSceneFrame')).toBeVisible();
   await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
-  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
+  const portraitBlocked = mobile && await page.evaluate(() => window.innerHeight > window.innerWidth);
+  if(!portraitBlocked) await expect(page.locator('#realmBasecampScreen')).toBeVisible();
 }
 
 async function screenshot(page, testInfo, name) {
