@@ -55,17 +55,28 @@ test('Pairs layout and tempo calculations preserve existing geometry and clamps'
   assert.equal(engine.mismatchDelay(10),260);
 });
 
-test('Pairs reward calculation uses skills plus one Clean streak multiplier',()=>{
+test('Pairs clean streak only advances on a genuinely clean board',()=>{
   const engine=loadEngine();
-  const rewards=engine.calculateRewards({
+  const clean=engine.calculateRewards({
     tier:{bankReward:10,xpReward:20},
     profile:{cleanWinStreak:2,currentStreak:4,skills:{banker:2,flow:1}},
-    hadFailure:true,
+    hadFailure:false,
     cleanBonusPctForStreak:(streak)=>streak===3?10:0
   });
   assert.deepEqual(
-    JSON.parse(JSON.stringify(rewards)),
-    {bank:13,xp:24,cleanPct:10,nextClean:3,nextStreak:5}
+    JSON.parse(JSON.stringify(clean)),
+    {bank:13,xp:24,cleanPct:10,nextClean:3,nextStreak:5,cleanWin:true}
+  );
+
+  const missed=engine.calculateRewards({
+    tier:{bankReward:10,xpReward:20},
+    profile:{cleanWinStreak:2,currentStreak:4,skills:{banker:2,flow:1}},
+    hadFailure:true,
+    cleanBonusPctForStreak:()=>99
+  });
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(missed)),
+    {bank:12,xp:22,cleanPct:0,nextClean:0,nextStreak:5,cleanWin:false}
   );
 });
 
