@@ -269,7 +269,7 @@ function statusHtml() {
       : (selectedPiece >= 0 ? `Piece ${selectedPiece + 1} selected. ` : '') + (statusMessage || 'Keep space available for the next tray.');
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
-    + '<div class="round-status-previous">Previous round — '+number(profile.lastRoundXp)+' XP</div>'
+    + '<div class="round-status-previous">Previous round - '+number(profile.lastRoundXp)+' XP</div>'
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(currentMode().name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
