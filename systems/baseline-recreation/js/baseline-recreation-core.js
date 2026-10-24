@@ -2752,7 +2752,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const profile = profiles.trackcoin || defaultTrackCoinProfile();
     const count = tier.containers;
     const positions = trackCoinCupPositions(count);
-    const baseTop = isMobileGameViewport() ? (count >= 5 ? 70 : 74) : (count >= 5 ? 64 : 68);
+    const baseTop = isMobileGameViewport() ? (count >= 5 ? 90 : 100) : (count >= 5 ? 64 : 68);
     const cups = Array.from({ length:count }, (_, index) => ({ id:'cup' + index, left:positions[index], top:baseTop, tilt:0 }));
     const coinCupId = cups[Math.floor(Math.random() * count)].id;
     const speedPercent = trackCoinCurrentSpeedPercent(profile);
@@ -4186,6 +4186,10 @@ function toggleGameFullscreen(gameId){
         event.stopPropagation();
         chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
       };
+      // Resolve the choice on pointer-down on coarse/touch input. Waiting for
+      // pointer-up allowed browser tap/scroll handling to consume the gesture on
+      // some mobile browsers, which made the cup flash without resolving.
+      refs.trackCoinBoard.addEventListener('pointerdown',selectTrackCoinCup,true);
       refs.trackCoinBoard.addEventListener('pointerup',selectTrackCoinCup,true);
       refs.trackCoinBoard.addEventListener('click',selectTrackCoinCup,true);
     }
