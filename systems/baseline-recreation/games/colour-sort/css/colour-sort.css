@@ -205,7 +205,7 @@ html.is-dragging-colour-sort-bottle,html.is-dragging-colour-sort-bottle body{ove
     position:relative!important;
     display:grid!important;
     grid-template-columns:minmax(0,4fr) var(--colour-fs-side)!important;
-    grid-template-rows:auto auto auto minmax(0,1fr) auto auto!important;
+    grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto!important;
     gap:7px 12px!important;
     width:100vw!important;
     height:100dvh!important;
