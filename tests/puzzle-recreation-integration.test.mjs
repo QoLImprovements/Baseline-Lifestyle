@@ -150,14 +150,14 @@ test('Block Grid and Colour Sort follow the Core Games presentation contract', (
   assert.match(block, /function renderGameInfo\(\)/);
   assert.match(block, /onOpen:\(\) => \{[^}]*selectGame\?\.\('block-grid'\); render\(\); setTab\(blockTabFromLocation\(\), 'none'\); \}/);
   assert.doesNotMatch(block, /function ensureRun\(/);
-  assert.match(block, />New Game<\/button>/);
+  assert.match(block, /data-block-action="new"[^>]*aria-label="New Game"[^>]*>[\s\S]*?<span aria-hidden="true">＋<\/span>/);
 
   assert.match(colour, /data-game-info="coloursort"/);
   assert.match(colour, /<span>Game Info<\/span><span class="inline-note">Player Rank \/ XP \/ stats<\/span>/);
   assert.match(colour, /function renderGameInfo\(\)/);
   assert.match(colour, /onOpen:\(\) => \{[^}]*selectGame\?\.\('colour-sort'\); render\(\); setTab\(colourTabFromLocation\(\), 'none'\); \}/);
   assert.doesNotMatch(colour, /function ensurePuzzle\(/);
-  assert.match(colour, />New Game<\/button>/);
+  assert.match(colour, /data-colour-action="new"[^>]*aria-label="New Game"[^>]*>[\s\S]*?<span aria-hidden="true">＋<\/span>/);
   assert.match(colour, /function startTierGame\(tierId=profile\.selectedTier\)/);
   assert.match(colour, /function randomLevelForTier\(tierId\)/);
   assert.doesNotMatch(colour, /data-colour-level/);
