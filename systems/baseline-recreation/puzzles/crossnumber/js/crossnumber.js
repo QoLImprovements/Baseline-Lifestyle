@@ -19,8 +19,8 @@
   const SKILLS=Object.freeze([
     Object.freeze({id:'insight',name:'Insight',max:4,unlockLevel:6,description:'Gain one additional hint use per puzzle per rank.'}),
     Object.freeze({id:'flow',name:'Flow',max:5,unlockLevel:1,description:'Gain +8% Cross Number XP per rank.'}),
-    Object.freeze({id:'banker',name:'Banker',max:5,unlockLevel:1,description:'Gain +10% Bank reward per rank.'}),
-    Object.freeze({id:'precision',name:'Precision',max:4,unlockLevel:1,description:'Reduce Bank loss from an invalid completed equation by 1 per rank.'}),
+    Object.freeze({id:'banker',name:'Banker',max:5,unlockLevel:1,description:'Gain +10% Bank Coins reward per rank.'}),
+    Object.freeze({id:'precision',name:'Precision',max:4,unlockLevel:1,description:'Reduce Bank Coins loss from an invalid completed equation by 1 per rank.'}),
     Object.freeze({id:'structure',name:'Structure',max:4,unlockLevel:12,description:'Every two ranks add one starting anchor to future layouts and strengthen Cross Number\'s Baseline Realm link.'})
   ]);
 
@@ -727,7 +727,7 @@
       refs.complete.setAttribute('aria-hidden','false');
       if(refs.completeTime) refs.completeTime.textContent=formatTime(completedTime);
       if(refs.completeScore) refs.completeScore.textContent=String(score);
-      if(refs.completeReward) refs.completeReward.textContent='+'+rewards.bank+' Bank Coins · +'+rewards.xp+' XP'+(rewards.cleanPct?' · Clean streak bonus +'+rewards.cleanPct+'%':'')+(levels?' · Player Rank +'+levels:'');
+      if(refs.completeReward) refs.completeReward.textContent='+'+rewards.bank+' Bank Coins · +'+rewards.xp+' XP'+(rewards.cleanPct?' · Clean Streak Bonus +'+rewards.cleanPct+'%':'')+(levels?' · Player Rank +'+levels:'');
     }
     setStatus('Every equation balances. Cross Number complete.');
     try{autoNextApi()?.schedule?.(APP,function(){createNewRound({tierId:profile.selectedTier});});}catch(_error){}
@@ -900,7 +900,7 @@
       ['Current streak',profile.currentStreak],
       ['Clean streak',profile.cleanWinStreak],
       ['Best score',profile.bestScore],
-      ['Bank earned',profile.bank],
+      ['Bank Coins earned',profile.bank],
       ['Current tier',tierDefinition(profile.selectedTier).name],
       ['Next tier',next?(next.name+' · L'+next.unlockLevel):'All unlocked']
     ];
