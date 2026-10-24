@@ -143,16 +143,22 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(core,/Board cleared\. \+' \+ rewards\.bank \+ ' Bank Coins · \+' \+ rewards\.xp \+ ' XP'/);
   assert.match(core,/Clean streak bonus \+' \+ rewards\.cleanPct \+ '%'/);
   assert.doesNotMatch(core,/Current streak bonus/);
+  assert.doesNotMatch(core,/const streakPct = trackCoinStreakBonusPct/);
   assert.doesNotMatch(core,/ · clean bonus \+/i);
-  assert.doesNotMatch(html,/>Clean Bonus </i);
+  assert.doesNotMatch(html,/>Streak Bonus </i);
+  assert.doesNotMatch(html,/>Clean Bonus</i);
   assert.match(html,/Round Bank Coins <span id="wordRoundBankValue">/);
   assert.match(crossnumber,/Bank Coins · \+'\+rewards\.xp\+' XP'[\s\S]*?Clean streak bonus/);
 });
 
 test('all major Recreation fullscreen surfaces use the bounded side-panel contract',()=>{
   assert.match(nonRealmCss,/--recreation-fs-side:clamp\(230px,20vw,330px\)[\s\S]*?grid-template-columns:minmax\(0,4fr\) var\(--recreation-fs-side\)!important/);
+  assert.match(core,/function renderFullscreenSkills\(gameId,profile,anchor\)/);
+  assert.match(nonRealmCss,/\.game-fullscreen-skills[\s\S]*?grid-row:4!important/);
   assert.match(blockCss,/--block-fs-side:clamp\(230px,20vw,330px\)/);
   assert.match(crossnumberCss,/--crossnumber-fs-side:clamp\(230px,20vw,330px\)/);
+  assert.match(crossnumber,/data-crossnumber-fullscreen-skills/);
+  assert.match(crossnumberCss,/\.crossnumber-fullscreen-skills[\s\S]*?grid-row:4!important/);
   assert.match(jigsawCss,/--jigsaw-fs-side:clamp\(230px,20vw,330px\)/);
   const colourCss=read('systems/baseline-recreation/games/colour-sort/css/colour-sort.css');
   assert.match(colourCss,/--colour-fs-side:clamp\(230px,20vw,330px\)/);
