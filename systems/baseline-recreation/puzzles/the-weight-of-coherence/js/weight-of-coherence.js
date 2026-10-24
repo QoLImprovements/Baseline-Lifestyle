@@ -1793,7 +1793,7 @@
       return;
     }
     const shellRect=refs.boardShell.getBoundingClientRect();
-    const statusHeight=refs.status && refs.boardShell.contains(refs.status) ? refs.status.getBoundingClientRect().height : 0;
+    const statusHeight=refs.status ? refs.status.getBoundingClientRect().height : 0;
     const shellStyle=window.getComputedStyle(refs.boardShell);
     const gap=parseFloat(shellStyle.rowGap || shellStyle.gap || '0') || 0;
     const availableHeight=Math.max(0,shellRect.height-statusHeight-gap-6);
