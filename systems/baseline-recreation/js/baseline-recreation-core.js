@@ -194,6 +194,29 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   function fullscreenIconMarkup(label){
     return '<svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">'+label+'</span>';
   }
+  function compactGlyphMarkup(glyph,label){
+    return '<span class="game-control-letter" aria-hidden="true">'+glyph+'</span><span class="sr-only">'+label+'</span>';
+  }
+  function setCompactActionButton(button,glyph,label,hotkey,count){
+    if(!button) return;
+    const suffix=Number.isFinite(Number(count)) ? ' ('+Math.max(0,Math.round(Number(count)))+')' : '';
+    const fullLabel=label+suffix;
+    button.classList.add('game-control-icon');
+    button.setAttribute('aria-label',fullLabel);
+    button.innerHTML=compactGlyphMarkup(glyph,fullLabel);
+    const shortcut=String(hotkey||'').trim();
+    button.title=[fullLabel,shortcut].filter(Boolean).join(' · ');
+    if(shortcut) setHotkeyCaption(button,shortcut);
+    else button.setAttribute('data-tooltip',fullLabel);
+  }
+  function alignGameTooltip(button){
+    if(!button || !button.matches || !button.matches('[data-tooltip]')) return;
+    const rect=button.getBoundingClientRect();
+    const width=Math.max(1,window.innerWidth||document.documentElement.clientWidth||1);
+    if(rect.right > width-120) button.setAttribute('data-tooltip-align','right');
+    else if(rect.left < 120) button.setAttribute('data-tooltip-align','left');
+    else button.removeAttribute('data-tooltip-align');
+  }
   function mobileSubmitButtonHtml(){
     return isMobileGameViewport() ? '' : '<div class="game-input-submit-row"><button class="action ghost submit-game-toggle" type="submit">Submit</button></div>';
   }
@@ -701,9 +724,13 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     qsa('[data-auto-next-toggle]').forEach(function(btn){
       const gameId = btn.getAttribute('data-auto-next-toggle') || '';
       const enabled = autoNextEnabled(gameId);
+      const label='Auto-next: '+(enabled?'On':'Off');
       btn.setAttribute('aria-pressed', String(enabled));
+      btn.setAttribute('aria-label',label);
       btn.classList.toggle('is-active', enabled);
-      btn.textContent = autoNextButtonLabel(gameId);
+      btn.classList.add('game-control-icon','game-shell-action','game-shell-action--icon');
+      btn.innerHTML=compactGlyphMarkup('A',label);
+      btn.title=label+' · '+SITEWIDE_AUTONEXT_HOTKEY_LABEL;
       setHotkeyCaption(btn, SITEWIDE_AUTONEXT_HOTKEY_LABEL);
     });
   }
@@ -1741,7 +1768,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       refs.pairsMatchedValue.textContent = '0 / ' + tier.pairs;
       refs.pairsRoundBankValue.textContent = '0';
       refs.pairsHintBtn.disabled = true;
-      refs.pairsHintBtn.textContent = 'Use Hint';
+      setCompactActionButton(refs.pairsHintBtn,'?','Hint','H',0);
       applyPairsBoardLayout(tier);
       refs.pairsBoard.innerHTML = '<div class="empty-box"><strong>Pairs is ready.</strong><span class="inline-note">' + escapeHtml(pairsIdleMessage) + '</span></div>';
       refs.pairsRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">No board is active yet.</span><span class="inline-note">Current streak bonus +' + trackCoinStreakBonusPct(profiles.pairs.currentStreak) + '% · clean bonus +' + cleanWinBonusPct(profiles.pairs.cleanWinStreak) + '%.</span>';
@@ -1751,7 +1778,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.pairsMatchedValue.textContent = String(pairsBoardState.matchedPairs) + ' / ' + tier.pairs;
     refs.pairsRoundBankValue.textContent = String(pairsBoardState.roundBank);
     refs.pairsHintBtn.disabled = pairsBoardState.completed || pairsBoardState.hintsLeft <= 0 || pairsBoardState.flipLock || !!pairsBoardState.hintBusy;
-    refs.pairsHintBtn.textContent = 'Use Hint (' + pairsBoardState.hintsLeft + ')';
+    setCompactActionButton(refs.pairsHintBtn,'?','Hint','H',pairsBoardState.hintsLeft);
     applyPairsBoardLayout(tier);
     const cardsHtml = pairsBoardState.cards.map(card => '<button class="memory-card' + ((card.open || card.matched) ? ' is-open' : '') + (card.matched ? ' is-matched' : '') + '" data-card="' + card.id + '" type="button" aria-pressed="' + String(Boolean(card.open || card.matched)) + '"' + ((card.matched || pairsBoardState.completed || pairsBoardState.flipLock || card.open) ? ' disabled' : '') + '><span class="memory-card-face memory-card-back" aria-hidden="' + String(Boolean(card.open || card.matched)) + '"></span><span class="memory-card-face memory-card-front" aria-hidden="' + String(!card.open && !card.matched) + '">' + card.face + '</span></button>').join('');
     const resultHtml = pairsBoardState.completed
@@ -2847,7 +2874,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
         const direction=destLeft>=start.left?1:-1;
         const target={
           left:destLeft,
-          top:trackCoinFinalTop(step.pattern,trackCoinState.baseTop,destIndex),
+          top:trackCoinState.baseTop,
           tilt:(destIndex%2===0?-1:1)*(step.pattern==='cross'?3:2)
         };
         transitions[cup.id]={
@@ -2900,9 +2927,13 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
         const m1Top=(nextPoint.top-start.top)/2;
         cup.left=+(h00*start.left+h10*m0Left+h01*target.left+h11*m1Left).toFixed(2);
         const baseTop=(h00*start.top)+(h10*m0Top)+(h01*target.top)+(h11*m1Top);
-        const arcEnvelope=Math.sin(Math.PI*t);
-        cup.top=+(baseTop+(arcEnvelope*arcEnvelope*motion.arc)).toFixed(2);
-        cup.tilt=+(start.tilt+((target.tilt-start.tilt)*t)).toFixed(2);
+        const flowProgress=clamp(elapsed/total,0,1);
+        const cupIndex=Math.max(0,Number(String(cup.id).replace(/\D+/g,''))||0);
+        const flowEnvelope=Math.sin(Math.PI*flowProgress);
+        const flowWave=Math.sin((flowProgress*Math.PI*(4+plans.length*.32))+(cupIndex*1.65));
+        const flowAmplitude=Math.min(42,14+(Math.abs(motion.arc)*.35));
+        cup.top=+(baseTop+(flowEnvelope*flowWave*flowAmplitude)).toFixed(2);
+        cup.tilt=+(start.tilt+((target.tilt-start.tilt)*t)+(flowWave*1.2)).toFixed(2);
       });
       syncTrackCoinMotionDom();
       if(elapsed<total) trackCoinAnimationFrame=window.requestAnimationFrame(frame);
@@ -3115,7 +3146,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(replayButton){
       replayButton.hidden = !(trackCoinState && trackCoinState.resolved);
       replayButton.disabled = !!(trackCoinState && trackCoinState.reviewActive);
-      replayButton.textContent = trackCoinState && trackCoinState.reviewActive ? 'Replaying…' : 'Replay Last Shuffle';
+      setCompactActionButton(replayButton,'↻',trackCoinState && trackCoinState.reviewActive ? 'Replaying shuffle' : 'Replay last shuffle','Alt+P');
     }
     const trackCoinResultClass = trackCoinState && trackCoinState.resolved && !trackCoinState.reviewActive ? (' trackcoin-status-result--' + (trackCoinState.lastResult || 'resolved')) : '';
     const trackCoinStatusTitle = trackCoinState && trackCoinState.reviewActive
@@ -3869,6 +3900,14 @@ function toggleGameFullscreen(gameId){
   }
 
   function bindEvents(){
+    document.addEventListener('pointerover',function(event){
+      const button=event.target instanceof Element ? event.target.closest('[data-tooltip]') : null;
+      if(button) alignGameTooltip(button);
+    },true);
+    document.addEventListener('focusin',function(event){
+      const button=event.target instanceof Element ? event.target.closest('[data-tooltip]') : null;
+      if(button) alignGameTooltip(button);
+    },true);
     // Pointer activation owns New Game so an already-focused game surface can
     // never consume the first press. The following click is suppressed; a
     // keyboard-generated click still works normally.
@@ -4000,9 +4039,8 @@ function toggleGameFullscreen(gameId){
             const trackCoinReplay = event.target.closest('[data-action="replay-trackcoin"], #replayTrackCoinShuffleBtn'); if(trackCoinReplay){ if(event){ event.preventDefault(); event.stopPropagation(); } replayTrackCoinShuffle(); return; }
       const trackCoinCup = event.target.closest('[data-trackcoin-pick]');
       if(trackCoinCup){
-        // Pointer selection is owned by the board's pointerup handler below.
-        // Keep click as the keyboard/assistive-technology activation path.
-        if(event.detail===0) chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick'));
+        event.preventDefault();
+        chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick'));
         return;
       }
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
@@ -4060,6 +4098,11 @@ function toggleGameFullscreen(gameId){
         }
         return;
       }
+      if(event.altKey && key === 'p' && hotkeyGame === 'trackcoin'){
+        event.preventDefault();
+        replayTrackCoinShuffle();
+        return;
+      }
       if(event.altKey) return;
 
       if(hotkeyGame === 'pairs' && !typing){
@@ -4087,14 +4130,14 @@ function toggleGameFullscreen(gameId){
       });
     }
     if(refs.trackCoinBoard){
-      refs.trackCoinBoard.addEventListener('pointerup',function(event){
-        const cup=event.target instanceof Element ? event.target.closest('.trackcoin-cup.is-selectable[data-trackcoin-pick]') : null;
+      refs.trackCoinBoard.addEventListener('click',function(event){
+        const cup=event.target instanceof Element ? event.target.closest('.trackcoin-cup[data-trackcoin-pick]') : null;
         if(!cup || !refs.trackCoinBoard.contains(cup)) return;
         event.preventDefault();
         chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
       });
     }
-    if(refs.pairsHintBtn){ refs.pairsHintBtn.textContent = hotkeyActionLabel('Use Hint', 'H'); setHotkeyCaption(refs.pairsHintBtn,'H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
+    if(refs.pairsHintBtn){ setCompactActionButton(refs.pairsHintBtn,'?','Hint','H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
     if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard', 'push'); });
     if(refs.newWordRoundBtn) refs.newWordRoundBtn.textContent = startButtonLabel('detectword');
     if(refs.newTrackCoinRoundBtn) refs.newTrackCoinRoundBtn.textContent = startButtonLabel('trackcoin');
