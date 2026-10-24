@@ -28,21 +28,21 @@
 
   function defaultPairsProfile(){
     return {
-      app:'pairs', bank:0, xp:0, level:1, skillPoints:1, boardsCleared:0, gamesPlayed:0, currentStreak:0, bestStreak:0, cleanWinStreak:0,
+      app:'pairs', bank:0, xp:0, level:1, skillPoints:1, boardsCleared:0, gamesPlayed:0, currentStreak:0, bestStreak:0, cleanWinStreak:0, lastRoundXp:0,
       skills:{ insight:0, flow:0, banker:0, recall:0, tempo:0 }, selectedTier:'starter', cardTheme:'woodland', activeRound:null
     };
   }
 
   function defaultMake24Profile(){
     return {
-      app:'make24', bank:0, xp:0, level:1, skillPoints:1, puzzlesSolved:0, gamesPlayed:0, cleanWinStreak:0, roundSeedCounter:0,
+      app:'make24', bank:0, xp:0, level:1, skillPoints:1, puzzlesSolved:0, gamesPlayed:0, cleanWinStreak:0, lastRoundXp:0, roundSeedCounter:0,
       skills:{ clarity:0, flow:0, banker:0, reserve:0, precision:0 }, selectedTier:'starter', activeRound:null
     };
   }
 
   function defaultWordProfile(){
     return {
-      app:'detectword', bank:0, xp:0, level:1, skillPoints:1, wordsSolved:0, gamesPlayed:0, currentStreak:0, bestStreak:0, cleanWinStreak:0, activeRound:null,
+      app:'detectword', bank:0, xp:0, level:1, skillPoints:1, wordsSolved:0, gamesPlayed:0, currentStreak:0, bestStreak:0, cleanWinStreak:0, lastRoundXp:0, activeRound:null,
       skills:{ flow:0, banker:0, reserve:0, focus:0 }, selectedTier:'tier3'
     };
   }
@@ -50,7 +50,7 @@
   function defaultRuleShiftProfile(){
     return {
       app:'ruleshift', bank:0, xp:0, level:1, skillPoints:1,
-      gamesPlayed:0, correctAnswers:0, wrongAnswers:0, currentStreak:0, bestStreak:0, cleanWinStreak:0,
+      gamesPlayed:0, correctAnswers:0, wrongAnswers:0, currentStreak:0, bestStreak:0, cleanWinStreak:0, lastRoundXp:0,
       selectedTier:'starter', skills:{ focus:0, banker:0, recovery:0, adapt:0 }, activeRound:null
     };
   }
@@ -59,7 +59,7 @@
     return {
       app:'trackcoin',
       xp:0, level:1, coins:0, selectedTier:'tier1', currentTier:'tier1', highestUnlockedTier:'tier1',
-      bestStreak:0, currentStreak:0, totalCorrect:0, totalRounds:0, totalXpEarned:0, totalCoinsEarned:0, cleanWinStreak:0,
+      bestStreak:0, currentStreak:0, totalCorrect:0, totalRounds:0, totalXpEarned:0, totalCoinsEarned:0, cleanWinStreak:0, lastRoundXp:0,
       trackCoinSpeedPercent:TRACKCOIN_BASE_SPEED_PERCENT, bestTrackCoinSpeedPercent:TRACKCOIN_BASE_SPEED_PERCENT,
       bestAccuracy:0, perfectMiniSet:0, totalMiniSetsCleared:0, skillPoints:1,
       skills:{ read:0, banker:0, flow:0, discipline:0, steal:0 }, activeRound:null
@@ -78,6 +78,7 @@
     merged.currentStreak = Math.max(0, Math.round(Number(merged.currentStreak || 0)));
     merged.bestStreak = Math.max(0, Math.round(Number(merged.bestStreak || 0)));
     merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    merged.lastRoundXp = Math.max(0, Math.round(Number(merged.lastRoundXp || 0)));
     const availablePairThemes = PAIRS_CARD_THEMES.filter(theme => merged.level >= theme.unlockLevel);
     if(!availablePairThemes.some(theme => theme.id === merged.cardTheme)) merged.cardTheme = availablePairThemes[0]?.id || 'woodland';
     merged.skills = Object.assign({}, base.skills, merged.skills || {});
@@ -99,6 +100,7 @@
     merged.puzzlesSolved = Math.max(0, Math.round(Number(merged.puzzlesSolved || 0)));
     merged.gamesPlayed = Math.max(0, Math.round(Number(merged.gamesPlayed || 0)));
     merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    merged.lastRoundXp = Math.max(0, Math.round(Number(merged.lastRoundXp || 0)));
     merged.roundSeedCounter = Math.max(0, Math.round(Number(merged.roundSeedCounter || 0)));
     merged.skills = Object.assign({}, base.skills, merged.skills || {});
     refundLockedSkills(merged, MAKE24_SKILLS);
@@ -119,6 +121,7 @@
     merged.wordsSolved = Math.max(0, Math.round(Number(merged.wordsSolved || 0)));
     merged.gamesPlayed = Math.max(0, Math.round(Number(merged.gamesPlayed || 0)));
     merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    merged.lastRoundXp = Math.max(0, Math.round(Number(merged.lastRoundXp || 0)));
     merged.currentStreak = Math.max(0, Math.round(Number(merged.currentStreak || 0)));
     merged.bestStreak = Math.max(0, Math.round(Number(merged.bestStreak || 0)));
     if(merged.activeRound && typeof merged.activeRound === 'object'){
@@ -165,6 +168,7 @@
     merged.currentStreak = Math.max(0, Math.round(Number(merged.currentStreak || 0)));
     merged.bestStreak = Math.max(0, Math.round(Number(merged.bestStreak || 0)));
     merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    merged.lastRoundXp = Math.max(0, Math.round(Number(merged.lastRoundXp || 0)));
     merged.skills = Object.assign({}, base.skills, merged.skills || {});
     refundLockedSkills(merged, RULESHIFT_SKILLS);
     applyLevelCurve(merged);
@@ -192,6 +196,7 @@
     merged.totalXpEarned = Math.max(0, Math.round(Number(merged.totalXpEarned || 0)));
     merged.totalCoinsEarned = Math.max(0, Math.round(Number(merged.totalCoinsEarned || 0)));
     merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    merged.lastRoundXp = Math.max(0, Math.round(Number(merged.lastRoundXp || 0)));
     merged.trackCoinSpeedPercent = trackCoinNormaliseSpeedPercent(merged.trackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT);
     merged.bestTrackCoinSpeedPercent = Math.max(TRACKCOIN_BASE_SPEED_PERCENT, trackCoinNormaliseSpeedPercent(merged.bestTrackCoinSpeedPercent || merged.trackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT));
     merged.bestAccuracy = Math.max(0, Number(merged.bestAccuracy || 0));
