@@ -115,6 +115,6 @@ test('final shared header authorities remain present after shadow cleanup',()=>{
   assert.match(header,/\.bl-pages-btn\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) auto!important/);
   assert.match(header,/@media \(max-width:520px\)[\s\S]*?grid-template-areas:"pages right"!important/);
   assert.match(sitewide,/\.bl-homebar-right\{[\s\S]*?display:flex !important;[\s\S]*?z-index:13020 !important/);
-  assert.match(sitewide,/BASELINE-GAMES-FLYOUT-G01-INDIGO-AUTHORITY-20260801/);
-  assert.match(sitewide,/body\[data-app="recreation"\]\{[\s\S]*?--bl-flyout-bg-color:#1E2759!important;[\s\S]*?--bl-flyout-field-bg:#1A244D!important/);
+  assert.doesNotMatch(sitewide,/BASELINE-GAMES-FLYOUT-G01-INDIGO-AUTHORITY-20260801/);
+  assert.match(sitewide,/body\[data-app="recreation"\]\{[\s\S]*?--bl-surface-card-solid:var\(--recreation-card\);[\s\S]*?--bl-surface-active-solid:var\(--recreation-copper-deep\);/);
 });
