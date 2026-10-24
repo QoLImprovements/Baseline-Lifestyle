@@ -996,6 +996,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const rankMatch=source.match(/(?:Player Rank(?: up)?|Rank)\s*\+(\d+)/i);
     const cleaned=source
       .replace(/\s*[·.]?\s*Clean Streak Bonus \+\d+%/ig,'')
+      .replace(/\s*·?\s*\+\d+\s*XP/ig,'')
       .replace(/\s*[·.]?\s*(?:Player Rank(?: up)?|Rank)\s*\+\d+/ig,'')
       .replace(/\s+\./g,'.')
       .replace(/\s*·\s*$/,'')
