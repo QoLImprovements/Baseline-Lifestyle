@@ -85,7 +85,7 @@ test('Rule Shift uses a true oval and unmistakably separated categorical colours
   assert.match(nonRealmCss,/ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/i);
   assert.match(nonRealmCss,/ruleshift-colour--white \.ruleshift-shape\{[\s\S]*?background:#f4f7fa!important/i);
   assert.equal((nonRealmCss.match(/ruleshift-colour--red \.ruleshift-shape\{/gi)||[]).length,1);
-  assert.equal((nonRealmCss.match(/ruleshift-colour--white \.ruleshift-shape\{/gi)||[]).length,1);
+  assert.equal((nonRealmCss.match(/ruleshift-colour--white \.ruleshift-shape\{background:#f4f7fa!important\}/gi)||[]).length,1);
   assert.match(nonRealmCss,/Rule Shift: crisp geometry[\s\S]*?box-shadow:none!important[\s\S]*?transform:none!important/);
   assert.match(nonRealmCss,/ruleshift-shape--oval,[\s\S]*?ruleshift-shape--circle\{[\s\S]*?clip-path:none!important/);
 });
@@ -250,7 +250,8 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.equal((crossnumberCss.match(/Cross Number one-screen reachability authority/g)||[]).length,1);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen\{[\s\S]*?height:100dvh!important[\s\S]*?overflow:hidden!important/);
   assert.match(crossnumberCss,/--crossnumber-fs-side:clamp\(230px,20vw,330px\)[\s\S]*?grid-template-columns:minmax\(0,4fr\) var\(--crossnumber-fs-side\)!important/);
-  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen > \.crossnumber-round-status\{[\s\S]*?grid-column:2!important[\s\S]*?display:block!important/);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen > \.crossnumber-round-status\{[\s\S]*?display:block!important/);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen > \.crossnumber-round-status\{[\s\S]*?grid-column:2!important/);
   assert.match(crossnumber,/id:'masterwork'[\s\S]*?nodes:17[\s\S]*?fixed:1/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-bank\{[\s\S]*?grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
