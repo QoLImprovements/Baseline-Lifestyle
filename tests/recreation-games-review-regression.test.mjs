@@ -146,7 +146,7 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(core,/Ranked Up! Player Rank/);
   assert.match(core,/refs\.wordRoundSummary\.innerHTML = coherentRoundStatusHtml\('Round Status',wordState\.lastMessage,profiles\.detectword,currentWordTier\(\)\.name\)/);
   assert.match(core,/Board cleared\. \+' \+ rewards\.bank \+ ' Bank Coins · \+' \+ rewards\.xp \+ ' XP'/);
-  assert.match(core,/Clean streak bonus \+' \+ rewards\.cleanPct \+ '%'/);
+  assert.match(core,/Clean Streak Bonus \+' \+ rewards\.cleanPct \+ '%'/);
   assert.doesNotMatch(core,/Current streak bonus/);
   assert.doesNotMatch(html,/Clean streak bonus/);
   assert.doesNotMatch(core,/Clean streak bonus/);
@@ -158,7 +158,7 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.doesNotMatch(html,/>Streak Bonus </i);
   assert.doesNotMatch(html,/>Clean Bonus</i);
   assert.match(html,/Round Bank Coins <span id="wordRoundBankValue">/);
-  assert.match(crossnumber,/Bank Coins · \+'\+rewards\.xp\+' XP'[\s\S]*?Clean streak bonus/);
+  assert.match(crossnumber,/Bank Coins · \+'\+rewards\.xp\+' XP'[\s\S]*?Clean Streak Bonus/);
 });
 
 test('fullscreen layouts use bounded side panels except the deliberately independent Jigsaw workspace',()=>{
