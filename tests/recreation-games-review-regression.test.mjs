@@ -59,7 +59,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_STATUS_AUTHORITY_20261024_4/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_STATUS_AUTHORITY_20261024_5/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -110,6 +110,7 @@ test('Rule Shift uses a true oval and unmistakably separated categorical colours
   assert.doesNotMatch(core,/The rule was:/);
   assert.match(core,/ruleshift-complete-card[\s\S]*?finishedPrompt/);
   assert.doesNotMatch(core,/ruleshift-complete-card[\s\S]{0,500}?ruleShiftState\.lastMessage/);
+  assert.match(nonRealmCss,/#ruleshiftPanel \.ruleshift-complete-card\{[\s\S]*?grid-auto-rows:max-content!important[\s\S]*?align-content:center!important[\s\S]*?text-align:center!important/);
   assert.match(nonRealmCss,/ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/i);
   assert.match(nonRealmCss,/ruleshift-colour--white \.ruleshift-shape\{[\s\S]*?background:#f4f7fa!important/i);
   assert.equal((nonRealmCss.match(/ruleshift-colour--red \.ruleshift-shape\{/gi)||[]).length,1);
