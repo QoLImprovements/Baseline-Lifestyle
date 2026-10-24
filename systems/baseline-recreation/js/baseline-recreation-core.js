@@ -1002,9 +1002,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       .trim();
     const streak=Math.max(0,Math.round(Number(profile&&profile.cleanWinStreak||0)));
     const rankUp=rankMatch ? '<div class="round-status-rankup">Ranked Up! Player Rank '+Math.max(1,Math.round(Number(profile&&profile.level||1)))+'</div>' : '';
+    const previousXp=Math.max(0,Math.round(Number(profile&&profile.lastRoundXp||0)));
     return '<div class="round-status-heading">'+escapeHtml(label||'Round Status')+'</div>'
       + (cleaned?'<div class="round-status-outcome">'+escapeHtml(cleaned)+'</div>':'')
       + rankUp
+      + '<div class="round-status-previous">Previous round — '+previousXp+' XP</div>'
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tierName||'—')+'</strong></div>'
       + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
@@ -1645,6 +1647,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     profile.currentStreak = rewards.nextStreak;
     profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
     profile.cleanWinStreak = rewards.nextClean;
+    profile.lastRoundXp = rewards.xp;
     const levels = levelUpFromGain(profile, rewards.xp);
     pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank Coins · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · Clean Streak Bonus +' + rewards.cleanPct + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
     pairsBoardState.roundBank += rewards.bank;
@@ -1663,14 +1666,14 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       profiles.pairs.bank = Math.max(0, profiles.pairs.bank - penalty);
       pairsBoardState.roundBank -= penalty;
     }
-    if(cleanBreak) pairsBoardState.hadFailure = true;
+    pairsBoardState.hadFailure = true;
     profiles.pairs.currentStreak = 0;
     if(penaltyEligible && penalty > 0){
       pairsBoardState.lastMessage = 'Repeated miss. -' + penalty + ' Bank Coins. Continue the board.';
     }else if(cleanBreak){
       pairsBoardState.lastMessage = 'A previously selected card was chosen again in a miss. Continue the board.';
     }else{
-      pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections, so clean status is preserved. Continue the board.';
+      pairsBoardState.lastMessage = 'Mismatch. Continue the board; this round is no longer clean.';
     }
     persistPairsRound();
     window.setTimeout(function(){
@@ -1937,16 +1940,18 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     try{ value = Function('"use strict"; return (' + raw + ');')(); }catch(_e){ value = NaN; }
     if(Number.isFinite(value) && Math.abs(value - (make24State.target || 24)) < 1e-6){
       const tier = currentMake24Tier();
-      const nextClean = profiles.make24.cleanWinStreak + 1;
-      const cleanPct = cleanWinBonusPct(nextClean) / 100;
+      const cleanWin = !make24State.hadFailure;
+      const nextClean = cleanWin ? profiles.make24.cleanWinStreak + 1 : 0;
+      const cleanPct = cleanWin ? cleanWinBonusPct(nextClean) / 100 : 0;
       const bankGain = Math.round(tier.bankReward * (1 + (profiles.make24.skills.banker || 0) * 0.10) * (1 + cleanPct));
       const xpGain = Math.round(tier.xpReward * (1 + (profiles.make24.skills.flow || 0) * 0.08) * (1 + cleanPct));
       profiles.make24.bank += bankGain;
       profiles.make24.puzzlesSolved += 1;
       profiles.make24.cleanWinStreak = nextClean;
+      profiles.make24.lastRoundXp = xpGain;
       const levels = levelUpFromGain(profiles.make24, xpGain);
       make24State.roundBank += bankGain;
-      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + (nextClean ? ' · Clean Streak Bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
+      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + (cleanWin && nextClean ? ' · Clean Streak Bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
       make24State.revealSolution = '';
       make24State.draftExpression = '';
       make24State.completed = true;
@@ -2531,16 +2536,18 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const profile = profiles.detectword;
       profile.wordsSolved += 1;
       profile.currentStreak += 1;
-      const nextClean = profile.cleanWinStreak + 1;
+      const cleanWin = !wordState.hadFailure;
+      const nextClean = cleanWin ? profile.cleanWinStreak + 1 : 0;
       profile.cleanWinStreak = nextClean;
       profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
-      const rewardMult = computeWordRewardMultiplier(profile) * (1 + (cleanWinBonusPct(nextClean) / 100));
+      const rewardMult = computeWordRewardMultiplier(profile) * (1 + ((cleanWin ? cleanWinBonusPct(nextClean) : 0) / 100));
       const bankGain = Math.round(tier.bankReward * (1 + (profile.skills.banker || 0) * 0.10) * rewardMult);
       const xpGain = Math.round(tier.xpReward * (1 + (profile.skills.flow || 0) * 0.08) * rewardMult);
       profile.bank += bankGain;
+      profile.lastRoundXp = xpGain;
       const levels = levelUpFromGain(profile, xpGain);
       wordState.roundBank += bankGain;
-      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · Player Rank +' + levels : '') + '.';
+      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + (cleanWin ? cleanBonusRewardText(nextClean) : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
       resolveNinjaBonuses();
@@ -2552,6 +2559,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(wordState.guesses.length >= wordState.maxGuesses){
       profiles.detectword.currentStreak = 0;
       profiles.detectword.cleanWinStreak = 0;
+      profiles.detectword.lastRoundXp = 0;
       wordState.lastMessage = 'Round ended. Word was ' + wordState.secret.toUpperCase() + '.';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
@@ -3014,6 +3022,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     profile.totalRounds += 1;
     profile.totalXpEarned += xpGain;
     profile.totalCoinsEarned += coinGain;
+    profile.lastRoundXp = xpGain;
     profile.coins += coinGain;
     const levelUps = levelUpFromGain(profile, xpGain);
     profile.highestUnlockedTier = highestUnlockedTrackCoinTier(profile);
@@ -3473,6 +3482,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const profile = profiles.ruleshift;
     profile.currentStreak = 0;
     profile.cleanWinStreak = 0;
+    profile.lastRoundXp = 0;
     ruleShiftState.mistakes += 1;
     ruleShiftState.hadFailure = true;
     ruleShiftState.failed = true;
@@ -3497,6 +3507,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const leveled = levelUpFromGain(profile, xpGain);
     profile.bank += bankGain;
     profile.cleanWinStreak = nextClean;
+    profile.lastRoundXp = xpGain;
     ruleShiftState.finished = true;
     ruleShiftState.lastMessage = 'Run complete. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (leveled ? ' · Player Rank +' + leveled : '') + '.';
     persistRuleShiftRound();
