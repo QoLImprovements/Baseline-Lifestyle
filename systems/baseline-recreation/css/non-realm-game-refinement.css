@@ -2189,6 +2189,26 @@ body[data-app="recreation"] :is(
   }
 }
 
+/* Rule Shift terminal state stays compact inside the large play surface.
+   Grid-track stretching previously scattered the three result lines vertically. */
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-complete-card{
+  grid-auto-rows:max-content!important;
+  align-content:center!important;
+  justify-items:center!important;
+  text-align:center!important;
+  min-width:0!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-complete-card>strong{
+  font-size:clamp(1.2rem,2vw,1.6rem)!important;
+  line-height:1.2!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-complete-card>.inline-note{
+  width:min(100%,680px)!important;
+  margin:0 auto!important;
+  text-align:center!important;
+  line-height:1.48!important;
+}
+
 /* Track the Coin selection phase: the cup itself is the interaction surface.
    Prompt/status layers never intercept the pointer. */
 body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trackcoin-lane{
