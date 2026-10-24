@@ -1981,7 +1981,7 @@ body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle){
   grid-template-rows:repeat(var(--pairs-rows-desktop,3),minmax(0,1fr))!important;
   align-content:stretch!important;
   align-items:stretch!important;
-  overflow:hidden!important;
+  overflow:visible!important;
 }
 body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle) .memory-card{
   width:100%!important;
