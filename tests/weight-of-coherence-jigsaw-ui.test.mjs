@@ -18,7 +18,7 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
   assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_MOBILE_PLAYABILITY_20261024_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_MOBILE_PLAYABILITY_20261024_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_DUAL_ZOOM_20261024_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
@@ -139,6 +139,14 @@ test('tray piece Z zoom shows the entire irregular piece above the workspace wit
   assert.match(css, /\.weight-coherence-piece-overlay\{[^}]*position:fixed[^}]*z-index:2147483601[^}]*border:0[^}]*background:transparent[^}]*pointer-events:none/);
   assert.match(html, /enlarge the entire jigsaw piece above the workspace while its tray card stays fixed/);
   assert.match(html, /enlarges the complete irregular piece without enlarging its tray card/);
+});
+
+test('piece zoom remains visible while the board magnifier is used for comparison', () => {
+  assert.match(js, /function beginBoardLens\(\)\{[\s\S]*?boardLensActive=true/);
+  assert.doesNotMatch(js, /function beginBoardLens\(\)\{[\s\S]{0,260}?resetPieceZoom\(\)/);
+  assert.doesNotMatch(js, /function togglePieceZoom\(target\)\{[\s\S]{0,220}?endBoardLens\(\)/);
+  assert.match(js, /Any enlarged piece remains open for comparison/);
+  assert.match(js, /function endBoardLens\(\)\{[\s\S]*?if\(zoomTarget && zoomTarget\.isConnected && zoomScale>=PIECE_ZOOM_DEFAULT\)[\s\S]*?zoomLevel=zoomScale[\s\S]*?updatePieceOverlay\(zoomTarget\)/);
 });
 
 test('holding Z over the jigsaw opens a circular magnifier lens without scaling the board', () => {
