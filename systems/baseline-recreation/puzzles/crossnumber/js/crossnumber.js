@@ -964,7 +964,7 @@
   function renderAll(){
     if(!round){
       layout=null;
-      refs.board.innerHTML='<div class="crossnumber-empty-board">Open Cross Number or choose New Game to generate a puzzle.</div>';
+      refs.board.innerHTML='';
       refs.board.style.removeProperty('--crossnumber-cols');
       refs.board.style.removeProperty('--crossnumber-rows');
       refs.bank.innerHTML='';
@@ -1059,7 +1059,7 @@
     undoStack=[];
     stopTimer();
     renderAll();
-    setStatus('Choose a difficulty tier and press New Game when you are ready.');
+    setStatus('');
   });
   document.addEventListener('keydown',function(event){
     if(!event || event.defaultPrevented || event.ctrlKey || event.metaKey || event.isComposing) return;
@@ -1069,6 +1069,26 @@
     if(key==='n'){
       event.preventDefault();
       createNewRound({tierId:profile.selectedTier});
+      return;
+    }
+    if(key==='t'){
+      event.preventDefault();
+      sortBank();
+      return;
+    }
+    if(key==='u'){
+      event.preventDefault();
+      undo();
+      return;
+    }
+    if(key==='h'){
+      event.preventDefault();
+      useHint();
+      return;
+    }
+    if(key==='r'){
+      event.preventDefault();
+      restartRound();
       return;
     }
     if(key==='f'){
@@ -1108,7 +1128,7 @@
   renderAll();
   syncFullscreenControl();
   setCrossnumberPanel(panelFromLocation(),'none');
-  setStatus('Choose a difficulty tier and press New Game when you are ready.');
+  setStatus('');
 
   globalThis.BaselineCrossnumber=Object.freeze({
     build:BUILD,
