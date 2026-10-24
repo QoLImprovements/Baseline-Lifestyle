@@ -1120,6 +1120,7 @@
     if(event.pointerType==='mouse') return;
     const tile=event.target.closest('[data-tile-id]');
     if(!tile||!round) return;
+    suppressBankClick=false;
     event.preventDefault();
     const tileId=tile.dataset.tileId;
     const ghost=createTouchDragGhost(tile,tileId);
