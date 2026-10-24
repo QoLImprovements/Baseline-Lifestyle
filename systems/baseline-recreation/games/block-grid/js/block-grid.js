@@ -741,9 +741,9 @@ function cellCoordinates(target) {
 function handleClick(event) {
   const target = event.target instanceof Element ? event.target : null;
   if (!target || !document.getElementById('blockGridPanel')?.classList.contains('is-active')) return;
+  if (suppressClick) { suppressClick = false; event.preventDefault(); return; }
   const action = target.closest('[data-block-action]')?.getAttribute('data-block-action');
   if (action) {
-    suppressClick=false;
     event.preventDefault();
     if (action === 'new') {
     if(performance.now()-newGamePointerAt<700){ event.preventDefault(); return; }
@@ -753,7 +753,6 @@ function handleClick(event) {
     if (action === 'fullscreen') toggleFullscreen();
     return;
   }
-  if (suppressClick) { suppressClick = false; event.preventDefault(); return; }
   const piece = target.closest('[data-block-piece]');
   if (piece) { choosePiece(Number(piece.dataset.blockPiece)); return; }
   const cell = target.closest('[data-block-cell]');
