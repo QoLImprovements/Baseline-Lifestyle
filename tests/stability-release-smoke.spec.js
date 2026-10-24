@@ -700,8 +700,8 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await page.goto('/baseline-recreation/system', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => globalThis.BASELINE_RECREATION_CORE_READY === true);
   await page.getByRole('button', { name: 'Games', exact: true }).click();
-  await expect(page.locator('[data-select-game="pairs"]:visible').first()).toContainText('Level 4 · 7 cleared');
-  await expect(page.locator('[data-select-game="ninja"]:visible').first()).toContainText('Level 3 · Stage 4');
+  await expect(page.locator('[data-select-game="pairs"]:visible').first()).toContainText('Player Rank 4 · 7 cleared');
+  await expect(page.locator('[data-select-game="ninja"]:visible').first()).toContainText('Player Rank 3 · Stage 4');
   await page.locator('[data-select-game="pairs"]:visible').first().click();
   await expect(page.locator('#pairsPanel')).toHaveClass(/is-active/);
   await page.locator('#newPairsBoardBtn').click();
