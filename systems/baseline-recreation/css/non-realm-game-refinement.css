@@ -1932,3 +1932,134 @@ body[data-app="recreation"] :is(
     min-height:280px!important;
   }
 }
+
+
+/* 2026-10-24 zoom-safe common controls + tier-complete Pairs fit.
+   Browser zoom may shrink the CSS viewport, but it must not delete or clip
+   Settings / Music / Fullscreen controls on a fine-pointer desktop. */
+body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+  #blockGridGameCard,#colourSortGameCard
+):not(:fullscreen) .game-window-actions.game-common-actions{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:42px!important;
+  height:auto!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+  #blockGridGameCard,#colourSortGameCard
+):not(:fullscreen) .game-window-actions.game-common-actions>.action{
+  flex:0 0 42px!important;
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+}
+
+/* Every Pairs tier owns a bounded matrix. The card size is derived from both
+   its column and row counts so adding pairs cannot push cards under the
+   information rail or below the game section. */
+body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle){
+  box-sizing:border-box!important;
+  position:relative!important;
+  width:min(100%,var(--pairs-board-max,630px))!important;
+  height:min(var(--pairs-fit-height,520px),calc(100dvh - 250px))!important;
+  max-width:100%!important;
+  max-height:calc(100dvh - 250px)!important;
+  min-height:0!important;
+  grid-template-columns:repeat(var(--pairs-cols-desktop,4),minmax(0,1fr))!important;
+  grid-template-rows:repeat(var(--pairs-rows-desktop,3),minmax(0,1fr))!important;
+  align-content:stretch!important;
+  align-items:stretch!important;
+  overflow:hidden!important;
+}
+body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle) .memory-card{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  aspect-ratio:auto!important;
+}
+
+/* Windowed desktop keeps Pairs as a clear play field plus a bounded right
+   information/control rail. At browser zoom below this breakpoint the rail
+   naturally stacks instead of overlapping the cards. */
+@media(min-width:900px) and (pointer:fine){
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen){
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(230px,280px)!important;
+    grid-template-rows:auto auto minmax(0,1fr) auto auto!important;
+    gap:8px 14px!important;
+    align-items:start!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen)>.game-toolbar{
+    grid-column:2!important;
+    grid-row:1!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:8px!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen)>.game-toolbar .stat-pills{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:5px!important;
+    width:100%!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen)>.game-live-xp{
+    grid-column:2!important;
+    grid-row:2!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen)>.game-play-window{
+    display:contents!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen) #pairsBoard{
+    grid-column:1!important;
+    grid-row:1/6!important;
+    place-self:center!important;
+    margin:0!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen) .round-status-card{
+    grid-column:2!important;
+    grid-row:3!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-height:100%!important;
+    overflow:auto!important;
+    margin:0!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen) .game-specific-actions{
+    grid-column:2!important;
+    grid-row:4!important;
+    width:100%!important;
+    justify-content:flex-start!important;
+    margin:0!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen) .game-window-actions{
+    grid-column:2!important;
+    grid-row:5!important;
+    width:100%!important;
+    justify-content:flex-start!important;
+    margin:0!important;
+    align-self:end!important;
+  }
+}
+@media(max-width:899px){
+  body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle){
+    width:100%!important;
+    max-width:100%!important;
+    height:min(var(--pairs-fit-height,520px),58dvh)!important;
+    max-height:58dvh!important;
+  }
+}
