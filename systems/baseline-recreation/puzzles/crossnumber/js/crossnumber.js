@@ -821,7 +821,7 @@
     const tier=tierDefinition(round?.tierId||profile.selectedTier);
     refs.status.innerHTML='<div class="round-status-heading">Round Status</div>'
       + '<div class="round-status-outcome">'+escapeHtml(String(message||''))+'</div>'
-      + '<div class="round-status-previous">Previous round — '+Math.max(0,int(profile.lastRoundXp,0))+' XP</div>'
+      + '<div class="round-status-previous">Previous round - '+Math.max(0,int(profile.lastRoundXp,0))+' XP</div>'
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
       + '<div><span>Winning Streak</span><strong>'+Math.max(0,int(profile.cleanWinStreak,0))+'</strong></div>'
