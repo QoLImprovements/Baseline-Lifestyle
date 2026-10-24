@@ -886,3 +886,29 @@ body[data-app="recreation"] #crossnumberGamePanel .crossnumber-round-status{
     gap:8px!important;
   }
 }
+
+
+/* Cross Number keeps puzzle-specific controls beneath Numbers, but its shared
+   fullscreen controls use the same fixed common-control cells. */
+@media(min-width:821px){
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions{
+    display:grid!important;
+    grid-template-columns:repeat(7,38px)!important;
+    grid-template-rows:38px 38px!important;
+    gap:6px!important;
+    width:max-content!important;
+    height:82px!important;
+    padding:0!important;
+    border-top:0!important;
+    justify-content:start!important;
+    align-content:end!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.action{
+    width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;padding:0!important;margin:0!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.start-new-game-toggle{grid-column:1;grid-row:1}
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.auto-next-toggle{grid-column:1;grid-row:2}
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.games-music-quick-toggle{grid-column:6;grid-row:1}
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.game-fullscreen-toggle{grid-column:7;grid-row:1}
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.games-settings-trigger{grid-column:7;grid-row:2}
+}
