@@ -462,3 +462,46 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
   min-height:60px!important;
   padding:5px!important;
 }
+
+
+/* Block Grid keeps Special as a real side panel on wider desktop layouts too. */
+@media(min-width:1080px){
+  #blockGridPanel #blockGridGameCard:not(:fullscreen){
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(240px,300px);
+    grid-template-rows:auto auto auto auto minmax(0,1fr) auto;
+    gap:10px 14px;
+    align-items:start;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > :is(
+    .block-grid-active-header,.game-live-xp,.round-status-card,.block-grid-run-objective
+  ){
+    grid-column:1/-1;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .block-grid-play-cluster{
+    grid-column:1;
+    grid-row:5/7;
+    width:100%;
+    max-width:none;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .block-grid-skill{
+    grid-column:2;
+    grid-row:5;
+    align-self:start;
+    width:100%;
+    margin:0;
+    padding:12px;
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.20);
+    border-radius:16px;
+    background:rgba(var(--recreation-burgundy-rgb),.34);
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .game-window-actions{
+    grid-column:2;
+    grid-row:6;
+    align-self:end;
+    justify-content:flex-start!important;
+    margin:0;
+    padding-top:10px;
+    border-top:1px solid rgba(var(--recreation-copper-light-rgb),.16);
+  }
+}
