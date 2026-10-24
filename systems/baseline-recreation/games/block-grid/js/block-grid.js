@@ -487,8 +487,6 @@ function positionDragGhost(ghost, clientX, clientY, anchor, grip = dragState) {
   } else {
     ghost.classList.remove('is-over-board');
   }
-  const totalWidth=(bounds.cols * cellSize) + (Math.max(0,bounds.cols-1) * gap);
-  const totalHeight=(bounds.rows * cellSize) + (Math.max(0,bounds.rows-1) * gap);
   const grabCol=Math.max(0,Math.min(bounds.cols-1,Number(grip?.grabCol)||0));
   const grabRow=Math.max(0,Math.min(bounds.rows-1,Number(grip?.grabRow)||0));
   const rawOffsetX=Number(grip?.grabOffsetX),rawOffsetY=Number(grip?.grabOffsetY);
