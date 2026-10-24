@@ -59,7 +59,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CLEAN_STREAK_WORD_FULLSCREEN_20261024_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_STATUS_AUTHORITY_20261024_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -91,7 +91,11 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(nonRealmCss,/Detect The Word fullscreen refinement/);
   assert.match(nonRealmCss,/#wordGameCard:fullscreen #wordBoard[\s\S]*?linear-gradient\(160deg,rgba\(var\(--recreation-rose-rgb\),\.24\)/);
   assert.match(nonRealmCss,/#wordGameCard:fullscreen \.word-entry-stack\{[\s\S]*?margin-top:10px!important/);
-  assert.match(nonRealmCss,/Fine-pointer fullscreen remains desktop-coherent[\s\S]*?\.game-window-actions\{[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
+  assert.match(nonRealmCss,/final non-Realm coherence authority[\s\S]*?\.game-window-actions\.game-common-actions[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
+  assert.doesNotMatch(nonRealmCss,/2026-10-24 fullscreen control dock/);
+  assert.doesNotMatch(nonRealmCss,/repeat\(7,38px\)/);
+  assert.doesNotMatch(nonRealmCss,/games-settings-trigger\{grid-column:7/);
+  assert.match(nonRealmCss,/\.round-status-card\{[\s\S]*?align-content:start!important/);
   assert.match(nonRealmCss,/:fullscreen > \.game-play-window > :is\(\.game-specific-actions,\.game-window-actions\)>\.action\{[\s\S]*?grid-column:auto!important[\s\S]*?flex:0 0 38px!important/);
 });
 
@@ -102,6 +106,10 @@ test('Rule Shift uses a true oval and unmistakably separated categorical colours
   assert.doesNotMatch(core,/ruleshift-token-caption" aria-hidden/);
   assert.match(core,/if\(rule && rule\.shape==='pill'\) rule\.shape='oval'/);
   assert.match(core,/if\(rule && \(rule\.colour==='teal'\|\|rule\.colour==='lime'\)\) rule\.colour='white'/);
+  assert.match(core,/failRuleShiftRun\('Incorrect choice\. ' \+ mismatchFeedback \+ ' No reward awarded\.'/);
+  assert.doesNotMatch(core,/The rule was:/);
+  assert.match(core,/ruleshift-complete-card[\s\S]*?finishedPrompt/);
+  assert.doesNotMatch(core,/ruleshift-complete-card[\s\S]{0,500}?ruleShiftState\.lastMessage/);
   assert.match(nonRealmCss,/ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/i);
   assert.match(nonRealmCss,/ruleshift-colour--white \.ruleshift-shape\{[\s\S]*?background:#f4f7fa!important/i);
   assert.equal((nonRealmCss.match(/ruleshift-colour--red \.ruleshift-shape\{/gi)||[]).length,1);
@@ -122,10 +130,11 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/trackCoinAnimationFrame=window\.requestAnimationFrame\(frame\)/);
   assert.match(core,/data-trackcoin-pick="' \+ escapeHtml\(cup\.id\) \+ '"/);
   assert.match(core,/trackCoinState\.cups\.find\(function\(cup\)\{ return cup\.id===choice; \}\)/);
-  assert.match(core,/refs\.trackCoinBoard\.addEventListener\('pointerdown',selectTrackCoinCup,true\)/);
-  assert.match(core,/refs\.trackCoinBoard\.addEventListener\('pointerup',selectTrackCoinCup,true\)/);
-  assert.match(core,/refs\.trackCoinBoard\.addEventListener\('click',selectTrackCoinCup,true\)/);
-  assert.match(core,/const selectTrackCoinCup=function\(event\)[\s\S]*?trackCoinState\.phase!==\'pick\'[\s\S]*?chooseTrackCoinCup/);
+  assert.match(core,/function bindTrackCoinCupChoices\(\)[\s\S]*?\.trackcoin-cup\[data-trackcoin-pick\][\s\S]*?cup\.addEventListener\('pointerdown',commitChoice\)[\s\S]*?chooseTrackCoinCup/);
+  assert.match(core,/cup\.addEventListener\('keydown'[\s\S]*?event\.key!=='Enter'[\s\S]*?event\.key!==' '/);
+  assert.match(core,/refs\.trackCoinBoard\.innerHTML[\s\S]*?bindTrackCoinCupChoices\(\)/);
+  assert.doesNotMatch(core,/refs\.trackCoinBoard\.addEventListener\('pointer(?:down|up)'[\s\S]*?selectTrackCoinCup/);
+  assert.doesNotMatch(core,/const trackCoinCup = event\.target\.closest\('\[data-trackcoin-pick\]'\)/);
   assert.doesNotMatch(core,/event\.detail===0/);
   assert.doesNotMatch(core,/trackCoinPointerPickAt/);
   assert.match(core,/trackCoinState\.phase!==\'pick\'/);
@@ -166,7 +175,7 @@ test('Recreation music preferences are server-side and quick controls stay insid
 });
 
 test('Round Status and reward terminology stay coherent across Recreation',()=>{
-  assert.match(core,/function coherentRoundStatusHtml\(label,message,profile,tierName\)/);
+  assert.match(core,/function coherentRoundStatusHtml\(label,message,profile,tierName,previousLabel\)/);
   assert.match(core,/cleanStreak:\{ label:'Clean Streak Bonus', perStepPct:5, maxPct:100 \}/);
   assert.match(core,/Winning Streak[\s\S]*?Clean Streak Bonus/);
   assert.match(core,/Ranked Up! Player Rank/);
