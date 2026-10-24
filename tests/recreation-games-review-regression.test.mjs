@@ -47,6 +47,21 @@ test('core New Game is one-click, opens Pairs idle, and keeps Full Screen inside
   assert.match(core,/if\(fullBtn && windowActions && fullBtn\.parentElement!==windowActions\) windowActions\.appendChild\(fullBtn\)/);
 });
 
+test('Recreation idle start states stay centred and cannot inherit active game columns',()=>{
+  assert.match(blockGrid,/class="block-grid-empty"/);
+  assert.match(colourSort,/class="colour-sort-empty"/);
+  assert.match(core,/pairsBoard\.innerHTML = '<div class="empty-box"/);
+  assert.match(core,/wordBoard\.innerHTML = '<div class="empty-box"/);
+  assert.match(core,/make24Board\.innerHTML = '<div class="empty-box"/);
+  assert.match(core,/trackCoinBoard\.innerHTML = '<div class="empty-box trackcoin-idle-card"/);
+  assert.match(core,/ruleShiftBoard\.innerHTML = '<div class="empty-box ruleshift-idle-card"/);
+  assert.match(nonRealmCss,/Recreation idle\/start alignment authority/);
+  assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
+  assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
+  assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_IDLE_ALIGNMENT_20261024_1/);
+});
+
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
   assert.doesNotMatch(html,/Game Info<\/span><span class="inline-note">Level \/ XP \/ stats/);
   assert.match(html,/Game Info<\/span><span class="inline-note">Player Rank \/ XP \/ stats/);
