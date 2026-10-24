@@ -1938,7 +1938,8 @@
   function puzzleHotkeysActive(){
     const section=root.closest('.section');
     const dialogOpen=!!(refs.settingsDialog?.open || refs.helpDialog?.open);
-    return !!state && !refs.workspace.hidden && !dialogOpen && (!section || section.classList.contains('active'));
+    const playerVisible=!refs.playerCard || (!refs.playerCard.hidden && refs.playerCard.getClientRects().length>0);
+    return !!state && playerVisible && !refs.workspace.hidden && !dialogOpen && (!section || section.classList.contains('active'));
   }
 
   function editableTarget(target){
@@ -2132,6 +2133,8 @@
     if(event.altKey){
       if(key==='f'){
         event.preventDefault();
+        event.stopPropagation();
+        if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
         toggleFullscreen();
         return;
       }
@@ -2177,7 +2180,7 @@
       event.preventDefault();
       nextTray();
     }
-  });
+  },true);
   document.addEventListener('keyup',function(event){
     if(!event) return;
     const key=String(event.key||'').toLowerCase();
