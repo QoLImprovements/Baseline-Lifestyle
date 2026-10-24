@@ -400,6 +400,8 @@ These Markdown rules are a human reference point, not live runtime config.
             <button class="action ghost game-toggle-btn" data-jigsaw-panel="progress" aria-expanded="false" type="button">Progress</button>
           </div>
 
+          <div class="game-live-xp jigsaw-live-xp" id="weightCoherenceLiveXp" data-live-xp="jigsaw" aria-label="Current Jigsaw experience"></div>
+
           <section class="card game-card jigsaw-progress-panel" id="weightCoherenceProgressPanel" hidden aria-label="Jigsaw progress">
             <div class="game-toolbar">
               <div>
@@ -461,7 +463,6 @@ These Markdown rules are a human reference point, not live runtime config.
           </dialog>
 
           <div class="weight-coherence-workspace" id="weightCoherenceWorkspace" hidden>
-            <div class="game-live-xp jigsaw-live-xp" id="weightCoherenceLiveXp" data-live-xp="jigsaw" aria-label="Current Jigsaw experience"></div>
             <div class="weight-coherence-toolbar">
               <div class="weight-coherence-stats">
                 <div class="stat-pill">Difficulty <span id="weightCoherenceDifficultyLabel">100 pieces</span></div>
@@ -502,7 +503,6 @@ These Markdown rules are a human reference point, not live runtime config.
                 </button>
               </div>
             </div>
-            <div class="weight-coherence-status inline-note" id="weightCoherenceStatus" aria-live="polite"></div>
 
             <dialog class="weight-coherence-settings-dialog weight-coherence-help-dialog" id="weightCoherenceHelpDialog" aria-labelledby="weightCoherenceHelpTitle">
               <form method="dialog" class="weight-coherence-settings-card">
@@ -560,6 +560,7 @@ These Markdown rules are a human reference point, not live runtime config.
                   <canvas id="weightCoherenceBoard" width="1122" height="1402" tabindex="-1" aria-label="The Weight of Coherence jigsaw board"></canvas>
                   <div class="weight-coherence-completion" id="weightCoherenceCompletion" hidden></div>
                 </div>
+                <div class="weight-coherence-status inline-note" id="weightCoherenceStatus" aria-live="polite"></div>
               </div>
 
               <aside class="weight-coherence-sort-column weight-coherence-sort-column--right" aria-label="Sorting trays 3 and 4">
