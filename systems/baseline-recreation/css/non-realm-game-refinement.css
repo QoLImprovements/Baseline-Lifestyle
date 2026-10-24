@@ -1160,3 +1160,78 @@ body[data-app="recreation"] :is(
   }
 }
 
+
+
+/* 2026-10-24 Recreation control-system authority. */
+body[data-app="recreation"] :is(.game-window-actions,.crossnumber-actions,.game-specific-actions){
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+  overflow:visible!important;
+}
+body[data-app="recreation"] .game-specific-actions{
+  margin-top:7px;
+}
+body[data-app="recreation"] .game-control-icon,
+body[data-app="recreation"] .auto-next-toggle.game-control-icon{
+  display:inline-grid!important;
+  place-items:center!important;
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  border-radius:13px!important;
+  font-size:17px!important;
+  font-weight:950!important;
+  line-height:1!important;
+}
+body[data-app="recreation"] .auto-next-toggle.game-control-icon[aria-pressed="true"]{
+  box-shadow:0 0 0 2px rgba(var(--recreation-copper-light-rgb),.34),inset 0 1px 0 rgba(255,255,255,.12)!important;
+}
+body[data-app="recreation"] .game-common-actions > .start-new-game-toggle{order:10}
+body[data-app="recreation"] .game-common-actions > .auto-next-toggle{order:20}
+body[data-app="recreation"] .game-common-actions > .desktop-keypad-toggle{order:25}
+body[data-app="recreation"] .game-common-actions > .games-music-quick-toggle{order:30}
+body[data-app="recreation"] .game-common-actions > .games-settings-trigger{order:40}
+body[data-app="recreation"] .game-common-actions > .game-fullscreen-toggle{order:50}
+
+/* Tooltip alignment is assigned at interaction time so edge controls never
+   paint captions outside the viewport. These rules are shared by every game. */
+body[data-app="recreation"] [data-tooltip][data-tooltip-align="right"]:is(:hover,:focus-visible)::after{
+  left:auto!important;right:0!important;transform:none!important;
+}
+body[data-app="recreation"] [data-tooltip][data-tooltip-align="right"]:is(:hover,:focus-visible)::before{
+  left:auto!important;right:14px!important;transform:none!important;
+}
+body[data-app="recreation"] [data-tooltip][data-tooltip-align="left"]:is(:hover,:focus-visible)::after{
+  left:0!important;right:auto!important;transform:none!important;
+}
+body[data-app="recreation"] [data-tooltip][data-tooltip-align="left"]:is(:hover,:focus-visible)::before{
+  left:14px!important;right:auto!important;transform:none!important;
+}
+body[data-app="recreation"] [data-tooltip]:is(:hover,:focus-visible)::after{
+  max-width:min(260px,calc(100vw - 24px))!important;
+}
+
+/* Rule Shift shapes are intentionally flat-edged and unfiltered. Scaling a
+   clipped shape or running it through drop-shadow filtering softens its edge. */
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape{
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-filter:none!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-size--small .ruleshift-shape{
+  transform:none!important;
+  width:clamp(44px,4.6vw,64px)!important;
+  height:clamp(44px,4.6vw,64px)!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-size--small .ruleshift-shape--oval{
+  width:clamp(52px,5.2vw,70px)!important;
+  height:clamp(38px,3.9vw,52px)!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-size--large .ruleshift-shape{
+  transform:none!important;
+}
