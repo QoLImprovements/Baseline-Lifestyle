@@ -33,6 +33,7 @@ const DEFAULT_PROFILE = Object.freeze({
   gamesPlayed:0,
   totalLines:0,
   totalPieces:0,
+  lastRoundXp:0,
   selectedMode:'classic',
   activeRun:null
 });
@@ -87,6 +88,7 @@ function normaliseProfile(value) {
     gamesPlayed:number(source.gamesPlayed),
     totalLines:number(source.totalLines),
     totalPieces:number(source.totalPieces),
+    lastRoundXp:number(source.lastRoundXp),
     selectedMode:mode,
     activeRun:null
   };
@@ -132,6 +134,7 @@ function settleRunXp(active) {
   const gained=xpForRunScore(active.score);
   active.xpSettled=true;
   active.xpEarned=gained;
+  profile.lastRoundXp=gained;
   if(gained > 0) awardXp(profile,gained);
   return gained;
 }
@@ -266,6 +269,7 @@ function statusHtml() {
       : (selectedPiece >= 0 ? `Piece ${selectedPiece + 1} selected. ` : '') + (statusMessage || 'Keep space available for the next tray.');
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
+    + '<div class="round-status-previous">Previous round — '+number(profile.lastRoundXp)+' XP</div>'
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(currentMode().name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
