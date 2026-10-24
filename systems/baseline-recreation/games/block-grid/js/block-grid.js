@@ -526,6 +526,7 @@ function positionDragGhost(ghost, clientX, clientY, anchor, grip = dragState) {
 }
 function destroyDragGhost() {
   if (dragState?.ghost?.isConnected) dragState.ghost.remove();
+  dragState?.sourceElement?.classList?.remove('is-drag-origin');
   document.documentElement.classList.remove('is-dragging-block-grid-piece');
 }
 
@@ -826,8 +827,9 @@ function handlePointerDown(event) {
   const sourceCellSize=Math.max(1,sourceRect?.width||18);
   const sourceGap=Math.max(0,parseFloat(sourceShapeStyle?.columnGap||sourceShapeStyle?.gap||'3')||0);
   const ghost=createDragGhost(pieceId);
-  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, grabRow, grabCol, grabOffsetX, grabOffsetY, sourceCellSize, sourceGap, moved:false, ghost };
+  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, grabRow, grabCol, grabOffsetX, grabOffsetY, sourceCellSize, sourceGap, sourceElement:piece, moved:false, ghost };
   document.documentElement.classList.add('is-dragging-block-grid-piece');
+  piece.classList.add('is-drag-origin');
   positionDragGhost(ghost,event.clientX,event.clientY,null,dragState);
   piece.setPointerCapture?.(event.pointerId);
   piece.classList.add('is-selected');
