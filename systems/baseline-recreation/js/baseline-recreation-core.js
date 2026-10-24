@@ -2951,11 +2951,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const tier = currentTrackCoinTier();
     const roundSpeed = trackCoinState && trackCoinState.speedPercent ? trackCoinState.speedPercent : trackCoinCurrentSpeedPercent(profile);
     const previousSpeed = trackCoinCurrentSpeedPercent(profile);
-    const streakPct = trackCoinStreakBonusPct(profile.currentStreak) + ((profile.skills.steal || 0) * 4);
-    const cleanPct = cleanWinBonusPct(correct ? (profile.cleanWinStreak + 1) : 0) + ((profile.skills.flow || 0) * 5);
+    const cleanPct = cleanWinBonusPct(correct ? (profile.cleanWinStreak + 1) : 0);
+    const flowPct = Math.max(0,Number(profile.skills.flow || 0)) * 5;
     const baseXp = tier.xpReward * tier.multiplier;
     const baseCoins = tier.coinReward * tier.multiplier;
-    let xpGain = correct ? Math.round(baseXp * (1 + (streakPct / 100) + (cleanPct / 100) + ((profile.skills.read || 0) * 0.06))) : Math.round(baseXp * (0.35 + ((profile.skills.discipline || 0) * 0.05)));
+    let xpGain = correct ? Math.round(baseXp * (1 + (cleanPct / 100) + (flowPct / 100) + ((profile.skills.read || 0) * 0.06))) : Math.round(baseXp * (0.35 + ((profile.skills.discipline || 0) * 0.05)));
     let coinGain = correct ? Math.round(baseCoins * (1 + (cleanPct / 100) + ((profile.skills.banker || 0) * 0.10))) : Math.round(baseCoins * (0.25 + ((profile.skills.discipline || 0) * 0.05)));
     if(correct){
       profile.currentStreak += 1;
