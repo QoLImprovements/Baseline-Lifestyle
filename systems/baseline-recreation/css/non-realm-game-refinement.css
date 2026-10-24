@@ -651,31 +651,33 @@ body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--white .ruleshift-
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--pink .ruleshift-shape{background:#C9528C!important}
 
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-options-grid{
-  display:grid!important;
-  grid-template-columns:repeat(auto-fit,minmax(132px,160px))!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
   justify-content:center!important;
-  justify-items:stretch!important;
   align-items:stretch!important;
   gap:12px!important;
   width:100%!important;
   margin-inline:auto!important;
 }
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-token{
-  width:100%!important;
-  min-width:0!important;
+  flex:0 1 160px!important;
+  width:min(160px,100%)!important;
+  min-width:132px!important;
   max-width:160px!important;
   min-height:112px!important;
-  justify-self:center!important;
 }
 
 /* Keep phone boards compact while still centering incomplete rows. */
 @media(max-width:820px){
   body[data-app="recreation"] #ruleshiftPanel .ruleshift-options-grid{
+    display:grid!important;
     grid-template-columns:repeat(3,minmax(0,1fr))!important;
     justify-content:center!important;
     gap:8px!important;
   }
   body[data-app="recreation"] #ruleshiftPanel .ruleshift-token{
+    width:100%!important;
+    min-width:0!important;
     max-width:none!important;
     min-height:92px!important;
   }
@@ -1327,7 +1329,7 @@ body[data-app="recreation"] :is(
     box-sizing:border-box!important;
     display:grid!important;
     grid-template-columns:minmax(0,4fr) var(--recreation-fs-side)!important;
-    grid-template-rows:auto auto minmax(0,1fr) auto auto auto!important;
+    grid-template-rows:auto auto minmax(0,1fr) auto auto!important;
     gap:8px 12px!important;
     width:100vw!important;
     height:100dvh!important;
@@ -1368,7 +1370,7 @@ body[data-app="recreation"] :is(
   }
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > :is(.game-toolbar,.game-live-xp,.game-fullscreen-skills),
+  ):fullscreen > :is(.game-toolbar,.game-live-xp),
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > :is(.round-status-card,.game-specific-actions,.game-window-actions){
@@ -1437,24 +1439,8 @@ body[data-app="recreation"] :is(
   }
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-fullscreen-skills{
-    display:grid!important;
-    grid-row:4!important;
-    gap:4px!important;
-    align-content:start!important;
-    padding:9px!important;
-    border:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
-    border-radius:12px!important;
-    background:rgba(var(--recreation-burgundy-rgb),.30)!important;
-    overflow:auto!important;
-  }
-  body[data-app="recreation"] .game-fullscreen-skills{
-    display:none;
-  }
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > .game-specific-actions{
-    grid-row:5!important;
+    grid-row:4!important;
     justify-content:flex-start!important;
     padding:0 2px!important;
     align-self:end!important;
@@ -1462,7 +1448,7 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > .game-window-actions{
-    grid-row:6!important;
+    grid-row:5!important;
     justify-content:flex-start!important;
     padding:8px 0 2px!important;
     margin:0 8px!important;
@@ -1542,3 +1528,134 @@ body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape--circle{
 }
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape--oval{border-radius:50%!important}
 body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape--circle{border-radius:999px!important}
+
+
+/* 2026-10-24 Recreation coherence repair: status, keypad, play-fill and Pairs fit. */
+body[data-app="recreation"] .round-status-card .round-status-heading{
+  width:100%;
+  margin:0 0 10px;
+  text-align:center;
+  font-size:clamp(1.02rem,1.35vw,1.28rem);
+  font-weight:900;
+  letter-spacing:.015em;
+}
+body[data-app="recreation"] .round-status-card .round-status-outcome{
+  margin:0 0 12px;
+  color:rgba(var(--recreation-ink-rgb),.82);
+  line-height:1.45;
+}
+body[data-app="recreation"] .round-status-card .round-status-rankup{
+  margin:0 0 10px;
+  padding:7px 9px;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.25);
+  border-radius:10px;
+  text-align:center;
+  font-weight:850;
+  background:rgba(var(--recreation-copper-deep-rgb),.16);
+}
+body[data-app="recreation"] .round-status-card .round-status-metrics{
+  display:grid;
+  gap:6px;
+}
+body[data-app="recreation"] .round-status-card .round-status-metrics>div{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:baseline;
+}
+body[data-app="recreation"] .round-status-card .round-status-metrics span{
+  color:rgba(var(--recreation-ink-rgb),.72);
+}
+body[data-app="recreation"] .round-status-card .round-status-metrics strong{
+  text-align:right;
+  font-weight:900;
+}
+
+/* Keypad icon stays optically and geometrically centred in the 42px control. */
+body[data-app="recreation"] .game-shell-action--keyboard,
+body[data-app="recreation"] .desktop-keypad-toggle.game-control-icon{
+  display:grid!important;
+  place-items:center!important;
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  line-height:0!important;
+}
+body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg{
+  display:block!important;
+  width:22px!important;
+  height:22px!important;
+  margin:auto!important;
+  transform:none!important;
+}
+
+/* The 80% play column is a play field, not unused dark background. */
+@media(min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-play-surface{
+    place-self:stretch!important;
+    width:100%!important;
+    height:100%!important;
+    max-width:none!important;
+    max-height:none!important;
+    min-height:0!important;
+    align-self:stretch!important;
+    justify-self:stretch!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen #wordBoard,
+  body[data-app="recreation"] #make24GameCard:fullscreen #make24Board{
+    display:grid!important;
+    width:100%!important;
+    height:100%!important;
+    padding:clamp(10px,1.3vw,18px)!important;
+    overflow:auto!important;
+    align-content:center!important;
+    justify-content:center!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen #wordBoard>.word-box{
+    width:min(100%,920px)!important;
+    max-width:none!important;
+  }
+  body[data-app="recreation"] #make24GameCard:fullscreen #make24Board>.formula-box{
+    width:min(100%,1040px)!important;
+    max-width:none!important;
+  }
+
+  /* Pairs uses the actual row count. Higher tiers shrink uniformly rather than
+     running below the fullscreen boundary. */
+  body[data-app="recreation"] #pairsGameCard:fullscreen #pairsBoard{
+    width:100%!important;
+    height:100%!important;
+    max-width:none!important;
+    max-height:none!important;
+    grid-template-columns:repeat(var(--pairs-cols-desktop,4),minmax(0,1fr))!important;
+    grid-template-rows:repeat(var(--pairs-rows-desktop,3),minmax(0,1fr))!important;
+    align-content:stretch!important;
+    align-items:stretch!important;
+    gap:clamp(6px,.8vmin,12px)!important;
+    padding:clamp(6px,.9vmin,12px)!important;
+    box-sizing:border-box!important;
+  }
+  body[data-app="recreation"] #pairsGameCard:fullscreen .memory-card{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    aspect-ratio:auto!important;
+  }
+  body[data-app="recreation"] #pairsGameCard:fullscreen .memory-card-face{
+    padding:clamp(2px,.45vmin,5px)!important;
+  }
+  body[data-app="recreation"] #pairsGameCard:fullscreen .memory-card-front{
+    font-size:clamp(38px,5.4vmin,84px)!important;
+  }
+  body[data-app="recreation"] #pairsGameCard:fullscreen .memory-card-front>img,
+  body[data-app="recreation"] #pairsGameCard:fullscreen .memory-card-front>svg{
+    width:98%!important;
+    height:98%!important;
+    max-width:98%!important;
+    max-height:98%!important;
+  }
+}
