@@ -123,7 +123,8 @@ function blockSkillUnlocked(id) {
 }
 
 function xpForRunScore(score) {
-  return Math.max(0, Math.round(number(score) / 10));
+  const points=number(score);
+  return points > 0 ? Math.max(1, Math.round(points / 10)) : 0;
 }
 
 function settleRunXp(active) {
@@ -261,7 +262,7 @@ function statusHtml() {
   const outcome = !active
     ? 'Start a new game to receive your first three pieces.'
     : active.gameOver
-      ? `Run complete — ${active.score} points · +${active.xpEarned || 0} XP. No remaining piece fits the board.`
+      ? `Run complete — ${active.score} points${active.xpEarned ? ` · +${active.xpEarned} XP` : ''}. No remaining piece fits the board.`
       : (selectedPiece >= 0 ? `Piece ${selectedPiece + 1} selected. ` : '') + (statusMessage || 'Keep space available for the next tray.');
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
