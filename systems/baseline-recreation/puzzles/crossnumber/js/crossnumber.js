@@ -81,6 +81,10 @@
   let undoStack=[];
   let timerId=0;
   let dragTile='';
+  let touchDrag=null;
+  let touchDragScrollFrame=0;
+  let touchDragScrollVelocity=0;
+  let suppressBankClick=false;
   let storageReloaded=false;
   let newGamePointerAt=0;
 
@@ -1019,7 +1023,152 @@
     window.requestAnimationFrame(fitCrossNumberBoard);
   }
 
+  function clearTouchDropTarget(){
+    refs.board.querySelectorAll('.is-touch-drop-target').forEach(function(cell){
+      cell.classList.remove('is-touch-drop-target');
+    });
+  }
+
+  function touchDropCellAt(clientX,clientY){
+    clearTouchDropTarget();
+    const element=document.elementFromPoint(clientX,clientY);
+    const cell=element&&element.closest?element.closest('[data-dropzone="true"]'):null;
+    if(!cell||!refs.board.contains(cell)) return null;
+    cell.classList.add('is-touch-drop-target');
+    return cell;
+  }
+
+  function touchDragHost(){
+    const panel=document.getElementById('crossnumberGamePanel');
+    return document.fullscreenElement===panel?panel:document.body;
+  }
+
+  function createTouchDragGhost(tile,tileId){
+    const ghost=tile.cloneNode(true);
+    ghost.removeAttribute('draggable');
+    ghost.removeAttribute('data-tile-id');
+    ghost.removeAttribute('aria-label');
+    ghost.setAttribute('aria-hidden','true');
+    ghost.classList.remove('is-selected');
+    ghost.classList.add('crossnumber-touch-drag-ghost');
+    ghost.textContent=String(tileValue(tileId));
+    touchDragHost().appendChild(ghost);
+    return ghost;
+  }
+
+  function positionTouchDragGhost(ghost,clientX,clientY){
+    if(!ghost) return;
+    ghost.style.left=clientX+'px';
+    ghost.style.top=clientY+'px';
+  }
+
+  function stopTouchDragAutoScroll(){
+    touchDragScrollVelocity=0;
+    if(touchDragScrollFrame){
+      window.cancelAnimationFrame(touchDragScrollFrame);
+      touchDragScrollFrame=0;
+    }
+  }
+
+  function touchDragScrollStep(){
+    touchDragScrollFrame=0;
+    if(!touchDrag||!touchDragScrollVelocity) return;
+    const panel=document.getElementById('crossnumberGamePanel');
+    if(document.fullscreenElement===panel) panel.scrollBy(0,touchDragScrollVelocity);
+    else window.scrollBy(0,touchDragScrollVelocity);
+    if(touchDrag.lastX!=null&&touchDrag.lastY!=null) touchDropCellAt(touchDrag.lastX,touchDrag.lastY);
+    touchDragScrollFrame=window.requestAnimationFrame(touchDragScrollStep);
+  }
+
+  function updateTouchDragAutoScroll(clientY){
+    const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
+    const edge=Math.min(84,Math.max(56,viewportHeight*.12));
+    let velocity=0;
+    if(clientY<edge) velocity=-Math.max(8,Math.round((edge-clientY)/4));
+    else if(clientY>viewportHeight-edge) velocity=Math.max(8,Math.round((clientY-(viewportHeight-edge))/4));
+    touchDragScrollVelocity=clamp(velocity,-22,22);
+    if(touchDragScrollVelocity&&!touchDragScrollFrame) touchDragScrollFrame=window.requestAnimationFrame(touchDragScrollStep);
+    if(!touchDragScrollVelocity) stopTouchDragAutoScroll();
+  }
+
+  function finishTouchDrag(event,cancelled){
+    if(!touchDrag||touchDrag.pointerId!==event.pointerId) return;
+    const state=touchDrag;
+    const dropCell=!cancelled&&state.moved?touchDropCellAt(event.clientX,event.clientY):null;
+    if(state.ghost?.isConnected) state.ghost.remove();
+    state.source?.classList.remove('is-touch-drag-source');
+    clearTouchDropTarget();
+    stopTouchDragAutoScroll();
+    touchDrag=null;
+    document.documentElement.classList.remove('is-dragging-crossnumber-tile');
+    suppressBankClick=true;
+
+    if(cancelled) return;
+    if(state.moved){
+      event.preventDefault();
+      if(dropCell) placeTile(dropCell.dataset.node,state.tileId);
+      else setStatus('Drag the number onto an open equation cell.');
+      return;
+    }
+
+    selectedTile=selectedTile===state.tileId?'':state.tileId;
+    renderBank();
+    if(selectedTile) setStatus('Number '+tileValue(selectedTile)+' selected. Choose an open equation cell.');
+  }
+
+  refs.bank.addEventListener('pointerdown',function(event){
+    if(event.pointerType==='mouse') return;
+    const tile=event.target.closest('[data-tile-id]');
+    if(!tile||!round) return;
+    event.preventDefault();
+    const tileId=tile.dataset.tileId;
+    const ghost=createTouchDragGhost(tile,tileId);
+    touchDrag={
+      pointerId:event.pointerId,
+      tileId:tileId,
+      source:tile,
+      ghost:ghost,
+      startX:event.clientX,
+      startY:event.clientY,
+      lastX:event.clientX,
+      lastY:event.clientY,
+      moved:false
+    };
+    tile.classList.add('is-touch-drag-source');
+    document.documentElement.classList.add('is-dragging-crossnumber-tile');
+    tile.setPointerCapture?.(event.pointerId);
+    positionTouchDragGhost(ghost,event.clientX,event.clientY);
+  });
+
+  refs.bank.addEventListener('pointermove',function(event){
+    if(!touchDrag||touchDrag.pointerId!==event.pointerId) return;
+    const dx=event.clientX-touchDrag.startX;
+    const dy=event.clientY-touchDrag.startY;
+    if(!touchDrag.moved&&Math.hypot(dx,dy)>=6) touchDrag.moved=true;
+    touchDrag.lastX=event.clientX;
+    touchDrag.lastY=event.clientY;
+    positionTouchDragGhost(touchDrag.ghost,event.clientX,event.clientY);
+    if(touchDrag.moved){
+      event.preventDefault();
+      touchDropCellAt(event.clientX,event.clientY);
+      updateTouchDragAutoScroll(event.clientY);
+    }
+  });
+
+  refs.bank.addEventListener('pointerup',function(event){
+    finishTouchDrag(event,false);
+  });
+
+  refs.bank.addEventListener('pointercancel',function(event){
+    finishTouchDrag(event,true);
+  });
+
   refs.bank.addEventListener('click',function(event){
+    if(suppressBankClick){
+      suppressBankClick=false;
+      event.preventDefault();
+      return;
+    }
     const tile=event.target.closest('[data-tile-id]');
     if(!tile||!round) return;
     selectedTile=selectedTile===tile.dataset.tileId?'':tile.dataset.tileId;
