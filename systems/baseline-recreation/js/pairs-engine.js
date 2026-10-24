@@ -42,9 +42,10 @@
     cleanBonusPctForStreak=()=>0
   }={}){
     const safeProfile=profile&&typeof profile==='object'?profile:{};
-    const nextClean=Math.max(0,Number(safeProfile.cleanWinStreak)||0)+1;
+    const cleanWin=!hadFailure;
+    const nextClean=cleanWin ? Math.max(0,Number(safeProfile.cleanWinStreak)||0)+1 : 0;
     const nextStreak=Math.max(0,Number(safeProfile.currentStreak)||0)+1;
-    const cleanPct=Math.max(0,Number(cleanBonusPctForStreak(nextClean))||0)/100;
+    const cleanPct=cleanWin ? Math.max(0,Number(cleanBonusPctForStreak(nextClean))||0)/100 : 0;
     const banker=Math.max(0,Number(safeProfile.skills&&safeProfile.skills.banker)||0);
     const flow=Math.max(0,Number(safeProfile.skills&&safeProfile.skills.flow)||0);
     const bankMult=(1+(banker*0.10))*(1+cleanPct);
@@ -54,7 +55,8 @@
       xp:Math.round((Number(tier&&tier.xpReward)||0)*xpMult),
       cleanPct:Math.round(cleanPct*100),
       nextClean:nextClean,
-      nextStreak:nextStreak
+      nextStreak:nextStreak,
+      cleanWin:cleanWin
     });
   }
 
