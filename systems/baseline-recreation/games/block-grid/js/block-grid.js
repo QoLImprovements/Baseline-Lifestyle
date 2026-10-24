@@ -19,8 +19,12 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
-const BUILD = 'BLOCK_GRID_MOBILE_PLAYABILITY_20261024_1';
+const BUILD = 'BLOCK_GRID_SCORE_XP_SKILLS_20261024_1';
 const APP = 'blockgrid';
+const BLOCK_SKILLS = Object.freeze([
+  { id:'blast', name:'Bomb', icon:'💣', unlockLevel:2, description:'Drag onto the board to clear a 4 × 4 area.' },
+  { id:'rows', name:'Plough', icon:'🚜', unlockLevel:5, description:'Drag onto the board to clear two adjacent rows.' }
+]);
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
   level:1,
@@ -63,7 +67,9 @@ function normaliseRun(value) {
     lines:number(value.lines),
     pieces:number(value.pieces),
     skillCharge:Math.max(0,Math.min(100,number(value.skillCharge))),
-    gameOver:Boolean(value.gameOver)
+    gameOver:Boolean(value.gameOver),
+    xpSettled:Object.prototype.hasOwnProperty.call(value,'xpSettled') ? Boolean(value.xpSettled) : true,
+    xpEarned:number(value.xpEarned)
   };
   if (!run.gameOver && run.tray.length === 0) run.tray = createTray(run.board, profile?.selectedMode || 'classic');
   if (!run.gameOver && run.tray.length && !hasAnyPlacement(run.board, run.tray)) run.gameOver = true;
@@ -104,7 +110,29 @@ function syncAutoNextControl() {
 
 function createRun() {
   const board = emptyBoard();
-  return { board, tray:createTray(board, profile.selectedMode), score:0, combo:0, lines:0, pieces:0, skillCharge:0, gameOver:false };
+  return { board, tray:createTray(board, profile.selectedMode), score:0, combo:0, lines:0, pieces:0, skillCharge:0, gameOver:false, xpSettled:false, xpEarned:0 };
+}
+
+function blockSkill(id) {
+  return BLOCK_SKILLS.find(skill => skill.id === id) || null;
+}
+
+function blockSkillUnlocked(id) {
+  const skill=blockSkill(id);
+  return Boolean(skill && profile && profile.level >= skill.unlockLevel);
+}
+
+function xpForRunScore(score) {
+  return Math.max(0, Math.round(number(score) / 10));
+}
+
+function settleRunXp(active) {
+  if(!active || !active.gameOver || active.xpSettled) return 0;
+  const gained=xpForRunScore(active.score);
+  active.xpSettled=true;
+  active.xpEarned=gained;
+  if(gained > 0) awardXp(profile,gained);
+  return gained;
 }
 
 function persist() {
@@ -233,7 +261,7 @@ function statusHtml() {
   const outcome = !active
     ? 'Start a new game to receive your first three pieces.'
     : active.gameOver
-      ? `Run complete — ${active.score} points. No remaining piece fits the board.`
+      ? `Run complete — ${active.score} points · +${active.xpEarned || 0} XP. No remaining piece fits the board.`
       : (selectedPiece >= 0 ? `Piece ${selectedPiece + 1} selected. ` : '') + (statusMessage || 'Keep space available for the next tray.');
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
@@ -278,14 +306,12 @@ function renderGame() {
     return;
   }
   const occupancy = boardOccupancy(active);
-  const openPercent = Math.max(0, Math.round((1 - occupancy) * 100));
   root.innerHTML = `
     <div class="block-grid-active-header block-grid-score-window">
       <div class="stat-pills">
         <div class="stat-pill">Score <span>${active.score}</span></div>
         <div class="stat-pill">Lines <span>${active.lines}</span></div>
         <div class="stat-pill">Combo <span>${active.combo ? `×${active.combo}` : '—'}</span></div>
-        <div class="stat-pill">Open Space <span>${openPercent}%</span></div>
       </div>
     </div>
     <div class="game-live-xp" data-live-xp="blockgrid"><strong>Player Rank ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
@@ -649,13 +675,13 @@ function placeSelected(row, col) {
   active.tray.splice(selectedPiece, 1);
   profile.totalPieces += 1;
   profile.totalLines += result.linesCleared;
-  awardXp(profile, Math.max(1, Math.ceil(awardedScore / 5) + result.linesCleared * 2));
   profile.bestScore = Math.max(profile.bestScore, active.score);
   if (!active.tray.length) {
     active.tray = createTray(active.board, profile.selectedMode);
     boardMotion.newTray = true;
   }
   active.gameOver = !hasAnyPlacement(active.board, active.tray);
+  if(active.gameOver) settleRunXp(active);
   selectedPiece = -1;
   previewAnchor = null;
   statusMessage = perfectClear
@@ -684,7 +710,7 @@ function consumeSpecialCharge(active) {
 }
 function clearSpecialBlast(row, col) {
   const active = run();
-  if (!active || (active.skillCharge || 0) < 100) return false;
+  if (!active || !blockSkillUnlocked('blast') || (active.skillCharge || 0) < 100) return false;
   const startRow=Math.max(0,Math.min(active.board.length-4,row-1));
   const startCol=Math.max(0,Math.min(active.board.length-4,col-1));
   let cleared=0;
@@ -700,7 +726,7 @@ function clearSpecialBlast(row, col) {
 }
 function clearSpecialRows(row) {
   const active=run();
-  if(!active || (active.skillCharge || 0)<100) return false;
+  if(!active || !blockSkillUnlocked('rows') || (active.skillCharge || 0)<100) return false;
   let indices;
   if(Number.isFinite(Number(row))) indices=specialRowsFor(Number(row));
   else{
@@ -750,7 +776,7 @@ function handleClick(event) {
     if(performance.now()-newGamePointerAt<700){ event.preventDefault(); return; }
     startNewGame();
   }
-    if (action === 'blast' || action === 'rows') { if((run()?.skillCharge || 0)>=100){ specialMode=action; selectedPiece=-1; previewAnchor=null; statusMessage=action==='blast'?'Special ready: drag the bomb over a 4 × 4 area, or tap its centre.':'Special ready: drag the plough over the two rows to clear, or tap either row.'; render(); } }
+    if (action === 'blast' || action === 'rows') { if(blockSkillUnlocked(action) && (run()?.skillCharge || 0)>=100){ specialMode=action; selectedPiece=-1; previewAnchor=null; statusMessage=action==='blast'?'Special ready: drag the bomb over a 4 × 4 area, or tap its centre.':'Special ready: drag the plough over the two rows to clear, or tap either row.'; render(); } }
     if (action === 'fullscreen') toggleFullscreen();
     return;
   }
@@ -783,7 +809,7 @@ function handlePointerDown(event) {
     return;
   }
   const specialButton=rawTarget?.closest('[data-block-action="blast"],[data-block-action="rows"]');
-  if(specialButton && document.getElementById('blockGridPanel')?.classList.contains('is-active') && (run()?.skillCharge||0)>=100){
+  if(specialButton && document.getElementById('blockGridPanel')?.classList.contains('is-active') && blockSkillUnlocked(specialButton.getAttribute('data-block-action')) && (run()?.skillCharge||0)>=100){
     const type=specialButton.getAttribute('data-block-action');
     event.preventDefault();
     specialMode=type;
@@ -946,7 +972,7 @@ const shell = createGameExtensionShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=BLOCK_GRID_MOBILE_PLAYABILITY_20261024_1',
+  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=BLOCK_GRID_SCORE_XP_SKILLS_20261024_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `${currentMode().name} Tier · Best ${profile.bestScore}` : 'Ready',
