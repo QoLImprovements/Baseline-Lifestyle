@@ -505,3 +505,101 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
     border-top:1px solid rgba(var(--recreation-copper-light-rgb),.16);
   }
 }
+
+
+/* 2026-10-24 Block Grid coherence repair.
+   Windowed desktop: information rail on the left, board/tray as the main field. */
+@media(min-width:1080px){
+  #blockGridPanel #blockGridGameCard:not(:fullscreen){
+    display:grid!important;
+    grid-template-columns:minmax(210px,250px) minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto minmax(0,1fr) auto auto!important;
+    gap:10px 16px!important;
+    align-items:start!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .block-grid-score-window{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:100%!important;
+    margin:0!important;
+    padding:12px!important;
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.22)!important;
+    border-radius:16px!important;
+    background:rgba(var(--recreation-burgundy-rgb),.36)!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .block-grid-score-window .stat-pills{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important;
+    width:100%!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .block-grid-score-window .stat-pill{
+    min-width:0!important;
+    padding:7px!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .block-grid-skill{
+    grid-column:1!important;
+    grid-row:2!important;
+    width:100%!important;
+    margin:0!important;
+    align-self:start!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .game-live-xp{
+    grid-column:1!important;
+    grid-row:3!important;
+    margin:0!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .round-status-card{
+    grid-column:1!important;
+    grid-row:4!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:10px!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .block-grid-run-objective{
+    grid-column:1!important;
+    grid-row:5!important;
+    display:grid!important;
+    align-items:start!important;
+    margin:0!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .game-window-actions{
+    grid-column:1!important;
+    grid-row:6!important;
+    justify-content:flex-start!important;
+    align-self:end!important;
+    margin:0!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .block-grid-play-cluster{
+    grid-column:2!important;
+    grid-row:1/7!important;
+    width:min(100%,900px)!important;
+    max-width:900px!important;
+    min-width:0!important;
+    margin:auto!important;
+    align-self:center!important;
+    justify-self:center!important;
+  }
+}
+#blockGridPanel .block-grid-skill-actions{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+}
+#blockGridPanel .block-grid-skill-actions .game-control-icon{
+  display:grid!important;
+  place-items:center!important;
+  flex:0 0 46px!important;
+  width:46px!important;
+  min-width:46px!important;
+  height:46px!important;
+  min-height:46px!important;
+  padding:0!important;
+  font-size:20px!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .block-grid-skill .block-grid-skill-actions{
+  display:flex!important;
+  grid-template-columns:none!important;
+  justify-content:flex-start!important;
+}
