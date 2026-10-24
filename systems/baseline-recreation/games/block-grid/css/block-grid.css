@@ -672,6 +672,11 @@ html.is-dragging-block-grid-special body{
 #blockGridPanel .block-grid-skill-actions .game-control-icon:not(:disabled):active{
   cursor:grabbing!important;
 }
+#blockGridPanel .block-grid-piece.is-drag-origin{
+  opacity:.14!important;
+  transform:none!important;
+  box-shadow:none!important;
+}
 .block-grid-drag-ghost{
   transition:opacity .08s ease,filter .08s ease!important;
 }
