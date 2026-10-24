@@ -2182,7 +2182,8 @@ body[data-app="recreation"] :is(#blockGridGameCard,#colourSortGameCard) .round-s
    This replaces the retired fixed-position control dock instead of layering
    another override over it. */
 body[data-app="recreation"] :is(
-  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
 ) .round-status-card{
   display:grid!important;
   grid-auto-rows:max-content!important;
