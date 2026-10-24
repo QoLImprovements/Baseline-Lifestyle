@@ -293,7 +293,7 @@ function renderGameInfo() {
         <div class="stat-pill">Pieces Placed <span>${profile.totalPieces}</span></div>
       </div>
     </div>
-    <div class="summary-box"><strong>Place without rotating.</strong><span class="inline-note">Choose or drag one of the three supplied pieces onto the 8 × 8 board. Complete a full row or column to clear it. Multiple lines and consecutive clears increase the score. The run ends when none of the available pieces can fit.</span></div>`;
+    <div class="summary-box"><strong>Place without rotating.</strong><span class="inline-note">Choose or drag one of the three supplied pieces onto the 8 × 8 board. Complete a full row or column to clear it. Multiple lines and consecutive clears increase the score. When the run ends, every 10 score points become 1 XP; Player Rank then unlocks Specials over time.</span></div>`;
 }
 
 function renderGame() {
