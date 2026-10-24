@@ -308,6 +308,15 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/const mobile=window\.matchMedia\?\.\('\(max-width:820px\)'\)\.matches[\s\S]*?if\(mobile\)[\s\S]*?removeProperty\('width'\)/);
   assert.match(crossnumberCss,/mobile Cross Number playability authority[\s\S]*?#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)!important/);
   assert.match(crossnumberCss,/grid-template-columns:repeat\(var\(--crossnumber-cols,13\),34px\)!important/);
+  assert.match(crossnumber,/refs\.bank\.addEventListener\('pointerdown'[\s\S]*?createTouchDragGhost/);
+  assert.match(crossnumber,/document\.elementFromPoint\(clientX,clientY\)[\s\S]*?is-touch-drop-target/);
+  assert.match(crossnumber,/finishTouchDrag\(event,false\)[\s\S]*?placeTile\(dropCell\.dataset\.node,state\.tileId\)/);
+  assert.match(crossnumber,/touchDragScrollStep[\s\S]*?window\.scrollBy\(0,touchDragScrollVelocity\)/);
+  assert.match(crossnumberCss,/Cross Number touch-drag authority/);
+  assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
+  assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
+  assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_TOUCH_DRAG_20261024_1/);
+  assert.match(html,/crossnumber\.js\?v=CROSSNUMBER_TOUCH_DRAG_20261024_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);
