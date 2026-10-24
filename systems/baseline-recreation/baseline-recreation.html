@@ -319,7 +319,6 @@ These Markdown rules are a human reference point, not live runtime config.
                   <div class="crossnumber-board-scroll">
                     <div class="crossnumber-board" data-crossnumber-board></div>
                   </div>
-                  <div class="visually-hidden" data-crossnumber-status role="status" aria-live="polite"></div>
                 </div>
 
                 <aside class="crossnumber-bank-panel" aria-label="Number tiles">
@@ -337,6 +336,7 @@ These Markdown rules are a human reference point, not live runtime config.
                 </aside>
               </div>
 
+              <div class="summary-box round-status-card crossnumber-round-status" data-crossnumber-status role="status" aria-live="polite"></div>
               <div class="crossnumber-actions game-window-actions game-common-actions" aria-label="Cross Number common controls">
                 <button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" type="button" data-crossnumber-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button>
                 <button class="action ghost auto-next-toggle game-control-icon" type="button" data-auto-next-toggle="crossnumber" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button>
@@ -657,7 +657,7 @@ These Markdown rules are a human reference point, not live runtime config.
                   <div class="stat-pill">Tier <span id="pairsTierNameValue">Starter</span></div>
                   <div class="stat-pill">Moves <span id="pairsMovesValue">0</span></div>
                   <div class="stat-pill">Matched <span id="pairsMatchedValue">0</span></div>
-                  <div class="stat-pill">Round Bank <span id="pairsRoundBankValue">0</span></div>
+                  <div class="stat-pill">Round Bank Coins <span id="pairsRoundBankValue">0</span></div>
                 </div>
                 <div class="game-toolbar-spacer" aria-hidden="true"></div>
               </div>
@@ -677,7 +677,7 @@ These Markdown rules are a human reference point, not live runtime config.
             <section class="card game-card" id="pairsTierCard" hidden>
               <div><h3>Board Tiers</h3><p class="note">More complex boards provide greater rewards.</p></div>
               <div class="board-tier-list" id="pairsTierSelectList"></div>
-              <div class="summary-box"><strong>Deduction rule</strong><span class="inline-note">Each physical card may be selected once without breaking clean status. A mismatch only breaks clean status when at least one selected card has been chosen before; Bank loss requires both mismatched cards to have been chosen before.</span></div>
+              <div class="summary-box"><strong>Deduction rule</strong><span class="inline-note">Each physical card may be selected once without breaking clean status. A mismatch only breaks clean status when at least one selected card has been chosen before; Bank Coins loss requires both mismatched cards to have been chosen before.</span></div>
             </section>
             <section class="card game-card" id="pairsProgressCard" hidden>
               <div><h3>Pairs Progress</h3><p class="note">Structured progression summary for the current save.</p></div>
@@ -728,7 +728,7 @@ These Markdown rules are a human reference point, not live runtime config.
                 <div class="stat-pills">
                   <div class="stat-pill">Tier <span id="wordTierNameValue">3 Letters</span></div>
                   <div class="stat-pill">Guesses <span id="wordGuessesValue">0 / 6</span></div>
-                  <div class="stat-pill">Round Bank <span id="wordRoundBankValue">0</span></div>
+                  <div class="stat-pill">Round Bank Coins <span id="wordRoundBankValue">0</span></div>
                 </div>
                 <div class="game-toolbar-spacer" aria-hidden="true"></div>
               </div>
@@ -798,7 +798,7 @@ These Markdown rules are a human reference point, not live runtime config.
                   <div class="stat-pill">Tier <span id="make24TierNameValue">Starter</span></div>
                   <div class="stat-pill">Target <span id="make24TargetValue">—</span></div>
                   <div class="stat-pill">Mistakes <span id="make24MistakesValue">0</span></div>
-                  <div class="stat-pill">Round Bank <span id="make24RoundBankValue">0</span></div>
+                  <div class="stat-pill">Round Bank Coins <span id="make24RoundBankValue">0</span></div>
                 </div>
                 <div class="game-toolbar-spacer" aria-hidden="true"></div>
               </div>
@@ -941,7 +941,7 @@ These Markdown rules are a human reference point, not live runtime config.
                   <div class="stat-pill">Tier <span id="ruleShiftTierNameValue">Starter</span></div>
                   <div class="stat-pill">Round <span id="ruleShiftRoundValue">0 / 8</span></div>
                   <div class="stat-pill">Mistakes <span id="ruleShiftMistakesValue">0</span></div>
-                  <div class="stat-pill">Round Bank <span id="ruleShiftRoundBankValue">0</span></div>
+                  <div class="stat-pill">Round Bank Coins <span id="ruleShiftRoundBankValue">0</span></div>
                 </div>
                 <div class="game-toolbar-spacer" aria-hidden="true"></div>
               </div>
