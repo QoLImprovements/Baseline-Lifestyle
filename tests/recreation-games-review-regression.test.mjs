@@ -232,6 +232,10 @@ test('reported Recreation interaction repairs remain wired',()=>{
   assert.match(core,/if\(id === 'ninja' \|\| isTouchOnlyGameDevice\(\)\) existingBtn\.remove\(\)/);
   assert.doesNotMatch(core,/if\(id === 'ninja' \|\| isMobileGameViewport\(\)\) existingBtn\.remove\(\)/);
   assert.match(core,/--pairs-fit-height/);
+  assert.match(core,/--pairs-rows-mobile/);
+  assert.match(core,/--pairs-rows-phone/);
+  assert.match(nonRealmCss,/@media\(max-width:820px\)[\s\S]*?#pairsPanel #pairsBoard:not\(\.is-pairs-idle\)[\s\S]*?grid-template-rows:repeat\(var\(--pairs-rows-mobile,4\)/);
+  assert.match(nonRealmCss,/@media\(max-width:520px\)[\s\S]*?#pairsPanel #pairsBoard:not\(\.is-pairs-idle\)[\s\S]*?grid-template-rows:repeat\(var\(--pairs-rows-phone,4\)/);
   assert.match(nonRealmCss,/tier-complete Pairs fit/);
   assert.match(nonRealmCss,/#pairsPanel #pairsBoard:not\(\.is-pairs-idle\)\{[\s\S]*?height:min\(var\(--pairs-fit-height,520px\),calc\(100dvh - 250px\)\)!important[\s\S]*?grid-template-rows:repeat\(var\(--pairs-rows-desktop,3\)/);
   assert.match(nonRealmCss,/@media\(min-width:900px\) and \(pointer:fine\)[\s\S]*?#pairsPanel #pairsGameCard:not\(:fullscreen\)[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(230px,280px\)!important/);
