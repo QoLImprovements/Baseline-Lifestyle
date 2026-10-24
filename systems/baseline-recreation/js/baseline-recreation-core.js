@@ -1581,6 +1581,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.pairsBoard.style.setProperty('--pairs-cols-desktop',String(layout.desktopCols));
     refs.pairsBoard.style.setProperty('--pairs-cols-mobile',String(layout.mobileCols));
     refs.pairsBoard.style.setProperty('--pairs-cols-phone',String(layout.phoneCols));
+    refs.pairsBoard.style.setProperty('--pairs-rows-desktop',String(Math.ceil((Math.max(1,Number(tier&&tier.pairs)||1)*2)/Math.max(1,layout.desktopCols))));
     refs.pairsBoard.style.setProperty('--pairs-board-max',layout.boardMax+'px');
   }
   function startPairsBoard(){
@@ -2176,6 +2177,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.make24RoundSummary.innerHTML=coherentRoundStatusHtml('Round Status',make24State.lastMessage,profiles.make24,currentMake24Tier().name);
     injectMobileGameControls('make24');
     syncMobileInputMode('make24');
+    syncDesktopKeypadState();
   }
   function renderMake24Summary(){
     const profile = profiles.make24;
@@ -2640,6 +2642,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.wordGuessInput = document.getElementById('wordGuessInput');
     injectMobileGameControls('detectword');
     syncWordKeypadKnowledge();
+    syncDesktopKeypadState();
     refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',wordState.lastMessage,profiles.detectword,currentWordTier().name);
     if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
   }
@@ -3481,6 +3484,31 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     renderAll();
     scheduleAutoNext('ruleshift', startRuleShiftRound, AUTO_NEXT_DELAYS.ruleshift);
   }
+  function useRuleShiftHint(){
+    if(!ruleShiftState || ruleShiftState.finished || !ruleShiftState.currentRule) return;
+    const rule=ruleShiftState.currentRule;
+    const valid=(ruleShiftState.options||[]).filter(function(option){ return ruleShiftMatches(rule,option); });
+    if(valid.length!==1){
+      ruleShiftState.lastMessage='Hint unavailable for this board. Re-read the current rule.';
+      persistRuleShiftRound(); renderAll(); return;
+    }
+    const target=valid[0];
+    const distractors=(ruleShiftState.options||[]).filter(function(option){ return option.id!==target.id; });
+    const descriptors=[
+      {key:'colour',value:ruleShiftName(RULESHIFT_COLOURS,target.colour)},
+      {key:'shape',value:ruleShiftName(RULESHIFT_SHAPES,target.shape)},
+      {key:'size',value:ruleShiftName(RULESHIFT_SIZES,target.size)}
+    ];
+    descriptors.forEach(function(item){
+      item.eliminated=distractors.filter(function(option){ return String(option[item.key])!==String(target[item.key]); }).length;
+    });
+    descriptors.sort(function(a,b){ return b.eliminated-a.eliminated; });
+    const first=descriptors[0],second=descriptors[1];
+    ruleShiftState.lastMessage='Hint: narrow the choices by '+first.key+' first — '+first.value+'. Then compare '+second.key+' — '+second.value+' — with the current rule.';
+    persistRuleShiftRound();
+    renderAll();
+  }
+
   function chooseRuleShiftOption(optionId){
     if(!ruleShiftState || ruleShiftState.finished || !ruleShiftState.currentRule) return;
     clearRuleShiftTimer();
@@ -4129,6 +4157,9 @@ function toggleGameFullscreen(gameId){
         if(!typing && key === 'h'){ event.preventDefault(); useMake24Hint(); return; }
         if(!typing && key === 'j'){ event.preventDefault(); rerollMake24Puzzle(); return; }
       }
+      if(hotkeyGame === 'ruleshift' && !typing){
+        if(key === 'h'){ event.preventDefault(); useRuleShiftHint(); return; }
+      }
     });
     document.addEventListener('submit', function(event){
       const make24Form = event.target.closest('#make24ExpressionForm');
@@ -4147,18 +4178,24 @@ function toggleGameFullscreen(gameId){
       });
     }
     if(refs.trackCoinBoard){
-      refs.trackCoinBoard.addEventListener('click',function(event){
+      const selectTrackCoinCup=function(event){
         const cup=event.target instanceof Element ? event.target.closest('.trackcoin-cup[data-trackcoin-pick]') : null;
         if(!cup || !refs.trackCoinBoard.contains(cup)) return;
+        if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
         event.preventDefault();
+        event.stopPropagation();
         chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
-      });
+      };
+      refs.trackCoinBoard.addEventListener('pointerup',selectTrackCoinCup,true);
+      refs.trackCoinBoard.addEventListener('click',selectTrackCoinCup,true);
     }
     if(refs.pairsHintBtn){ setCompactActionButton(refs.pairsHintBtn,'?','Hint','H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
     if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard', 'push'); });
     if(refs.newWordRoundBtn) setCompactActionButton(refs.newWordRoundBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     if(refs.newTrackCoinRoundBtn) setCompactActionButton(refs.newTrackCoinRoundBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     if(refs.newRuleShiftBtn) setCompactActionButton(refs.newRuleShiftBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
+    const ruleShiftHintBtn=document.getElementById('ruleShiftHintBtn');
+    if(ruleShiftHintBtn){ setCompactActionButton(ruleShiftHintBtn,'?','Hint','H'); ruleShiftHintBtn.addEventListener('click',useRuleShiftHint); }
     if(refs.wordSkillAlertBtn) refs.wordSkillAlertBtn.addEventListener('click', function(){ if(profiles.detectword.skillPoints > 0) setWordPanel('wordSkillCard', 'push'); });
     if(refs.newMake24Btn) setCompactActionButton(refs.newMake24Btn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     if(refs.make24HintBtn){ setCompactActionButton(refs.make24HintBtn,'?','Guide','H'); refs.make24HintBtn.addEventListener('click', useMake24Hint); }
