@@ -666,7 +666,22 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
     pairs: { app: 'pairs', level: 4, xp: 0, bank: 25, boardsCleared: 7, gamesPlayed: 7, currentStreak: 0, bestStreak: 2, cleanWinStreak: 0, skillPoints: 0, skills: {} },
     make24: { app: 'make24', level: 1, xp: 0, bank: 0, puzzlesSolved: 0, gamesPlayed: 0, currentStreak: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {} },
     detectword: { app: 'detectword', level: 1, xp: 0, bank: 0, wordsSolved: 0, gamesPlayed: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {} },
-    trackcoin: { app: 'trackcoin', level: 1, xp: 0, coins: 0, totalCorrect: 0, totalRounds: 0, currentStreak: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {} },
+    trackcoin: {
+      app: 'trackcoin', level: 1, xp: 0, coins: 0, totalCorrect: 0, totalRounds: 0,
+      currentStreak: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {},
+      selectedTier:'tier1',
+      activeRound:{
+        tierId:'tier1', phase:'pick', coinCupId:'cup0', pickedCupId:'',
+        sequence:[{duration:500,pattern:'cross',order:['cup0','cup1','cup2']}],
+        cups:[
+          {id:'cup0',left:18,top:68,tilt:0},
+          {id:'cup1',left:50,top:68,tilt:0},
+          {id:'cup2',left:82,top:68,tilt:0}
+        ],
+        baseTop:68,totalDuration:500,speedPercent:100,speedMultiplier:1,
+        movementSpeedMultiplier:1,targetDuration:500,resolved:false,lastResult:'',message:''
+      }
+    },
     ruleshift: { app: 'ruleshift', level: 1, xp: 0, bank: 0, correctAnswers: 0, gamesPlayed: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {} },
     ninja: { app: 'ninja', level: 3, xp: 10, coins: 250, spirit: 12, stage: 4, highestStage: 4, enemyHp: 50, totalKills: 2, currentStreak: 0, bestStreak: 1, cleanWinStreak: 0, bossesDefeated: 0, totalCoinsEarned: 250, upgrades: {}, spiritShop: {} }
   };
@@ -691,6 +706,18 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await expect(page.locator('#pairsPanel')).toHaveClass(/is-active/);
   await page.locator('#newPairsBoardBtn').click();
   await expect(page.locator('#pairsBoard [data-card]').first()).toBeVisible();
+
+  // Regression: a restored Track the Coin round in the pick phase must accept
+  // a real browser pointer click on the cup itself and resolve immediately.
+  await page.goto('/baseline-recreation/games/track-the-coin', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => globalThis.BASELINE_RECREATION_CORE_READY === true);
+  await expect(page.locator('#trackcoinPanel')).toHaveClass(/is-active/);
+  await expect(page.locator('#trackCoinScene')).toHaveClass(/is-phase-pick/);
+  await expect(page.locator('.trackcoin-pick-prompt')).toHaveText('Choose the cup');
+  const selectableCup=page.locator('#trackCoinScene .trackcoin-cup.is-selectable').first();
+  await expect(selectableCup).toBeVisible();
+  await selectableCup.click();
+  await expect(page.locator('#trackCoinScene')).toHaveClass(/is-resolved/);
 });
 
 test('Badminton loads shared server state into the normal session interface', async ({ page }) => {
