@@ -131,6 +131,8 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/data-trackcoin-pick="' \+ escapeHtml\(cup\.id\) \+ '"/);
   assert.match(core,/trackCoinState\.cups\.find\(function\(cup\)\{ return cup\.id===choice; \}\)/);
   assert.match(core,/function bindTrackCoinCupChoices\(\)[\s\S]*?\.trackcoin-cup\[data-trackcoin-pick\][\s\S]*?chooseTrackCoinCup\(cup\.getAttribute\('data-trackcoin-pick'\)\)[\s\S]*?cup\.addEventListener\('pointerdown',commitChoice\)/);
+  assert.match(core,/cup\.addEventListener\('click',commitChoice\)/);
+  assert.match(core,/trackCoinState\.resolved = true;[\s\S]*?trackCoinState\.phase = 'review';/);
   assert.match(core,/cup\.addEventListener\('keydown'[\s\S]*?event\.key!=='Enter'[\s\S]*?event\.key!==' '/);
   assert.match(core,/refs\.trackCoinBoard\.innerHTML[\s\S]*?bindTrackCoinCupChoices\(\)/);
   assert.doesNotMatch(core,/refs\.trackCoinBoard\.addEventListener\('pointer(?:down|up)'[\s\S]*?selectTrackCoinCup/);
