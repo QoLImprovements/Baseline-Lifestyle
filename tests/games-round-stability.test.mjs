@@ -88,7 +88,6 @@ test('Pairs treats any mismatch as a break in clean-board status', () => {
   assert.match(mismatch, /pairsBoardState\.hadFailure = true/);
   assert.match(mismatch, /profiles\.pairs\.cleanWinStreak = 0/);
   assert.match(mismatch, /Mismatch\. Continue the board; this round is no longer clean\./);
-  assert.match(mismatch, /Both cards were first selections, so clean status is preserved/);
 });
 
 
