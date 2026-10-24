@@ -422,7 +422,7 @@ test('primary entrypoints use one cache key per shared static asset', () => {
   ];
   const expected = new Map([
     ['/sitewide/css/baseline-themes.css','SITEWIDE_THEMES_CSS_20261022_2'],
-    ['/sitewide/css/baseline-sitewide.css','SITEWIDE_SHARED_CSS_20261021_1'],
+    ['/sitewide/css/baseline-sitewide.css','SITEWIDE_RECREATION_PALETTE_CLEANUP_20261024_1'],
     ['/sitewide/css/baseline-header-canonical.css','SITEWIDE_HEADER_CSS_20261021_1'],
     ['/sitewide/css/baseline-protected-access.css','PROTECTED_ACCESS_CSS_20261021_1'],
     ['/sitewide/css/baseline-protected-key-placement.css','PROTECTED_KEY_CSS_20261021_1'],
