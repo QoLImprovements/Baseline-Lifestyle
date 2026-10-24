@@ -311,14 +311,10 @@ These Markdown rules are a human reference point, not live runtime config.
                   <span>Time <strong data-crossnumber-timer>00:00</strong></span>
                   <span>Score <strong data-crossnumber-score>0</strong></span>
                 </div>
-                <div class="crossnumber-actions" aria-label="Cross Number controls">
-                  <button class="action ghost" type="button" data-crossnumber-action="sort">Sort Tiles</button>
-                  <button class="action ghost" type="button" data-crossnumber-action="undo">Undo</button>
-                  <button class="action secondary" type="button" data-crossnumber-action="hint">Hint</button>
-                  <button class="action ghost" type="button" data-crossnumber-action="restart">Restart</button>
-                  <button class="action ghost auto-next-toggle" type="button" data-auto-next-toggle="crossnumber" aria-pressed="false">Auto-Next Game: Off</button>
+                <div class="crossnumber-actions game-common-actions" aria-label="Cross Number common controls">
+                  <button class="action ghost start-new-game-toggle" type="button" data-crossnumber-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N">New Game</button>
+                  <button class="action ghost auto-next-toggle game-control-icon" type="button" data-auto-next-toggle="crossnumber" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button>
                   <button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" type="button" data-crossnumber-action="fullscreen" data-tooltip="Full screen · Alt+F" aria-pressed="false" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button>
-                  <button class="action" type="button" data-crossnumber-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N">New Game</button>
                 </div>
               </div>
 
@@ -328,8 +324,7 @@ These Markdown rules are a human reference point, not live runtime config.
                     <div class="crossnumber-board" data-crossnumber-board></div>
                   </div>
                   <div class="crossnumber-status-row">
-                    <div class="crossnumber-status" data-crossnumber-status>Place the number tiles so every equation balances.</div>
-                    <div class="crossnumber-help">Select a number on the right, then choose an open answer space. You can also drag a number directly onto the grid.</div>
+                    <div class="crossnumber-status" data-crossnumber-status></div>
                   </div>
                 </div>
 
@@ -339,7 +334,12 @@ These Markdown rules are a human reference point, not live runtime config.
                     <span data-crossnumber-bank-count>0 remaining</span>
                   </div>
                   <div class="crossnumber-bank" data-crossnumber-bank aria-label="Available number tiles"></div>
-                  <p class="crossnumber-bank-help">The number bank stays beside the puzzle on larger screens so the answers remain visible while you work.</p>
+                  <div class="crossnumber-specific-actions game-specific-actions" aria-label="Cross Number puzzle actions">
+                    <button class="action ghost game-control-icon" type="button" data-crossnumber-action="sort" data-tooltip="Sort tiles · Alt+T" title="Sort tiles · Alt+T" aria-label="Sort tiles"><span aria-hidden="true">⇅</span><span class="sr-only">Sort tiles</span></button>
+                    <button class="action ghost game-control-icon" type="button" data-crossnumber-action="undo" data-tooltip="Undo · Alt+U" title="Undo · Alt+U" aria-label="Undo"><span aria-hidden="true">↶</span><span class="sr-only">Undo</span></button>
+                    <button class="action ghost game-control-icon" type="button" data-crossnumber-action="hint" data-tooltip="Hint · Alt+H" title="Hint · Alt+H" aria-label="Hint"><span aria-hidden="true">?</span><span class="sr-only">Hint</span></button>
+                    <button class="action ghost game-control-icon" type="button" data-crossnumber-action="restart" data-tooltip="Restart · Alt+R" title="Restart · Alt+R" aria-label="Restart"><span aria-hidden="true">R</span><span class="sr-only">Restart</span></button>
+                  </div>
                 </aside>
               </div>
 
@@ -665,7 +665,7 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="board-wrap game-play-window" data-game-play-window="pairs">
                 <div class="summary-box round-status-card" id="pairsRoundSummary"></div>
                 <div class="board-grid game-play-surface" id="pairsBoard" data-game-play-surface="pairs"></div>
-                <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newPairsBoardBtn" data-action="start-pairs" type="button">New Game</button><button class="action ghost" id="pairsHintBtn" type="button" disabled>Use Hint</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="pairs" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+                <div class="game-specific-actions"><button class="action ghost game-control-icon" id="pairsHintBtn" type="button" disabled data-tooltip="Hint · H" title="Hint · H" aria-label="Hint"><span aria-hidden="true">?</span><span class="sr-only">Hint</span></button></div><div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle" id="newPairsBoardBtn" data-action="start-pairs" type="button">New Game</button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="pairs" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button></div>
               </div>
             </section>
             <section class="card game-card" id="pairsSkillCard" hidden>
@@ -736,7 +736,7 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="board-wrap game-play-window" data-game-play-window="detectword">
                 <div class="summary-box round-status-card" id="wordRoundSummary"></div>
                 <div class="stack game-play-surface" id="wordBoard" data-game-play-surface="detectword"></div>
-                <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newWordRoundBtn" data-action="start-word" type="button">New Game</button><button class="action ghost desktop-keypad-toggle" data-desktop-keypad-toggle="detectword" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="detectword" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+                <div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle" id="newWordRoundBtn" data-action="start-word" type="button">New Game</button><button class="action ghost desktop-keypad-toggle game-control-icon" data-desktop-keypad-toggle="detectword" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="detectword" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button></div>
               </div>
             </section>
             <section class="card game-card" id="wordSkillCard" hidden>
@@ -806,7 +806,7 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="board-wrap game-play-window" data-game-play-window="make24">
                 <div class="summary-box round-status-card" id="make24RoundSummary"></div>
                 <div class="stack game-play-surface" id="make24Board" data-game-play-surface="make24"></div>
-                <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newMake24Btn" data-action="start-make24" type="button">New Game</button><button class="action ghost desktop-keypad-toggle" data-desktop-keypad-toggle="make24" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="make24" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+                <div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle" id="newMake24Btn" data-action="start-make24" type="button">New Game</button><button class="action ghost desktop-keypad-toggle game-control-icon" data-desktop-keypad-toggle="make24" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="make24" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button></div>
               </div>
             </section>
             <section class="card game-card" id="make24SkillCard" hidden>
@@ -872,7 +872,7 @@ These Markdown rules are a human reference point, not live runtime config.
               </div>
               <div class="game-play-window" data-game-play-window="trackcoin">
                 <div class="trackcoin-board game-play-surface" id="trackCoinBoard" data-game-play-surface="trackcoin"></div>
-                <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newTrackCoinRoundBtn" data-action="start-trackcoin" type="button">New Game</button><button class="action ghost" id="replayTrackCoinShuffleBtn" data-action="replay-trackcoin" type="button" hidden>Replay Last Shuffle</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="trackcoin" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+                <div class="game-specific-actions"><button class="action ghost game-control-icon" id="replayTrackCoinShuffleBtn" data-action="replay-trackcoin" type="button" hidden data-tooltip="Replay last shuffle" title="Replay last shuffle" aria-label="Replay last shuffle"><span aria-hidden="true">↻</span><span class="sr-only">Replay last shuffle</span></button></div><div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle" id="newTrackCoinRoundBtn" data-action="start-trackcoin" type="button">New Game</button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="trackcoin" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button></div>
               </div>
             </section>
             <section class="card game-card" id="trackCoinSkillPanel" hidden>
@@ -949,7 +949,7 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="board-wrap game-play-window" data-game-play-window="ruleshift">
                 <div class="summary-box round-status-card" id="ruleShiftRoundSummary"></div>
                 <div class="ruleshift-board game-play-surface" id="ruleShiftBoard" data-game-play-surface="ruleshift"></div>
-                <div class="game-window-actions"><button class="action ghost start-new-game-toggle" id="newRuleShiftBtn" data-action="start-ruleshift" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="ruleshift" type="button" aria-pressed="false">Auto-Next Game: Off</button></div>
+                <div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle" id="newRuleShiftBtn" data-action="start-ruleshift" type="button">New Game</button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="ruleshift" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button></div>
               </div>
             </section>
             <section class="card game-card" id="ruleShiftSkillCard" hidden>
