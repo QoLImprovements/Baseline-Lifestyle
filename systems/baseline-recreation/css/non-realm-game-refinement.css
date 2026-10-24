@@ -1858,9 +1858,3 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
   }
 }
 
-@media(max-width:480px){
-  body[data-app="recreation"] #ruleshiftPanel .ruleshift-token{
-    flex-basis:calc((100% - 12px)/2)!important;
-    width:calc((100% - 12px)/2)!important;
-  }
-}
