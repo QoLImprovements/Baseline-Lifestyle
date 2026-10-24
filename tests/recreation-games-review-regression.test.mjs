@@ -148,6 +148,11 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(core,/Board cleared\. \+' \+ rewards\.bank \+ ' Bank Coins · \+' \+ rewards\.xp \+ ' XP'/);
   assert.match(core,/Clean streak bonus \+' \+ rewards\.cleanPct \+ '%'/);
   assert.doesNotMatch(core,/Current streak bonus/);
+  assert.doesNotMatch(html,/Clean streak bonus/);
+  assert.doesNotMatch(core,/Clean streak bonus/);
+  assert.doesNotMatch(crossnumber,/Clean streak bonus/);
+  assert.match(html,/Bank Coins <span data-crossnumber-bank-value/);
+  assert.match(html,/Bank Coins <span id="ruleShiftBankValue"/);
   assert.doesNotMatch(core,/const streakPct = trackCoinStreakBonusPct/);
   assert.doesNotMatch(core,/ · clean bonus \+/i);
   assert.doesNotMatch(html,/>Streak Bonus </i);
