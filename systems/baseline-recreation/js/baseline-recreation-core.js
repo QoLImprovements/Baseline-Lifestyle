@@ -3053,6 +3053,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(!pickedCup) return;
     trackCoinState.pickLocked = true;
     trackCoinState.resolved = true;
+    trackCoinState.phase = 'review';
     trackCoinState.revealAll = true;
     trackCoinState.pickedCupId = pickedCup.id;
     const correct = pickedCup.id === trackCoinState.coinCupId;
@@ -3140,6 +3141,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
         chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
       };
       cup.addEventListener('pointerdown',commitChoice);
+      // Keep a standard click fallback for assistive technology and synthetic
+      // activation. The state guard above makes this idempotent after pointerdown.
+      cup.addEventListener('click',commitChoice);
       cup.addEventListener('keydown',function(event){
         if(event.key!=='Enter' && event.key!==' ') return;
         commitChoice(event);
