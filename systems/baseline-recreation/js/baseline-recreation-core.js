@@ -1595,10 +1595,15 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.pairsBoard.style.setProperty('--pairs-cols-mobile',String(layout.mobileCols));
     refs.pairsBoard.style.setProperty('--pairs-cols-phone',String(layout.phoneCols));
     const pairCount=Math.max(1,Number(tier&&tier.pairs)||1);
-    const rowCount=Math.ceil((pairCount*2)/Math.max(1,layout.desktopCols));
-    refs.pairsBoard.style.setProperty('--pairs-rows-desktop',String(rowCount));
+    const cardCount=pairCount*2;
+    const desktopRows=Math.ceil(cardCount/Math.max(1,layout.desktopCols));
+    const mobileRows=Math.ceil(cardCount/Math.max(1,layout.mobileCols));
+    const phoneRows=Math.ceil(cardCount/Math.max(1,layout.phoneCols));
+    refs.pairsBoard.style.setProperty('--pairs-rows-desktop',String(desktopRows));
+    refs.pairsBoard.style.setProperty('--pairs-rows-mobile',String(mobileRows));
+    refs.pairsBoard.style.setProperty('--pairs-rows-phone',String(phoneRows));
     refs.pairsBoard.style.setProperty('--pairs-board-max',layout.boardMax+'px');
-    refs.pairsBoard.style.setProperty('--pairs-fit-height',Math.min(720,(rowCount*128)+((rowCount-1)*10))+'px');
+    refs.pairsBoard.style.setProperty('--pairs-fit-height',Math.min(720,(desktopRows*128)+((desktopRows-1)*10))+'px');
   }
   function startPairsBoard(){
     clearAutoNextTimer('pairs');
