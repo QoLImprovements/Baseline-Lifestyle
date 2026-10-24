@@ -1000,7 +1000,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       .replace(/\s+\./g,'.')
       .replace(/\s*·\s*$/,'')
       .trim();
-    const streak=Math.max(0,Math.round(Number(profile&&profile.cleanWinStreak||0)));
+    const cleanStreak=Math.max(0,Math.round(Number(profile&&profile.cleanWinStreak||0)));
+    const winningStreak=Math.max(0,Math.round(Number(profile&&profile.currentStreak!==undefined?profile.currentStreak:cleanStreak)));
     const rankUp=rankMatch ? '<div class="round-status-rankup">Ranked Up! Player Rank '+Math.max(1,Math.round(Number(profile&&profile.level||1)))+'</div>' : '';
     const previousXp=Math.max(0,Math.round(Number(profile&&profile.lastRoundXp||0)));
     return '<div class="round-status-heading">'+escapeHtml(label||'Round Status')+'</div>'
@@ -1009,8 +1010,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       + '<div class="round-status-previous">Previous round — '+previousXp+' XP</div>'
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tierName||'—')+'</strong></div>'
-      + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
-      + '<div><span>Clean Streak Bonus</span><strong>'+cleanWinBonusPct(streak)+'%</strong></div>'
+      + '<div><span>Winning Streak</span><strong>'+winningStreak+'</strong></div>'
+      + '<div><span>Clean Streak Bonus</span><strong>'+cleanWinBonusPct(cleanStreak)+'%</strong></div>'
       + '</div>';
   }
   function shuffle(list){
@@ -1667,6 +1668,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       pairsBoardState.roundBank -= penalty;
     }
     pairsBoardState.hadFailure = true;
+    profiles.pairs.cleanWinStreak = 0;
     profiles.pairs.currentStreak = 0;
     if(penaltyEligible && penalty > 0){
       pairsBoardState.lastMessage = 'Repeated miss. -' + penalty + ' Bank Coins. Continue the board.';
@@ -1963,6 +1965,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     }
     make24State.mistakes += 1;
     make24State.hadFailure = true;
+    profiles.make24.cleanWinStreak = 0;
     const penalty = Math.max(0, currentMake24Tier().penalty - (profiles.make24.skills.precision || 0));
     if(make24State.mistakes > 1 && penalty > 0){
       profiles.make24.bank = Math.max(0, profiles.make24.bank - penalty);
@@ -2556,6 +2559,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       return;
     }
     wordState.hadFailure = true;
+    profiles.detectword.cleanWinStreak = 0;
     if(wordState.guesses.length >= wordState.maxGuesses){
       profiles.detectword.currentStreak = 0;
       profiles.detectword.cleanWinStreak = 0;
