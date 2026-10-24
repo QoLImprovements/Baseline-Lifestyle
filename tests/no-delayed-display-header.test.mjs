@@ -62,3 +62,10 @@ test('shared header runtime never swaps the Account label based on auth state', 
   assert.match(shared,/const bannerLabel = 'Account'/);
   assert.doesNotMatch(shared,/authed \? 'Account' : 'Login'/);
 });
+
+
+test('canonical header keeps one overflow-visible authority for the banner containers', () => {
+  const css = readFileSync('sitewide/css/baseline-header-canonical.css','utf8');
+  const matches = css.match(/\.bl-homebar,\s*\.bl-homebar-inner,\s*\.bl-pages-dd\s*\{\s*overflow:visible!important;\s*\}/g) || [];
+  assert.equal(matches.length,1);
+});
