@@ -2063,3 +2063,17 @@ body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle) .memory-
     max-height:58dvh!important;
   }
 }
+
+
+@media(max-width:820px){
+  body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle){
+    grid-template-columns:repeat(var(--pairs-cols-mobile,4),minmax(0,1fr))!important;
+    grid-template-rows:repeat(var(--pairs-rows-mobile,4),minmax(0,1fr))!important;
+  }
+}
+@media(max-width:520px){
+  body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle){
+    grid-template-columns:repeat(var(--pairs-cols-phone,3),minmax(0,1fr))!important;
+    grid-template-rows:repeat(var(--pairs-rows-phone,4),minmax(0,1fr))!important;
+  }
+}
