@@ -263,7 +263,7 @@ function renderGame() {
   if (!root) return;
   const active = run();
   if (!active) {
-    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
+    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions game-common-actions"><button class="action primary start-new-game-toggle" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" type="button">New Game</button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
     syncAutoNextControl();
     return;
   }
@@ -301,9 +301,9 @@ function renderGame() {
         <div class="block-grid-tray-heading"><strong>Available Pieces · ${escapeHtml(currentMode().name)} Tier</strong><span>Drag a shape, or tap it then tap a board cell</span></div>
         <div class="block-grid-tray${boardMotion.newTray ? ' is-new-tray' : ''}" aria-label="Available pieces">${trayHtml()}</div>
       </div>
-      <div class="game-window-actions">
+      <div class="game-window-actions game-common-actions">
         <button class="action ghost start-new-game-toggle" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" type="button">New Game</button>
-        <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
+        <button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
         <button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button>
       </div>
     </div>`;
@@ -496,8 +496,12 @@ function positionDragGhost(ghost, clientX, clientY, anchor, grip = dragState) {
   const grabOffsetY=Number.isFinite(rawOffsetY)?Math.max(0,Math.min(1,rawOffsetY)):.5;
   const grabbedX=(grabCol * (cellSize + gap)) + (cellSize * grabOffsetX);
   const grabbedY=(grabRow * (cellSize + gap)) + (cellSize * grabOffsetY);
-  ghost.style.left = (clientX + (totalWidth / 2) - grabbedX) + 'px';
-  ghost.style.top = (clientY + (totalHeight / 2) - grabbedY) + 'px';
+  // Position the ghost by its true top-left corner. This keeps the exact
+  // point held inside the selected block under the pointer at every scale,
+  // including browser fullscreen where a centred transform can introduce a
+  // visible offset if rendered dimensions differ by even a few pixels.
+  ghost.style.left = (clientX - grabbedX) + 'px';
+  ghost.style.top = (clientY - grabbedY) + 'px';
 }
 
 function destroyDragGhost() {
