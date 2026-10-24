@@ -227,11 +227,20 @@ function boardHtml() {
 
 function statusHtml() {
   const active = run();
-  if (!active) return '<strong>Ready.</strong><span class="inline-note">Start a new game to receive your first three pieces.</span>';
-  if (active.gameOver) return `<strong>Run complete — ${active.score} points.</strong><span class="inline-note">No remaining piece fits the board. Start a new game when ready.</span>`;
-  const selected = selectedPiece >= 0 ? `Piece ${selectedPiece + 1} selected. ` : '';
-  const combo = active.combo > 1 ? ` Combo ×${active.combo}.` : '';
-  return `<strong>${escapeHtml(selected + (statusMessage || 'Keep space available for the next tray.'))}</strong><span class="inline-note">Complete full rows or columns to clear them.${escapeHtml(combo)}</span>`;
+  const streak = active ? Math.max(0, number(active.combo)) : 0;
+  const bonus = Math.min(100, streak * 5);
+  const outcome = !active
+    ? 'Start a new game to receive your first three pieces.'
+    : active.gameOver
+      ? `Run complete — ${active.score} points. No remaining piece fits the board.`
+      : (selectedPiece >= 0 ? `Piece ${selectedPiece + 1} selected. ` : '') + (statusMessage || 'Keep space available for the next tray.');
+  return '<div class="round-status-heading">Round Status</div>'
+    + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
+    + '<div class="round-status-metrics">'
+    + '<div><span>Current Tier</span><strong>'+escapeHtml(currentMode().name)+'</strong></div>'
+    + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
+    + '<div><span>Clean Streak Bonus</span><strong>'+bonus+'%</strong></div>'
+    + '</div>';
 }
 
 function renderGameInfo() {
@@ -270,7 +279,7 @@ function renderGame() {
   const occupancy = boardOccupancy(active);
   const openPercent = Math.max(0, Math.round((1 - occupancy) * 100));
   root.innerHTML = `
-    <div class="block-grid-active-header">
+    <div class="block-grid-active-header block-grid-score-window">
       <div class="stat-pills">
         <div class="stat-pill">Score <span>${active.score}</span></div>
         <div class="stat-pill">Lines <span>${active.lines}</span></div>
@@ -288,8 +297,8 @@ function renderGame() {
       <div class="block-grid-skill-head"><strong>Special</strong><span>${Math.round(active.skillCharge || 0)}%</span></div>
       <div class="block-grid-skill-meter" role="progressbar" aria-label="Special skill charge" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(active.skillCharge || 0)}"><span style="width:${Math.min(100,active.skillCharge || 0)}%"></span></div>
       <div class="block-grid-skill-actions">
-        <button class="action ghost" data-block-action="blast" type="button" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}>Clear 4 × 4</button>
-        <button class="action ghost" data-block-action="rows" type="button" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}>Clear 2 Rows</button>
+        <button class="action ghost game-control-icon" data-block-action="blast" type="button" data-tooltip="Clear 4 × 4 · Bomb" title="Clear 4 × 4 · Bomb" aria-label="Clear 4 by 4" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}><span aria-hidden="true">💣</span><span class="sr-only">Clear 4 × 4</span></button>
+        <button class="action ghost game-control-icon" data-block-action="rows" type="button" data-tooltip="Clear 2 Rows · Plow" title="Clear 2 Rows · Plow" aria-label="Clear 2 rows" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}><span aria-hidden="true">🚜</span><span class="sr-only">Clear 2 Rows</span></button>
       </div>
     </div>
     <div class="block-grid-play-cluster">
