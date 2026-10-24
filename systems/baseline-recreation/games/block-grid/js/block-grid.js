@@ -969,11 +969,13 @@ function panelHtml() {
       </details>
       <div class="game-toggle-row">
         <button class="action ghost game-toggle-btn is-active" data-block-tab="game" type="button">Game</button>
+        <button class="action ghost game-toggle-btn" data-block-tab="skills" type="button">Skills</button>
         <button class="action ghost game-toggle-btn" data-block-tab="modes" type="button">Tiers</button>
         <button class="action ghost game-toggle-btn" data-block-tab="progress" type="button">Progress</button>
       </div>
       <div class="game-panel-stack">
         <section class="card game-card game-play-root" id="blockGridGameCard" data-game-play-root="block-grid"></section>
+        <section class="card game-card" id="blockGridSkillsCard" hidden></section>
         <section class="card game-card" id="blockGridModesCard" hidden></section>
         <section class="card game-card" id="blockGridProgressCard" hidden></section>
       </div>
