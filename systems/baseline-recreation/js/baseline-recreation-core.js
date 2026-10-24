@@ -991,7 +991,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const pct = cleanWinBonusPct(streak);
     return pct ? ' · Clean Streak Bonus +' + pct + '%' : '';
   }
-  function coherentRoundStatusHtml(label,message,profile,tierName){
+  function coherentRoundStatusHtml(label,message,profile,tierName,previousLabel){
     const source=String(message||'').trim();
     const rankMatch=source.match(/(?:Player Rank(?: up)?|Rank)\s*\+(\d+)/i);
     const cleaned=source
@@ -1005,10 +1005,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const winningStreak=Math.max(0,Math.round(Number(profile&&profile.currentStreak!==undefined?profile.currentStreak:cleanStreak)));
     const rankUp=rankMatch ? '<div class="round-status-rankup">Ranked Up! Player Rank '+Math.max(1,Math.round(Number(profile&&profile.level||1)))+'</div>' : '';
     const previousXp=Math.max(0,Math.round(Number(profile&&profile.lastRoundXp||0)));
+    const previousResultLabel=String(previousLabel||'Previous Round').trim()||'Previous Round';
     return '<div class="round-status-heading">'+escapeHtml(label||'Round Status')+'</div>'
       + (cleaned?'<div class="round-status-outcome">'+escapeHtml(cleaned)+'</div>':'')
       + rankUp
-      + '<div class="round-status-previous">Previous round - '+previousXp+' XP</div>'
+      + '<div class="round-status-previous">'+escapeHtml(previousResultLabel)+' - '+previousXp+' XP</div>'
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tierName||'—')+'</strong></div>'
       + '<div><span>Winning Streak</span><strong>'+winningStreak+'</strong></div>'
@@ -3129,6 +3130,23 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       }, 700);
     }, 1100);
   }
+  function bindTrackCoinCupChoices(){
+    if(!refs.trackCoinBoard) return;
+    qsa('.trackcoin-cup[data-trackcoin-pick]',refs.trackCoinBoard).forEach(function(cup){
+      const commitChoice=function(event){
+        if(!cup.classList.contains('is-selectable')) return;
+        if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
+        if(event){ event.preventDefault(); event.stopPropagation(); }
+        chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
+      };
+      cup.addEventListener('pointerdown',commitChoice);
+      cup.addEventListener('keydown',function(event){
+        if(event.key!=='Enter' && event.key!==' ') return;
+        commitChoice(event);
+      });
+    });
+  }
+
   function renderTrackCoinTierList(){
     const profile = profiles.trackcoin;
     refs.trackCoinTierSelectList.innerHTML = TRACKCOIN_TIERS.map(tier => {
@@ -3230,6 +3248,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       : '';
     const pickPrompt=trackCoinState.phase==='pick'&&!trackCoinState.resolved ? '<div class="trackcoin-pick-prompt">Choose the cup</div>' : '';
     refs.trackCoinBoard.innerHTML = '<div id="trackCoinScene" class="trackcoin-scene' + phaseClass + (trackCoinState.phase === 'hide' ? ' is-busy' : '') + (trackCoinState.resolved ? ' is-resolved' : '') + '">' + roundStatusHtml + '<div class="trackcoin-status"><strong>' + escapeHtml(tier.name) + '</strong><span class="inline-note">Containers ' + tier.containers + ' · ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '</span></div>' + resumeHtml + '<div class="trackcoin-lane" data-cups="' + tier.containers + '">' + pickPrompt + coinHtml + positions + '</div></div>';
+    bindTrackCoinCupChoices();
     ensureGamePlayContract();
   }
   function renderTrackCoinSummary(){
@@ -3326,9 +3345,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const colourName = ruleShiftName(RULESHIFT_COLOURS, option.colour);
     const shapeName = ruleShiftName(RULESHIFT_SHAPES, option.shape);
     const sizeName = ruleShiftName(RULESHIFT_SIZES, option.size);
-    if(rule.type === 'colour') return colourMatch ? 'Colour matched.' : 'Colour did not match: you chose ' + colourName + '.';
-    if(rule.type === 'shape') return shapeMatch ? 'Shape matched.' : 'Shape did not match: you chose ' + shapeName + '.';
-    if(rule.type === 'size') return sizeMatch ? 'Size matched.' : 'Size did not match: you chose ' + sizeName + '.';
+    if(rule.type === 'colour') return colourMatch ? 'Colour matched.' : 'You chose ' + colourName + '; the rule required ' + ruleShiftName(RULESHIFT_COLOURS, rule.colour) + '.';
+    if(rule.type === 'shape') return shapeMatch ? 'Shape matched.' : 'You chose ' + shapeName + '; the rule required ' + ruleShiftName(RULESHIFT_SHAPES, rule.shape) + '.';
+    if(rule.type === 'size') return sizeMatch ? 'Size matched.' : 'You chose ' + sizeName + '; the rule required ' + ruleShiftName(RULESHIFT_SIZES, rule.size) + '.';
     if(rule.type === 'notColour') return !colourMatch ? 'Colour correctly avoided the excluded colour.' : 'The selected colour was the one the rule excluded.';
     if(rule.type === 'notShape') return !shapeMatch ? 'Shape correctly avoided the excluded shape.' : 'The selected shape was the one the rule excluded.';
     if(rule.type === 'colourShape') return 'Colour ' + (colourMatch ? 'matched' : 'did not match') + '; shape ' + (shapeMatch ? 'matched' : 'did not match') + '.';
@@ -3398,7 +3417,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     clearRuleShiftTimer();
     const profile = profiles.ruleshift;
     profile.wrongAnswers += 1;
-    failRuleShiftRun('Time ran out. Run failed — no reward awarded.');
+    failRuleShiftRun('Time ran out. No reward awarded.');
     ruleShiftState.resolvingTimeout = false;
   }
 
@@ -3572,7 +3591,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     }
     profile.wrongAnswers += 1;
     const mismatchFeedback = ruleShiftMismatchFeedback(ruleShiftState.currentRule, option);
-    failRuleShiftRun('Incorrect choice. ' + mismatchFeedback + ' Run failed — no reward awarded. The rule was: ' + ruleShiftState.currentRule.label);
+    failRuleShiftRun('Incorrect choice. ' + mismatchFeedback + ' No reward awarded.');
   }
   function spendRuleShiftSkill(skillId){
     const profile = profiles.ruleshift;
@@ -3633,14 +3652,14 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(refs.ruleShiftRoundBankValue) refs.ruleShiftRoundBankValue.textContent = ruleShiftState ? ruleShiftState.roundBank : 0;
     if(!ruleShiftState){
       refs.ruleShiftBoard.innerHTML = '<div class="empty-box ruleshift-idle-card"><strong>Rule Shift is idle.</strong><span class="inline-note">' + escapeHtml(ruleShiftIdleMessage) + '</span><span class="inline-note">The target shape is always present. Start when ready.</span></div>';
-      refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No Rule Shift run is active yet.',profiles.ruleshift,currentRuleShiftTier().name);
+      refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No Rule Shift run is active yet.',profiles.ruleshift,currentRuleShiftTier().name,'Previous Run');
       return;
     }
-    refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',ruleShiftState.lastMessage,profiles.ruleshift,currentRuleShiftTier().name);
+    refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',ruleShiftState.lastMessage,profiles.ruleshift,currentRuleShiftTier().name,'Previous Run');
     if(ruleShiftState.finished){
       const finishedTitle = ruleShiftState.failed ? 'Run failed.' : 'Run complete.';
       const finishedPrompt = ruleShiftState.failed ? 'Incorrect answers end the run. Press New Game to try again.' : 'Press New Game to begin another switching run.';
-      refs.ruleShiftBoard.innerHTML = '<div class="ruleshift-complete-card' + (ruleShiftState.failed ? ' ruleshift-failed-card' : '') + '"><strong>' + finishedTitle + '</strong><span class="inline-note">' + escapeHtml(ruleShiftState.lastMessage) + '</span><span class="inline-note">' + finishedPrompt + '</span></div>';
+      refs.ruleShiftBoard.innerHTML = '<div class="ruleshift-complete-card' + (ruleShiftState.failed ? ' ruleshift-failed-card' : '') + '"><strong>' + finishedTitle + '</strong><span class="inline-note">' + finishedPrompt + '</span></div>';
       return;
     }
     const rule = ruleShiftState.currentRule;
@@ -4117,12 +4136,6 @@ function toggleGameFullscreen(gameId){
       const make24BoardRerollBtn = event.target.closest('#make24BoardRerollBtn'); if(make24BoardRerollBtn){ rerollMake24Puzzle(); return; }
       const trackCoinResume = event.target.closest('[data-action="resume-trackcoin"]'); if(trackCoinResume){ if(event){ event.preventDefault(); event.stopPropagation(); } resumeRestoredTrackCoinRound(); return; }
             const trackCoinReplay = event.target.closest('[data-action="replay-trackcoin"], #replayTrackCoinShuffleBtn'); if(trackCoinReplay){ if(event){ event.preventDefault(); event.stopPropagation(); } replayTrackCoinShuffle(); return; }
-      const trackCoinCup = event.target.closest('[data-trackcoin-pick]');
-      if(trackCoinCup){
-        event.preventDefault();
-        chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick'));
-        return;
-      }
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
 
     });
@@ -4213,22 +4226,6 @@ function toggleGameFullscreen(gameId){
         event.stopPropagation();
         handlePairsCardFlip(pairCard.getAttribute('data-card'));
       });
-    }
-    if(refs.trackCoinBoard){
-      const selectTrackCoinCup=function(event){
-        const cup=event.target instanceof Element ? event.target.closest('.trackcoin-cup[data-trackcoin-pick]') : null;
-        if(!cup || !refs.trackCoinBoard.contains(cup)) return;
-        if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
-        event.preventDefault();
-        event.stopPropagation();
-        chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
-      };
-      // Resolve the choice on pointer-down on coarse/touch input. Waiting for
-      // pointer-up allowed browser tap/scroll handling to consume the gesture on
-      // some mobile browsers, which made the cup flash without resolving.
-      refs.trackCoinBoard.addEventListener('pointerdown',selectTrackCoinCup,true);
-      refs.trackCoinBoard.addEventListener('pointerup',selectTrackCoinCup,true);
-      refs.trackCoinBoard.addEventListener('click',selectTrackCoinCup,true);
     }
     if(refs.pairsHintBtn){ setCompactActionButton(refs.pairsHintBtn,'?','Hint','H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
     if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard', 'push'); });
