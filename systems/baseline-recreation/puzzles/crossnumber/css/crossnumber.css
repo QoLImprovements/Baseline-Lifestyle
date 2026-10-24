@@ -853,3 +853,36 @@ body[data-app="recreation"] #crossnumberGamePanel .crossnumber-round-status{
     grid-row:5!important;
   }
 }
+
+
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-fullscreen-skills{
+  display:none;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen{
+    grid-template-rows:auto auto minmax(0,1fr) auto auto auto!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-fullscreen-skills{
+    display:grid!important;
+    position:relative!important;
+    grid-column:2!important;
+    grid-row:4!important;
+    z-index:2!important;
+    gap:4px!important;
+    align-content:start!important;
+    min-width:0!important;
+    width:auto!important;
+    margin:0 8px!important;
+    padding:9px!important;
+    overflow:auto!important;
+    border:1px solid var(--cn-border)!important;
+    border-radius:12px!important;
+    background:rgba(var(--recreation-burgundy-rgb),.30)!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-complete{
+    grid-row:5!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-actions.game-common-actions{
+    grid-row:6!important;
+  }
+}
