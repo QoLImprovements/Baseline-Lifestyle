@@ -263,7 +263,7 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/sourceCellSize[\s\S]*?createDragGhost\(pieceId\)[\s\S]*?positionDragGhost\(ghost,event\.clientX,event\.clientY,null,dragState\)/);
   assert.match(blockGrid,/blend=anchor \? 1 : Math\.max\(0,Math\.min\(1,1-\(distance\/120\)\)\)/);
   assert.match(blockGrid,/createSpecialDragGhost\(type\)[\s\S]*?paintSpecialPreview/);
-  assert.match(blockGrid,/specialMode===['"]rows['"][\s\S]*?clearSpecialRows\(coords\.row\)/);
+  assert.match(blockGrid,/specialMode\s*===\s*['"]rows['"][\s\S]*?clearSpecialRows\(coords\.row\)/);
   assert.match(blockCss,/\.block-grid-cell\.is-special-preview/);
   assert.match(blockCss,/\.block-grid-special-drag-ghost/);
 });
