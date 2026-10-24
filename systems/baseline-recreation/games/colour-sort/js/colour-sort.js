@@ -303,7 +303,7 @@ function renderGame() {
   if (!root) return;
   const active = puzzle();
   if (!active) {
-    root.innerHTML = `<div class="colour-sort-empty"><p>${escapeHtml(tierById(profile.selectedTier).name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-colour-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-colour-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
+    root.innerHTML = `<div class="colour-sort-empty"><p>${escapeHtml(tierById(profile.selectedTier).name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions game-common-actions"><button class="action primary start-new-game-toggle" data-colour-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" type="button">New Game</button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-colour-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
     syncAutoNextControl();
     return;
   }
@@ -331,12 +331,14 @@ function renderGame() {
       ${solved ? `<div class="colour-sort-complete-banner" aria-hidden="true"><strong>GAME COMPLETE</strong><span>${active.moves} moves</span></div>` : ''}
       ${active.bottles.map(bottleHtml).join('')}
     </div>
-    <div class="game-window-actions colour-sort-quiet-actions">
-      <button class="action ghost" data-colour-action="undo" type="button" ${!undoStack.length || solved || isAnimating ? 'disabled' : ''}>Undo</button>
-      <button class="action ghost" data-colour-action="hint" type="button" ${solved || isAnimating ? 'disabled' : ''}>Hint</button>
-      <button class="action ghost" data-colour-action="restart" type="button" ${isAnimating ? 'disabled' : ''}>Restart</button>
+    <div class="game-specific-actions colour-sort-quiet-actions" aria-label="Colour Sort puzzle actions">
+      <button class="action ghost game-control-icon" data-colour-action="undo" data-tooltip="Undo · Alt+U" title="Undo · Alt+U" aria-label="Undo" type="button" ${!undoStack.length || solved || isAnimating ? 'disabled' : ''}><span aria-hidden="true">↶</span><span class="sr-only">Undo</span></button>
+      <button class="action ghost game-control-icon" data-colour-action="hint" data-tooltip="Hint · Alt+H" title="Hint · Alt+H" aria-label="Hint" type="button" ${solved || isAnimating ? 'disabled' : ''}><span aria-hidden="true">?</span><span class="sr-only">Hint</span></button>
+      <button class="action ghost game-control-icon" data-colour-action="restart" data-tooltip="Restart · Alt+R" title="Restart · Alt+R" aria-label="Restart" type="button" ${isAnimating ? 'disabled' : ''}><span aria-hidden="true">R</span><span class="sr-only">Restart</span></button>
+    </div>
+    <div class="game-window-actions game-common-actions">
       <button class="action ghost start-new-game-toggle" data-colour-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" type="button">New Game</button>
-      <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
+      <button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
       <button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-colour-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button>
     </div>`;
   levelEntranceMotion = false;
@@ -971,6 +973,9 @@ function handleKeydown(event) {
   const key=String(event.key||'').toLowerCase();
   if(event.altKey && !event.ctrlKey && !event.metaKey && !event.isComposing){
     if(key==='n'){ event.preventDefault(); startTierGame(profile.selectedTier); return; }
+    if(key==='u'){ event.preventDefault(); undo(); return; }
+    if(key==='h'){ event.preventDefault(); showHint(); return; }
+    if(key==='r'){ event.preventDefault(); startLevel(puzzle()?.level || randomLevelForTier(profile.selectedTier)); return; }
     if(key==='f'){ event.preventDefault(); toggleFullscreen(); return; }
   }
   if (event.key === 'Escape' && document.fullscreenElement === document.getElementById('colourSortGameCard')) return;
