@@ -238,3 +238,58 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
   #blockGridPanel .block-grid-piece{min-height:70px!important;padding:6px!important}
   #blockGridPanel .block-grid-piece-shape{--block-piece-mini-cell:clamp(9px,3vw,13px)}
 }
+
+
+/* 2026-10-24 exact drag alignment + one-screen fullscreen fit. */
+.block-grid-drag-ghost,
+.block-grid-drag-ghost.is-over-board{
+  transform:none!important;
+  display:block!important;
+  width:max-content!important;
+  height:max-content!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen{
+  width:100vw!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  overflow:hidden!important;
+  padding:10px 14px!important;
+  grid-template-rows:auto auto auto auto auto minmax(0,1fr)!important;
+  align-content:stretch!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-play-cluster{
+  width:min(96vw,900px)!important;
+  max-height:100%!important;
+  min-height:0!important;
+  grid-template-rows:minmax(0,1fr) auto auto!important;
+  align-self:stretch!important;
+  overflow:hidden!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-board-stage{
+  width:min(48dvh,620px,78vw)!important;
+  max-width:min(48dvh,620px,78vw)!important;
+  min-height:0!important;
+  align-self:center!important;
+  justify-self:center!important;
+  padding:7px!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-board{
+  width:100%!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-tray-wrap{
+  width:100%!important;
+  max-width:min(92vw,900px)!important;
+  min-height:0!important;
+  padding:7px 10px 8px!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-tray{
+  min-height:78px!important;
+  padding:7px 10px!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-piece{
+  min-height:64px!important;
+  padding:6px!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .game-window-actions{
+  margin-top:6px!important;
+}
