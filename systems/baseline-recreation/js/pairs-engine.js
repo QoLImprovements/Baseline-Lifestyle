@@ -39,30 +39,27 @@
     tier,
     profile,
     hadFailure=false,
-    cleanBonusPctForStreak=()=>0,
-    streakBonusPctForStreak=()=>0
+    cleanBonusPctForStreak=()=>0
   }={}){
     const safeProfile=profile&&typeof profile==='object'?profile:{};
     const nextClean=!hadFailure?(Math.max(0,Number(safeProfile.cleanWinStreak)||0)+1):0;
     const nextStreak=Math.max(0,Number(safeProfile.currentStreak)||0)+1;
     const cleanPct=Math.max(0,Number(cleanBonusPctForStreak(nextClean))||0)/100;
-    const streakPct=Math.max(0,Number(streakBonusPctForStreak(nextStreak))||0)/100;
     const banker=Math.max(0,Number(safeProfile.skills&&safeProfile.skills.banker)||0);
     const flow=Math.max(0,Number(safeProfile.skills&&safeProfile.skills.flow)||0);
-    const bankMult=(1+(banker*0.10))*(1+cleanPct)*(1+streakPct);
-    const xpMult=(1+(flow*0.08))*(1+cleanPct)*(1+streakPct);
+    const bankMult=(1+(banker*0.10))*(1+cleanPct);
+    const xpMult=(1+(flow*0.08))*(1+cleanPct);
     return Object.freeze({
       bank:Math.round((Number(tier&&tier.bankReward)||0)*bankMult),
       xp:Math.round((Number(tier&&tier.xpReward)||0)*xpMult),
       cleanPct:Math.round(cleanPct*100),
-      streakPct:Math.round(streakPct*100),
       nextClean:nextClean,
       nextStreak:nextStreak
     });
   }
 
   global.BASELINE_PAIRS_ENGINE=Object.freeze({
-    version:1,
+    version:2,
     buildDeck:buildDeck,
     boardLayout:boardLayout,
     mismatchDelay:mismatchDelay,
