@@ -341,6 +341,7 @@ test('Jigsaw uses server-saved 200 percent minimum zoom, coherent music controls
   assert.match(jigsawCss,/mobile Jigsaw playability repair/);
   assert.match(jigsawCss,/is-mobile-fullscreen-portrait[\s\S]*?grid-template-areas:"toolbar" "stage" "tray"!important/);
   assert.match(jigsawCss,/is-mobile-fullscreen-portrait \.weight-coherence-rotate-notice\{[\s\S]*?display:none!important/);
+  assert.match(jigsaw,/if\(refs\.rotateNotice\) refs\.rotateNotice\.hidden=true/);
 });
 
 test('common Recreation actions use compact icons with hover/focus hotkey tooltips',()=>{
