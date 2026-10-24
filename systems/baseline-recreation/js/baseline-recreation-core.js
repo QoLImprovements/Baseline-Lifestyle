@@ -695,8 +695,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     ].forEach(function(entry){
       const btn=entry[0];
       if(!btn) return;
-      btn.textContent=startButtonLabel(entry[1]);
-      setHotkeyCaption(btn,SITEWIDE_START_HOTKEY_LABEL);
+      btn.classList.add('game-shell-action','game-shell-action--icon');
+      setCompactActionButton(btn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     });
     qsa('[data-desktop-keypad-toggle]').forEach(function(btn){
       const id = btn.getAttribute('data-desktop-keypad-toggle') || '';
@@ -2130,8 +2130,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.make24RoundBankValue.textContent = String(make24State.roundBank);
     const make24HintsLeft = make24State.hintsLeft || 0;
     const make24RerollsLeft = make24State.rerollsLeft || 0;
-    if(refs.make24HintBtn){ refs.make24HintBtn.disabled = make24HintsLeft <= 0; refs.make24HintBtn.textContent = countedHotkeyActionLabel('Use Guide', 'H', make24HintsLeft); }
-    if(refs.make24RerollBtn){ refs.make24RerollBtn.disabled = make24RerollsLeft <= 0; refs.make24RerollBtn.textContent = countedHotkeyActionLabel('Reroll', 'J', make24RerollsLeft); }
+    if(refs.make24HintBtn){ refs.make24HintBtn.disabled = make24HintsLeft <= 0; setCompactActionButton(refs.make24HintBtn,'?','Guide','H',make24HintsLeft); }
+    if(refs.make24RerollBtn){ refs.make24RerollBtn.disabled = make24RerollsLeft <= 0; setCompactActionButton(refs.make24RerollBtn,'↻','Reroll','J',make24RerollsLeft); }
     const closed = !!make24State.completed;
     const usage=make24ExpressionNumberUsage(make24State.draftExpression||'');
     const occurrence=Object.create(null);
@@ -2144,7 +2144,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     }).join('');
     const builder = closed ? '' :
       '<form id="make24ExpressionForm" class="stack make-number-composer">' +
-        '<div class="game-input-skill-row"><button class="action ghost" id="make24BoardHintBtn" type="button"' + (make24HintsLeft<=0?' disabled':'') + '>' + countedHotkeyActionLabel('Use Guide','H',make24HintsLeft) + '</button><button class="action ghost" id="make24BoardRerollBtn" type="button"' + (make24RerollsLeft<=0?' disabled':'') + '>' + countedHotkeyActionLabel('Reroll','J',make24RerollsLeft) + '</button></div>' +
+        '<div class="game-input-skill-row game-specific-actions"><button class="action ghost game-control-icon" id="make24BoardHintBtn" type="button" data-tooltip="Guide (' + make24HintsLeft + ') · H" title="Guide (' + make24HintsLeft + ') · H" aria-label="Guide (' + make24HintsLeft + ')"' + (make24HintsLeft<=0?' disabled':'') + '><span aria-hidden="true">?</span><span class="sr-only">Guide</span></button><button class="action ghost game-control-icon" id="make24BoardRerollBtn" type="button" data-tooltip="Reroll (' + make24RerollsLeft + ') · J" title="Reroll (' + make24RerollsLeft + ') · J" aria-label="Reroll (' + make24RerollsLeft + ')"' + (make24RerollsLeft<=0?' disabled':'') + '><span aria-hidden="true">↻</span><span class="sr-only">Reroll</span></button></div>' +
         '<div class="make-target-action-row"><input id="make24ExpressionInput" class="text-input" autocomplete="off" value="' + escapeHtml(make24State.draftExpression||'') + '" placeholder="Build or type an expression" aria-label="Number expression" /></div>' +
         '<div class="make-number-operators" aria-label="Expression controls">' +
           ['+','-','*','/','(',')'].map(function(token){ const label=token==='*'?'×':token==='/'?'÷':token; return '<button class="action ghost" data-make24-token="' + token + '" type="button" aria-label="Add ' + escapeHtml(label) + '">' + escapeHtml(label) + '</button>'; }).join('') +
@@ -4121,7 +4121,7 @@ function toggleGameFullscreen(gameId){
       const wordForm = event.target.closest('#wordGuessForm');
       if(wordForm){ submitWordGuess(event); return; }
     });
-    if(refs.newPairsBoardBtn) refs.newPairsBoardBtn.textContent = startButtonLabel('pairs');
+    if(refs.newPairsBoardBtn) setCompactActionButton(refs.newPairsBoardBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     if(refs.pairsBoard){
       refs.pairsBoard.addEventListener('click',function(event){
         const pairCard=event.target.closest('button.memory-card[data-card]');
@@ -4141,13 +4141,13 @@ function toggleGameFullscreen(gameId){
     }
     if(refs.pairsHintBtn){ setCompactActionButton(refs.pairsHintBtn,'?','Hint','H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
     if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard', 'push'); });
-    if(refs.newWordRoundBtn) refs.newWordRoundBtn.textContent = startButtonLabel('detectword');
-    if(refs.newTrackCoinRoundBtn) refs.newTrackCoinRoundBtn.textContent = startButtonLabel('trackcoin');
-    if(refs.newRuleShiftBtn) refs.newRuleShiftBtn.textContent = startButtonLabel('ruleshift');
+    if(refs.newWordRoundBtn) setCompactActionButton(refs.newWordRoundBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
+    if(refs.newTrackCoinRoundBtn) setCompactActionButton(refs.newTrackCoinRoundBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
+    if(refs.newRuleShiftBtn) setCompactActionButton(refs.newRuleShiftBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     if(refs.wordSkillAlertBtn) refs.wordSkillAlertBtn.addEventListener('click', function(){ if(profiles.detectword.skillPoints > 0) setWordPanel('wordSkillCard', 'push'); });
-    if(refs.newMake24Btn) refs.newMake24Btn.textContent = startButtonLabel('make24');
-    if(refs.make24HintBtn){ refs.make24HintBtn.textContent = hotkeyActionLabel('Use Guide', 'H'); setHotkeyCaption(refs.make24HintBtn,'H'); refs.make24HintBtn.addEventListener('click', useMake24Hint); }
-    if(refs.make24RerollBtn){ refs.make24RerollBtn.textContent = hotkeyActionLabel('Reroll', 'J'); setHotkeyCaption(refs.make24RerollBtn,'J'); refs.make24RerollBtn.addEventListener('click', rerollMake24Puzzle); }
+    if(refs.newMake24Btn) setCompactActionButton(refs.newMake24Btn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
+    if(refs.make24HintBtn){ setCompactActionButton(refs.make24HintBtn,'?','Guide','H'); refs.make24HintBtn.addEventListener('click', useMake24Hint); }
+    if(refs.make24RerollBtn){ setCompactActionButton(refs.make24RerollBtn,'↻','Reroll','J'); refs.make24RerollBtn.addEventListener('click', rerollMake24Puzzle); }
     if(refs.make24SkillAlertBtn) refs.make24SkillAlertBtn.addEventListener('click', function(){ if(profiles.make24.skillPoints > 0) setMake24Panel('make24SkillCard', 'push'); });
     if(refs.gamesSummaryWrap) refs.gamesSummaryWrap.addEventListener('toggle', function(event){ const details = event.target.closest('details[data-summary]'); if(!details) return; const id = details.getAttribute('data-summary'); if(details.open) openSummaryIds.add(id); else openSummaryIds.delete(id); }, true);
   }
