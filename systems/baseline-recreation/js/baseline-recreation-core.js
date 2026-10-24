@@ -1005,6 +1005,36 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     '<div class="coherent-progress-grid">' + statHtml + '</div>';
   }
 
+  function skillDefinitionsForGame(gameId){
+    return gameId==='pairs' ? PAIRS_SKILLS
+      : gameId==='detectword' ? WORD_SKILLS
+      : gameId==='make24' ? MAKE24_SKILLS
+      : gameId==='trackcoin' ? TRACKCOIN_SKILLS
+      : gameId==='ruleshift' ? RULESHIFT_SKILLS
+      : [];
+  }
+  function renderFullscreenSkills(gameId,profile,anchor){
+    const root=q('[data-game-play-root="' + gameId + '"]');
+    if(!root||!profile) return;
+    const definitions=skillDefinitionsForGame(gameId);
+    let node=root.querySelector('[data-fullscreen-skills="' + gameId + '"]');
+    if(!definitions.length){
+      if(node) node.remove();
+      return;
+    }
+    if(!node){
+      node=document.createElement('div');
+      node.className='game-fullscreen-skills';
+      node.setAttribute('data-fullscreen-skills',gameId);
+      if(anchor&&anchor.parentElement===root) anchor.insertAdjacentElement('afterend',node);
+      else root.appendChild(node);
+    }
+    const skills=profile.skills&&typeof profile.skills==='object'?profile.skills:{};
+    const summary=definitions.map(function(skill){
+      return escapeHtml(skill.name||skill.id||'Skill')+' '+Math.max(0,Math.round(Number(skills[skill.id]||0)));
+    }).join(' · ');
+    node.innerHTML='<strong>Skills</strong><span class="inline-note">'+summary+'</span>';
+  }
   function renderCompactGameXp(gameId,profile){
     const root=q('[data-game-play-root="' + gameId + '"]');
     if(!root||!profile) return;
@@ -1020,6 +1050,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       else root.prepend(node);
     }
     node.innerHTML='<strong>Player Rank ' + p.level + '</strong><div class="game-live-xp__bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + p.needed + '" aria-valuenow="' + p.xp + '"><span style="width:' + p.pct + '%"></span></div><span>' + p.xp + ' / ' + p.needed + ' XP</span>';
+    renderFullscreenSkills(gameId,profile,node);
   }
   function getAuth(){
     try{
