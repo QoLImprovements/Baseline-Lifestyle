@@ -96,7 +96,7 @@ test('Recreation core delegates Pairs pure logic to the engine authority',()=>{
   assert.doesNotMatch(source,/addEventListener|createElement|innerHTML|classList|history\./);
 
   const configIndex=html.indexOf('/systems/baseline-recreation/js/games-core-config.js');
-  const engineIndex=html.indexOf('/systems/baseline-recreation/js/pairs-engine.js?v=PAIRS_ENGINE_CLEAN_STREAK_20261024_2');
+  const engineIndex=html.indexOf('/systems/baseline-recreation/js/pairs-engine.js?v=PAIRS_CLEAN_STREAK_RULE_20261024_1');
   const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js?v=');
   assert.ok(configIndex>=0 && engineIndex>configIndex && coreIndex>engineIndex);
 });
