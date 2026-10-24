@@ -1598,8 +1598,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       tier:currentPairsTier(),
       profile:profiles.pairs,
       hadFailure:Boolean(pairsBoardState && pairsBoardState.hadFailure),
-      cleanBonusPctForStreak:cleanWinBonusPct,
-      streakBonusPctForStreak:trackCoinStreakBonusPct
+      cleanBonusPctForStreak:cleanWinBonusPct
     });
   }
   function completePairsBoard(){
@@ -2957,7 +2956,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const baseXp = tier.xpReward * tier.multiplier;
     const baseCoins = tier.coinReward * tier.multiplier;
     let xpGain = correct ? Math.round(baseXp * (1 + (streakPct / 100) + (cleanPct / 100) + ((profile.skills.read || 0) * 0.06))) : Math.round(baseXp * (0.35 + ((profile.skills.discipline || 0) * 0.05)));
-    let coinGain = correct ? Math.round(baseCoins * (1 + (streakPct / 100) + (cleanPct / 100) + ((profile.skills.banker || 0) * 0.10))) : Math.round(baseCoins * (0.25 + ((profile.skills.discipline || 0) * 0.05)));
+    let coinGain = correct ? Math.round(baseCoins * (1 + (cleanPct / 100) + ((profile.skills.banker || 0) * 0.10))) : Math.round(baseCoins * (0.25 + ((profile.skills.discipline || 0) * 0.05)));
     if(correct){
       profile.currentStreak += 1;
       profile.cleanWinStreak += 1;
@@ -2987,7 +2986,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     profile.currentTier = profile.selectedTier;
     profile.bestAccuracy = Math.max(profile.bestAccuracy, trackCoinAccuracy(profile));
     scheduleSave('trackcoin');
-    return { xpGain, coinGain, levelUps, bonusPct:streakPct, cleanPct, previousSpeed, roundSpeed, nextSpeed:trackCoinCurrentSpeedPercent(profile) };
+    return { xpGain, coinGain, levelUps, cleanPct, previousSpeed, roundSpeed, nextSpeed:trackCoinCurrentSpeedPercent(profile) };
   }
   function chooseTrackCoinCup(choiceRaw){
     if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
@@ -3112,11 +3111,10 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.trackCoinSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Read ' + profile.skills.read + ' · Banker ' + profile.skills.banker + ' · Flow ' + profile.skills.flow + ' · Discipline ' + profile.skills.discipline + ' · Pace Control -' + (profile.skills.steal * 4) + '%</span><span class="inline-note">Unspent skill points: ' + profile.skillPoints + '</span>';
   }
   function renderTrackCoin(){
-    if(!refs.trackCoinBoard || !refs.trackCoinTierSelectList || !refs.trackCoinXpFill || !refs.trackCoinXpMeta || !refs.trackCoinLevelHeading || !refs.trackCoinCoinsValue || !refs.trackCoinTierValue || !refs.trackCoinUnlockedTierValue || !refs.trackCoinStreakValue || !refs.trackCoinStreakBonusValue || !refs.trackCoinStats || !refs.trackCoinRpgState || !refs.trackCoinSkillPointsValue) return;
+    if(!refs.trackCoinBoard || !refs.trackCoinTierSelectList || !refs.trackCoinXpFill || !refs.trackCoinXpMeta || !refs.trackCoinLevelHeading || !refs.trackCoinCoinsValue || !refs.trackCoinTierValue || !refs.trackCoinUnlockedTierValue || !refs.trackCoinStreakValue || !refs.trackCoinStats || !refs.trackCoinRpgState || !refs.trackCoinSkillPointsValue) return;
     const profile = profiles.trackcoin;
     const tier = currentTrackCoinTier();
     const needed = xpNeededForLevel(profile.level);
-    const streakBonus = trackCoinStreakBonusPct(profile.currentStreak) + ((profile.skills.steal || 0) * 4);
     refs.trackCoinXpFill.style.width = clamp((profile.xp / needed) * 100, 0, 100) + '%';
     refs.trackCoinLevelHeading.textContent = 'Player Rank - ' + profile.level;
     refs.trackCoinXpMeta.textContent = profile.xp + ' / ' + needed + ' XP';
@@ -3125,7 +3123,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.trackCoinTierValue.textContent = tier.name;
     refs.trackCoinUnlockedTierValue.textContent = (TRACKCOIN_TIERS.find(t => t.id === profile.highestUnlockedTier) || TRACKCOIN_TIERS[0]).name;
     refs.trackCoinStreakValue.textContent = String(profile.currentStreak);
-    refs.trackCoinStreakBonusValue.textContent = '+' + streakBonus + '%';
     if(refs.trackCoinCleanStreakValue) refs.trackCoinCleanStreakValue.textContent = String(profile.cleanWinStreak);
     if(refs.trackCoinCleanBonusValue) refs.trackCoinCleanBonusValue.textContent = '+' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
     renderTrackCoinTierList();
