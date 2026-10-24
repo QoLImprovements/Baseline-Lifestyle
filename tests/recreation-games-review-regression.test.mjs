@@ -170,7 +170,7 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(core,/cleanStreak:\{ label:'Clean Streak Bonus', perStepPct:5, maxPct:100 \}/);
   assert.match(core,/Winning Streak[\s\S]*?Clean Streak Bonus/);
   assert.match(core,/Ranked Up! Player Rank/);
-  assert.match(core,/round-status-previous">Previous round — '\+previousXp\+' XP/);
+  assert.match(core,/round-status-previous">Previous round - '\+previousXp\+' XP/);
   assert.match(core,/profile&&profile\.lastRoundXp/);
   assert.match(core,/pairsBoardState\.hadFailure = true;[\s\S]*?profiles\.pairs\.cleanWinStreak = 0/);
   assert.match(core,/const cleanWin = !make24State\.hadFailure;[\s\S]*?const nextClean = cleanWin \? profiles\.make24\.cleanWinStreak \+ 1 : 0/);
@@ -181,8 +181,8 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(crossnumber,/round\.hadFailure=true;[\s\S]*?profile\.cleanWinStreak=0/);
   assert.match(colourSort,/const cleanWin=!active\.hadFailure/);
   assert.match(colourSort,/active\.hadFailure = true;[\s\S]*?profile\.cleanWinStreak = 0/);
-  assert.match(colourSort,/round-status-previous">Previous round — '\+number\(profile\.lastRoundXp\)\+' XP/);
-  assert.match(blockGrid,/round-status-previous">Previous round — '\+number\(profile\.lastRoundXp\)\+' XP/);
+  assert.match(colourSort,/round-status-previous">Previous round - '\+number\(profile\.lastRoundXp\)\+' XP/);
+  assert.match(blockGrid,/round-status-previous">Previous round - '\+number\(profile\.lastRoundXp\)\+' XP/);
   assert.match(core,/refs\.wordRoundSummary\.innerHTML = coherentRoundStatusHtml\('Round Status',wordState\.lastMessage,profiles\.detectword,currentWordTier\(\)\.name\)/);
   assert.match(core,/Board cleared\. \+' \+ rewards\.bank \+ ' Bank Coins · \+' \+ rewards\.xp \+ ' XP'/);
   assert.match(core,/Clean Streak Bonus \+' \+ rewards\.cleanPct \+ '%'/);
