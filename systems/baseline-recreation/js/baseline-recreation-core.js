@@ -1645,11 +1645,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(cleanBreak) pairsBoardState.hadFailure = true;
     profiles.pairs.currentStreak = 0;
     if(penaltyEligible && penalty > 0){
-      pairsBoardState.lastMessage = 'Repeated miss. -' + penalty + ' Bank Coins. Clean streak reset.';
+      pairsBoardState.lastMessage = 'Repeated miss. -' + penalty + ' Bank Coins. Continue the board.';
     }else if(cleanBreak){
-      pairsBoardState.lastMessage = 'A previously selected card was chosen again in a miss. Clean streak reset.';
+      pairsBoardState.lastMessage = 'A previously selected card was chosen again in a miss. Continue the board.';
     }else{
-      pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections, so clean status is preserved. Streak reset.';
+      pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections. Continue the board.';
     }
     persistPairsRound();
     window.setTimeout(function(){
@@ -1937,7 +1937,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     }
     make24State.mistakes += 1;
     make24State.hadFailure = true;
-    profiles.make24.cleanWinStreak = 0;
     const penalty = Math.max(0, currentMake24Tier().penalty - (profiles.make24.skills.precision || 0));
     if(make24State.mistakes > 1 && penalty > 0){
       profiles.make24.bank = Math.max(0, profiles.make24.bank - penalty);
