@@ -2138,6 +2138,11 @@
         toggleFullscreen();
         return;
       }
+      if(key==='r'){
+        event.preventDefault();
+        refs.reset?.click?.();
+        return;
+      }
       if(key==='s'){
         event.preventDefault();
         openSettings();
