@@ -1659,3 +1659,82 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
     max-height:98%!important;
   }
 }
+
+
+/* 2026-10-24 fullscreen control dock.
+   Requested positions:
+   row 1: New | G1 | G3 | G5 | · | Music | Fullscreen
+   row 2: Auto| G2 | G4 | G6 | · | ·     | Settings
+   Specific/common layers overlap the same grid without moving DOM nodes. */
+@media(min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions){
+    grid-column:2!important;
+    grid-row:4/6!important;
+    display:grid!important;
+    grid-template-columns:repeat(7,42px)!important;
+    grid-template-rows:42px 42px!important;
+    gap:8px!important;
+    width:max-content!important;
+    max-width:100%!important;
+    height:92px!important;
+    margin:0 8px!important;
+    padding:0!important;
+    border:0!important;
+    justify-content:start!important;
+    align-content:end!important;
+    align-self:end!important;
+    pointer-events:none;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions)>.action{
+    pointer-events:auto;
+    margin:0!important;
+    width:42px!important;
+    min-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    padding:0!important;
+  }
+
+  /* G1/G2, G3/G4, G5/G6. */
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(1){grid-column:2;grid-row:1}
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(2){grid-column:2;grid-row:2}
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(3){grid-column:3;grid-row:1}
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(4){grid-column:3;grid-row:2}
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(5){grid-column:4;grid-row:1}
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(6){grid-column:4;grid-row:2}
+
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen .game-window-actions>.start-new-game-toggle{grid-column:1!important;grid-row:1!important}
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen .game-window-actions>.auto-next-toggle{grid-column:1!important;grid-row:2!important}
+  body[data-app="recreation"] :is(#wordGameCard,#make24GameCard):fullscreen .game-window-actions>.desktop-keypad-toggle{
+    grid-column:2!important;grid-row:1!important
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen .game-window-actions>.games-music-quick-toggle{grid-column:6!important;grid-row:1!important}
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen .game-window-actions>.game-fullscreen-toggle{grid-column:7!important;grid-row:1!important}
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen .game-window-actions>.games-settings-trigger{grid-column:7!important;grid-row:2!important}
+}
