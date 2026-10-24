@@ -2240,3 +2240,17 @@ body[data-app="recreation"] :is(#blockGridGameCard,#colourSortGameCard) .round-s
     flex:0 0 38px!important;
   }
 }
+
+
+@media(pointer:fine){
+  body[data-app="recreation"] #wordGameCard:fullscreen .letter-cell.absent{
+    background:linear-gradient(
+      180deg,
+      rgba(var(--recreation-rose-rgb),.46),
+      rgba(var(--recreation-copper-deep-rgb),.26)
+    )!important;
+    border-color:rgba(var(--recreation-copper-light-rgb),.20)!important;
+    color:rgba(var(--recreation-ink-rgb),.76)!important;
+    -webkit-text-fill-color:rgba(var(--recreation-ink-rgb),.76)!important;
+  }
+}
