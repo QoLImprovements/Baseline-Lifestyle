@@ -964,7 +964,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     runFields:['lastMessage','hadFailure','roundBank'],
     statusPattern:['level','xp','tier','streak','cleanStreak','cleanBonus'],
     cleanStreak:{ label:'Clean Streak Bonus', perStepPct:4, maxPct:24 },
-    rewardRule:'Clean completions increase the clean streak. Failed or wrong rounds reset it. Every game must show the clean streak and clean bonus in its status/progress output.'
+    rewardRule:'Clean completions increase the clean streak. Failed or wrong rounds reset it. Every game must show one Clean streak bonus value in its status/progress output.'
   });
   function cleanWinBonusPct(streak){
     const clean = GAME_TEMPLATE_CONTRACT.cleanStreak;
@@ -972,11 +972,17 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   }
   function cleanBonusStatusText(profile){
     const streak = Math.max(0, Math.round(Number(profile && profile.cleanWinStreak || 0)));
-    return 'Clean streak ' + streak + ' · clean bonus +' + cleanWinBonusPct(streak) + '%';
+    return 'Clean streak bonus +' + cleanWinBonusPct(streak) + '%';
   }
   function cleanBonusRewardText(streak){
     const pct = cleanWinBonusPct(streak);
-    return pct ? ' · clean bonus +' + pct + '%' : '';
+    return pct ? ' · Clean streak bonus +' + pct + '%' : '';
+  }
+  function coherentRoundStatusHtml(label,message,profile){
+    const text=String(message||'');
+    const bonus='Clean streak bonus +'+cleanWinBonusPct(profile&&profile.cleanWinStreak||0)+'%';
+    return '<strong>'+escapeHtml(label||'Round Status')+'</strong><span class="inline-note">'+escapeHtml(text)+'</span>'
+      + (/clean streak bonus/i.test(text)?'':'<span class="inline-note">'+bonus+'</span>');
   }
   function shuffle(list){
     const copy = list.slice();
@@ -1605,7 +1611,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
     profile.cleanWinStreak = rewards.nextClean;
     const levels = levelUpFromGain(profile, rewards.xp);
-    pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · clean bonus +' + rewards.cleanPct + '%' : '') + (rewards.streakPct ? ' · streak bonus +' + rewards.streakPct + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
+    pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank Coins · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · Clean streak bonus +' + rewards.cleanPct + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
     pairsBoardState.roundBank += rewards.bank;
     pairsBoardState.completed = true;
     persistPairsRound();
@@ -1625,9 +1631,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(cleanBreak) pairsBoardState.hadFailure = true;
     profiles.pairs.currentStreak = 0;
     if(penaltyEligible && penalty > 0){
-      pairsBoardState.lastMessage = 'Repeated miss. -' + penalty + ' Bank. Clean bonus lost. Streak reset.';
+      pairsBoardState.lastMessage = 'Repeated miss. -' + penalty + ' Bank Coins. Clean streak reset.';
     }else if(cleanBreak){
-      pairsBoardState.lastMessage = 'A previously selected card was chosen again in a miss. Clean bonus lost. Streak reset.';
+      pairsBoardState.lastMessage = 'A previously selected card was chosen again in a miss. Clean streak reset.';
     }else{
       pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections, so clean status is preserved. Streak reset.';
     }
@@ -1685,7 +1691,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       pairsBoardState.hintBusy = false;
       persistPairsRound();
       renderPairsBoard();
-      refs.pairsRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(pairsBoardState.lastMessage) + '</span><span class="inline-note">Current streak bonus +' + trackCoinStreakBonusPct(profiles.pairs.currentStreak) + '% · clean bonus +' + cleanWinBonusPct(profiles.pairs.cleanWinStreak) + '%.</span>';
+      refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs);
     }, 860 + ((profiles.pairs.skills.insight || 0) * 120));
   }
   function spendPairsSkill(skillId){
@@ -1754,7 +1760,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
       return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Rank ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires Player Rank ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-pairs-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
-    refs.pairsSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Insight ' + profile.skills.insight + ' · Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank · Recall -' + profile.skills.recall + ' repeat loss · Tempo -' + (profile.skills.tempo * 90) + ' ms recovery</span><span class="inline-note">Current streak bonus: +' + trackCoinStreakBonusPct(profile.currentStreak) + '% · clean bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span>';
+    refs.pairsSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Insight ' + profile.skills.insight + ' · Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank Coins · Recall -' + profile.skills.recall + ' repeat loss · Tempo -' + (profile.skills.tempo * 90) + ' ms recovery</span><span class="inline-note">Clean streak bonus +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span>';
   }
   function renderPairsBoard(){
     const tier = currentPairsTier();
@@ -1771,7 +1777,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       setCompactActionButton(refs.pairsHintBtn,'?','Hint','H',0);
       applyPairsBoardLayout(tier);
       refs.pairsBoard.innerHTML = '<div class="empty-box"><strong>Pairs is ready.</strong><span class="inline-note">' + escapeHtml(pairsIdleMessage) + '</span></div>';
-      refs.pairsRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">No board is active yet.</span><span class="inline-note">Current streak bonus +' + trackCoinStreakBonusPct(profiles.pairs.currentStreak) + '% · clean bonus +' + cleanWinBonusPct(profiles.pairs.cleanWinStreak) + '%.</span>';
+      refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No board is active yet.',profiles.pairs);
       return;
     }
     refs.pairsMovesValue.textContent = String(pairsBoardState.moves);
@@ -1785,7 +1791,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       ? '<div class="pairs-result-card"><strong>Board cleared</strong><div class="inline-note">' + pairsBoardState.moves + ' moves · ' + tier.pairs + ' pairs · round Bank ' + pairsBoardState.roundBank + '</div></div>'
       : '';
     refs.pairsBoard.innerHTML = cardsHtml + resultHtml;
-    refs.pairsRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(pairsBoardState.lastMessage) + '</span><span class="inline-note">Current streak bonus +' + trackCoinStreakBonusPct(profiles.pairs.currentStreak) + '% · clean bonus +' + cleanWinBonusPct(profiles.pairs.cleanWinStreak) + '%.</span>';
+    refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs);
   }
   function renderPairsSummary(){
     const profile = profiles.pairs;
@@ -1905,7 +1911,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       profiles.make24.cleanWinStreak = nextClean;
       const levels = levelUpFromGain(profiles.make24, xpGain);
       make24State.roundBank += bankGain;
-      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + (nextClean ? ' · clean bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
+      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + (nextClean ? ' · Clean streak bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
       make24State.revealSolution = '';
       make24State.draftExpression = '';
       make24State.completed = true;
@@ -1922,9 +1928,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(make24State.mistakes > 1 && penalty > 0){
       profiles.make24.bank = Math.max(0, profiles.make24.bank - penalty);
       make24State.roundBank -= penalty;
-      make24State.lastMessage = 'Not ' + (make24State.target || 24) + '. -' + penalty + ' Bank after repeated mistakes.';
+      make24State.lastMessage = 'Not ' + (make24State.target || 24) + '. -' + penalty + ' Bank Coins after repeated mistakes.';
     }else{
-      make24State.lastMessage = 'Not ' + (make24State.target || 24) + ' yet. No Bank deduction on the first miss.';
+      make24State.lastMessage = 'Not ' + (make24State.target || 24) + ' yet. No Bank Coins deduction on the first miss.';
     }
     persistMake24Round();
     renderAll();
@@ -2123,7 +2129,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       if(refs.make24HintBtn) refs.make24HintBtn.disabled = true;
       if(refs.make24RerollBtn) refs.make24RerollBtn.disabled = true;
       refs.make24Board.innerHTML = '<div class="empty-box"><strong>Make The Number is ready.</strong><span class="inline-note">' + escapeHtml(make24IdleMessage) + '</span></div>';
-      refs.make24RoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">No puzzle is active yet.</span>';
+      refs.make24RoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No puzzle is active yet.',profiles.make24);
       return;
     }
     refs.make24MistakesValue.textContent = String(make24State.mistakes);
@@ -2154,7 +2160,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       '</form>';
     refs.make24Board.innerHTML = '<div class="formula-box"><div class="make-number-target"><span>Target</span><strong>' + escapeHtml(String(make24State.target||24)) + '</strong></div><div class="numbers-strip">' + numberButtons + '</div>' + builder + (make24State.revealSolution?'<div class="solution-box">' + escapeHtml(make24State.revealSolution) + '</div>':'') + '</div>';
     refs.make24ExpressionInput=document.getElementById('make24ExpressionInput');
-    refs.make24RoundSummary.innerHTML='<strong>Round Status</strong><span class="inline-note">' + escapeHtml(make24State.lastMessage) + '</span>';
+    refs.make24RoundSummary.innerHTML=coherentRoundStatusHtml('Round Status',make24State.lastMessage,profiles.make24);
     injectMobileGameControls('make24');
     syncMobileInputMode('make24');
   }
@@ -2499,7 +2505,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       profile.bank += bankGain;
       const levels = levelUpFromGain(profile, xpGain);
       wordState.roundBank += bankGain;
-      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · Player Rank +' + levels : '') + '.';
+      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · Player Rank +' + levels : '') + '.';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
       resolveNinjaBonuses();
@@ -2595,7 +2601,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       refs.wordGuessesValue.textContent = '0 / 6';
       refs.wordRoundBankValue.textContent = '0';
       refs.wordBoard.innerHTML = '<div class="empty-box"><strong>Detect The Word is idle.</strong><span class="inline-note">' + escapeHtml(wordIdleMessage) + '</span></div>';
-      refs.wordRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">No word round is active yet.</span>';
+      refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No word round is active yet.',profiles.detectword);
       return;
     }
     refs.wordGuessesValue.textContent = wordState.guesses.length + ' / ' + wordState.maxGuesses;
@@ -2621,7 +2627,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.wordGuessInput = document.getElementById('wordGuessInput');
     injectMobileGameControls('detectword');
     syncWordKeypadKnowledge();
-    refs.wordRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(wordState.lastMessage) + '</span>';
+    refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',wordState.lastMessage,profiles.detectword);
     if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
   }
 
@@ -3460,7 +3466,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     profile.bank += bankGain;
     profile.cleanWinStreak = nextClean;
     ruleShiftState.finished = true;
-    ruleShiftState.lastMessage = 'Run complete. +' + bankGain + ' Bank and +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (leveled ? ' · Player Rank up +' + leveled : '') + '.';
+    ruleShiftState.lastMessage = 'Run complete. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (leveled ? ' · Player Rank +' + leveled : '') + '.';
     persistRuleShiftRound();
     resolveNinjaBonuses();
     renderAll();
@@ -3553,10 +3559,10 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(refs.ruleShiftRoundBankValue) refs.ruleShiftRoundBankValue.textContent = ruleShiftState ? ruleShiftState.roundBank : 0;
     if(!ruleShiftState){
       refs.ruleShiftBoard.innerHTML = '<div class="empty-box ruleshift-idle-card"><strong>Rule Shift is idle.</strong><span class="inline-note">' + escapeHtml(ruleShiftIdleMessage) + '</span><span class="inline-note">The target shape is always present. Start when ready.</span></div>';
-      refs.ruleShiftRoundSummary.innerHTML = '<strong>Game Status</strong><span class="inline-note">No Rule Shift run is active yet.</span>';
+      refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No Rule Shift run is active yet.',profiles.ruleshift);
       return;
     }
-    refs.ruleShiftRoundSummary.innerHTML = '<strong>Game Status</strong><span class="inline-note">' + escapeHtml(ruleShiftState.lastMessage) + '</span>';
+    refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',ruleShiftState.lastMessage,profiles.ruleshift);
     if(ruleShiftState.finished){
       const finishedTitle = ruleShiftState.failed ? 'Run failed.' : 'Run complete.';
       const finishedPrompt = ruleShiftState.failed ? 'Incorrect answers end the run. Press New Game to try again.' : 'Press New Game to begin another switching run.';
