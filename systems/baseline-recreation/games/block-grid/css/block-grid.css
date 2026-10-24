@@ -603,3 +603,31 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
   grid-template-columns:none!important;
   justify-content:flex-start!important;
 }
+
+
+/* 2026-10-24 requested common-control positions in Block Grid fullscreen. */
+@media(min-width:821px){
+  #blockGridPanel #blockGridGameCard:fullscreen > .game-window-actions{
+    display:grid!important;
+    grid-template-columns:repeat(7,38px)!important;
+    grid-template-rows:38px 38px!important;
+    gap:6px!important;
+    width:max-content!important;
+    max-width:100%!important;
+    height:82px!important;
+    margin:0 8px!important;
+    padding:0!important;
+    border:0!important;
+    justify-content:start!important;
+    align-content:end!important;
+    align-self:end!important;
+  }
+  #blockGridPanel #blockGridGameCard:fullscreen > .game-window-actions>.action{
+    width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;padding:0!important;margin:0!important;
+  }
+  #blockGridPanel #blockGridGameCard:fullscreen > .game-window-actions>.start-new-game-toggle{grid-column:1;grid-row:1}
+  #blockGridPanel #blockGridGameCard:fullscreen > .game-window-actions>.auto-next-toggle{grid-column:1;grid-row:2}
+  #blockGridPanel #blockGridGameCard:fullscreen > .game-window-actions>.games-music-quick-toggle{grid-column:6;grid-row:1}
+  #blockGridPanel #blockGridGameCard:fullscreen > .game-window-actions>.game-fullscreen-toggle{grid-column:7;grid-row:1}
+  #blockGridPanel #blockGridGameCard:fullscreen > .game-window-actions>.games-settings-trigger{grid-column:7;grid-row:2}
+}
