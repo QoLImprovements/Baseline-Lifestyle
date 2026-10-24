@@ -2077,3 +2077,108 @@ body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle) .memory-
     grid-template-rows:repeat(var(--pairs-rows-phone,4),minmax(0,1fr))!important;
   }
 }
+
+
+/* 2026-10-24 round-result clarity + Detect The Word fullscreen refinement. */
+body[data-app="recreation"] .round-status-card .round-status-previous,
+body[data-app="recreation"] #crossnumberGame .round-status-previous,
+body[data-app="recreation"] :is(#blockGridGameCard,#colourSortGameCard) .round-status-previous{
+  margin:8px 0 10px!important;
+  padding:7px 9px!important;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.18)!important;
+  border-radius:10px!important;
+  background:rgba(var(--recreation-copper-deep-rgb),.10)!important;
+  color:var(--games-muted)!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  letter-spacing:.015em!important;
+}
+
+/* The fullscreen word workspace should read as the normal Recreation play
+   surface, not as a large near-black burgundy field. */
+@media(min-width:821px){
+  body[data-app="recreation"] #wordGameCard:fullscreen{
+    background:
+      radial-gradient(circle at 35% 30%,rgba(var(--recreation-copper-light-rgb),.10),transparent 36%),
+      linear-gradient(120deg,rgba(var(--recreation-rose-rgb),.72),rgba(var(--recreation-burgundy-rgb),.86) 58%,rgba(var(--recreation-rose-rgb),.62))!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen #wordBoard{
+    gap:14px!important;
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.14)!important;
+    border-radius:18px!important;
+    background:
+      radial-gradient(circle at 50% 24%,rgba(var(--recreation-copper-light-rgb),.08),transparent 38%),
+      linear-gradient(160deg,rgba(var(--recreation-rose-rgb),.24),rgba(var(--recreation-burgundy-rgb),.18))!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen #wordBoard>.word-box{
+    background:linear-gradient(160deg,rgba(var(--recreation-rose-rgb),.34),rgba(var(--recreation-copper-deep-rgb),.15))!important;
+    border-color:rgba(var(--recreation-copper-light-rgb),.24)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .letter-cell:not(.correct):not(.present):not(.absent){
+    background:linear-gradient(180deg,rgba(var(--recreation-rose-rgb),.24),rgba(var(--recreation-copper-deep-rgb),.12))!important;
+    border-color:rgba(var(--recreation-copper-light-rgb),.22)!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .word-entry-stack{
+    margin-top:10px!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .mobile-word-keypad{
+    margin:10px 0 0!important;
+  }
+}
+
+/* Fullscreen control docks must reflow with browser zoom. Fixed seven-column
+   placement caused Settings and Fullscreen to leave the visible rail. */
+@media(min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions{
+    grid-column:2!important;
+    grid-row:4!important;
+    display:flex!important;
+    flex-wrap:wrap!important;
+    width:calc(100% - 16px)!important;
+    max-width:calc(100% - 16px)!important;
+    height:auto!important;
+    min-height:38px!important;
+    margin:0 8px!important;
+    padding:0!important;
+    gap:6px!important;
+    justify-content:flex-start!important;
+    align-content:flex-end!important;
+    pointer-events:auto!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-window-actions{
+    grid-column:2!important;
+    grid-row:5!important;
+    display:flex!important;
+    flex-wrap:wrap!important;
+    width:calc(100% - 16px)!important;
+    max-width:calc(100% - 16px)!important;
+    height:auto!important;
+    min-height:38px!important;
+    margin:0 8px!important;
+    padding:7px 0 0!important;
+    gap:6px!important;
+    justify-content:flex-start!important;
+    align-content:flex-end!important;
+    border-top:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
+    pointer-events:auto!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions)>.action{
+    grid-column:auto!important;
+    grid-row:auto!important;
+    flex:0 0 38px!important;
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+}
