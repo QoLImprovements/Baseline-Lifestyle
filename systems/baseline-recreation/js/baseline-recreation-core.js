@@ -3503,7 +3503,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     });
     descriptors.sort(function(a,b){ return b.eliminated-a.eliminated; });
     const first=descriptors[0],second=descriptors[1];
-    ruleShiftState.lastMessage='Hint: narrow the choices by '+first.key+' first — '+first.value+'. Then compare '+second.key+' — '+second.value+' — with the current rule.';
+    const targetLabel=[ruleShiftName(RULESHIFT_COLOURS,target.colour),ruleShiftName(RULESHIFT_SIZES,target.size),ruleShiftName(RULESHIFT_SHAPES,target.shape)].filter(Boolean).join(' ');
+    ruleShiftState.lastMessage='Hint: the current rule is “'+rule.label+'”. Eliminate by '+first.key+' first — keep '+first.value+'. Then check '+second.key+' — '+second.value+'. The surviving target is '+targetLabel+'.';
     persistRuleShiftRound();
     renderAll();
   }
