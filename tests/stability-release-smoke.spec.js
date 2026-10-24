@@ -718,6 +718,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await expect(selectableCup).toBeVisible();
   await selectableCup.click();
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-resolved/);
+  await expect(page.locator('#trackCoinScene')).toHaveClass(/is-phase-review/);
 });
 
 test('Badminton loads shared server state into the normal session interface', async ({ page }) => {
