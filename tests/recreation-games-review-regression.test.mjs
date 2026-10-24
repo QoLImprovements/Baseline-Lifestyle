@@ -242,6 +242,9 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockCss,/--block-fs-side:clamp\(230px,20vw,330px\)[\s\S]*?grid-template-columns:minmax\(0,4fr\) var\(--block-fs-side\)!important/);
   assert.match(blockGrid,/<strong>Special<\/strong>/);
   assert.doesNotMatch(blockGrid,/Special Skill/);
+  assert.match(blockGrid,/const cleanStreakBonus = Math\.min\(100, streak \* 5\)/);
+  assert.match(blockGrid,/Winning Streak[\s\S]*?Clean Streak Bonus/);
+  assert.doesNotMatch(blockGrid,/Combo Scoring/);
   assert.match(blockGrid,/const fullscreenHost=document\.fullscreenElement;[\s\S]*?host\.appendChild\(ghost\)/);
   assert.match(blockCss,/\.block-grid-tray\{[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
   assert.match(blockCss,/--block-piece-mini-cell:clamp\(12px,2\.05vw,18px\)/);
