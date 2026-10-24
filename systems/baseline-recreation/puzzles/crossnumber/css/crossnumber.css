@@ -816,3 +816,40 @@ body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-action
     justify-content:flex-end!important;
   }
 }
+
+
+/* Cross Number status stays out of the normal board layout, but becomes the
+   real Round Status component in the fullscreen information panel. */
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-round-status{
+  display:none!important;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen{
+    grid-template-rows:auto auto minmax(0,1fr) auto auto!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-round-status{
+    display:block!important;
+    position:relative!important;
+    grid-column:2!important;
+    grid-row:3!important;
+    z-index:2!important;
+    width:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:100%!important;
+    margin:0 8px!important;
+    padding:9px!important;
+    overflow:auto!important;
+    clip:auto!important;
+    white-space:normal!important;
+    border:1px solid var(--cn-border)!important;
+    border-radius:12px!important;
+    background:rgba(var(--recreation-burgundy-rgb),.34)!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-complete{
+    grid-row:4!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-actions.game-common-actions{
+    grid-row:5!important;
+  }
+}
