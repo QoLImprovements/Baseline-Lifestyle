@@ -1649,7 +1649,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     }else if(cleanBreak){
       pairsBoardState.lastMessage = 'A previously selected card was chosen again in a miss. Continue the board.';
     }else{
-      pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections. Continue the board.';
+      pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections, so clean status is preserved. Continue the board.';
     }
     persistPairsRound();
     window.setTimeout(function(){
