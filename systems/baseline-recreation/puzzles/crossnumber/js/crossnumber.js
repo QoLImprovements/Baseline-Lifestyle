@@ -640,6 +640,7 @@
     const penalty=Math.max(0,tier.penalty-Math.max(0,int(profile.skills.precision,0)));
     round.mistakes+=1;
     round.hadFailure=true;
+    profile.cleanWinStreak=0;
     profile.currentStreak=0;
     if(penalty>0) profile.bank=Math.max(0,profile.bank-penalty);
     const cell=refs.board.querySelector('[data-node="'+nodeId+'"]');
