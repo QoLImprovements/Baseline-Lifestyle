@@ -179,7 +179,8 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(core,/cleanStreak:\{ label:'Clean Streak Bonus', perStepPct:5, maxPct:100 \}/);
   assert.match(core,/Winning Streak[\s\S]*?Clean Streak Bonus/);
   assert.match(core,/Ranked Up! Player Rank/);
-  assert.match(core,/round-status-previous">Previous round - '\+previousXp\+' XP/);
+  assert.match(core,/const previousResultLabel=String\(previousLabel\|\|'Previous Round'\)/);
+  assert.match(core,/round-status-previous"> '\+escapeHtml\(previousResultLabel\)/);
   assert.match(core,/profile&&profile\.lastRoundXp/);
   assert.match(core,/pairsBoardState\.hadFailure = true;[\s\S]*?profiles\.pairs\.cleanWinStreak = 0/);
   assert.match(core,/const cleanWin = !make24State\.hadFailure;[\s\S]*?const nextClean = cleanWin \? profiles\.make24\.cleanWinStreak \+ 1 : 0/);
