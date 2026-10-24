@@ -137,7 +137,7 @@ body[data-app="recreation"] .crossnumber-number-cell{
   border:1px solid var(--cn-border-strong);
   background:var(--cn-active);
   color:var(--cn-ink);
-  font-size:clamp(16px,2vw,30px);
+  font-size:clamp(16px,1.8vw,24px);
   cursor:pointer;
   transition:transform .12s ease,border-color .12s ease,background .12s ease;
 }
@@ -537,7 +537,7 @@ body[data-app="recreation"] .crossnumber-realm-card p{
   body[data-app="recreation"] #crossnumberGamePanel .crossnumber-number-tile{
     min-height:36px;
     padding:5px 6px;
-    font-size:clamp(15px,1.25vw,19px);
+    font-size:clamp(16px,1.8vw,24px);
   }
   body[data-app="recreation"] #crossnumberGamePanel .crossnumber-bank-help{
     display:none;
