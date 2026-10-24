@@ -73,6 +73,8 @@ const DEFAULT_PROFILE = Object.freeze({
   selectedLevel:1,
   selectedTier:'starter',
   recentLevels:[],
+  cleanWinStreak:0,
+  bestStreak:0,
   activePuzzle:null
 });
 
@@ -148,6 +150,8 @@ function normaliseProfile(value) {
     selectedLevel,
     selectedTier,
     recentLevels,
+    cleanWinStreak:number(source.cleanWinStreak),
+    bestStreak:number(source.bestStreak),
     activePuzzle:validPuzzle(source.activePuzzle)
   };
 }
@@ -196,6 +200,8 @@ function randomLevelForTier(tierId){
   return pool[Math.floor(Math.random()*pool.length)]||tier.from;
 }
 function startTierGame(tierId=profile.selectedTier){
+  const existing=puzzle();
+  if(existing && !isSolved(existing.bottles)) profile.cleanWinStreak=0;
   const tier=tierById(tierId);
   profile.selectedTier=tier.id;
   const level=randomLevelForTier(tier.id);
@@ -259,21 +265,31 @@ function bottleHtml(bottle, index) {
 
 function statusHtml() {
   const active = puzzle();
-  if (!active) return '<strong>Ready.</strong><span class="inline-note">Choose a difficulty tier, then press New Game.</span>';
-  if (isSolved(active.bottles)) {
-    const best = profile.bestMoves[active.level] || active.moves;
-    return `<strong>${escapeHtml(tierForLevel(active.level).name)} game sorted in ${active.moves} moves.</strong><span class="inline-note">Best for this layout: ${best} move${best === 1 ? '' : 's'}. Press New Game for another unpredictable layout in this tier.</span>`;
+  const tier=active?tierForLevel(active.level):tierById(profile.selectedTier);
+  let outcome='Choose a difficulty tier, then press New Game.';
+  if(active && isSolved(active.bottles)){
+    const best=profile.bestMoves[active.level]||active.moves;
+    outcome=`${tier.name} game sorted in ${active.moves} moves. Best: ${best} move${best===1?'':'s'}.`;
+  }else if(active && hint){
+    outcome=`Hint: pour bottle ${hint.from+1} into bottle ${hint.to+1}. This follows a verified solution path.`;
+  }else if(active && selectedBottle>=0){
+    outcome=`Bottle ${selectedBottle+1} selected. Choose an empty unlocked bottle or one whose exposed colour matches.`;
+  }else if(active){
+    const mechanics=mechanicsForLevel(active.level);
+    const locks=lockedBottleIndices(active);
+    const mechanicText=locks.length
+      ? `Bottle ${locks[0]+1} unlocks after ${mechanics.lockMoves-active.moves} more successful move${mechanics.lockMoves-active.moves===1?'':'s'}.`
+      : (mechanics.coverBuried?'Covered layers reveal only when they reach the top.':'Only the contiguous exposed colour can pour.');
+    outcome=(statusMessage||'Select a bottle, then a destination.')+' '+mechanicText;
   }
-  if (hint) return `<strong>Hint: pour bottle ${hint.from + 1} into bottle ${hint.to + 1}.</strong><span class="inline-note">Hints follow a verified solution path and respect temporary bottle locks.</span>`;
-  if (selectedBottle >= 0) return `<strong>Bottle ${selectedBottle + 1} selected.</strong><span class="inline-note">Choose an empty unlocked bottle or one whose exposed colour matches.</span>`;
-  const mechanics=mechanicsForLevel(active.level);
-  const locks=lockedBottleIndices(active);
-  const mechanicText=locks.length
-    ? `Bottle ${locks[0]+1} unlocks after ${mechanics.lockMoves-active.moves} more successful move${mechanics.lockMoves-active.moves===1?'':'s'}.`
-    : (mechanics.coverBuried ? 'Covered layers reveal only when they reach the top.' : 'Only the contiguous exposed colour can pour.');
-  return `<strong>${escapeHtml(statusMessage || 'Select a bottle, then a destination.')}</strong><span class="inline-note">${escapeHtml(mechanicText)}</span>`;
+  return '<div class="round-status-heading">Round Status</div>'
+    + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
+    + '<div class="round-status-metrics">'
+    + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
+    + '<div><span>Winning Streak</span><strong>'+number(profile.cleanWinStreak)+'</strong></div>'
+    + '<div><span>Clean Streak Bonus</span><strong>'+Math.min(100,number(profile.cleanWinStreak)*5)+'%</strong></div>'
+    + '</div>';
 }
-
 function renderGameInfo() {
   const root = document.getElementById('colourSortGameInfo');
   if (!root || !profile) return;
@@ -850,7 +866,12 @@ function settleSolvedPuzzle() {
     profile.completedLevels.sort((a, b) => a - b);
   }
   const colourCount = levelColours(levelById(active.level)).length;
-  awardXp(profile, firstCompletion ? 34 + colourCount * 8 + Math.max(0, 30 - active.moves) : 10 + colourCount);
+  profile.cleanWinStreak=number(profile.cleanWinStreak)+1;
+  profile.bestStreak=Math.max(number(profile.bestStreak),profile.cleanWinStreak);
+  const cleanBonus=Math.min(100,profile.cleanWinStreak*5);
+  const baseXp=firstCompletion ? 34 + colourCount * 8 + Math.max(0, 30 - active.moves) : 10 + colourCount;
+  awardXp(profile,Math.round(baseXp*(1+(cleanBonus/100))));
+  statusMessage='Game complete. Clean Streak Bonus +'+cleanBonus+'%.';
   undoStack = [];
   const completedTier=tierForLevel(active.level).id;
   try { autoNextApi()?.schedule?.(APP, () => startTierGame(completedTier)); } catch (_) {}
