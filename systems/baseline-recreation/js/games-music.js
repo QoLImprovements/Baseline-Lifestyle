@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  var MIX_VERSION = 3;
+  var MIX_VERSION = 4;
   var DEFAULTS = { enabled:true, volume:0.58 };
   var MUSIC_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
   var ctx = null;
@@ -385,7 +385,36 @@
       {bars:8,prog:[[53,60,65],[55,62,67],[57,64,69],[52,59,64]],motif:[65,69,72,69,67,71,74,69],density:8,style:'lift'},
       {bars:8,prog:[[55,62,67],[52,59,64],[48,55,60],[50,57,62]],motif:[67,69,71,74,71,69,67,64],density:8,style:'warm'}]}
   });
-  var SOFT_TIMBRE_GAMES = new Set(['block-grid','colour-sort','jigsaw']);
+  // 2026-10-24 consonant major-key replacements for games whose prior
+  // arrangements read as tense/off-tone. These use only clear major triads
+  // and major-pentatonic melodic material, with lower density and softer voices.
+  Object.assign(TRACKS,{
+    trackcoin:{bpm:108,bars:40,sections:[
+      {bars:8,prog:[[48,52,55],[53,57,60],[55,59,62],[48,52,55]],motif:[60,64,67,69,67,64,62,60],density:8,style:'warm'},
+      {bars:8,prog:[[53,57,60],[48,52,55],[55,59,62],[48,52,55]],motif:[65,69,72,69,67,64,62,64],density:8,style:'warm'},
+      {bars:8,prog:[[48,52,55],[55,59,62],[53,57,60],[48,52,55]],motif:[60,62,64,67,69,67,64,62],density:8,style:'quiet'},
+      {bars:8,prog:[[55,59,62],[53,57,60],[48,52,55],[55,59,62]],motif:[67,69,72,74,72,69,67,64],density:8,style:'lift'},
+      {bars:8,prog:[[48,52,55],[53,57,60],[55,59,62],[48,52,55]],motif:[60,64,67,72,69,67,64,60],density:8,style:'warm'}]},
+    ruleshift:{bpm:106,bars:40,sections:[
+      {bars:8,prog:[[55,59,62],[60,64,67],[62,66,69],[55,59,62]],motif:[67,71,74,76,74,71,69,67],density:8,style:'warm'},
+      {bars:8,prog:[[60,64,67],[55,59,62],[62,66,69],[55,59,62]],motif:[72,76,79,76,74,71,69,71],density:8,style:'warm'},
+      {bars:8,prog:[[55,59,62],[62,66,69],[60,64,67],[55,59,62]],motif:[67,69,71,74,76,74,71,69],density:8,style:'quiet'},
+      {bars:8,prog:[[62,66,69],[60,64,67],[55,59,62],[62,66,69]],motif:[74,76,79,81,79,76,74,71],density:8,style:'lift'},
+      {bars:8,prog:[[55,59,62],[60,64,67],[62,66,69],[55,59,62]],motif:[67,71,74,79,76,74,71,67],density:8,style:'warm'}]},
+    'block-grid':{bpm:102,bars:40,sections:[
+      {bars:8,prog:[[50,54,57],[55,59,62],[57,61,64],[50,54,57]],motif:[62,66,69,71,69,66,64,62],density:8,style:'warm'},
+      {bars:8,prog:[[55,59,62],[50,54,57],[57,61,64],[50,54,57]],motif:[67,71,74,71,69,66,64,66],density:8,style:'warm'},
+      {bars:8,prog:[[50,54,57],[57,61,64],[55,59,62],[50,54,57]],motif:[62,64,66,69,71,69,66,64],density:8,style:'quiet'},
+      {bars:8,prog:[[57,61,64],[55,59,62],[50,54,57],[57,61,64]],motif:[69,71,74,76,74,71,69,66],density:8,style:'lift'},
+      {bars:8,prog:[[50,54,57],[55,59,62],[57,61,64],[50,54,57]],motif:[62,66,69,74,71,69,66,62],density:8,style:'warm'}]},
+    'colour-sort':{bpm:100,bars:40,sections:[
+      {bars:8,prog:[[53,57,60],[58,62,65],[60,64,67],[53,57,60]],motif:[65,69,72,74,72,69,67,65],density:8,style:'warm'},
+      {bars:8,prog:[[58,62,65],[53,57,60],[60,64,67],[53,57,60]],motif:[70,74,77,74,72,69,67,69],density:8,style:'warm'},
+      {bars:8,prog:[[53,57,60],[60,64,67],[58,62,65],[53,57,60]],motif:[65,67,69,72,74,72,69,67],density:8,style:'quiet'},
+      {bars:8,prog:[[60,64,67],[58,62,65],[53,57,60],[60,64,67]],motif:[72,74,77,79,77,74,72,69],density:8,style:'lift'},
+      {bars:8,prog:[[53,57,60],[58,62,65],[60,64,67],[53,57,60]],motif:[65,69,72,77,74,72,69,65],density:8,style:'warm'}]}
+  });
+  var SOFT_TIMBRE_GAMES = new Set(['trackcoin','ruleshift','block-grid','colour-sort','jigsaw']);
 
   function sectionAt(track, bar){
     var cursor = 0;

@@ -2,7 +2,7 @@
   'use strict';
 
   const APP='crossnumber';
-  const BUILD='CROSS_NUMBER_RECREATION_COHERENCE_20261023_2';
+  const BUILD='CROSS_NUMBER_RECREATION_COHERENCE_20261024_1';
   const root=document.getElementById('crossnumberGame');
   if(!root) return;
   const panel=root.closest('#crossnumberPanel');
@@ -942,7 +942,12 @@
     // once instead of relying on a guessed vh subtraction.
     if(!full && window.matchMedia?.('(min-width:821px)').matches){
       const playTop=play.getBoundingClientRect().top;
-      const available=Math.max(320,Math.min(720,viewportHeight-playTop-14));
+      const commonActions=panel.querySelector('.crossnumber-actions.game-common-actions');
+      const footerHeight=Math.max(0,commonActions?.getBoundingClientRect?.().height||0);
+      // Reserve the common-control footer and the panel's lower padding. Never
+      // force a minimum taller than the remaining viewport: the board must fit
+      // the game space rather than making the page scroll to reveal its bottom.
+      const available=Math.max(220,Math.min(680,viewportHeight-playTop-footerHeight-28));
       panel.style.setProperty('--crossnumber-play-height',Math.floor(available)+'px');
     }else{
       panel.style.removeProperty('--crossnumber-play-height');
@@ -951,22 +956,28 @@
     // Re-read after the play-area constraint has been applied.
     const rect=scroll.getBoundingClientRect();
     const ratio=Math.max(.25,Number(layout.cols||1)/Math.max(1,Number(layout.rows||1)));
-    const availableWidth=Math.max(180,(scroll.clientWidth||rect.width)-12);
-    const viewportBottom=Math.max(180,viewportHeight-rect.top-(full?6:12));
-    const boundedHeight=Math.max(180,(scroll.clientHeight||rect.height)-12);
-    const availableHeight=Math.max(180,Math.min(boundedHeight,viewportBottom));
-    const width=Math.max(180,Math.min(availableWidth,availableHeight*ratio,full?1280:980));
+    const availableWidth=Math.max(120,(scroll.clientWidth||rect.width)-12);
+    const viewportBottom=Math.max(120,viewportHeight-rect.top-(full?8:18));
+    const boundedHeight=Math.max(120,(scroll.clientHeight||rect.height)-12);
+    const availableHeight=Math.max(120,Math.min(boundedHeight,viewportBottom));
+    const width=Math.max(120,Math.min(availableWidth,availableHeight*ratio,full?1280:980));
+    const height=Math.max(120,width/ratio);
     refs.board.style.width=Math.floor(width)+'px';
-    refs.board.style.height=Math.floor(width/ratio)+'px';
+    refs.board.style.height=Math.floor(Math.min(height,availableHeight))+'px';
     refs.board.style.maxWidth='none';
+    refs.board.style.maxHeight=Math.floor(availableHeight)+'px';
   }
 
   function renderAll(){
     if(!round){
       layout=null;
-      refs.board.innerHTML='<div class="crossnumber-empty-board">Open Cross Number or choose New Game to generate a puzzle.</div>';
+      refs.board.innerHTML='';
       refs.board.style.removeProperty('--crossnumber-cols');
       refs.board.style.removeProperty('--crossnumber-rows');
+      refs.board.style.removeProperty('width');
+      refs.board.style.removeProperty('height');
+      refs.board.style.removeProperty('max-width');
+      refs.board.style.removeProperty('max-height');
       refs.bank.innerHTML='';
       if(refs.bankCount) refs.bankCount.textContent='0 remaining';
       renderRoundHud();
@@ -1059,7 +1070,7 @@
     undoStack=[];
     stopTimer();
     renderAll();
-    setStatus('Choose a difficulty tier and press New Game when you are ready.');
+    setStatus('');
   });
   document.addEventListener('keydown',function(event){
     if(!event || event.defaultPrevented || event.ctrlKey || event.metaKey || event.isComposing) return;
@@ -1069,6 +1080,26 @@
     if(key==='n'){
       event.preventDefault();
       createNewRound({tierId:profile.selectedTier});
+      return;
+    }
+    if(key==='t'){
+      event.preventDefault();
+      sortBank();
+      return;
+    }
+    if(key==='u'){
+      event.preventDefault();
+      undo();
+      return;
+    }
+    if(key==='h'){
+      event.preventDefault();
+      useHint();
+      return;
+    }
+    if(key==='r'){
+      event.preventDefault();
+      restartRound();
       return;
     }
     if(key==='f'){
@@ -1108,7 +1139,7 @@
   renderAll();
   syncFullscreenControl();
   setCrossnumberPanel(panelFromLocation(),'none');
-  setStatus('Choose a difficulty tier and press New Game when you are ready.');
+  setStatus('');
 
   globalThis.BaselineCrossnumber=Object.freeze({
     build:BUILD,

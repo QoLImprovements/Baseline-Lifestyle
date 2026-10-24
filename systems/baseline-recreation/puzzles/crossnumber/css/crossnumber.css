@@ -137,7 +137,7 @@ body[data-app="recreation"] .crossnumber-number-cell{
   border:1px solid var(--cn-border-strong);
   background:var(--cn-active);
   color:var(--cn-ink);
-  font-size:clamp(16px,2vw,30px);
+  font-size:clamp(16px,1.8vw,24px);
   cursor:pointer;
   transition:transform .12s ease,border-color .12s ease,background .12s ease;
 }
@@ -458,7 +458,7 @@ body[data-app="recreation"] .crossnumber-realm-card p{
   body[data-app="recreation"] #crossnumberGamePanel{
     --crossnumber-play-height:clamp(360px,calc(100dvh - 300px),720px);
     display:grid;
-    grid-template-rows:auto auto minmax(0,1fr);
+    grid-template-rows:auto auto minmax(0,1fr) auto;
     gap:8px;
     min-height:0;
     overflow:hidden;
@@ -484,7 +484,7 @@ body[data-app="recreation"] .crossnumber-realm-card p{
   }
   body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board-column{
     display:grid;
-    grid-template-rows:minmax(0,1fr) auto;
+    grid-template-rows:minmax(0,1fr);
     min-width:0;
     min-height:0;
     height:100%;
@@ -537,7 +537,7 @@ body[data-app="recreation"] .crossnumber-realm-card p{
   body[data-app="recreation"] #crossnumberGamePanel .crossnumber-number-tile{
     min-height:36px;
     padding:5px 6px;
-    font-size:clamp(15px,1.25vw,19px);
+    font-size:clamp(16px,1.8vw,24px);
   }
   body[data-app="recreation"] #crossnumberGamePanel .crossnumber-bank-help{
     display:none;
@@ -627,4 +627,78 @@ body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-help{
   body[data-app="recreation"] #crossnumberGamePanel .crossnumber-bank-help{
     display:none;
   }
+}
+
+
+/* 2026-10-24 coherent Cross Number controls and number sizing. */
+body[data-app="recreation"] #crossnumberGamePanel :is(.crossnumber-number-cell,.crossnumber-number-tile){
+  font-size:clamp(16px,1.8vw,24px)!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-bank-panel{
+  grid-template-rows:auto minmax(0,1fr) auto!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-specific-actions{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:7px;
+  width:100%;
+  padding-top:8px;
+  border-top:1px solid var(--cn-border);
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-specific-actions .game-control-icon{
+  flex:0 0 42px!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-status:empty{
+  display:none;
+}
+@media(max-width:820px){
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-bank-panel{
+    display:grid;
+    grid-template-rows:auto auto auto!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-specific-actions{
+    justify-content:flex-end;
+  }
+}
+
+
+/* 2026-10-24 Cross Number final game-space authority. */
+body[data-app="recreation"] #crossnumberGamePanel [data-crossnumber-status]{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board-column{
+  grid-template-rows:minmax(0,1fr)!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-actions.game-common-actions{
+  width:100%;
+  margin:0;
+  justify-content:flex-end!important;
+  flex:0 0 auto;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-actions.game-common-actions .action{
+  flex:0 0 42px!important;
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-specific-actions{
+  align-self:end;
+  justify-content:flex-end!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board{
+  max-height:100%!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-actions.game-common-actions{
+  flex:0 0 auto;
 }

@@ -19,7 +19,7 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
-const BUILD = 'BLOCK_GRID_RECREATION_COHERENCE_20261023_2';
+const BUILD = 'BLOCK_GRID_RECREATION_COHERENCE_20261024_1';
 const APP = 'blockgrid';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
@@ -263,7 +263,7 @@ function renderGame() {
   if (!root) return;
   const active = run();
   if (!active) {
-    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" type="button">New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
+    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
     syncAutoNextControl();
     return;
   }
@@ -301,9 +301,9 @@ function renderGame() {
         <div class="block-grid-tray-heading"><strong>Available Pieces · ${escapeHtml(currentMode().name)} Tier</strong><span>Drag a shape, or tap it then tap a board cell</span></div>
         <div class="block-grid-tray${boardMotion.newTray ? ' is-new-tray' : ''}" aria-label="Available pieces">${trayHtml()}</div>
       </div>
-      <div class="game-window-actions">
-        <button class="action ghost start-new-game-toggle" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" type="button">New Game</button>
-        <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
+      <div class="game-window-actions game-common-actions">
+        <button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button>
+        <button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button>
         <button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button>
       </div>
     </div>`;
@@ -487,8 +487,6 @@ function positionDragGhost(ghost, clientX, clientY, anchor, grip = dragState) {
   } else {
     ghost.classList.remove('is-over-board');
   }
-  const totalWidth=(bounds.cols * cellSize) + (Math.max(0,bounds.cols-1) * gap);
-  const totalHeight=(bounds.rows * cellSize) + (Math.max(0,bounds.rows-1) * gap);
   const grabCol=Math.max(0,Math.min(bounds.cols-1,Number(grip?.grabCol)||0));
   const grabRow=Math.max(0,Math.min(bounds.rows-1,Number(grip?.grabRow)||0));
   const rawOffsetX=Number(grip?.grabOffsetX),rawOffsetY=Number(grip?.grabOffsetY);
@@ -496,8 +494,12 @@ function positionDragGhost(ghost, clientX, clientY, anchor, grip = dragState) {
   const grabOffsetY=Number.isFinite(rawOffsetY)?Math.max(0,Math.min(1,rawOffsetY)):.5;
   const grabbedX=(grabCol * (cellSize + gap)) + (cellSize * grabOffsetX);
   const grabbedY=(grabRow * (cellSize + gap)) + (cellSize * grabOffsetY);
-  ghost.style.left = (clientX + (totalWidth / 2) - grabbedX) + 'px';
-  ghost.style.top = (clientY + (totalHeight / 2) - grabbedY) + 'px';
+  // Position the ghost by its true top-left corner. This keeps the exact
+  // point held inside the selected block under the pointer at every scale,
+  // including browser fullscreen where a centred transform can introduce a
+  // visible offset if rendered dimensions differ by even a few pixels.
+  ghost.style.left = (clientX - grabbedX) + 'px';
+  ghost.style.top = (clientY - grabbedY) + 'px';
 }
 
 function destroyDragGhost() {
@@ -807,7 +809,7 @@ const shell = createGameExtensionShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=RECREATION_COHERENCE_20261023_2',
+  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=RECREATION_QA_20261024_2',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `${currentMode().name} Tier · Best ${profile.bestScore}` : 'Ready',
