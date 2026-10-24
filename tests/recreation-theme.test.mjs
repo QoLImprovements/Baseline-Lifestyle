@@ -77,7 +77,7 @@ test('Recreation account UI has one burgundy/copper palette authority',async()=>
   assert.match(sitewide,/--bl-surface-active-solid:var\(--recreation-copper-deep\)/);
   assert.match(theme,/#bl-auth-flyout select/);
   assert.match(theme,/#bl-auth-flyout #bl-favorites-select \+ \.bl-select-btn/);
-  assert.match(hub,/baseline-sitewide\.css\?v=SITEWIDE_RECREATION_FLYOUT_PALETTE_20261024_1/);
+  assert.match(hub,/baseline-sitewide\.css\?v=SITEWIDE_RECREATION_PALETTE_CLEANUP_20261024_1/);
   assert.match(hub,/recreation-theme\.css\?v=RECREATION_ACCOUNT_COHERENCE_20261024_1/);
 });
 
