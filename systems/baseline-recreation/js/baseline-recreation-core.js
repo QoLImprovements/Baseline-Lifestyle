@@ -4076,9 +4076,11 @@ function toggleGameFullscreen(gameId){
       const hotkeyGame = activeGameIdForHotkeys();
 
       if(event.altKey && key === 'n'){
-        event.preventDefault();
-        if(startActiveGameFromHotkey(hotkeyGame)) focusGamePlaySurface(hotkeyGame, { scroll:false, mobileMode:true });
-        return;
+        if(startActiveGameFromHotkey(hotkeyGame)){
+          event.preventDefault();
+          focusGamePlaySurface(hotkeyGame, { scroll:false, mobileMode:true });
+          return;
+        }
       }
       if(event.altKey && key === 'a'){
         event.preventDefault();
