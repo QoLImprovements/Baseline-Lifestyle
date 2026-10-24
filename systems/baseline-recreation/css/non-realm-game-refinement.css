@@ -2189,40 +2189,6 @@ body[data-app="recreation"] :is(
   }
 }
 
-@media(pointer:fine){
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions){
-    display:flex!important;
-    flex-wrap:wrap!important;
-    grid-template-columns:none!important;
-    grid-template-rows:none!important;
-    width:calc(100% - 16px)!important;
-    max-width:calc(100% - 16px)!important;
-    min-width:0!important;
-    height:auto!important;
-    max-height:none!important;
-    overflow:visible!important;
-    margin-inline:8px!important;
-    gap:6px!important;
-    justify-content:flex-start!important;
-    align-content:flex-end!important;
-    pointer-events:auto!important;
-  }
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions)>.action{
-    grid-column:auto!important;
-    grid-row:auto!important;
-    flex:0 0 38px!important;
-    width:38px!important;
-    min-width:38px!important;
-    max-width:38px!important;
-    height:38px!important;
-    min-height:38px!important;
-  }
-}
-
 /* Track the Coin selection phase: the cup itself is the interaction surface.
    Prompt/status layers never intercept the pointer. */
 body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trackcoin-lane{
