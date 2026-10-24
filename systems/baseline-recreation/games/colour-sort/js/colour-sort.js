@@ -829,6 +829,10 @@ async function animatePour(from, to, result, { dragVisual = null } = {}) {
 async function performPour(from, to, { dragVisual = null } = {}) {
   const active = puzzle();
   if (!active || isAnimating || isBottleLocked(active,from) || isBottleLocked(active,to) || !canPour(active.bottles, from, to)) {
+    if(active){
+      active.hadFailure=true;
+      profile.cleanWinStreak=0;
+    }
     dragVisual?.ghost?.remove();
     dragVisual?.sourceElement?.classList.remove('is-drag-origin');
     return false;
@@ -913,6 +917,7 @@ function selectBottle(index) {
   }
   if (!canPour(active.bottles, selectedBottle, index)) {
     active.hadFailure = true;
+    profile.cleanWinStreak = 0;
     if (active.bottles[index].length) {
       selectedBottle = index;
       statusMessage = `That pour is blocked; bottle ${index + 1} is selected instead.`;
