@@ -285,7 +285,7 @@ function renderGame() {
       <span>${active.lines} lines cleared</span>
     </div>
     <div class="block-grid-skill">
-      <div class="block-grid-skill-head"><strong>Special Skill</strong><span>${Math.round(active.skillCharge || 0)}%</span></div>
+      <div class="block-grid-skill-head"><strong>Special</strong><span>${Math.round(active.skillCharge || 0)}%</span></div>
       <div class="block-grid-skill-meter" role="progressbar" aria-label="Special skill charge" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(active.skillCharge || 0)}"><span style="width:${Math.min(100,active.skillCharge || 0)}%"></span></div>
       <div class="block-grid-skill-actions">
         <button class="action ghost" data-block-action="blast" type="button" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}>Clear 4 × 4</button>
@@ -301,11 +301,11 @@ function renderGame() {
         <div class="block-grid-tray-heading"><strong>Available Pieces · ${escapeHtml(currentMode().name)} Tier</strong><span>Drag a shape, or tap it then tap a board cell</span></div>
         <div class="block-grid-tray${boardMotion.newTray ? ' is-new-tray' : ''}" aria-label="Available pieces">${trayHtml()}</div>
       </div>
-      <div class="game-window-actions game-common-actions">
-        <button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button>
+    </div>
+    <div class="game-window-actions game-common-actions">
+      <button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button>
         <button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button>
         <button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button>
-      </div>
     </div>`;
   resetBoardMotion();
   syncAutoNextControl();
