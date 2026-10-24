@@ -1008,7 +1008,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     return '<div class="round-status-heading">'+escapeHtml(label||'Round Status')+'</div>'
       + (cleaned?'<div class="round-status-outcome">'+escapeHtml(cleaned)+'</div>':'')
       + rankUp
-      + '<div class="round-status-previous">Previous round — '+previousXp+' XP</div>'
+      + '<div class="round-status-previous">Previous round - '+previousXp+' XP</div>'
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tierName||'—')+'</strong></div>'
       + '<div><span>Winning Streak</span><strong>'+winningStreak+'</strong></div>'
