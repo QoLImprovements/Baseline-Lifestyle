@@ -1783,7 +1783,7 @@
     const portrait=mobilePseudo && !landscape;
     refs.workspace.classList.toggle('is-mobile-fullscreen-landscape',landscape);
     refs.workspace.classList.toggle('is-mobile-fullscreen-portrait',portrait);
-    if(refs.rotateNotice) refs.rotateNotice.hidden=!portrait;
+    if(refs.rotateNotice) refs.rotateNotice.hidden=true;
   }
 
   function syncFullscreenBoardFit(){

@@ -954,6 +954,18 @@
     if(!scroll || !play || !panel) return;
     const full=document.fullscreenElement===panel;
     const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
+    const mobile=window.matchMedia?.('(max-width:820px)').matches;
+
+    // On phones, preserving a readable cell size is more important than
+    // shrinking the whole equation network until every cell technically fits.
+    // Mobile CSS owns a scrollable board viewport; remove any desktop fitter
+    // dimensions immediately so fullscreen/windowed transitions cannot leave a
+    // microscopic inline size behind.
+    if(mobile){
+      panel.style.removeProperty('--crossnumber-play-height');
+      ['width','height','max-width','max-height'].forEach(function(prop){refs.board.style.removeProperty(prop);});
+      return;
+    }
 
     // Outside fullscreen, size the whole play area from its actual on-screen
     // position. This keeps the number bank and the entire puzzle reachable at

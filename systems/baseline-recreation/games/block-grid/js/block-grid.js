@@ -19,7 +19,7 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
-const BUILD = 'BLOCK_GRID_RECREATION_COHERENCE_20261024_2';
+const BUILD = 'BLOCK_GRID_MOBILE_PLAYABILITY_20261024_1';
 const APP = 'blockgrid';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
@@ -38,6 +38,7 @@ let selectedPiece = -1;
 let previewAnchor = null;
 let statusMessage = '';
 let dragState = null;
+let specialDragState = null;
 let suppressClick = false;
 let storageAuth = null;
 let specialMode = '';
@@ -475,45 +476,128 @@ function createDragGhost(pieceId) {
   return ghost;
 }
 
+function distanceToRect(clientX, clientY, rect) {
+  const dx = clientX < rect.left ? rect.left - clientX : (clientX > rect.right ? clientX - rect.right : 0);
+  const dy = clientY < rect.top ? rect.top - clientY : (clientY > rect.bottom ? clientY - rect.bottom : 0);
+  return Math.hypot(dx, dy);
+}
+
 function positionDragGhost(ghost, clientX, clientY, anchor, grip = dragState) {
   if (!ghost) return;
   const active=run();
   const piece=active && grip ? shapeById(active.tray[grip.index]) : null;
   const bounds=piece ? boundsForShape(piece) : {rows:1,cols:1};
   const board = document.querySelector('#blockGridGameCard [data-block-board]');
-  const anchorCell = anchor ? board?.querySelector(`[data-block-cell="${anchor.row}:${anchor.col}"]`) : null;
-  let cellSize=18;
-  let gap=3;
-  if (anchorCell) {
-    const rect = anchorCell.getBoundingClientRect();
-    const adjacent = board.querySelector(`[data-block-cell="${anchor.row}:${Math.min(7, anchor.col + 1)}"]`);
-    const adjacentRect = adjacent?.getBoundingClientRect();
-    cellSize=rect.width;
-    gap = adjacentRect && anchor.col < 7 ? Math.max(0, adjacentRect.left - rect.right) : 4;
-    ghost.style.setProperty('--drag-cell', cellSize + 'px');
-    ghost.style.setProperty('--drag-gap', gap + 'px');
-    ghost.classList.add('is-over-board');
-  } else {
-    ghost.classList.remove('is-over-board');
+  const sourceCell=Math.max(1,Number(grip?.sourceCellSize)||18);
+  const sourceGap=Math.max(0,Number(grip?.sourceGap)||3);
+  let cellSize=sourceCell;
+  let gap=sourceGap;
+  let blend=0;
+
+  const first=board?.querySelector('[data-block-cell="0:0"]');
+  const right=board?.querySelector('[data-block-cell="0:1"]');
+  if(board && first){
+    const boardRect=board.getBoundingClientRect();
+    const firstRect=first.getBoundingClientRect();
+    const rightRect=right?.getBoundingClientRect();
+    const boardCell=Math.max(1,firstRect.width);
+    const boardGap=rightRect ? Math.max(0,rightRect.left-firstRect.right) : sourceGap;
+    const distance=distanceToRect(clientX,clientY,boardRect);
+    // Morph continuously during the final approach rather than jumping when
+    // the pointer crosses from the tray/card region into the board.
+    blend=anchor ? 1 : Math.max(0,Math.min(1,1-(distance/120)));
+    cellSize=sourceCell+((boardCell-sourceCell)*blend);
+    gap=sourceGap+((boardGap-sourceGap)*blend);
   }
+
+  ghost.style.setProperty('--drag-cell',cellSize.toFixed(2)+'px');
+  ghost.style.setProperty('--drag-gap',gap.toFixed(2)+'px');
+  ghost.classList.toggle('is-over-board',blend>.55);
+
   const grabCol=Math.max(0,Math.min(bounds.cols-1,Number(grip?.grabCol)||0));
   const grabRow=Math.max(0,Math.min(bounds.rows-1,Number(grip?.grabRow)||0));
   const rawOffsetX=Number(grip?.grabOffsetX),rawOffsetY=Number(grip?.grabOffsetY);
   const grabOffsetX=Number.isFinite(rawOffsetX)?Math.max(0,Math.min(1,rawOffsetX)):.5;
   const grabOffsetY=Number.isFinite(rawOffsetY)?Math.max(0,Math.min(1,rawOffsetY)):.5;
-  const grabbedX=(grabCol * (cellSize + gap)) + (cellSize * grabOffsetX);
-  const grabbedY=(grabRow * (cellSize + gap)) + (cellSize * grabOffsetY);
-  // Position the ghost by its true top-left corner. This keeps the exact
-  // point held inside the selected block under the pointer at every scale,
-  // including browser fullscreen where a centred transform can introduce a
-  // visible offset if rendered dimensions differ by even a few pixels.
-  ghost.style.left = (clientX - grabbedX) + 'px';
-  ghost.style.top = (clientY - grabbedY) + 'px';
+  const grabbedX=(grabCol*(cellSize+gap))+(cellSize*grabOffsetX);
+  const grabbedY=(grabRow*(cellSize+gap))+(cellSize*grabOffsetY);
+  ghost.style.left=(clientX-grabbedX)+'px';
+  ghost.style.top=(clientY-grabbedY)+'px';
 }
-
 function destroyDragGhost() {
   if (dragState?.ghost?.isConnected) dragState.ghost.remove();
+  dragState?.sourceElement?.classList?.remove('is-drag-origin');
   document.documentElement.classList.remove('is-dragging-block-grid-piece');
+}
+
+function boardCellFromPointer(clientX, clientY) {
+  const board=document.querySelector('#blockGridGameCard [data-block-board]');
+  if(!board) return null;
+  const first=board.querySelector('[data-block-cell="0:0"]');
+  const right=board.querySelector('[data-block-cell="0:1"]');
+  const down=board.querySelector('[data-block-cell="1:0"]');
+  if(!first) return null;
+  const boardRect=board.getBoundingClientRect();
+  if(clientX<boardRect.left||clientX>boardRect.right||clientY<boardRect.top||clientY>boardRect.bottom) return null;
+  const firstRect=first.getBoundingClientRect();
+  const rightRect=right?.getBoundingClientRect();
+  const downRect=down?.getBoundingClientRect();
+  const pitchX=rightRect?rightRect.left-firstRect.left:firstRect.width;
+  const pitchY=downRect?downRect.top-firstRect.top:firstRect.height;
+  if(!(pitchX>0)||!(pitchY>0)) return null;
+  const col=Math.max(0,Math.min(7,Math.floor((clientX-firstRect.left+(pitchX/2))/pitchX)));
+  const row=Math.max(0,Math.min(7,Math.floor((clientY-firstRect.top+(pitchY/2))/pitchY)));
+  return {row,col};
+}
+
+function clearSpecialPreview() {
+  document.querySelectorAll('#blockGridGameCard .block-grid-cell.is-special-preview').forEach(cell=>cell.classList.remove('is-special-preview'));
+}
+
+function specialRowsFor(row) {
+  const base=Math.max(0,Math.min(7,Number(row)||0));
+  return base>=7?[6,7]:[base,base+1];
+}
+
+function paintSpecialPreview(type, coords) {
+  clearSpecialPreview();
+  if(!coords) return;
+  const cells=[];
+  if(type==='blast'){
+    const startRow=Math.max(0,Math.min(4,coords.row-1));
+    const startCol=Math.max(0,Math.min(4,coords.col-1));
+    for(let row=startRow;row<startRow+4;row+=1){
+      for(let col=startCol;col<startCol+4;col+=1) cells.push([row,col]);
+    }
+  }else if(type==='rows'){
+    specialRowsFor(coords.row).forEach(row=>{
+      for(let col=0;col<8;col+=1) cells.push([row,col]);
+    });
+  }
+  cells.forEach(([row,col])=>document.querySelector(`#blockGridGameCard [data-block-cell="${row}:${col}"]`)?.classList.add('is-special-preview'));
+}
+
+function createSpecialDragGhost(type) {
+  const ghost=document.createElement('div');
+  ghost.className='block-grid-special-drag-ghost';
+  ghost.setAttribute('aria-hidden','true');
+  ghost.textContent=type==='blast'?'💣':'🚜';
+  (document.fullscreenElement===document.getElementById('blockGridGameCard')?document.fullscreenElement:document.body).appendChild(ghost);
+  document.documentElement.classList.add('is-dragging-block-grid-special');
+  return ghost;
+}
+
+function positionSpecialDragGhost(ghost,clientX,clientY) {
+  if(!ghost) return;
+  ghost.style.left=(clientX+12)+'px';
+  ghost.style.top=(clientY-12)+'px';
+}
+
+function destroySpecialDrag() {
+  if(specialDragState?.ghost?.isConnected) specialDragState.ghost.remove();
+  specialDragState=null;
+  clearSpecialPreview();
+  document.documentElement.classList.remove('is-dragging-block-grid-special');
 }
 
 function choosePiece(index) {
@@ -588,6 +672,7 @@ function placeSelected(row, col) {
 }
 
 function consumeSpecialCharge(active) {
+  clearSpecialPreview();
   active.skillCharge = 0;
   active.combo = 0;
   active.gameOver = !hasAnyPlacement(active.board, active.tray);
@@ -613,14 +698,19 @@ function clearSpecialBlast(row, col) {
   consumeSpecialCharge(active);
   return true;
 }
-function clearSpecialRows() {
+function clearSpecialRows(row) {
   const active=run();
   if(!active || (active.skillCharge || 0)<100) return false;
-  const ranked=active.board.map((row,index)=>({index,count:row.filter(Boolean).length}))
-    .filter(item=>item.count>0).sort((a,b)=>b.count-a.count || a.index-b.index).slice(0,2);
-  if(!ranked.length){ statusMessage='There are no occupied rows to clear.'; render(); return false; }
-  ranked.forEach(item=>{ active.board[item.index]=active.board[item.index].map(()=>0); });
-  statusMessage='Special used — cleared ' + ranked.length + ' row' + (ranked.length===1?'':'s') + '.';
+  let indices;
+  if(Number.isFinite(Number(row))) indices=specialRowsFor(Number(row));
+  else{
+    indices=active.board.map((boardRow,index)=>({index,count:boardRow.filter(Boolean).length}))
+      .filter(item=>item.count>0).sort((a,b)=>b.count-a.count || a.index-b.index).slice(0,2).map(item=>item.index);
+  }
+  const occupied=indices.filter(index=>active.board[index].some(Boolean));
+  if(!occupied.length){ statusMessage='Choose two rows containing blocks.'; render(); return false; }
+  indices.forEach(index=>{ active.board[index]=active.board[index].map(()=>0); });
+  statusMessage='Special used — cleared ' + indices.length + ' rows.';
   consumeSpecialCharge(active);
   return true;
 }
@@ -652,26 +742,25 @@ function cellCoordinates(target) {
 function handleClick(event) {
   const target = event.target instanceof Element ? event.target : null;
   if (!target || !document.getElementById('blockGridPanel')?.classList.contains('is-active')) return;
+  if (suppressClick) { suppressClick = false; event.preventDefault(); return; }
   const action = target.closest('[data-block-action]')?.getAttribute('data-block-action');
   if (action) {
-    suppressClick=false;
     event.preventDefault();
     if (action === 'new') {
     if(performance.now()-newGamePointerAt<700){ event.preventDefault(); return; }
     startNewGame();
   }
-    if (action === 'blast') { if((run()?.skillCharge || 0)>=100){ specialMode='blast'; selectedPiece=-1; previewAnchor=null; statusMessage='Special ready: select the centre of the 4 × 4 area to clear.'; render(); } }
-    if (action === 'rows') clearSpecialRows();
+    if (action === 'blast' || action === 'rows') { if((run()?.skillCharge || 0)>=100){ specialMode=action; selectedPiece=-1; previewAnchor=null; statusMessage=action==='blast'?'Special ready: drag the bomb over a 4 × 4 area, or tap its centre.':'Special ready: drag the plough over the two rows to clear, or tap either row.'; render(); } }
     if (action === 'fullscreen') toggleFullscreen();
     return;
   }
-  if (suppressClick) { suppressClick = false; event.preventDefault(); return; }
   const piece = target.closest('[data-block-piece]');
   if (piece) { choosePiece(Number(piece.dataset.blockPiece)); return; }
   const cell = target.closest('[data-block-cell]');
   if (cell) {
     const coords = cellCoordinates(cell);
     if (coords && specialMode === 'blast') clearSpecialBlast(coords.row, coords.col);
+    else if (coords && specialMode === 'rows') clearSpecialRows(coords.row);
     else if (coords) placeSelected(coords.row, coords.col);
     return;
   }
@@ -691,6 +780,20 @@ function handlePointerDown(event) {
     if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
     newGamePointerAt=performance.now();
     startNewGame();
+    return;
+  }
+  const specialButton=rawTarget?.closest('[data-block-action="blast"],[data-block-action="rows"]');
+  if(specialButton && document.getElementById('blockGridPanel')?.classList.contains('is-active') && (run()?.skillCharge||0)>=100){
+    const type=specialButton.getAttribute('data-block-action');
+    event.preventDefault();
+    specialMode=type;
+    selectedPiece=-1;
+    previewAnchor=null;
+    const ghost=createSpecialDragGhost(type);
+    specialDragState={pointerId:event.pointerId,type,ghost};
+    specialButton.setPointerCapture?.(event.pointerId);
+    positionSpecialDragGhost(ghost,event.clientX,event.clientY);
+    paintSpecialPreview(type,boardCellFromPointer(event.clientX,event.clientY));
     return;
   }
   const piece = rawTarget ? rawTarget.closest('[data-block-piece]') : null;
@@ -718,7 +821,16 @@ function handlePointerDown(event) {
       grabOffsetY=Math.max(0,Math.min(1,(event.clientY-rect.top)/Math.max(1,rect.height)));
     }
   });
-  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, grabRow, grabCol, grabOffsetX, grabOffsetY, moved:false, ghost:null };
+  const sourceCellNode=allCells.find((cell,cellIndex)=>Math.floor(cellIndex/Math.max(1,bounds.cols))===grabRow && cellIndex%Math.max(1,bounds.cols)===grabCol) || allCells.find(cell=>cell.classList.contains('is-filled'));
+  const sourceRect=sourceCellNode?.getBoundingClientRect();
+  const sourceShapeStyle=shapeNode?window.getComputedStyle(shapeNode):null;
+  const sourceCellSize=Math.max(1,sourceRect?.width||18);
+  const sourceGap=Math.max(0,parseFloat(sourceShapeStyle?.columnGap||sourceShapeStyle?.gap||'3')||0);
+  const ghost=createDragGhost(pieceId);
+  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, grabRow, grabCol, grabOffsetX, grabOffsetY, sourceCellSize, sourceGap, sourceElement:piece, moved:false, ghost };
+  document.documentElement.classList.add('is-dragging-block-grid-piece');
+  piece.classList.add('is-drag-origin');
+  positionDragGhost(ghost,event.clientX,event.clientY,null,dragState);
   piece.setPointerCapture?.(event.pointerId);
   piece.classList.add('is-selected');
 }
@@ -739,14 +851,15 @@ function paintPreview() {
 }
 
 function handlePointerMove(event) {
+  if(specialDragState && specialDragState.pointerId===event.pointerId){
+    event.preventDefault();
+    positionSpecialDragGhost(specialDragState.ghost,event.clientX,event.clientY);
+    paintSpecialPreview(specialDragState.type,boardCellFromPointer(event.clientX,event.clientY));
+    return;
+  }
   if (!dragState || dragState.pointerId !== event.pointerId) return;
   if (Math.hypot(event.clientX - dragState.startX, event.clientY - dragState.startY) > 7) dragState.moved = true;
   if (!dragState.moved) return;
-  if (!dragState.ghost) {
-    const pieceId = run()?.tray[dragState.index];
-    if (pieceId) dragState.ghost = createDragGhost(pieceId);
-    document.documentElement.classList.add('is-dragging-block-grid-piece');
-  }
   event.preventDefault();
   const anchor = boardAnchorFromPointer(event.clientX, event.clientY, dragState);
   positionDragGhost(dragState.ghost, event.clientX, event.clientY, anchor, dragState);
@@ -757,6 +870,21 @@ function handlePointerMove(event) {
 }
 
 function handlePointerUp(event) {
+  if(specialDragState && specialDragState.pointerId===event.pointerId){
+    event.preventDefault();
+    const type=specialDragState.type;
+    const coords=boardCellFromPointer(event.clientX,event.clientY);
+    destroySpecialDrag();
+    suppressClick=true;
+    if(coords){
+      if(type==='blast') clearSpecialBlast(coords.row,coords.col);
+      else clearSpecialRows(coords.row);
+    }else{
+      statusMessage=type==='blast'?'Drop the bomb over the board to clear a 4 × 4 area.':'Drop the plough over the board to clear two rows.';
+      renderGame();
+    }
+    return;
+  }
   if (!dragState || dragState.pointerId !== event.pointerId) return;
   const moved = dragState.moved;
   const anchor = moved ? boardAnchorFromPointer(event.clientX, event.clientY, dragState) : null;
@@ -818,13 +946,13 @@ const shell = createGameExtensionShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=RECREATION_COHERENCE_20261024_1',
+  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=BLOCK_GRID_MOBILE_PLAYABILITY_20261024_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `${currentMode().name} Tier · Best ${profile.bestScore}` : 'Ready',
   panelHtml,
   onOpen:() => { globalThis.BaselineGamesMusic?.selectGame?.('block-grid'); render(); setTab(blockTabFromLocation(), 'none'); },
-  onClose:() => { globalThis.BaselineGamesMusic?.selectGame?.(''); destroyDragGhost(); previewAnchor = null; dragState = null; }
+  onClose:() => { globalThis.BaselineGamesMusic?.selectGame?.(''); destroyDragGhost(); destroySpecialDrag(); previewAnchor = null; dragState = null; }
 });
 
 function init() {
@@ -836,7 +964,7 @@ function init() {
   document.addEventListener('pointermove', handlePointerMove);
   document.addEventListener('pointerup', handlePointerUp);
   document.addEventListener('dragstart', event => { if(event.target instanceof Element && event.target.closest('#blockGridPanel')) event.preventDefault(); });
-  document.addEventListener('pointercancel', () => { destroyDragGhost(); dragState = null; previewAnchor = null; paintPreview(); });
+  document.addEventListener('pointercancel', () => { destroyDragGhost(); dragState = null; destroySpecialDrag(); previewAnchor = null; paintPreview(); });
   document.addEventListener('keydown', handleKeydown);
   document.addEventListener('fullscreenchange', renderGame);
   document.addEventListener('baseline:game-storage', event => {

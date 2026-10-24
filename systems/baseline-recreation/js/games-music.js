@@ -15,6 +15,8 @@
   var barIndex = 0;
   var liveNodes = new Set();
   var unlocked = false;
+  var SCHEDULE_AHEAD_SECONDS = 8;
+  var SCHEDULER_INTERVAL_MS = 900;
 
   function clamp(value, min, max){
     var n = Number(value);
@@ -67,15 +69,15 @@
 
     // The synth voices are intentionally low-level. Apply make-up gain before
     // the final limiter so 100% represents a normal, useful listening level.
-    normalizedOutput.gain.value = 8.0;
+    normalizedOutput.gain.value = 3.2;
 
-    compressor.threshold.value = -7;
-    compressor.knee.value = 4;
-    compressor.ratio.value = 18;
-    compressor.attack.value = 0.003;
-    compressor.release.value = 0.20;
+    compressor.threshold.value = -10;
+    compressor.knee.value = 8;
+    compressor.ratio.value = 8;
+    compressor.attack.value = 0.008;
+    compressor.release.value = 0.24;
 
-    finalOutput.gain.value = 0.92;
+    finalOutput.gain.value = 0.80;
 
     master.connect(normalizedOutput);
     normalizedOutput.connect(compressor);
@@ -558,15 +560,17 @@
     }
     if(nextBarTime < ctx.currentTime + 0.04) nextBarTime = ctx.currentTime + 0.04;
 
-    // Keep more than a minute of music queued on the Web Audio clock. This
-    // remains continuous through normal background-tab timer throttling.
-    while(nextBarTime < ctx.currentTime + 75){
+    // Keep only a short rolling window of Web Audio nodes queued. The old
+    // 75-second look-ahead could leave hundreds of oscillators/gain/filter
+    // nodes alive at once, which is particularly prone to crackle on mobile
+    // audio hardware and can also stress desktop browsers.
+    while(nextBarTime < ctx.currentTime + SCHEDULE_AHEAD_SECONDS){
       scheduleBar(track, barIndex, nextBarTime);
       nextBarTime += barDur;
       barIndex += 1;
       if(barIndex >= track.bars) barIndex = 0;
     }
-    timer = window.setTimeout(scheduler, 5000);
+    timer = window.setTimeout(scheduler, SCHEDULER_INTERVAL_MS);
   }
 
   function startActive(){
