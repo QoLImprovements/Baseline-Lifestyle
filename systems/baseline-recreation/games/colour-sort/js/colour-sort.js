@@ -287,7 +287,7 @@ function statusHtml() {
   }
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
-    + '<div class="round-status-previous">Previous round — '+number(profile.lastRoundXp)+' XP</div>'
+    + '<div class="round-status-previous">Previous round - '+number(profile.lastRoundXp)+' XP</div>'
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+number(profile.cleanWinStreak)+'</strong></div>'
