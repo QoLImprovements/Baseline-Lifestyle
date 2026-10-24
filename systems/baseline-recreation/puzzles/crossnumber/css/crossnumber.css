@@ -1035,3 +1035,57 @@ body[data-app="recreation"] #crossnumberGamePanel .crossnumber-round-status{
     font-size:15px!important;
   }
 }
+
+
+/* 2026-10-24 Cross Number touch-drag authority.
+   Native HTML drag remains the desktop path. Coarse pointers use a visible
+   fixed drag tile and real Pointer Events so mobile can drag numbers into the
+   equation grid instead of relying on unsupported HTML5 touch dragging. */
+body[data-app="recreation"] .crossnumber-touch-drag-ghost{
+  position:fixed!important;
+  z-index:2147483000!important;
+  left:0;
+  top:0;
+  width:64px!important;
+  min-width:64px!important;
+  max-width:64px!important;
+  height:48px!important;
+  min-height:48px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:2px solid var(--cn-focus)!important;
+  border-radius:10px!important;
+  background:var(--cn-active)!important;
+  color:var(--cn-ink)!important;
+  box-shadow:0 14px 28px rgba(0,0,0,.46),inset 0 0 0 1px rgba(255,255,255,.18)!important;
+  font:900 21px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
+  opacity:.98!important;
+  pointer-events:none!important;
+  transform:translate(-50%,calc(-100% - 14px))!important;
+  will-change:left,top;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-number-cell.is-touch-drop-target{
+  border-color:var(--cn-focus)!important;
+  outline:3px solid var(--cn-focus)!important;
+  outline-offset:-3px!important;
+  background:var(--cn-active)!important;
+  box-shadow:0 0 0 2px rgba(255,255,255,.12),0 0 18px rgba(255,170,110,.30)!important;
+}
+html.is-dragging-crossnumber-tile,
+html.is-dragging-crossnumber-tile body{
+  overscroll-behavior:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+}
+@media(pointer:coarse), (max-width:820px){
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-number-tile{
+    touch-action:none!important;
+    -webkit-user-drag:none!important;
+    user-select:none!important;
+    -webkit-user-select:none!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-number-tile.is-touch-drag-source{
+    opacity:.18!important;
+  }
+}
