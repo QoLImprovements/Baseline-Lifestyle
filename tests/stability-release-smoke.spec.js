@@ -719,6 +719,18 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await selectableCup.click();
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-resolved/);
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-phase-review/);
+
+  // Regression: Rule Shift Round Status must render the shared status contract,
+  // not merely contain source CSS that loses in the cascade.
+  await page.goto('/baseline-recreation/games/rule-shift', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => globalThis.BASELINE_RECREATION_CORE_READY === true);
+  await expect(page.locator('#ruleshiftPanel')).toHaveClass(/is-active/);
+  const ruleStatus=page.locator('#ruleShiftRoundSummary');
+  const ruleHeading=ruleStatus.locator('.round-status-heading');
+  await expect(ruleHeading).toHaveText('Round Status');
+  await expect(ruleStatus).toContainText('Previous Run - 0 XP');
+  expect(await ruleHeading.evaluate((node) => getComputedStyle(node).textAlign)).toBe('center');
+  expect(await ruleStatus.evaluate((node) => getComputedStyle(node).alignContent)).toBe('start');
 });
 
 test('Badminton loads shared server state into the normal session interface', async ({ page }) => {
