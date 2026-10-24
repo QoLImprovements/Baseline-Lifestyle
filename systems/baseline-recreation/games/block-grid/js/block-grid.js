@@ -228,7 +228,6 @@ function boardHtml() {
 function statusHtml() {
   const active = run();
   const streak = active ? Math.max(0, number(active.combo)) : 0;
-  const bonus = Math.min(100, streak * 5);
   const outcome = !active
     ? 'Start a new game to receive your first three pieces.'
     : active.gameOver
@@ -239,7 +238,7 @@ function statusHtml() {
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(currentMode().name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
-    + '<div><span>Clean Streak Bonus</span><strong>'+bonus+'%</strong></div>'
+    + '<div><span>Combo Scoring</span><strong>'+(streak>1?'Active ×'+streak:'—')+'</strong></div>'
     + '</div>';
 }
 
