@@ -42,7 +42,7 @@
     cleanBonusPctForStreak=()=>0
   }={}){
     const safeProfile=profile&&typeof profile==='object'?profile:{};
-    const nextClean=!hadFailure?(Math.max(0,Number(safeProfile.cleanWinStreak)||0)+1):0;
+    const nextClean=Math.max(0,Number(safeProfile.cleanWinStreak)||0)+1;
     const nextStreak=Math.max(0,Number(safeProfile.currentStreak)||0)+1;
     const cleanPct=Math.max(0,Number(cleanBonusPctForStreak(nextClean))||0)/100;
     const banker=Math.max(0,Number(safeProfile.skills&&safeProfile.skills.banker)||0);
@@ -59,7 +59,7 @@
   }
 
   global.BASELINE_PAIRS_ENGINE=Object.freeze({
-    version:2,
+    version:3,
     buildDeck:buildDeck,
     boardLayout:boardLayout,
     mismatchDelay:mismatchDelay,

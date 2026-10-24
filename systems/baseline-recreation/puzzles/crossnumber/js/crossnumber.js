@@ -19,8 +19,8 @@
   const SKILLS=Object.freeze([
     Object.freeze({id:'insight',name:'Insight',max:4,unlockLevel:6,description:'Gain one additional hint use per puzzle per rank.'}),
     Object.freeze({id:'flow',name:'Flow',max:5,unlockLevel:1,description:'Gain +8% Cross Number XP per rank.'}),
-    Object.freeze({id:'banker',name:'Banker',max:5,unlockLevel:1,description:'Gain +10% Bank reward per rank.'}),
-    Object.freeze({id:'precision',name:'Precision',max:4,unlockLevel:1,description:'Reduce Bank loss from an invalid completed equation by 1 per rank.'}),
+    Object.freeze({id:'banker',name:'Banker',max:5,unlockLevel:1,description:'Gain +10% Bank Coins reward per rank.'}),
+    Object.freeze({id:'precision',name:'Precision',max:4,unlockLevel:1,description:'Reduce Bank Coins loss from an invalid completed equation by 1 per rank.'}),
     Object.freeze({id:'structure',name:'Structure',max:4,unlockLevel:12,description:'Every two ranks add one starting anchor to future layouts and strengthen Cross Number\'s Baseline Realm link.'})
   ]);
 
@@ -126,7 +126,7 @@
     return 60+((value-1)*35)+((value-1)*(value-1)*4);
   }
   function cleanBonusPct(streak){
-    return Math.min(24,Math.max(0,int(streak,0))*4);
+    return Math.min(100,Math.max(0,int(streak,0))*5);
   }
   function skillDefinition(id){return SKILLS.find(function(skill){return skill.id===id;})||null;}
   function tierDefinition(id){return TIERS.find(function(tier){return tier.id===id;})||TIERS[0];}
@@ -305,7 +305,12 @@
   function generateLayout(seed,tierId){
     const tier=tierDefinition(tierId);
     const shape=generateShape(seed,tier);
-    const nodes=normaliseLayoutCoordinates(shape.nodes);
+    let nodes=normaliseLayoutCoordinates(shape.nodes);
+    const rawMaxR=Math.max.apply(null,nodes.map(function(node){return node.r;}));
+    const rawMaxC=Math.max.apply(null,nodes.map(function(node){return node.c;}));
+    if(rawMaxR>Math.max(1,rawMaxC)*1.35){
+      nodes=nodes.map(function(node){return Object.assign({},node,{r:node.c,c:node.r});});
+    }
     const byId=Object.fromEntries(nodes.map(function(node){return [node.id,node];}));
     const rng=shape.rng;
     const values=Object.create(null);
@@ -357,8 +362,11 @@
       const candidate=generateLayout(seed,tier.id);
       const signature=layoutSignature(candidate);
       const worst=recent.reduce(function(max,old){return Math.max(max,signatureOverlap(signature,old));},0);
-      if(!best||worst<best.worst) best={seed:seed,layout:candidate,signature:signature,worst:worst};
-      if(worst<=0.18) break;
+      const aspect=Math.max(.01,candidate.cols/Math.max(1,candidate.rows));
+      const balance=Math.abs(Math.log(aspect));
+      const score=worst+(balance*.18);
+      if(!best||score<best.score) best={seed:seed,layout:candidate,signature:signature,worst:worst,score:score};
+      if(worst<=0.18&&aspect>=.65&&aspect<=1.85) break;
     }
     return best;
   }
@@ -690,7 +698,7 @@
   }
   function calculateRewards(){
     const tier=currentTier();
-    const nextClean=round.hadFailure?0:profile.cleanWinStreak+1;
+    const nextClean=profile.cleanWinStreak+1;
     const cleanPct=cleanBonusPct(nextClean);
     const cleanMult=1+(cleanPct/100);
     const xpMult=(1+(Math.max(0,int(profile.skills.flow,0))*0.08))*cleanMult;
@@ -719,7 +727,7 @@
       refs.complete.setAttribute('aria-hidden','false');
       if(refs.completeTime) refs.completeTime.textContent=formatTime(completedTime);
       if(refs.completeScore) refs.completeScore.textContent=String(score);
-      if(refs.completeReward) refs.completeReward.textContent='+'+rewards.bank+' Bank Coins · +'+rewards.xp+' XP'+(rewards.cleanPct?' · Clean streak bonus +'+rewards.cleanPct+'%':'')+(levels?' · Player Rank +'+levels:'');
+      if(refs.completeReward) refs.completeReward.textContent='+'+rewards.bank+' Bank Coins · +'+rewards.xp+' XP'+(rewards.cleanPct?' · Clean Streak Bonus +'+rewards.cleanPct+'%':'')+(levels?' · Player Rank +'+levels:'');
     }
     setStatus('Every equation balances. Cross Number complete.');
     try{autoNextApi()?.schedule?.(APP,function(){createNewRound({tierId:profile.selectedTier});});}catch(_error){}
@@ -800,7 +808,17 @@
     },1000);
   }
   function stopTimer(){if(timerId){window.clearInterval(timerId);timerId=0;}}
-  function setStatus(message){if(refs.status) refs.status.textContent=message;}
+  function setStatus(message){
+    if(!refs.status) return;
+    const tier=tierDefinition(round?.tierId||profile.selectedTier);
+    refs.status.innerHTML='<div class="round-status-heading">Round Status</div>'
+      + '<div class="round-status-outcome">'+escapeHtml(String(message||''))+'</div>'
+      + '<div class="round-status-metrics">'
+      + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
+      + '<div><span>Winning Streak</span><strong>'+Math.max(0,int(profile.cleanWinStreak,0))+'</strong></div>'
+      + '<div><span>Clean Streak Bonus</span><strong>'+cleanBonusPct(profile.cleanWinStreak)+'%</strong></div>'
+      + '</div>';
+  }
 
   function renderRoundHud(){
     if(refs.mistakes) refs.mistakes.textContent=String(round?.mistakes||0);
@@ -882,7 +900,7 @@
       ['Current streak',profile.currentStreak],
       ['Clean streak',profile.cleanWinStreak],
       ['Best score',profile.bestScore],
-      ['Bank earned',profile.bank],
+      ['Bank Coins earned',profile.bank],
       ['Current tier',tierDefinition(profile.selectedTier).name],
       ['Next tier',next?(next.name+' · L'+next.unlockLevel):'All unlocked']
     ];
@@ -922,16 +940,6 @@
       }
       const pct=clamp((profile.xp/Math.max(1,needed))*100,0,100);
       live.innerHTML='<strong>Player Rank '+profile.level+'</strong><div class="game-live-xp__bar"><span style="width:'+pct+'%"></span></div><span>'+profile.xp+' / '+needed+' XP</span>';
-      let fullscreenSkills=gamePanel.querySelector('[data-crossnumber-fullscreen-skills]');
-      if(!fullscreenSkills){
-        fullscreenSkills=document.createElement('div');
-        fullscreenSkills.className='crossnumber-fullscreen-skills';
-        fullscreenSkills.setAttribute('data-crossnumber-fullscreen-skills','');
-        live.insertAdjacentElement('afterend',fullscreenSkills);
-      }
-      fullscreenSkills.innerHTML='<strong>Skills</strong><span class="inline-note">'+SKILLS.map(function(skill){
-        return escapeHtml(skill.name)+' '+Math.max(0,int(profile.skills[skill.id],0));
-      }).join(' · ')+'</span>';
     }
 
     renderTiers();renderSkills();renderRealmContribution();renderStats();
@@ -1117,9 +1125,17 @@
       toggleFullscreen();
     }
   });
+  function resetCrossNumberFit(){
+    const gamePanel=document.getElementById('crossnumberGamePanel');
+    if(gamePanel) gamePanel.style.removeProperty('--crossnumber-play-height');
+    ['width','height','max-width','max-height'].forEach(function(prop){refs.board.style.removeProperty(prop);});
+  }
   document.addEventListener('fullscreenchange',function(){
     syncFullscreenControl();
-    window.requestAnimationFrame(fitCrossNumberBoard);
+    resetCrossNumberFit();
+    window.requestAnimationFrame(function(){
+      window.requestAnimationFrame(fitCrossNumberBoard);
+    });
   });
   window.addEventListener('resize',function(){ window.requestAnimationFrame(fitCrossNumberBoard); },{passive:true});
   try{ window.visualViewport?.addEventListener?.('resize',function(){ window.requestAnimationFrame(fitCrossNumberBoard); },{passive:true}); }catch(_error){}

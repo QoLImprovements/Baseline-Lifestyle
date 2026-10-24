@@ -963,8 +963,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     profileFields:['level','xp','skillPoints','cleanWinStreak'],
     runFields:['lastMessage','hadFailure','roundBank'],
     statusPattern:['level','xp','tier','streak','cleanStreak','cleanBonus'],
-    cleanStreak:{ label:'Clean Streak Bonus', perStepPct:4, maxPct:24 },
-    rewardRule:'Clean completions increase the clean streak. Failed or wrong rounds reset it. Every game must show one Clean streak bonus value in its status/progress output.'
+    cleanStreak:{ label:'Clean Streak Bonus', perStepPct:5, maxPct:100 },
+    rewardRule:'Clean completions increase the clean streak. Failed or wrong rounds reset it. Every game must show one Clean Streak Bonus value in its status/progress output.'
   });
   function cleanWinBonusPct(streak){
     const clean = GAME_TEMPLATE_CONTRACT.cleanStreak;
@@ -972,17 +972,31 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   }
   function cleanBonusStatusText(profile){
     const streak = Math.max(0, Math.round(Number(profile && profile.cleanWinStreak || 0)));
-    return 'Clean streak bonus +' + cleanWinBonusPct(streak) + '%';
+    return 'Clean Streak Bonus +' + cleanWinBonusPct(streak) + '%';
   }
   function cleanBonusRewardText(streak){
     const pct = cleanWinBonusPct(streak);
-    return pct ? ' · Clean streak bonus +' + pct + '%' : '';
+    return pct ? ' · Clean Streak Bonus +' + pct + '%' : '';
   }
-  function coherentRoundStatusHtml(label,message,profile){
-    const text=String(message||'');
-    const bonus='Clean streak bonus +'+cleanWinBonusPct(profile&&profile.cleanWinStreak||0)+'%';
-    return '<strong>'+escapeHtml(label||'Round Status')+'</strong><span class="inline-note">'+escapeHtml(text)+'</span>'
-      + (/clean streak bonus/i.test(text)?'':'<span class="inline-note">'+bonus+'</span>');
+  function coherentRoundStatusHtml(label,message,profile,tierName){
+    const source=String(message||'').trim();
+    const rankMatch=source.match(/(?:Player Rank(?: up)?|Rank)\s*\+(\d+)/i);
+    const cleaned=source
+      .replace(/\s*[·.]?\s*Clean Streak Bonus \+\d+%/ig,'')
+      .replace(/\s*[·.]?\s*(?:Player Rank(?: up)?|Rank)\s*\+\d+/ig,'')
+      .replace(/\s+\./g,'.')
+      .replace(/\s*·\s*$/,'')
+      .trim();
+    const streak=Math.max(0,Math.round(Number(profile&&profile.cleanWinStreak||0)));
+    const rankUp=rankMatch ? '<div class="round-status-rankup">Ranked Up! Player Rank '+Math.max(1,Math.round(Number(profile&&profile.level||1)))+'</div>' : '';
+    return '<div class="round-status-heading">'+escapeHtml(label||'Round Status')+'</div>'
+      + (cleaned?'<div class="round-status-outcome">'+escapeHtml(cleaned)+'</div>':'')
+      + rankUp
+      + '<div class="round-status-metrics">'
+      + '<div><span>Current Tier</span><strong>'+escapeHtml(tierName||'—')+'</strong></div>'
+      + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
+      + '<div><span>Clean Streak Bonus</span><strong>'+cleanWinBonusPct(streak)+'%</strong></div>'
+      + '</div>';
   }
   function shuffle(list){
     const copy = list.slice();
@@ -1005,36 +1019,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     '<div class="coherent-progress-grid">' + statHtml + '</div>';
   }
 
-  function skillDefinitionsForGame(gameId){
-    return gameId==='pairs' ? PAIRS_SKILLS
-      : gameId==='detectword' ? WORD_SKILLS
-      : gameId==='make24' ? MAKE24_SKILLS
-      : gameId==='trackcoin' ? TRACKCOIN_SKILLS
-      : gameId==='ruleshift' ? RULESHIFT_SKILLS
-      : [];
-  }
-  function renderFullscreenSkills(gameId,profile,anchor){
-    const root=q('[data-game-play-root="' + gameId + '"]');
-    if(!root||!profile) return;
-    const definitions=skillDefinitionsForGame(gameId);
-    let node=root.querySelector('[data-fullscreen-skills="' + gameId + '"]');
-    if(!definitions.length){
-      if(node) node.remove();
-      return;
-    }
-    if(!node){
-      node=document.createElement('div');
-      node.className='game-fullscreen-skills';
-      node.setAttribute('data-fullscreen-skills',gameId);
-      if(anchor&&anchor.parentElement===root) anchor.insertAdjacentElement('afterend',node);
-      else root.appendChild(node);
-    }
-    const skills=profile.skills&&typeof profile.skills==='object'?profile.skills:{};
-    const summary=definitions.map(function(skill){
-      return escapeHtml(skill.name||skill.id||'Skill')+' '+Math.max(0,Math.round(Number(skills[skill.id]||0)));
-    }).join(' · ');
-    node.innerHTML='<strong>Skills</strong><span class="inline-note">'+summary+'</span>';
-  }
   function renderCompactGameXp(gameId,profile){
     const root=q('[data-game-play-root="' + gameId + '"]');
     if(!root||!profile) return;
@@ -1050,7 +1034,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       else root.prepend(node);
     }
     node.innerHTML='<strong>Player Rank ' + p.level + '</strong><div class="game-live-xp__bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + p.needed + '" aria-valuenow="' + p.xp + '"><span style="width:' + p.pct + '%"></span></div><span>' + p.xp + ' / ' + p.needed + ' XP</span>';
-    renderFullscreenSkills(gameId,profile,node);
   }
   function getAuth(){
     try{
@@ -1598,6 +1581,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.pairsBoard.style.setProperty('--pairs-cols-desktop',String(layout.desktopCols));
     refs.pairsBoard.style.setProperty('--pairs-cols-mobile',String(layout.mobileCols));
     refs.pairsBoard.style.setProperty('--pairs-cols-phone',String(layout.phoneCols));
+    refs.pairsBoard.style.setProperty('--pairs-rows-desktop',String(Math.ceil((Math.max(1,Number(tier&&tier.pairs)||1)*2)/Math.max(1,layout.desktopCols))));
     refs.pairsBoard.style.setProperty('--pairs-board-max',layout.boardMax+'px');
   }
   function startPairsBoard(){
@@ -1641,7 +1625,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
     profile.cleanWinStreak = rewards.nextClean;
     const levels = levelUpFromGain(profile, rewards.xp);
-    pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank Coins · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · Clean streak bonus +' + rewards.cleanPct + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
+    pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank Coins · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · Clean Streak Bonus +' + rewards.cleanPct + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
     pairsBoardState.roundBank += rewards.bank;
     pairsBoardState.completed = true;
     persistPairsRound();
@@ -1661,11 +1645,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(cleanBreak) pairsBoardState.hadFailure = true;
     profiles.pairs.currentStreak = 0;
     if(penaltyEligible && penalty > 0){
-      pairsBoardState.lastMessage = 'Repeated miss. -' + penalty + ' Bank Coins. Clean streak reset.';
+      pairsBoardState.lastMessage = 'Repeated miss. -' + penalty + ' Bank Coins. Continue the board.';
     }else if(cleanBreak){
-      pairsBoardState.lastMessage = 'A previously selected card was chosen again in a miss. Clean streak reset.';
+      pairsBoardState.lastMessage = 'A previously selected card was chosen again in a miss. Continue the board.';
     }else{
-      pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections, so clean status is preserved. Streak reset.';
+      pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections, so clean status is preserved. Continue the board.';
     }
     persistPairsRound();
     window.setTimeout(function(){
@@ -1721,7 +1705,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       pairsBoardState.hintBusy = false;
       persistPairsRound();
       renderPairsBoard();
-      refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs);
+      refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs,currentPairsTier().name);
     }, 860 + ((profiles.pairs.skills.insight || 0) * 120));
   }
   function spendPairsSkill(skillId){
@@ -1755,7 +1739,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
         ['Best streak',profile.bestStreak],
         ['Current streak',profile.currentStreak],
         ['Clean streak',profile.cleanWinStreak],
-        ['Bank earned',profile.bank],
+        ['Bank Coins earned',profile.bank],
         ['Current tier',currentPairsTier().name],
         ['Unlocked tiers',PAIRS_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + PAIRS_TIERS.length]
       ]);
@@ -1790,7 +1774,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const buttonLabel = locked ? ('Unlocks at Player Rank ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
       return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Rank ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires Player Rank ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-pairs-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
     }).join('');
-    refs.pairsSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Insight ' + profile.skills.insight + ' · Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank Coins · Recall -' + profile.skills.recall + ' repeat loss · Tempo -' + (profile.skills.tempo * 90) + ' ms recovery</span><span class="inline-note">Clean streak bonus +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span>';
+    refs.pairsSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Insight ' + profile.skills.insight + ' · Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank Coins · Recall -' + profile.skills.recall + ' repeat loss · Tempo -' + (profile.skills.tempo * 90) + ' ms recovery</span><span class="inline-note">Clean Streak Bonus +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span>';
   }
   function renderPairsBoard(){
     const tier = currentPairsTier();
@@ -1807,7 +1791,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       setCompactActionButton(refs.pairsHintBtn,'?','Hint','H',0);
       applyPairsBoardLayout(tier);
       refs.pairsBoard.innerHTML = '<div class="empty-box"><strong>Pairs is ready.</strong><span class="inline-note">' + escapeHtml(pairsIdleMessage) + '</span></div>';
-      refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No board is active yet.',profiles.pairs);
+      refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No board is active yet.',profiles.pairs,currentPairsTier().name);
       return;
     }
     refs.pairsMovesValue.textContent = String(pairsBoardState.moves);
@@ -1821,7 +1805,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       ? '<div class="pairs-result-card"><strong>Board cleared</strong><div class="inline-note">' + pairsBoardState.moves + ' moves · ' + tier.pairs + ' pairs · Round Bank Coins ' + pairsBoardState.roundBank + '</div></div>'
       : '';
     refs.pairsBoard.innerHTML = cardsHtml + resultHtml;
-    refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs);
+    refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs,currentPairsTier().name);
   }
   function renderPairsSummary(){
     const profile = profiles.pairs;
@@ -1831,7 +1815,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const next = nextPairsTierToUnlock();
     const nextText = next ? ('Next unlock: ' + next.name + ' at Player Rank ' + next.unlockLevel + '.') : 'All Pairs board tiers are unlocked.';
     const skillText = 'Insight ' + profile.skills.insight + ' · Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Recall ' + profile.skills.recall + ' · Tempo -' + (profile.skills.tempo * 90) + ' ms';
-    return '<details class="game-summary-details" data-summary="pairs"><summary><span>Pairs</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Boards cleared: ' + profile.boardsCleared + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>Bank Coins from Pairs: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Current streak: ' + profile.currentStreak + '</span><span>Best streak: ' + profile.bestStreak + '</span></div><div class="game-summary-row"><span>Clean streak bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>' + current.pairs + ' pairs on current tier</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>' + skillText + '</span><span>Best streak: ' + profile.bestStreak + ' · unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+    return '<details class="game-summary-details" data-summary="pairs"><summary><span>Pairs</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Boards cleared: ' + profile.boardsCleared + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>Bank Coins from Pairs: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Current streak: ' + profile.currentStreak + '</span><span>Best streak: ' + profile.bestStreak + '</span></div><div class="game-summary-row"><span>Clean Streak Bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>' + current.pairs + ' pairs on current tier</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>' + skillText + '</span><span>Best streak: ' + profile.bestStreak + ' · unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
   }
 
   function currentMake24Tier(){
@@ -1932,7 +1916,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     try{ value = Function('"use strict"; return (' + raw + ');')(); }catch(_e){ value = NaN; }
     if(Number.isFinite(value) && Math.abs(value - (make24State.target || 24)) < 1e-6){
       const tier = currentMake24Tier();
-      const nextClean = make24State && !make24State.hadFailure ? profiles.make24.cleanWinStreak + 1 : 0;
+      const nextClean = profiles.make24.cleanWinStreak + 1;
       const cleanPct = cleanWinBonusPct(nextClean) / 100;
       const bankGain = Math.round(tier.bankReward * (1 + (profiles.make24.skills.banker || 0) * 0.10) * (1 + cleanPct));
       const xpGain = Math.round(tier.xpReward * (1 + (profiles.make24.skills.flow || 0) * 0.08) * (1 + cleanPct));
@@ -1941,7 +1925,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       profiles.make24.cleanWinStreak = nextClean;
       const levels = levelUpFromGain(profiles.make24, xpGain);
       make24State.roundBank += bankGain;
-      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + (nextClean ? ' · Clean streak bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
+      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + (nextClean ? ' · Clean Streak Bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
       make24State.revealSolution = '';
       make24State.draftExpression = '';
       make24State.completed = true;
@@ -1953,7 +1937,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     }
     make24State.mistakes += 1;
     make24State.hadFailure = true;
-    profiles.make24.cleanWinStreak = 0;
     const penalty = Math.max(0, currentMake24Tier().penalty - (profiles.make24.skills.precision || 0));
     if(make24State.mistakes > 1 && penalty > 0){
       profiles.make24.bank = Math.max(0, profiles.make24.bank - penalty);
@@ -2022,7 +2005,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
         ['Puzzles solved',profile.puzzlesSolved],
         ['Runs started',profile.gamesPlayed],
         ['Clean streak',profile.cleanWinStreak],
-        ['Bank earned',profile.bank],
+        ['Bank Coins earned',profile.bank],
         ['Current tier',currentMake24Tier().name],
         ['Unlocked tiers',MAKE24_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + MAKE24_TIERS.length],
         ['Guide level',profile.skills.clarity],
@@ -2159,7 +2142,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       if(refs.make24HintBtn) refs.make24HintBtn.disabled = true;
       if(refs.make24RerollBtn) refs.make24RerollBtn.disabled = true;
       refs.make24Board.innerHTML = '<div class="empty-box"><strong>Make The Number is ready.</strong><span class="inline-note">' + escapeHtml(make24IdleMessage) + '</span></div>';
-      refs.make24RoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No puzzle is active yet.',profiles.make24);
+      refs.make24RoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No puzzle is active yet.',profiles.make24,currentMake24Tier().name);
       return;
     }
     refs.make24MistakesValue.textContent = String(make24State.mistakes);
@@ -2190,9 +2173,10 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       '</form>';
     refs.make24Board.innerHTML = '<div class="formula-box"><div class="make-number-target"><span>Target</span><strong>' + escapeHtml(String(make24State.target||24)) + '</strong></div><div class="numbers-strip">' + numberButtons + '</div>' + builder + (make24State.revealSolution?'<div class="solution-box">' + escapeHtml(make24State.revealSolution) + '</div>':'') + '</div>';
     refs.make24ExpressionInput=document.getElementById('make24ExpressionInput');
-    refs.make24RoundSummary.innerHTML=coherentRoundStatusHtml('Round Status',make24State.lastMessage,profiles.make24);
+    refs.make24RoundSummary.innerHTML=coherentRoundStatusHtml('Round Status',make24State.lastMessage,profiles.make24,currentMake24Tier().name);
     injectMobileGameControls('make24');
     syncMobileInputMode('make24');
+    syncDesktopKeypadState();
   }
   function renderMake24Summary(){
     const profile = profiles.make24;
@@ -2201,7 +2185,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const current = currentMake24Tier();
     const next = nextMake24TierToUnlock();
     const nextText = next ? ('Next unlock: ' + next.name + ' at Player Rank ' + next.unlockLevel + '.') : 'All Make The Number tiers are unlocked.';
-    return '<details class="game-summary-details" data-summary="make24"><summary><span>Make The Number</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Puzzles solved: ' + profile.puzzlesSolved + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>Bank Coins from Make The Number: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Clean streak bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Numbers up to ' + current.maxNumber + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Clarity ' + profile.skills.clarity + ' · Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Reserve ' + profile.skills.reserve + ' · Precision ' + profile.skills.precision + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+    return '<details class="game-summary-details" data-summary="make24"><summary><span>Make The Number</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Puzzles solved: ' + profile.puzzlesSolved + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>Bank Coins from Make The Number: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Clean Streak Bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Numbers up to ' + current.maxNumber + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Clarity ' + profile.skills.clarity + ' · Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Reserve ' + profile.skills.reserve + ' · Precision ' + profile.skills.precision + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
   }
 
   function currentWordTier(){
@@ -2526,7 +2510,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const profile = profiles.detectword;
       profile.wordsSolved += 1;
       profile.currentStreak += 1;
-      const nextClean = wordState && !wordState.hadFailure ? profile.cleanWinStreak + 1 : 0;
+      const nextClean = profile.cleanWinStreak + 1;
       profile.cleanWinStreak = nextClean;
       profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
       const rewardMult = computeWordRewardMultiplier(profile) * (1 + (cleanWinBonusPct(nextClean) / 100));
@@ -2589,7 +2573,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
         ['Best streak',profile.bestStreak],
         ['Current streak',profile.currentStreak],
         ['Clean streak',profile.cleanWinStreak],
-        ['Bank earned',profile.bank],
+        ['Bank Coins earned',profile.bank],
         ['Current tier',currentWordTier().name],
         ['Unlocked tiers',WORD_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + WORD_TIERS.length],
         ['Focus level',profile.skills.focus]
@@ -2631,7 +2615,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       refs.wordGuessesValue.textContent = '0 / 6';
       refs.wordRoundBankValue.textContent = '0';
       refs.wordBoard.innerHTML = '<div class="empty-box"><strong>Detect The Word is idle.</strong><span class="inline-note">' + escapeHtml(wordIdleMessage) + '</span></div>';
-      refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No word round is active yet.',profiles.detectword);
+      refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No word round is active yet.',profiles.detectword,currentWordTier().name);
       return;
     }
     refs.wordGuessesValue.textContent = wordState.guesses.length + ' / ' + wordState.maxGuesses;
@@ -2657,7 +2641,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.wordGuessInput = document.getElementById('wordGuessInput');
     injectMobileGameControls('detectword');
     syncWordKeypadKnowledge();
-    refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',wordState.lastMessage,profiles.detectword);
+    syncDesktopKeypadState();
+    refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',wordState.lastMessage,profiles.detectword,currentWordTier().name);
     if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
   }
 
@@ -2668,7 +2653,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const current = currentWordTier();
     const next = nextWordTierToUnlock();
     const nextText = next ? ('Next unlock: ' + next.name + ' at Player Rank ' + next.unlockLevel + '.') : 'All Detect The Word tiers are unlocked.';
-    return '<details class="game-summary-details" data-summary="detectword"><summary><span>Detect The Word</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Words solved: ' + profile.wordsSolved + '</span><span>Best streak: ' + profile.bestStreak + '</span></div><div class="game-summary-row"><span>Bank Coins from Detect The Word: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Clean streak bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Reserve ' + profile.skills.reserve + ' · Focus ' + profile.skills.focus + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+    return '<details class="game-summary-details" data-summary="detectword"><summary><span>Detect The Word</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Words solved: ' + profile.wordsSolved + '</span><span>Best streak: ' + profile.bestStreak + '</span></div><div class="game-summary-row"><span>Bank Coins from Detect The Word: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Clean Streak Bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Reserve ' + profile.skills.reserve + ' · Focus ' + profile.skills.focus + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
   }
 
   function resolveNinjaBonuses(){ const method = realmHostMethod('resolveBonuses'); return method ? method() : {}; }
@@ -2686,7 +2671,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     }
     const profile = profiles.ninja || fallbackNinjaProfile();
     const traits = profile.bonusCache && Array.isArray(profile.bonusCache.unlockedTraits) ? profile.bonusCache.unlockedTraits : [];
-    return '<details class="game-summary-details" data-summary="ninja"><summary><span>Baseline Realm</span><span class="inline-note">Stage ' + profile.stage + '</span></summary><div class="game-summary-body"><div class="game-summary-row"><span>Highest stage: ' + profile.highestStage + '</span><span>Spirit: ' + profile.spirit + '</span></div><div class="game-summary-row"><span>Total coins earned: ' + formatInt(profile.totalCoinsEarned) + '</span><span>Bosses defeated: ' + profile.bossesDefeated + '</span></div><div class="game-summary-row"><span>Clean streak bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Resolved bonus traits</span><span>' + escapeHtml(traits.join(' · ') || 'Baseline Realm loads when selected.') + '</span></div></div></details>';
+    return '<details class="game-summary-details" data-summary="ninja"><summary><span>Baseline Realm</span><span class="inline-note">Stage ' + profile.stage + '</span></summary><div class="game-summary-body"><div class="game-summary-row"><span>Highest stage: ' + profile.highestStage + '</span><span>Spirit: ' + profile.spirit + '</span></div><div class="game-summary-row"><span>Total coins earned: ' + formatInt(profile.totalCoinsEarned) + '</span><span>Bosses defeated: ' + profile.bossesDefeated + '</span></div><div class="game-summary-row"><span>Clean Streak Bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Resolved bonus traits</span><span>' + escapeHtml(traits.join(' · ') || 'Baseline Realm loads when selected.') + '</span></div></div></details>';
   }
 
 
@@ -3038,7 +3023,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     trackCoinState.lastResult = correct ? 'correct' : 'missed';
     const reward = grantTrackCoinRewards(correct);
     trackCoinState.message = correct
-      ? 'Correct. The coin was under the cup you chose. Cup speed rises from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. +' + reward.coinGain + ' Bank Coins · +' + reward.xpGain + ' XP' + (reward.cleanPct ? ' · Clean streak bonus +' + reward.cleanPct + '%' : '') + (reward.levelUps ? ' · Player Rank +' + reward.levelUps : '') + '.'
+      ? 'Correct. The coin was under the cup you chose. Cup speed rises from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. +' + reward.coinGain + ' Bank Coins · +' + reward.xpGain + ' XP' + (reward.cleanPct ? ' · Clean Streak Bonus +' + reward.cleanPct + '%' : '') + (reward.levelUps ? ' · Player Rank +' + reward.levelUps : '') + '.'
       : 'Missed. The coin has been revealed under the correct cup. Cup speed falls from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. Streak reset. +' + reward.coinGain + ' Bank Coins · +' + reward.xpGain + ' XP.';
     persistTrackCoinRound();
     resolveNinjaBonuses();
@@ -3183,12 +3168,10 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       setCompactActionButton(replayButton,'↻',trackCoinState && trackCoinState.reviewActive ? 'Replaying shuffle' : 'Replay last shuffle','Alt+P');
     }
     const trackCoinResultClass = trackCoinState && trackCoinState.resolved && !trackCoinState.reviewActive ? (' trackcoin-status-result--' + (trackCoinState.lastResult || 'resolved')) : '';
-    const trackCoinStatusTitle = trackCoinState && trackCoinState.reviewActive
-      ? 'Round Status — Reviewing'
-      : (trackCoinState && trackCoinState.resolved ? (trackCoinState.lastResult === 'correct' ? 'Round Status — Correct' : 'Round Status — Missed') : 'Round Status');
     const trackCoinStatusMessage = trackCoinState ? trackCoinState.message : 'No round active yet. Press New Game when you are ready.';
-    const passiveText = 'Passive to Ninja Training: +' + Math.round((Math.min(0.10, profile.level * 0.0025) + Math.min(0.04, (profile.skills.read || 0) * 0.01)) * 100) + '% efficiency from Track the Coin progression.';
-    const roundStatusHtml = '<div class="summary-box round-status-card trackcoin-game-status' + trackCoinResultClass + '" id="trackCoinSummary"><strong>' + escapeHtml(trackCoinStatusTitle) + '</strong><span class="inline-note">' + escapeHtml(trackCoinStatusMessage) + '</span><span class="inline-note">' + escapeHtml(passiveText) + '</span></div>';
+    const roundStatusHtml = '<div class="summary-box round-status-card trackcoin-game-status' + trackCoinResultClass + '" id="trackCoinSummary">'
+      + coherentRoundStatusHtml('Round Status',trackCoinStatusMessage,profile,currentTrackCoinTier().name)
+      + '</div>';
 
     if(!trackCoinState){
       refs.trackCoinBoard.innerHTML = '<div class="empty-box trackcoin-idle-card"><strong>Track the Coin is idle.</strong><span class="inline-note">Choose a tier and press New Game when you are ready.</span><span class="inline-note">The coin will be shown first, then covered, then shuffled. ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '.</span><span class="inline-note">Use the New Game control at the bottom-right of the game window.</span></div>';
@@ -3211,7 +3194,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       ? '<div class="trackcoin-resume-card"><strong>Saved round ready</strong><span class="inline-note">The same coin and exact saved shuffle are waiting.</span><button class="action primary" data-action="resume-trackcoin" type="button">Resume Shuffle</button></div>'
       : '';
     const pickPrompt=trackCoinState.phase==='pick'&&!trackCoinState.resolved ? '<div class="trackcoin-pick-prompt">Choose the cup</div>' : '';
-    refs.trackCoinBoard.innerHTML = '<div id="trackCoinScene" class="trackcoin-scene' + phaseClass + (trackCoinState.phase === 'hide' ? ' is-busy' : '') + (trackCoinState.resolved ? ' is-resolved' : '') + '">' + roundStatusHtml + '<div class="trackcoin-status"><strong>' + escapeHtml(tier.name) + '</strong><span class="inline-note">Containers ' + tier.containers + ' · ' + escapeHtml(trackCoinSpeedStatusText(profile)) + ' · Clean streak bonus +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span></div>' + resumeHtml + '<div class="trackcoin-lane" data-cups="' + tier.containers + '">' + pickPrompt + coinHtml + positions + '</div></div>';
+    refs.trackCoinBoard.innerHTML = '<div id="trackCoinScene" class="trackcoin-scene' + phaseClass + (trackCoinState.phase === 'hide' ? ' is-busy' : '') + (trackCoinState.resolved ? ' is-resolved' : '') + '">' + roundStatusHtml + '<div class="trackcoin-status"><strong>' + escapeHtml(tier.name) + '</strong><span class="inline-note">Containers ' + tier.containers + ' · ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '</span></div>' + resumeHtml + '<div class="trackcoin-lane" data-cups="' + tier.containers + '">' + pickPrompt + coinHtml + positions + '</div></div>';
     ensureGamePlayContract();
   }
   function renderTrackCoinSummary(){
@@ -3219,7 +3202,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const needed = xpNeededForLevel(profile.level);
     const pct = clamp((profile.xp / needed) * 100, 0, 100);
     const current = currentTrackCoinTier();
-    return '<details class="game-summary-details" data-summary="trackcoin"><summary><span>Track the Coin</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Current tier: ' + current.name + '</span><span>Bank Coins: ' + profile.coins + '</span></div><div class="game-summary-row"><span>Cup speed: ' + trackCoinCurrentSpeedPercent(profile) + '%</span><span>Best speed: ' + trackCoinNormaliseSpeedPercent(profile.bestTrackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT) + '%</span></div><div class="game-summary-row"><span>Clean streak bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>Best streak: ' + profile.bestStreak + '</span><span>Accuracy: ' + Math.round(trackCoinAccuracy(profile) * 100) + '%</span></div><div class="game-summary-row"><span>Total correct: ' + profile.totalCorrect + '</span><span>Rounds played: ' + profile.totalRounds + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Read ' + profile.skills.read + ' · Banker ' + profile.skills.banker + ' · Flow ' + profile.skills.flow + ' · Discipline ' + profile.skills.discipline + ' · Pace Control -' + (profile.skills.steal * 4) + '%</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+    return '<details class="game-summary-details" data-summary="trackcoin"><summary><span>Track the Coin</span><span class="inline-note">Player Rank ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Current tier: ' + current.name + '</span><span>Bank Coins: ' + profile.coins + '</span></div><div class="game-summary-row"><span>Cup speed: ' + trackCoinCurrentSpeedPercent(profile) + '%</span><span>Best speed: ' + trackCoinNormaliseSpeedPercent(profile.bestTrackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT) + '%</span></div><div class="game-summary-row"><span>Clean Streak Bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>Best streak: ' + profile.bestStreak + '</span><span>Accuracy: ' + Math.round(trackCoinAccuracy(profile) * 100) + '%</span></div><div class="game-summary-row"><span>Total correct: ' + profile.totalCorrect + '</span><span>Rounds played: ' + profile.totalRounds + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Read ' + profile.skills.read + ' · Banker ' + profile.skills.banker + ' · Flow ' + profile.skills.flow + ' · Discipline ' + profile.skills.discipline + ' · Pace Control -' + (profile.skills.steal * 4) + '%</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
   }
 
 
@@ -3486,7 +3469,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const tier = currentRuleShiftTier();
     const xpMult = 1 + ((profile.skills.focus || 0) * 0.08);
     const bankMult = 1 + ((profile.skills.banker || 0) * 0.10);
-    const nextClean = ruleShiftState.hadFailure ? 0 : profile.cleanWinStreak + 1;
+    const nextClean = profile.cleanWinStreak + 1;
     const cleanBonus = cleanWinBonusPct(nextClean);
     const xpGain = Math.max(1, Math.round((tier.xpReward + ruleShiftState.roundBank) * xpMult * (1 + cleanBonus / 100)));
     const bankGain = Math.max(0, Math.round((tier.bankReward + ruleShiftState.roundBank) * bankMult * (1 + cleanBonus / 100)));
@@ -3500,6 +3483,32 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     renderAll();
     scheduleAutoNext('ruleshift', startRuleShiftRound, AUTO_NEXT_DELAYS.ruleshift);
   }
+  function useRuleShiftHint(){
+    if(!ruleShiftState || ruleShiftState.finished || !ruleShiftState.currentRule) return;
+    const rule=ruleShiftState.currentRule;
+    const valid=(ruleShiftState.options||[]).filter(function(option){ return ruleShiftMatches(rule,option); });
+    if(valid.length!==1){
+      ruleShiftState.lastMessage='Hint unavailable for this board. Re-read the current rule.';
+      persistRuleShiftRound(); renderAll(); return;
+    }
+    const target=valid[0];
+    const distractors=(ruleShiftState.options||[]).filter(function(option){ return option.id!==target.id; });
+    const descriptors=[
+      {key:'colour',value:ruleShiftName(RULESHIFT_COLOURS,target.colour)},
+      {key:'shape',value:ruleShiftName(RULESHIFT_SHAPES,target.shape)},
+      {key:'size',value:ruleShiftName(RULESHIFT_SIZES,target.size)}
+    ];
+    descriptors.forEach(function(item){
+      item.eliminated=distractors.filter(function(option){ return String(option[item.key])!==String(target[item.key]); }).length;
+    });
+    descriptors.sort(function(a,b){ return b.eliminated-a.eliminated; });
+    const first=descriptors[0],second=descriptors[1];
+    const targetLabel=[ruleShiftName(RULESHIFT_COLOURS,target.colour),ruleShiftName(RULESHIFT_SIZES,target.size),ruleShiftName(RULESHIFT_SHAPES,target.shape)].filter(Boolean).join(' ');
+    ruleShiftState.lastMessage='Hint: the current rule is “'+rule.label+'”. Eliminate by '+first.key+' first — keep '+first.value+'. Then check '+second.key+' — '+second.value+'. The surviving target is '+targetLabel+'.';
+    persistRuleShiftRound();
+    renderAll();
+  }
+
   function chooseRuleShiftOption(optionId){
     if(!ruleShiftState || ruleShiftState.finished || !ruleShiftState.currentRule) return;
     clearRuleShiftTimer();
@@ -3587,10 +3596,10 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(refs.ruleShiftRoundBankValue) refs.ruleShiftRoundBankValue.textContent = ruleShiftState ? ruleShiftState.roundBank : 0;
     if(!ruleShiftState){
       refs.ruleShiftBoard.innerHTML = '<div class="empty-box ruleshift-idle-card"><strong>Rule Shift is idle.</strong><span class="inline-note">' + escapeHtml(ruleShiftIdleMessage) + '</span><span class="inline-note">The target shape is always present. Start when ready.</span></div>';
-      refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No Rule Shift run is active yet.',profiles.ruleshift);
+      refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No Rule Shift run is active yet.',profiles.ruleshift,currentRuleShiftTier().name);
       return;
     }
-    refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',ruleShiftState.lastMessage,profiles.ruleshift);
+    refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',ruleShiftState.lastMessage,profiles.ruleshift,currentRuleShiftTier().name);
     if(ruleShiftState.finished){
       const finishedTitle = ruleShiftState.failed ? 'Run failed.' : 'Run complete.';
       const finishedPrompt = ruleShiftState.failed ? 'Incorrect answers end the run. Press New Game to try again.' : 'Press New Game to begin another switching run.';
@@ -3626,7 +3635,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       ['Best streak',profile.bestStreak],
       ['Current streak',profile.currentStreak],
       ['Clean streak',profile.cleanWinStreak],
-      ['Bank earned',profile.bank],
+      ['Bank Coins earned',profile.bank],
       ['Current tier',currentRuleShiftTier().name]
     ]);
     renderCompactGameXp('ruleshift',profile);
@@ -4148,6 +4157,9 @@ function toggleGameFullscreen(gameId){
         if(!typing && key === 'h'){ event.preventDefault(); useMake24Hint(); return; }
         if(!typing && key === 'j'){ event.preventDefault(); rerollMake24Puzzle(); return; }
       }
+      if(hotkeyGame === 'ruleshift' && !typing){
+        if(key === 'h'){ event.preventDefault(); useRuleShiftHint(); return; }
+      }
     });
     document.addEventListener('submit', function(event){
       const make24Form = event.target.closest('#make24ExpressionForm');
@@ -4166,18 +4178,24 @@ function toggleGameFullscreen(gameId){
       });
     }
     if(refs.trackCoinBoard){
-      refs.trackCoinBoard.addEventListener('click',function(event){
+      const selectTrackCoinCup=function(event){
         const cup=event.target instanceof Element ? event.target.closest('.trackcoin-cup[data-trackcoin-pick]') : null;
         if(!cup || !refs.trackCoinBoard.contains(cup)) return;
+        if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
         event.preventDefault();
+        event.stopPropagation();
         chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
-      });
+      };
+      refs.trackCoinBoard.addEventListener('pointerup',selectTrackCoinCup,true);
+      refs.trackCoinBoard.addEventListener('click',selectTrackCoinCup,true);
     }
     if(refs.pairsHintBtn){ setCompactActionButton(refs.pairsHintBtn,'?','Hint','H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
     if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard', 'push'); });
     if(refs.newWordRoundBtn) setCompactActionButton(refs.newWordRoundBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     if(refs.newTrackCoinRoundBtn) setCompactActionButton(refs.newTrackCoinRoundBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     if(refs.newRuleShiftBtn) setCompactActionButton(refs.newRuleShiftBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
+    const ruleShiftHintBtn=document.getElementById('ruleShiftHintBtn');
+    if(ruleShiftHintBtn){ setCompactActionButton(ruleShiftHintBtn,'?','Hint','H'); ruleShiftHintBtn.addEventListener('click',useRuleShiftHint); }
     if(refs.wordSkillAlertBtn) refs.wordSkillAlertBtn.addEventListener('click', function(){ if(profiles.detectword.skillPoints > 0) setWordPanel('wordSkillCard', 'push'); });
     if(refs.newMake24Btn) setCompactActionButton(refs.newMake24Btn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     if(refs.make24HintBtn){ setCompactActionButton(refs.make24HintBtn,'?','Guide','H'); refs.make24HintBtn.addEventListener('click', useMake24Hint); }

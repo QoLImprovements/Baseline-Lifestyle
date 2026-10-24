@@ -855,34 +855,60 @@ body[data-app="recreation"] #crossnumberGamePanel .crossnumber-round-status{
 }
 
 
-body[data-app="recreation"] #crossnumberGamePanel .crossnumber-fullscreen-skills{
-  display:none;
-}
+
+
+/* 2026-10-24 Cross Number coherence repair. */
 @media(min-width:821px){
-  body[data-app="recreation"] #crossnumberGamePanel:fullscreen{
-    grid-template-rows:auto auto minmax(0,1fr) auto auto auto!important;
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-play-layout{
+    grid-template-columns:minmax(0,1fr) minmax(250px,27%)!important;
+    gap:12px!important;
   }
-  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-fullscreen-skills{
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-scroll{
     display:grid!important;
-    position:relative!important;
-    grid-column:2!important;
-    grid-row:4!important;
-    z-index:2!important;
-    gap:4px!important;
-    align-content:start!important;
-    min-width:0!important;
-    width:auto!important;
-    margin:0 8px!important;
-    padding:9px!important;
-    overflow:auto!important;
-    border:1px solid var(--cn-border)!important;
-    border-radius:12px!important;
-    background:rgba(var(--recreation-burgundy-rgb),.30)!important;
+    place-items:center!important;
+    padding:4px!important;
   }
-  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-complete{
-    grid-row:5!important;
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board{
+    place-self:center!important;
   }
-  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-actions.game-common-actions{
-    grid-row:6!important;
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-round-status .round-status-heading{
+    text-align:center!important;
+    font-weight:900!important;
+    margin-bottom:10px!important;
   }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-round-status .round-status-metrics{
+    display:grid!important;
+    gap:6px!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-round-status .round-status-metrics>div{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:8px!important;
+  }
+}
+
+
+/* Cross Number keeps puzzle-specific controls beneath Numbers, but its shared
+   fullscreen controls use the same fixed common-control cells. */
+@media(min-width:821px){
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions{
+    display:grid!important;
+    grid-template-columns:repeat(7,38px)!important;
+    grid-template-rows:38px 38px!important;
+    gap:6px!important;
+    width:max-content!important;
+    height:82px!important;
+    padding:0!important;
+    border-top:0!important;
+    justify-content:start!important;
+    align-content:end!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.action{
+    width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;padding:0!important;margin:0!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.start-new-game-toggle{grid-column:1;grid-row:1}
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.auto-next-toggle{grid-column:1;grid-row:2}
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.games-music-quick-toggle{grid-column:6;grid-row:1}
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.game-fullscreen-toggle{grid-column:7;grid-row:1}
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-common-actions>.games-settings-trigger{grid-column:7;grid-row:2}
 }
