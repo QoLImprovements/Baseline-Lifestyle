@@ -1858,3 +1858,77 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
   }
 }
 
+
+
+/* 2026-10-24 Recreation idle/start alignment authority.
+   Idle content must not inherit the multi-column geometry used by an active
+   game. Every standard Recreation start state is centred as one deliberate
+   content group, with its common controls centred beneath the message. */
+body[data-app="recreation"] :is(
+  #pairsPanel #pairsBoard.is-pairs-idle > .empty-box,
+  #detectwordPanel #wordBoard > .empty-box,
+  #make24Panel #make24Board > .empty-box,
+  #trackcoinPanel #trackCoinBoard > .trackcoin-idle-card,
+  #ruleshiftPanel #ruleShiftBoard > .ruleshift-idle-card,
+  #blockGridPanel #blockGridGameCard > .block-grid-empty,
+  #colourSortPanel #colourSortGameCard > .colour-sort-empty
+){
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-content:center!important;
+  justify-items:center!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:clamp(22px,4vw,42px)!important;
+  gap:12px!important;
+  text-align:center!important;
+}
+body[data-app="recreation"] :is(
+  #pairsPanel #pairsBoard.is-pairs-idle > .empty-box,
+  #detectwordPanel #wordBoard > .empty-box,
+  #make24Panel #make24Board > .empty-box,
+  #trackcoinPanel #trackCoinBoard > .trackcoin-idle-card,
+  #ruleshiftPanel #ruleShiftBoard > .ruleshift-idle-card,
+  #blockGridPanel #blockGridGameCard > .block-grid-empty,
+  #colourSortPanel #colourSortGameCard > .colour-sort-empty
+) > :is(p,strong,.inline-note){
+  width:min(100%,620px)!important;
+  max-width:620px!important;
+  margin-inline:auto!important;
+  text-align:center!important;
+}
+body[data-app="recreation"] :is(
+  #blockGridPanel #blockGridGameCard,
+  #colourSortPanel #colourSortGameCard
+) > :is(.block-grid-empty,.colour-sort-empty){
+  grid-column:1/-1!important;
+  grid-row:1/-1!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  min-height:clamp(320px,45vh,520px)!important;
+}
+body[data-app="recreation"] :is(
+  #blockGridPanel #blockGridGameCard > .block-grid-empty,
+  #colourSortPanel #colourSortGameCard > .colour-sort-empty
+) > .game-window-actions.game-common-actions{
+  display:flex!important;
+  width:max-content!important;
+  max-width:100%!important;
+  margin:6px auto 0!important;
+  justify-self:center!important;
+  align-self:center!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:8px!important;
+}
+@media(max-width:820px){
+  body[data-app="recreation"] :is(
+    #blockGridPanel #blockGridGameCard,
+    #colourSortPanel #colourSortGameCard
+  ) > :is(.block-grid-empty,.colour-sort-empty){
+    min-height:280px!important;
+  }
+}
