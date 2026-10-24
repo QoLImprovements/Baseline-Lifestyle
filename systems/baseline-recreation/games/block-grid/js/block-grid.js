@@ -324,8 +324,12 @@ function renderGame() {
       <div class="block-grid-skill-head"><strong>Special</strong><span>${Math.round(active.skillCharge || 0)}%</span></div>
       <div class="block-grid-skill-meter" role="progressbar" aria-label="Special skill charge" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(active.skillCharge || 0)}"><span style="width:${Math.min(100,active.skillCharge || 0)}%"></span></div>
       <div class="block-grid-skill-actions">
-        <button class="action ghost game-control-icon" data-block-action="blast" type="button" data-tooltip="Clear 4 × 4 · Bomb" title="Clear 4 × 4 · Bomb" aria-label="Clear 4 by 4" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}><span aria-hidden="true">💣</span><span class="sr-only">Clear 4 × 4</span></button>
-        <button class="action ghost game-control-icon" data-block-action="rows" type="button" data-tooltip="Clear 2 Rows · Plow" title="Clear 2 Rows · Plow" aria-label="Clear 2 rows" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}><span aria-hidden="true">🚜</span><span class="sr-only">Clear 2 Rows</span></button>
+        ${BLOCK_SKILLS.map(skill => {
+          const unlocked=blockSkillUnlocked(skill.id);
+          const ready=unlocked && (active.skillCharge || 0) >= 100;
+          const label=unlocked ? skill.description : ('Unlocks at Player Rank ' + skill.unlockLevel);
+          return '<button class="action ghost game-control-icon block-grid-skill-button' + (unlocked ? ' is-unlocked' : ' is-locked') + '" data-block-action="' + skill.id + '" type="button" data-tooltip="' + escapeHtml(label) + '" title="' + escapeHtml(label) + '" aria-label="' + escapeHtml(skill.name) + '" ' + (ready ? '' : 'disabled') + '><span aria-hidden="true">' + (unlocked ? skill.icon : '🔒') + '</span><span class="sr-only">' + escapeHtml(skill.name) + '</span></button>';
+        }).join('')}
       </div>
     </div>
     <div class="block-grid-play-cluster">
@@ -357,6 +361,15 @@ function renderModes() {
     <div class="summary-box"><strong>Difficulty tiers</strong><span class="inline-note">Each tier produces many unpredictable games from random piece trays. Difficulty comes from the tier rules, not a fixed sequence of levels.</span></div>`;
 }
 
+function renderSkills() {
+  const root=document.getElementById('blockGridSkillsCard');
+  if(!root || !profile) return;
+  root.innerHTML = '<div class="block-grid-skill-unlock-list">' + BLOCK_SKILLS.map(skill => {
+    const unlocked=profile.level >= skill.unlockLevel;
+    return '<article class="skill-item block-grid-skill-unlock' + (unlocked ? ' is-unlocked' : ' is-locked') + '"><div class="skill-meta"><h4>' + skill.icon + ' ' + escapeHtml(skill.name) + '</h4><span>' + (unlocked ? 'Unlocked' : 'Player Rank ' + skill.unlockLevel) + '</span></div><p>' + escapeHtml(skill.description) + '</p></article>';
+  }).join('') + '</div><div class="summary-box"><strong>Score-based progression</strong><span class="inline-note">Each completed run converts score to XP at 10 points = 1 XP. Higher scores therefore advance Player Rank and unlock Specials over time.</span></div>';
+}
+
 function renderProgress() {
   const root = document.getElementById('blockGridProgressCard');
   if (!root) return;
@@ -375,10 +388,11 @@ function renderProgress() {
       <div class="coherent-progress-stat"><span>Lines cleared</span><strong>${profile.totalLines}</strong></div>
       <div class="coherent-progress-stat"><span>Pieces placed</span><strong>${profile.totalPieces}</strong></div>
       <div class="coherent-progress-stat"><span>Current tier</span><strong>${escapeHtml(currentMode().name)}</strong></div>
+      <div class="coherent-progress-stat"><span>Specials unlocked</span><strong>${BLOCK_SKILLS.filter(skill => profile.level >= skill.unlockLevel).length} / ${BLOCK_SKILLS.length}</strong></div>
     </div>`;
 }
 
-const BLOCK_TABS = Object.freeze(['game','modes','progress']);
+const BLOCK_TABS = Object.freeze(['game','skills','modes','progress']);
 
 function blockTabFromLocation() {
   if (!/^\/baseline-recreation\/games\/block-grid\/?$/i.test(String(location.pathname || ''))) return 'game';
@@ -401,7 +415,7 @@ function blockTabUrl(name) {
 function setTab(name, historyMode = 'none') {
   const next = BLOCK_TABS.includes(name) ? name : 'game';
   document.querySelectorAll('[data-block-tab]').forEach(button => button.classList.toggle('is-active', button.dataset.blockTab === next));
-  for (const id of ['Game','Modes','Progress']) {
+  for (const id of ['Game','Skills','Modes','Progress']) {
     const card = document.getElementById(`blockGrid${id}Card`);
     if (card) card.hidden = id.toLowerCase() !== next;
   }
@@ -421,6 +435,7 @@ function render() {
   renderGameInfo();
   renderGame();
   renderModes();
+  renderSkills();
   renderProgress();
   shell.refreshOverview();
 }
