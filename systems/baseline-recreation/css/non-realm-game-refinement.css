@@ -2049,63 +2049,6 @@ body[data-app="recreation"] :is(#blockGridGameCard,#colourSortGameCard) .round-s
   }
 }
 
-/* Fullscreen control docks must reflow with browser zoom. Fixed seven-column
-   placement caused Settings and Fullscreen to leave the visible rail. */
-@media(min-width:821px){
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > .game-specific-actions{
-    grid-column:2!important;
-    grid-row:4!important;
-    display:flex!important;
-    flex-wrap:wrap!important;
-    width:calc(100% - 16px)!important;
-    max-width:calc(100% - 16px)!important;
-    height:auto!important;
-    min-height:38px!important;
-    margin:0 8px!important;
-    padding:0!important;
-    gap:6px!important;
-    justify-content:flex-start!important;
-    align-content:flex-end!important;
-    pointer-events:auto!important;
-  }
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > .game-window-actions{
-    grid-column:2!important;
-    grid-row:5!important;
-    display:flex!important;
-    flex-wrap:wrap!important;
-    width:calc(100% - 16px)!important;
-    max-width:calc(100% - 16px)!important;
-    height:auto!important;
-    min-height:38px!important;
-    margin:0 8px!important;
-    padding:7px 0 0!important;
-    gap:6px!important;
-    justify-content:flex-start!important;
-    align-content:flex-end!important;
-    border-top:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
-    pointer-events:auto!important;
-  }
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions)>.action{
-    grid-column:auto!important;
-    grid-row:auto!important;
-    flex:0 0 38px!important;
-    width:38px!important;
-    min-width:38px!important;
-    max-width:38px!important;
-    height:38px!important;
-    min-height:38px!important;
-    margin:0!important;
-    padding:0!important;
-  }
-}
-
-
 /* Fine-pointer fullscreen remains desktop-coherent even when browser zoom
    reduces the CSS viewport below the ordinary desktop breakpoint. */
 @media(pointer:fine){
@@ -2135,31 +2078,6 @@ body[data-app="recreation"] :is(#blockGridGameCard,#colourSortGameCard) .round-s
   }
   body[data-app="recreation"] #wordGameCard:fullscreen .mobile-word-keypad{
     margin-top:10px!important;
-  }
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > .game-specific-actions,
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > .game-window-actions{
-    display:flex!important;
-    flex-wrap:wrap!important;
-    grid-template-columns:none!important;
-    grid-template-rows:none!important;
-    width:calc(100% - 16px)!important;
-    max-width:calc(100% - 16px)!important;
-    height:auto!important;
-    max-height:none!important;
-    overflow:visible!important;
-    gap:6px!important;
-    pointer-events:auto!important;
-  }
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions)>.action{
-    grid-column:auto!important;
-    grid-row:auto!important;
-    flex:0 0 38px!important;
   }
 }
 
@@ -2238,6 +2156,40 @@ body[data-app="recreation"] :is(
     justify-content:stretch!important;
     overflow:auto!important;
   }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions){
+    display:flex!important;
+    flex-wrap:wrap!important;
+    grid-template-columns:none!important;
+    grid-template-rows:none!important;
+    width:calc(100% - 16px)!important;
+    max-width:calc(100% - 16px)!important;
+    min-width:0!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+    margin-inline:8px!important;
+    gap:6px!important;
+    justify-content:flex-start!important;
+    align-content:flex-end!important;
+    pointer-events:auto!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions)>.action{
+    grid-column:auto!important;
+    grid-row:auto!important;
+    flex:0 0 38px!important;
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+  }
+}
+
+@media(pointer:fine){
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions){
