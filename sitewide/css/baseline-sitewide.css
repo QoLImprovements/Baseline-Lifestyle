@@ -535,12 +535,6 @@ body[data-app="massage"]{
 }
 
 
-/* Keep flyout content usable on small screens */
-.bl-flyout .bl-player{
-  max-height: calc(100vh - 90px);
-  overflow-y: auto;
-}
-
 .bl-player input[type="range"]{
   width: 100%;
 }
@@ -638,10 +632,6 @@ body[data-app="fitness"]{
      gradient tokens only.
    - Replaces prior stacked overrides that were fighting each other.
    -------------------------------------------------------------------------- */
-html:not(.bl-pages-dd-ready) .bl-topnav{
-  display:flex !important;
-}
-
 .bl-homebar,
 .bl-homebar *,
 .bl-pages-dd,
@@ -776,7 +766,6 @@ body[data-app="skin"] .bl-flyout .bl-select-menu{
   filter: brightness(1.04) !important;
 }
 
-.bl-pages-menu,
 .bl-system-menu,
 .bl-flyout .bl-select-menu{
   padding: 10px !important;
@@ -1001,8 +990,6 @@ body[data-app="skin"] .bl-flyout .bl-select-menu{
   box-shadow: 0 0 0 4px var(--ring, rgba(0,0,0,.12)) !important;
 }
 
-#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input,
-#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input:not([type="range"]),
 #bl-auth-flyout .bl-auth-form input,
 #bl-auth-flyout .bl-auth-meta,
 #bl-auth-flyout .bl-auth-helper,
@@ -1756,8 +1743,6 @@ body:not([data-app="home"]) .diet-mini-stat{
 /* Recipe presentation is owned exclusively by sitewide/css/baseline-recipes.css. */
 
 /* Account + Binaural flyouts: solid panels and solid fields/buttons from current page palette. */
-body[data-app] #bl-auth-flyout .card,
-body[data-app] #bl-beats-flyout .card,
 body[data-app] .bl-flyout .card{
   background-image:none!important;
   background-color:var(--bl-surface-card-solid)!important;
@@ -1786,7 +1771,6 @@ body[data-app] .bl-flyout textarea{
   opacity:1!important;
   box-shadow:none!important;
 }
-body[data-app] #bl-auth-flyout .bl-auth-input-shell > input,
 body[data-app] #bl-auth-flyout .bl-auth-input-shell > input:not([type="range"]){
   background:transparent!important;
   background-image:none!important;
