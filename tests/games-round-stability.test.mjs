@@ -72,7 +72,7 @@ test('Track the Coin replay records and reuses the original cup permutation with
 });
 
 
-test('Pairs gives every physical card one clean selection before a repeat can break clean status', () => {
+test('Pairs treats any mismatch as a break in clean-board status', () => {
   const deck = functionBody('buildPairsDeck', 'startPairsBoard');
   const flip = functionBody('handlePairsCardFlip', 'usePairsHint');
   const mismatch = functionBody('handlePairsMismatch', 'handlePairsCardFlip');
@@ -85,7 +85,9 @@ test('Pairs gives every physical card one clean selection before a repeat can br
 
   assert.match(mismatch, /const cleanBreak = selectedCards\.some\(card => card\.wasKnown\)/);
   assert.match(mismatch, /const penaltyEligible = selectedCards\.every\(card => card\.wasKnown\)/);
-  assert.match(mismatch, /if\(cleanBreak\) pairsBoardState\.hadFailure = true/);
+  assert.match(mismatch, /pairsBoardState\.hadFailure = true/);
+  assert.match(mismatch, /profiles\.pairs\.cleanWinStreak = 0/);
+  assert.match(mismatch, /Mismatch\. Continue the board; this round is no longer clean\./);
   assert.match(mismatch, /Both cards were first selections, so clean status is preserved/);
 });
 
