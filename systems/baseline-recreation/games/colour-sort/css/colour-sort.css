@@ -351,3 +351,75 @@ html.is-dragging-colour-sort-bottle,html.is-dragging-colour-sort-bottle body{ove
   #colourSortPanel #colourSortGameCard:fullscreen > .game-window-actions>.game-fullscreen-toggle{grid-column:7;grid-row:1}
   #colourSortPanel #colourSortGameCard:fullscreen > .game-window-actions>.games-settings-trigger{grid-column:7;grid-row:2}
 }
+
+
+/* 2026-10-24 mobile fullscreen flow.
+   A phone cannot use the desktop information rail without overlapping the
+   puzzle. Keep every card in normal document flow inside the fullscreen
+   element and allow contained vertical scrolling. */
+@media(max-width:820px){
+  #colourSortPanel #colourSortGameCard:fullscreen{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    width:100vw!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    margin:0!important;
+    padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;
+    gap:8px!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior:contain!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen::before,
+  #colourSortPanel #colourSortGameCard:fullscreen::after{
+    display:none!important;
+    content:none!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen > :is(
+    .colour-sort-active-header,.game-live-xp,.round-status-card,
+    .colour-sort-progress-head,.colour-sort-progress-meter,.colour-sort-mechanic-note,
+    .game-specific-actions,.game-window-actions,.colour-sort-board
+  ){
+    position:relative!important;
+    inset:auto!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    margin:0!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    align-self:stretch!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen .colour-sort-active-header .stat-pills{
+    display:flex!important;
+    justify-content:center!important;
+    gap:5px!important;
+    flex-wrap:wrap!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen .round-status-card{
+    flex:0 0 auto!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen .colour-sort-progress-head{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:baseline!important;
+    gap:8px!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen .colour-sort-board{
+    flex:1 0 360px!important;
+    min-height:360px!important;
+    max-height:none!important;
+    padding:12px 8px!important;
+    overflow:visible!important;
+    align-content:center!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen .colour-sort-bottle{
+    width:clamp(52px,15vw,66px)!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen .colour-sort-glass{
+    height:clamp(138px,38vw,166px)!important;
+  }
+}
