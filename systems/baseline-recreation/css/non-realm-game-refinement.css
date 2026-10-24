@@ -1327,7 +1327,7 @@ body[data-app="recreation"] :is(
     box-sizing:border-box!important;
     display:grid!important;
     grid-template-columns:minmax(0,4fr) var(--recreation-fs-side)!important;
-    grid-template-rows:auto auto minmax(0,1fr) auto auto!important;
+    grid-template-rows:auto auto minmax(0,1fr) auto auto auto!important;
     gap:8px 12px!important;
     width:100vw!important;
     height:100dvh!important;
@@ -1368,7 +1368,7 @@ body[data-app="recreation"] :is(
   }
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > :is(.game-toolbar,.game-live-xp),
+  ):fullscreen > :is(.game-toolbar,.game-live-xp,.game-fullscreen-skills),
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > :is(.round-status-card,.game-specific-actions,.game-window-actions){
@@ -1437,8 +1437,24 @@ body[data-app="recreation"] :is(
   }
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > .game-specific-actions{
+  ):fullscreen > .game-fullscreen-skills{
+    display:grid!important;
     grid-row:4!important;
+    gap:4px!important;
+    align-content:start!important;
+    padding:9px!important;
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
+    border-radius:12px!important;
+    background:rgba(var(--recreation-burgundy-rgb),.30)!important;
+    overflow:auto!important;
+  }
+  body[data-app="recreation"] .game-fullscreen-skills{
+    display:none;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions{
+    grid-row:5!important;
     justify-content:flex-start!important;
     padding:0 2px!important;
     align-self:end!important;
@@ -1446,7 +1462,7 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > .game-window-actions{
-    grid-row:5!important;
+    grid-row:6!important;
     justify-content:flex-start!important;
     padding:8px 0 2px!important;
     margin:0 8px!important;
