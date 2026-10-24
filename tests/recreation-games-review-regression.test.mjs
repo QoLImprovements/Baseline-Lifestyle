@@ -273,7 +273,7 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/skill\.icon : '🔒'/);
   assert.match(blockCss,/block-grid-score-window[\s\S]*?grid-column:1!important/);
   assert.match(blockGrid,/active\.gameOver = !hasAnyPlacement\(active\.board, active\.tray\)/);
-  assert.match(blockGrid,/function xpForRunScore\(score\)[\s\S]*?Math\.round\(number\(score\) \/ 10\)/);
+  assert.match(blockGrid,/function xpForRunScore\(score\)[\s\S]*?const points=number\(score\)[\s\S]*?Math\.round\(points \/ 10\)/);
   assert.match(blockGrid,/function settleRunXp\(active\)[\s\S]*?active\.xpSettled=true[\s\S]*?awardXp\(profile,gained\)/);
   assert.match(blockGrid,/active\.gameOver = !hasAnyPlacement\(active\.board, active\.tray\);[\s\S]*?if\(active\.gameOver\) settleRunXp\(active\)/);
   assert.doesNotMatch(blockGrid,/awardXp\(profile, Math\.max\(1, Math\.ceil\(awardedScore \/ 5\)/);
