@@ -293,3 +293,215 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
 #blockGridPanel #blockGridGameCard:fullscreen .game-window-actions{
   margin-top:6px!important;
 }
+
+
+/* 2026-10-24 fullscreen side-panel and exact drag-ghost authority. */
+.block-grid-drag-ghost .block-grid-piece-shape{
+  grid-template-columns:repeat(var(--piece-cols),var(--drag-cell,18px))!important;
+  grid-template-rows:repeat(var(--piece-rows),var(--drag-cell,18px))!important;
+  gap:var(--drag-gap,3px)!important;
+  --block-piece-mini-cell:var(--drag-cell,18px)!important;
+}
+.block-grid-drag-ghost .block-grid-piece-cell{
+  width:var(--drag-cell,18px)!important;
+  height:var(--drag-cell,18px)!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen{
+  --block-fs-side:clamp(230px,20vw,330px);
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,4fr) var(--block-fs-side)!important;
+  grid-template-rows:auto auto minmax(0,1fr) auto auto auto!important;
+  gap:8px 12px!important;
+  width:100vw!important;
+  height:100dvh!important;
+  max-width:none!important;
+  max-height:100dvh!important;
+  padding:12px!important;
+  overflow:hidden!important;
+  align-content:stretch!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen::before{
+  display:none!important;
+  content:none!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  top:12px;
+  right:12px;
+  bottom:12px;
+  width:var(--block-fs-side);
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.24);
+  border-radius:18px;
+  background:linear-gradient(180deg,rgba(var(--recreation-rose-rgb),.25),rgba(var(--recreation-burgundy-rgb),.77));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+  pointer-events:none;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > :is(
+  .block-grid-active-header,.game-live-xp,.round-status-card,.block-grid-run-objective,.block-grid-skill,.game-window-actions
+){
+  grid-column:2!important;
+  position:relative!important;
+  z-index:2!important;
+  min-width:0!important;
+  width:auto!important;
+  margin:0 8px!important;
+  box-sizing:border-box!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .block-grid-active-header{
+  grid-row:1!important;
+  padding:8px 0 0!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .block-grid-active-header .stat-pills{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:5px!important;
+  width:100%!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .block-grid-active-header .stat-pill{
+  min-width:0!important;
+  padding:6px 7px!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .game-live-xp{
+  grid-row:2!important;
+  display:grid!important;
+  grid-template-columns:1fr auto!important;
+  gap:5px 7px!important;
+  padding:8px 0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .game-live-xp .game-live-xp__bar{
+  grid-column:1/-1!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .round-status-card{
+  grid-row:3!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overflow:auto!important;
+  padding:9px!important;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
+  background:rgba(var(--recreation-burgundy-rgb),.34)!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .block-grid-run-objective{
+  grid-row:4!important;
+  display:grid!important;
+  align-content:start!important;
+  gap:4px!important;
+  padding:5px 0!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .block-grid-run-objective > span{
+  white-space:normal!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .block-grid-skill{
+  grid-row:5!important;
+  padding:9px!important;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.18)!important;
+  border-radius:14px!important;
+  background:rgba(var(--recreation-burgundy-rgb),.32)!important;
+  align-self:end!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .block-grid-skill .block-grid-skill-actions{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:6px!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .game-window-actions{
+  grid-row:6!important;
+  justify-content:flex-start!important;
+  padding:8px 0 2px!important;
+  border-top:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
+  align-self:end!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen > .block-grid-play-cluster{
+  grid-column:1!important;
+  grid-row:1/-1!important;
+  z-index:1!important;
+  display:grid!important;
+  grid-template-rows:minmax(0,1fr) auto!important;
+  gap:8px!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  align-self:stretch!important;
+  justify-self:stretch!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-board-stage{
+  width:min(100%,calc(100dvh - 180px))!important;
+  max-width:min(100%,calc(100dvh - 180px))!important;
+  max-height:calc(100dvh - 170px)!important;
+  min-height:0!important;
+  place-self:center!important;
+  padding:6px!important;
+  box-sizing:border-box!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-board{
+  width:100%!important;
+  max-height:100%!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-tray-wrap{
+  width:100%!important;
+  max-width:900px!important;
+  min-height:0!important;
+  margin:0 auto!important;
+  padding:6px 8px!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-tray{
+  min-height:72px!important;
+  max-height:116px!important;
+  padding:6px 8px!important;
+  overflow:hidden!important;
+}
+#blockGridPanel #blockGridGameCard:fullscreen .block-grid-piece{
+  min-height:60px!important;
+  padding:5px!important;
+}
+
+
+/* Block Grid keeps Special as a real side panel on wider desktop layouts too. */
+@media(min-width:1080px){
+  #blockGridPanel #blockGridGameCard:not(:fullscreen){
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(240px,300px);
+    grid-template-rows:auto auto auto auto minmax(0,1fr) auto;
+    gap:10px 14px;
+    align-items:start;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > :is(
+    .block-grid-active-header,.game-live-xp,.round-status-card,.block-grid-run-objective
+  ){
+    grid-column:1/-1;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .block-grid-play-cluster{
+    grid-column:1;
+    grid-row:5/7;
+    width:100%;
+    max-width:none;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .block-grid-skill{
+    grid-column:2;
+    grid-row:5;
+    align-self:start;
+    width:100%;
+    margin:0;
+    padding:12px;
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.20);
+    border-radius:16px;
+    background:rgba(var(--recreation-burgundy-rgb),.34);
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen) > .game-window-actions{
+    grid-column:2;
+    grid-row:6;
+    align-self:end;
+    justify-content:flex-start!important;
+    margin:0;
+    padding-top:10px;
+    border-top:1px solid rgba(var(--recreation-copper-light-rgb),.16);
+  }
+}

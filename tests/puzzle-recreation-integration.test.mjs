@@ -150,14 +150,14 @@ test('Block Grid and Colour Sort follow the Core Games presentation contract', (
   assert.match(block, /function renderGameInfo\(\)/);
   assert.match(block, /onOpen:\(\) => \{[^}]*selectGame\?\.\('block-grid'\); render\(\); setTab\(blockTabFromLocation\(\), 'none'\); \}/);
   assert.doesNotMatch(block, /function ensureRun\(/);
-  assert.match(block, />New Game<\/button>/);
+  assert.match(block, /data-block-action="new"[^>]*aria-label="New Game"[^>]*>[\s\S]*?<span aria-hidden="true">＋<\/span>/);
 
   assert.match(colour, /data-game-info="coloursort"/);
   assert.match(colour, /<span>Game Info<\/span><span class="inline-note">Player Rank \/ XP \/ stats<\/span>/);
   assert.match(colour, /function renderGameInfo\(\)/);
   assert.match(colour, /onOpen:\(\) => \{[^}]*selectGame\?\.\('colour-sort'\); render\(\); setTab\(colourTabFromLocation\(\), 'none'\); \}/);
   assert.doesNotMatch(colour, /function ensurePuzzle\(/);
-  assert.match(colour, />New Game<\/button>/);
+  assert.match(colour, /data-colour-action="new"[^>]*aria-label="New Game"[^>]*>[\s\S]*?<span aria-hidden="true">＋<\/span>/);
   assert.match(colour, /function startTierGame\(tierId=profile\.selectedTier\)/);
   assert.match(colour, /function randomLevelForTier\(tierId\)/);
   assert.doesNotMatch(colour, /data-colour-level/);
@@ -208,7 +208,8 @@ test('non-Realm coherence fixes protect the reported gameplay failures', () => {
   assert.match(css, /#pairsPanel \.memory-card\.is-open \.memory-card-front,[\s\S]*?opacity:1!important/);
   assert.match(css, /ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/i);
   assert.match(css, /ruleshift-colour--white \.ruleshift-shape\{[\s\S]*?background:#f4f7fa!important/i);
-  assert.match(css, /ruleshift-shape--oval\{[\s\S]*?clip-path:ellipse\(50% 50% at 50% 50%\)!important/);
+  assert.match(css, /ruleshift-shape--oval,[\s\S]*?ruleshift-shape--circle\{[\s\S]*?clip-path:none!important/);
+  assert.match(css, /Rule Shift: crisp geometry[\s\S]*?box-shadow:none!important/);
   assert.match(css, /#ruleshiftPanel \.ruleshift-options-grid\{[\s\S]*?justify-content:center!important/);
   assert.match(css, /#detectwordPanel \.game-play-root\.desktop-keypad-open #wordBoard[\s\S]*?grid-template-columns:minmax\(380px,1fr\) minmax\(410px,\.82fr\)!important/);
 });

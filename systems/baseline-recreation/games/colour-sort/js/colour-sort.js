@@ -22,7 +22,7 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
-const BUILD = 'COLOUR_SORT_RECREATION_COHERENCE_20261024_1';
+const BUILD = 'COLOUR_SORT_RECREATION_FULLSCREEN_20261024_1';
 const APP = 'coloursort';
 const COLOUR_SORT_TIERS = Object.freeze([
   { id:'starter', name:'Starter', from:1, to:12 },
@@ -1017,7 +1017,7 @@ const shell = createGameExtensionShell({
   name:'Colour Sort',
   order:20,
   art:'/systems/baseline-recreation/games/colour-sort/art/colour-sort-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=GAMES_REVIEW_20261023_1',
+  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=RECREATION_FULLSCREEN_20261024_1',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `${tierById(profile.selectedTier).name} Tier · ${profile.gamesPlayed} games` : 'Ready',

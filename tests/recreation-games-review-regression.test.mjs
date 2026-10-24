@@ -85,8 +85,9 @@ test('Rule Shift uses a true oval and unmistakably separated categorical colours
   assert.match(nonRealmCss,/ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/i);
   assert.match(nonRealmCss,/ruleshift-colour--white \.ruleshift-shape\{[\s\S]*?background:#f4f7fa!important/i);
   assert.equal((nonRealmCss.match(/ruleshift-colour--red \.ruleshift-shape\{/gi)||[]).length,1);
-  assert.equal((nonRealmCss.match(/ruleshift-colour--white \.ruleshift-shape\{/gi)||[]).length,1);
-  assert.match(nonRealmCss,/ruleshift-shape--oval\{[\s\S]*?clip-path:ellipse\(50% 50% at 50% 50%\)!important/);
+  assert.equal((nonRealmCss.match(/ruleshift-colour--white \.ruleshift-shape\{background:#f4f7fa!important\}/gi)||[]).length,1);
+  assert.match(nonRealmCss,/Rule Shift: crisp geometry[\s\S]*?box-shadow:none!important[\s\S]*?transform:none!important/);
+  assert.match(nonRealmCss,/ruleshift-shape--oval,[\s\S]*?ruleshift-shape--circle\{[\s\S]*?clip-path:none!important/);
 });
 
 test('Track the Coin uses one continuous shuffle timeline and reliably selectable cups',()=>{
@@ -101,8 +102,8 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/trackCoinAnimationFrame=window\.requestAnimationFrame\(frame\)/);
   assert.match(core,/data-trackcoin-pick="' \+ escapeHtml\(cup\.id\) \+ '"/);
   assert.match(core,/trackCoinState\.cups\.find\(function\(cup\)\{ return cup\.id===choice; \}\)/);
-  assert.match(core,/refs\.trackCoinBoard\.addEventListener\('pointerup'[\s\S]*?\.trackcoin-cup\.is-selectable\[data-trackcoin-pick\][\s\S]*?chooseTrackCoinCup/);
-  assert.match(core,/if\(event\.detail===0\) chooseTrackCoinCup/);
+  assert.match(core,/refs\.trackCoinBoard\.addEventListener\('click'[\s\S]*?\.trackcoin-cup\[data-trackcoin-pick\][\s\S]*?chooseTrackCoinCup/);
+  assert.doesNotMatch(core,/event\.detail===0/);
   assert.doesNotMatch(core,/trackCoinPointerPickAt/);
   assert.match(core,/trackCoinState\.phase!==\'pick\'/);
   assert.match(core,/everyCupMoves/);
@@ -136,13 +137,41 @@ test('Recreation music preferences are server-side and quick controls stay insid
   assert.match(music,/Baseline Recreation<\/small><h3 id="gamesMusicSettingsTitle">Settings/);
 });
 
+test('Round Status and reward terminology stay coherent across Recreation',()=>{
+  assert.match(core,/function coherentRoundStatusHtml\(label,message,profile\)/);
+  assert.match(core,/refs\.wordRoundSummary\.innerHTML = coherentRoundStatusHtml\('Round Status',wordState\.lastMessage,profiles\.detectword\)/);
+  assert.match(core,/Board cleared\. \+' \+ rewards\.bank \+ ' Bank Coins · \+' \+ rewards\.xp \+ ' XP'/);
+  assert.match(core,/Clean streak bonus \+' \+ rewards\.cleanPct \+ '%'/);
+  assert.doesNotMatch(core,/Current streak bonus/);
+  assert.doesNotMatch(core,/const streakPct = trackCoinStreakBonusPct/);
+  assert.doesNotMatch(core,/ · clean bonus \+/i);
+  assert.doesNotMatch(html,/>Streak Bonus </i);
+  assert.doesNotMatch(html,/>Clean Bonus</i);
+  assert.match(html,/Round Bank Coins <span id="wordRoundBankValue">/);
+  assert.match(crossnumber,/Bank Coins · \+'\+rewards\.xp\+' XP'[\s\S]*?Clean streak bonus/);
+});
+
+test('all major Recreation fullscreen surfaces use the bounded side-panel contract',()=>{
+  assert.match(nonRealmCss,/--recreation-fs-side:clamp\(230px,20vw,330px\)[\s\S]*?grid-template-columns:minmax\(0,4fr\) var\(--recreation-fs-side\)!important/);
+  assert.match(core,/function renderFullscreenSkills\(gameId,profile,anchor\)/);
+  assert.match(nonRealmCss,/\.game-fullscreen-skills[\s\S]*?grid-row:4!important/);
+  assert.match(blockCss,/--block-fs-side:clamp\(230px,20vw,330px\)/);
+  assert.match(crossnumberCss,/--crossnumber-fs-side:clamp\(230px,20vw,330px\)/);
+  assert.match(crossnumber,/data-crossnumber-fullscreen-skills/);
+  assert.match(crossnumberCss,/\.crossnumber-fullscreen-skills[\s\S]*?grid-row:4!important/);
+  assert.match(jigsawCss,/--jigsaw-fs-side:clamp\(230px,20vw,330px\)/);
+  const colourCss=read('systems/baseline-recreation/games/colour-sort/css/colour-sort.css');
+  assert.match(colourCss,/--colour-fs-side:clamp\(230px,20vw,330px\)/);
+});
+
 test('reported uncomfortable games use energetic replacement themes with softened timbre',()=>{
-  const bpms={pairs:110,detectword:116,make24:124,trackcoin:126,ruleshift:122,crossnumber:116,'block-grid':118,'colour-sort':114,jigsaw:104};
-  for(const [id,bpm] of Object.entries(bpms)){
+  const replacementBpms={trackcoin:108,ruleshift:106,'block-grid':102,'colour-sort':100};
+  assert.match(music,/Object\.assign\(TRACKS,\{[\s\S]*?trackcoin:\{bpm:108[\s\S]*?ruleshift:\{bpm:106[\s\S]*?'block-grid':\{bpm:102[\s\S]*?'colour-sort':\{bpm:100/);
+  for(const [id,bpm] of Object.entries(replacementBpms)){
     assert.match(music,new RegExp("(?:'"+id+"'|"+id+"):\\{bpm:"+bpm));
   }
-  assert.match(music,/var MIX_VERSION = 3/);
-  assert.match(music,/SOFT_TIMBRE_GAMES = new Set\(\['block-grid','colour-sort','jigsaw'\]\)/);
+  assert.match(music,/var MIX_VERSION = 4/);
+  assert.match(music,/SOFT_TIMBRE_GAMES = new Set\(\['trackcoin','ruleshift','block-grid','colour-sort','jigsaw'\]\)/);
   assert.match(music,/osc\.type = 'triangle';[\s\S]*?filter\.frequency\.value = 680/);
   assert.match(music,/filter\.frequency\.value = 2450/);
   assert.doesNotMatch(music,/SENSORY_GENTLE_GAMES|sensoryGentle/);
@@ -165,8 +194,8 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/const pieceLeft = clientX - heldX/);
   assert.match(blockGrid,/const pieceTop = clientY - heldY/);
   assert.match(blockGrid,/const grabbedX=\(grabCol \* \(cellSize \+ gap\)\) \+ \(cellSize \* grabOffsetX\)/);
-  assert.match(blockGrid,/ghost\.style\.left = \(clientX \+ \(totalWidth \/ 2\) - grabbedX\) \+ 'px'/);
-  assert.match(blockGrid,/ghost\.style\.top = \(clientY \+ \(totalHeight \/ 2\) - grabbedY\) \+ 'px'/);
+  assert.match(blockGrid,/ghost\.style\.left = \(clientX - grabbedX\) \+ 'px'/);
+  assert.match(blockGrid,/ghost\.style\.top = \(clientY - grabbedY\) \+ 'px'/);
   assert.match(blockGrid,/const col = Math\.round\(\(pieceLeft - firstRect\.left\) \/ pitchX\)/);
   assert.match(blockGrid,/const row = Math\.round\(\(pieceTop - firstRect\.top\) \/ pitchY\)/);
   assert.match(blockGrid,/const action = target\.closest\('\[data-block-action\]'\)[\s\S]*?if \(suppressClick\)/);
@@ -177,9 +206,12 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/class="block-grid-play-cluster"/);
   assert.match(blockGrid,/addEventListener\('dragstart'[\s\S]*?preventDefault/);
   assert.match(blockCss,/cursor:none!important;user-select:none!important/);
-  assert.match(blockCss,/\.block-grid-drag-ghost\{[^}]*transform:translate\(-50%,-50%\);/);
+  assert.match(blockCss,/\.block-grid-drag-ghost,[\s\S]*?transform:none!important/);
+  assert.match(blockCss,/\.block-grid-drag-ghost \.block-grid-piece-cell\{[\s\S]*?width:var\(--drag-cell,18px\)!important[\s\S]*?height:var\(--drag-cell,18px\)!important/);
   assert.doesNotMatch(blockCss,/\.block-grid-drag-ghost(?:\.is-over-board)?\{[^}]*scale\(/);
-  assert.match(blockCss,/blockGridGameCard:fullscreen::before[\s\S]*?content:"Block Grid"/);
+  assert.match(blockCss,/--block-fs-side:clamp\(230px,20vw,330px\)[\s\S]*?grid-template-columns:minmax\(0,4fr\) var\(--block-fs-side\)!important/);
+  assert.match(blockGrid,/<strong>Special<\/strong>/);
+  assert.doesNotMatch(blockGrid,/Special Skill/);
   assert.match(blockGrid,/const fullscreenHost=document\.fullscreenElement;[\s\S]*?host\.appendChild\(ghost\)/);
   assert.match(blockCss,/\.block-grid-tray\{[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
   assert.match(blockCss,/--block-piece-mini-cell:clamp\(12px,2\.05vw,18px\)/);
@@ -212,19 +244,21 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/function toggleFullscreen\(/);
   assert.match(crossnumber,/newGamePointerAt=performance\.now\(\)[\s\S]*?createNewRound\(\{tierId:profile\.selectedTier\}\)/);
   assert.match(crossnumber,/visualViewport\?\.addEventListener\?\.\('resize'/);
-  assert.match(crossnumber,/const available=Math\.max\(320,Math\.min\(720,viewportHeight-playTop-14\)\)/);
+  assert.match(crossnumber,/const available=Math\.max\(220,Math\.min\(680,viewportHeight-playTop-footerHeight-28\)\)/);
   assert.match(crossnumber,/panel\.style\.setProperty\('--crossnumber-play-height'/);
   assert.match(crossnumberCss,/Cross Number one-screen reachability authority/);
   assert.equal((crossnumberCss.match(/Cross Number one-screen reachability authority/g)||[]).length,1);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen\{[\s\S]*?height:100dvh!important[\s\S]*?overflow:hidden!important/);
-  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?flex:1 1 auto/);
+  assert.match(crossnumberCss,/--crossnumber-fs-side:clamp\(230px,20vw,330px\)[\s\S]*?grid-template-columns:minmax\(0,4fr\) var\(--crossnumber-fs-side\)!important/);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen > \.crossnumber-round-status\{[\s\S]*?display:block!important/);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen > \.crossnumber-round-status\{[\s\S]*?grid-column:2!important/);
   assert.match(crossnumber,/id:'masterwork'[\s\S]*?nodes:17[\s\S]*?fixed:1/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-bank\{[\s\S]*?grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
-  assert.match(html,/data-crossnumber-action="restart">Restart</);
+  assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);
   assert.doesNotMatch(html,/data-crossnumber-action="fullscreen"[^>]*>Full Screen<\/button>/);
-  assert.match(html,/data-crossnumber-action="new"[^>]*data-tooltip="New Game · Alt\+N"[^>]*>New Game<\/button>/);
+  assert.match(html,/data-crossnumber-action="new"[^>]*data-tooltip="New Game · Alt\+N"[^>]*><span aria-hidden="true">＋<\/span>/);
   assert.match(crossnumber,/if\(key==='n'\)[\s\S]*?createNewRound\(\{tierId:profile\.selectedTier\}\)/);
   assert.match(crossnumber,/if\(key==='f'\)[\s\S]*?toggleFullscreen\(\)/);
   assert.match(html,/<h2>Cross Number<\/h2>/);
@@ -243,6 +277,8 @@ test('Jigsaw uses server-saved 200 percent minimum zoom, coherent music controls
   assert.match(html,/id="weightCoherenceFullscreenBtn"[^>]*aria-keyshortcuts="Alt\+F"/);
   assert.match(html,/id="weightCoherenceToolbarSettingsBtn"[^>]*aria-keyshortcuts="Alt\+S"/);
   assert.match(jigsawCss,/\.weight-coherence-hotkey\{[\s\S]*?clip-path:inset\(50%\)!important/);
+  assert.match(jigsawCss,/--jigsaw-fs-side:clamp\(230px,20vw,330px\)[\s\S]*?grid-template-columns:minmax\(0,4fr\) var\(--jigsaw-fs-side\)!important/);
+  assert.match(html,/weight-coherence-workspace" id="weightCoherenceWorkspace"[\s\S]*?id="weightCoherenceLiveXp"[\s\S]*?id="weightCoherenceStatus"/);
   assert.match(jigsaw,/setAttribute\('data-tooltip',tooltip\.replace/);
 });
 

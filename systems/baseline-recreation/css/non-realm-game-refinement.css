@@ -1312,3 +1312,233 @@ body[data-app="recreation"] :is(
 ) .game-play-window > .game-window-actions{
   align-self:end;
 }
+
+
+/* 2026-10-24 fullscreen coherence contract.
+   Desktop fullscreen is always a bounded play area (~80%) plus a real
+   information/control side panel (~20%). The existing live nodes are laid
+   into that panel; nothing is cloned, so controls retain their handlers. */
+@media (min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen{
+    --recreation-fs-side:clamp(230px,20vw,330px);
+    position:relative!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,4fr) var(--recreation-fs-side)!important;
+    grid-template-rows:auto auto minmax(0,1fr) auto auto auto!important;
+    gap:8px 12px!important;
+    width:100vw!important;
+    height:100dvh!important;
+    max-width:none!important;
+    max-height:100dvh!important;
+    margin:0!important;
+    padding:12px!important;
+    overflow:hidden!important;
+    align-content:stretch!important;
+    background:var(--games-page-deep)!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen::before{
+    display:none!important;
+    content:none!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen::after{
+    content:"";
+    position:absolute;
+    z-index:0;
+    top:12px;
+    right:12px;
+    bottom:12px;
+    width:var(--recreation-fs-side);
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.24);
+    border-radius:18px;
+    background:linear-gradient(180deg,rgba(var(--recreation-rose-rgb),.26),rgba(var(--recreation-burgundy-rgb),.76));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+    pointer-events:none;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window{
+    display:contents!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > :is(.game-toolbar,.game-live-xp,.game-fullscreen-skills),
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > :is(.round-status-card,.game-specific-actions,.game-window-actions){
+    grid-column:2!important;
+    position:relative!important;
+    z-index:2!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin:0 8px!important;
+    box-sizing:border-box!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-toolbar{
+    grid-row:1!important;
+    padding:10px!important;
+    border:0!important;
+    background:transparent!important;
+    align-self:start!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-toolbar .stat-pills{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    width:100%!important;
+    gap:5px!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-toolbar .stat-pill{
+    min-width:0!important;
+    padding:6px 8px!important;
+    white-space:normal!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-live-xp{
+    grid-row:2!important;
+    display:grid!important;
+    grid-template-columns:1fr auto!important;
+    gap:5px 7px!important;
+    padding:8px 10px!important;
+    align-self:start!important;
+    border:0!important;
+    background:transparent!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-live-xp .game-live-xp__bar{
+    grid-column:1/-1!important;
+    width:100%!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .round-status-card{
+    grid-row:3!important;
+    min-height:0!important;
+    max-height:100%!important;
+    overflow:auto!important;
+    align-self:stretch!important;
+    padding:10px!important;
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
+    background:rgba(var(--recreation-burgundy-rgb),.34)!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-fullscreen-skills{
+    display:grid!important;
+    grid-row:4!important;
+    gap:4px!important;
+    align-content:start!important;
+    padding:9px!important;
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
+    border-radius:12px!important;
+    background:rgba(var(--recreation-burgundy-rgb),.30)!important;
+    overflow:auto!important;
+  }
+  body[data-app="recreation"] .game-fullscreen-skills{
+    display:none;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions{
+    grid-row:5!important;
+    justify-content:flex-start!important;
+    padding:0 2px!important;
+    align-self:end!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-window-actions{
+    grid-row:6!important;
+    justify-content:flex-start!important;
+    padding:8px 0 2px!important;
+    margin:0 8px!important;
+    border-top:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
+    align-self:end!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-play-surface{
+    grid-column:1!important;
+    grid-row:1/-1!important;
+    z-index:1!important;
+    place-self:center!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:100%!important;
+    max-height:calc(100dvh - 24px)!important;
+    box-sizing:border-box!important;
+  }
+
+  body[data-app="recreation"] #pairsGameCard:fullscreen #pairsBoard{
+    width:min(100%,calc((100dvh - 24px) * 1.42))!important;
+    height:auto!important;
+    max-height:calc(100dvh - 24px)!important;
+    align-self:center!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen #wordBoard,
+  body[data-app="recreation"] #make24GameCard:fullscreen #make24Board{
+    overflow:auto!important;
+    align-content:center!important;
+    padding:6px!important;
+  }
+  body[data-app="recreation"] #trackCoinGamePanel:fullscreen #trackCoinBoard,
+  body[data-app="recreation"] #ruleShiftGameCard:fullscreen #ruleShiftBoard{
+    height:100%!important;
+    overflow:hidden!important;
+    align-self:stretch!important;
+  }
+  body[data-app="recreation"] #trackCoinGamePanel:fullscreen .trackcoin-scene,
+  body[data-app="recreation"] #ruleShiftGameCard:fullscreen .ruleshift-board{
+    max-height:100%!important;
+  }
+}
+
+/* Rule Shift: crisp geometry means no shadow, halo, blur filter, or scaled
+   raster edge on any shape. White makes the old shadow especially obvious. */
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape{
+  filter:none!important;
+  -webkit-filter:none!important;
+  backdrop-filter:none!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  border:1px solid rgba(34,10,18,.72)!important;
+  outline:0!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-colour--white .ruleshift-shape{
+  border-color:#9aa0a6!important;
+}
+body[data-app="recreation"] #ruleshiftPanel :is(.ruleshift-size--small,.ruleshift-size--large) .ruleshift-shape{
+  transform:none!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-size--small .ruleshift-shape{
+  width:clamp(38px,3.7vw,52px)!important;
+  height:clamp(38px,3.7vw,52px)!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-size--small .ruleshift-shape--oval{
+  width:clamp(46px,4.6vw,60px)!important;
+  height:clamp(30px,3vw,40px)!important;
+}
+
+
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape--oval,
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape--circle{
+  clip-path:none!important;
+  -webkit-clip-path:none!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape--oval{border-radius:50%!important}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-shape--circle{border-radius:999px!important}

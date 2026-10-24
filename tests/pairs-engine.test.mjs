@@ -15,7 +15,7 @@ function loadEngine(){
 
 test('Pairs engine exposes one pure calculation authority',()=>{
   const engine=loadEngine();
-  assert.equal(engine.version,1);
+  assert.equal(engine.version,2);
   assert.equal(typeof engine.buildDeck,'function');
   assert.equal(typeof engine.boardLayout,'function');
   assert.equal(typeof engine.mismatchDelay,'function');
@@ -55,18 +55,17 @@ test('Pairs layout and tempo calculations preserve existing geometry and clamps'
   assert.equal(engine.mismatchDelay(10),260);
 });
 
-test('Pairs reward calculation preserves skill and streak multipliers',()=>{
+test('Pairs reward calculation uses skills plus one Clean streak multiplier',()=>{
   const engine=loadEngine();
   const rewards=engine.calculateRewards({
     tier:{bankReward:10,xpReward:20},
     profile:{cleanWinStreak:2,currentStreak:4,skills:{banker:2,flow:1}},
     hadFailure:false,
-    cleanBonusPctForStreak:(streak)=>streak===3?10:0,
-    streakBonusPctForStreak:(streak)=>streak===5?20:0
+    cleanBonusPctForStreak:(streak)=>streak===3?10:0
   });
   assert.deepEqual(
     JSON.parse(JSON.stringify(rewards)),
-    {bank:16,xp:29,cleanPct:10,streakPct:20,nextClean:3,nextStreak:5}
+    {bank:13,xp:24,cleanPct:10,nextClean:3,nextStreak:5}
   );
 });
 
@@ -86,7 +85,7 @@ test('Recreation core delegates Pairs pure logic to the engine authority',()=>{
   assert.doesNotMatch(source,/addEventListener|createElement|innerHTML|classList|history\./);
 
   const configIndex=html.indexOf('/systems/baseline-recreation/js/games-core-config.js');
-  const engineIndex=html.indexOf('/systems/baseline-recreation/js/pairs-engine.js?v=PAIRS_ENGINE_AUTHORITY_20261022_1');
+  const engineIndex=html.indexOf('/systems/baseline-recreation/js/pairs-engine.js?v=PAIRS_ENGINE_CLEAN_STREAK_20261024_1');
   const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js?v=');
   assert.ok(configIndex>=0 && engineIndex>configIndex && coreIndex>engineIndex);
 });

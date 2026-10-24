@@ -702,3 +702,187 @@ body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board{
 body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-actions.game-common-actions{
   flex:0 0 auto;
 }
+
+
+/* 2026-10-24 Cross Number fullscreen coherence: puzzle + number bank remain
+   the playable 80%; stats/XP/system controls use the shared 20% side panel. */
+@media(min-width:821px){
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen{
+    --crossnumber-fs-side:clamp(230px,20vw,330px);
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,4fr) var(--crossnumber-fs-side)!important;
+    grid-template-rows:auto auto minmax(0,1fr) auto!important;
+    gap:8px 12px!important;
+    width:100vw!important;
+    height:100dvh!important;
+    max-width:none!important;
+    max-height:100dvh!important;
+    margin:0!important;
+    padding:12px!important;
+    overflow:hidden!important;
+    background:var(--cn-deep)!important;
+    align-content:stretch!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen::before{
+    display:none!important;
+    content:none!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen::after{
+    content:"";
+    position:absolute;
+    z-index:0;
+    top:12px;right:12px;bottom:12px;
+    width:var(--crossnumber-fs-side);
+    border:1px solid var(--cn-border);
+    border-radius:18px;
+    background:linear-gradient(180deg,rgba(var(--recreation-rose-rgb),.25),rgba(var(--recreation-burgundy-rgb),.77));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+    pointer-events:none;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > :is(
+    .crossnumber-round-toolbar,.game-live-xp,.crossnumber-actions,.crossnumber-complete
+  ){
+    grid-column:2!important;
+    position:relative!important;
+    z-index:2!important;
+    min-width:0!important;
+    width:auto!important;
+    margin-left:8px!important;
+    margin-right:8px!important;
+    box-sizing:border-box!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-round-toolbar{
+    grid-row:1!important;
+    padding:8px 0 0!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-round-stats{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:5px!important;
+    width:100%!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-round-stats > span{
+    min-width:0!important;
+    padding:6px 7px!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-live-xp{
+    grid-row:2!important;
+    display:grid!important;
+    grid-template-columns:1fr auto!important;
+    gap:5px 7px!important;
+    padding:8px 0!important;
+    margin-top:0!important;
+    border:0!important;
+    background:transparent!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .game-live-xp .game-live-xp__bar{
+    grid-column:1/-1!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-complete{
+    grid-row:3!important;
+    align-self:start!important;
+    max-height:100%!important;
+    overflow:auto!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-actions.game-common-actions{
+    grid-row:4!important;
+    justify-content:flex-start!important;
+    align-self:end!important;
+    padding:8px 0 2px!important;
+    border-top:1px solid var(--cn-border)!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-play-layout{
+    grid-column:1!important;
+    grid-row:1/-1!important;
+    z-index:1!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-height:calc(100dvh - 24px)!important;
+    overflow:hidden!important;
+    grid-template-columns:minmax(0,1fr) minmax(220px,30%)!important;
+    gap:10px!important;
+    align-self:stretch!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-scroll,
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-bank-panel{
+    height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-specific-actions{
+    justify-content:flex-end!important;
+  }
+}
+
+
+/* Cross Number status stays out of the normal board layout, but becomes the
+   real Round Status component in the fullscreen information panel. */
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-round-status{
+  display:none!important;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen{
+    grid-template-rows:auto auto minmax(0,1fr) auto auto!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-round-status{
+    display:block!important;
+    position:relative!important;
+    grid-column:2!important;
+    grid-row:3!important;
+    z-index:2!important;
+    width:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:100%!important;
+    margin:0 8px!important;
+    padding:9px!important;
+    overflow:auto!important;
+    clip:auto!important;
+    white-space:normal!important;
+    border:1px solid var(--cn-border)!important;
+    border-radius:12px!important;
+    background:rgba(var(--recreation-burgundy-rgb),.34)!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-complete{
+    grid-row:4!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-actions.game-common-actions{
+    grid-row:5!important;
+  }
+}
+
+
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-fullscreen-skills{
+  display:none;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen{
+    grid-template-rows:auto auto minmax(0,1fr) auto auto auto!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-fullscreen-skills{
+    display:grid!important;
+    position:relative!important;
+    grid-column:2!important;
+    grid-row:4!important;
+    z-index:2!important;
+    gap:4px!important;
+    align-content:start!important;
+    min-width:0!important;
+    width:auto!important;
+    margin:0 8px!important;
+    padding:9px!important;
+    overflow:auto!important;
+    border:1px solid var(--cn-border)!important;
+    border-radius:12px!important;
+    background:rgba(var(--recreation-burgundy-rgb),.30)!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-complete{
+    grid-row:5!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-actions.game-common-actions{
+    grid-row:6!important;
+  }
+}

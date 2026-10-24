@@ -638,7 +638,7 @@
       cell.classList.add('is-wrong');
       window.setTimeout(function(){cell.classList.remove('is-wrong');},650);
     }
-    setStatus('That placement breaks a completed equation.'+(penalty?' −'+penalty+' Bank.':' Precision prevented the Bank penalty.'));
+    setStatus('That placement breaks a completed equation.'+(penalty?' −'+penalty+' Bank Coins.':' Precision prevented the Bank Coins penalty.'));
     saveProfile({progress:true});
   }
 
@@ -719,7 +719,7 @@
       refs.complete.setAttribute('aria-hidden','false');
       if(refs.completeTime) refs.completeTime.textContent=formatTime(completedTime);
       if(refs.completeScore) refs.completeScore.textContent=String(score);
-      if(refs.completeReward) refs.completeReward.textContent='+'+rewards.bank+' Bank · +'+rewards.xp+' XP'+(rewards.cleanPct?' · clean bonus +'+rewards.cleanPct+'%':'')+(levels?' · Player Rank +'+levels:'');
+      if(refs.completeReward) refs.completeReward.textContent='+'+rewards.bank+' Bank Coins · +'+rewards.xp+' XP'+(rewards.cleanPct?' · Clean streak bonus +'+rewards.cleanPct+'%':'')+(levels?' · Player Rank +'+levels:'');
     }
     setStatus('Every equation balances. Cross Number complete.');
     try{autoNextApi()?.schedule?.(APP,function(){createNewRound({tierId:profile.selectedTier});});}catch(_error){}
@@ -922,6 +922,16 @@
       }
       const pct=clamp((profile.xp/Math.max(1,needed))*100,0,100);
       live.innerHTML='<strong>Player Rank '+profile.level+'</strong><div class="game-live-xp__bar"><span style="width:'+pct+'%"></span></div><span>'+profile.xp+' / '+needed+' XP</span>';
+      let fullscreenSkills=gamePanel.querySelector('[data-crossnumber-fullscreen-skills]');
+      if(!fullscreenSkills){
+        fullscreenSkills=document.createElement('div');
+        fullscreenSkills.className='crossnumber-fullscreen-skills';
+        fullscreenSkills.setAttribute('data-crossnumber-fullscreen-skills','');
+        live.insertAdjacentElement('afterend',fullscreenSkills);
+      }
+      fullscreenSkills.innerHTML='<strong>Skills</strong><span class="inline-note">'+SKILLS.map(function(skill){
+        return escapeHtml(skill.name)+' '+Math.max(0,int(profile.skills[skill.id],0));
+      }).join(' · ')+'</span>';
     }
 
     renderTiers();renderSkills();renderRealmContribution();renderStats();
