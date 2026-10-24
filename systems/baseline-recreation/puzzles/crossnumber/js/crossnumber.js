@@ -26,7 +26,7 @@
 
   const DEFAULT_PROFILE=Object.freeze({
     app:APP,bank:0,xp:0,level:1,skillPoints:1,puzzlesSolved:0,gamesPlayed:0,currentStreak:0,bestStreak:0,
-    cleanWinStreak:0,roundCounter:0,bestScore:0,selectedTier:'starter',recentLayouts:Object.freeze([]),
+    cleanWinStreak:0,lastRoundXp:0,roundCounter:0,bestScore:0,selectedTier:'starter',recentLayouts:Object.freeze([]),
     skills:Object.freeze({insight:0,flow:0,banker:0,precision:0,structure:0}),activeRound:null
   });
 
@@ -149,6 +149,7 @@
       currentStreak:Math.max(0,int(source.currentStreak,0)),
       bestStreak:Math.max(0,int(source.bestStreak,0)),
       cleanWinStreak:Math.max(0,int(source.cleanWinStreak,0)),
+      lastRoundXp:Math.max(0,int(source.lastRoundXp,0)),
       roundCounter:Math.max(0,int(source.roundCounter,0)),
       bestScore:Math.max(0,int(source.bestScore,0)),
       selectedTier:String(source.selectedTier||'starter'),
@@ -698,8 +699,9 @@
   }
   function calculateRewards(){
     const tier=currentTier();
-    const nextClean=profile.cleanWinStreak+1;
-    const cleanPct=cleanBonusPct(nextClean);
+    const cleanWin=Boolean(round && !round.hadFailure);
+    const nextClean=cleanWin ? profile.cleanWinStreak+1 : 0;
+    const cleanPct=cleanWin ? cleanBonusPct(nextClean) : 0;
     const cleanMult=1+(cleanPct/100);
     const xpMult=(1+(Math.max(0,int(profile.skills.flow,0))*0.08))*cleanMult;
     const bankMult=(1+(Math.max(0,int(profile.skills.banker,0))*0.10))*cleanMult;
@@ -716,6 +718,7 @@
     profile.currentStreak+=1;
     profile.bestStreak=Math.max(profile.bestStreak,profile.currentStreak);
     profile.cleanWinStreak=rewards.nextClean;
+    profile.lastRoundXp=rewards.xp;
     profile.bestScore=Math.max(profile.bestScore,score);
     const levels=awardXp(rewards.xp);
     const completedTime=round.seconds;
@@ -813,6 +816,7 @@
     const tier=tierDefinition(round?.tierId||profile.selectedTier);
     refs.status.innerHTML='<div class="round-status-heading">Round Status</div>'
       + '<div class="round-status-outcome">'+escapeHtml(String(message||''))+'</div>'
+      + '<div class="round-status-previous">Previous round — '+Math.max(0,int(profile.lastRoundXp,0))+' XP</div>'
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
       + '<div><span>Winning Streak</span><strong>'+Math.max(0,int(profile.cleanWinStreak,0))+'</strong></div>'
