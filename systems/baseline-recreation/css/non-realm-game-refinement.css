@@ -679,7 +679,7 @@ body[data-app="recreation"] #ruleshiftPanel .ruleshift-token{
     width:100%!important;
     min-width:0!important;
     max-width:none!important;
-    min-height:92px!important;
+    min-height:82px!important;
   }
   .coherent-progress-grid{grid-template-columns:1fr!important}
   .game-live-xp{grid-template-columns:auto minmax(80px,1fr)!important}
@@ -1673,9 +1673,9 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
     grid-column:2!important;
     grid-row:4/6!important;
     display:grid!important;
-    grid-template-columns:repeat(7,42px)!important;
-    grid-template-rows:42px 42px!important;
-    gap:8px!important;
+    grid-template-columns:repeat(7,38px)!important;
+    grid-template-rows:38px 38px!important;
+    gap:6px!important;
     width:max-content!important;
     max-width:100%!important;
     height:92px!important;
@@ -1692,10 +1692,10 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
   ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions)>.action{
     pointer-events:auto;
     margin:0!important;
-    width:42px!important;
-    min-width:42px!important;
-    height:42px!important;
-    min-height:42px!important;
+    width:38px!important;
+    min-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
     padding:0!important;
   }
 
