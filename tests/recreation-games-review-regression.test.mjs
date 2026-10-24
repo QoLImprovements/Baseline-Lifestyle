@@ -59,7 +59,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_ZOOM_SAFE_PAIRS_20261024_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CLEAN_STREAK_WORD_FULLSCREEN_20261024_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -88,6 +88,11 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(core,/Object\.prototype\.hasOwnProperty\.call\(temporary,'activeRound'\)/);
   assert.match(core,/profiles\[app\]\.activeRound=temporary\.activeRound/);
   assert.match(nonRealmCss,/#detectwordPanel \.letter-cell\.absent[\s\S]*?linear-gradient\(180deg,#401522 0%,#250b14 100%\)/);
+  assert.match(nonRealmCss,/Detect The Word fullscreen refinement/);
+  assert.match(nonRealmCss,/#wordGameCard:fullscreen #wordBoard[\s\S]*?linear-gradient\(160deg,rgba\(var\(--recreation-rose-rgb\),\.24\)/);
+  assert.match(nonRealmCss,/#wordGameCard:fullscreen \.word-entry-stack\{[\s\S]*?margin-top:10px!important/);
+  assert.match(nonRealmCss,/Fine-pointer fullscreen remains desktop-coherent[\s\S]*?\.game-window-actions\{[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
+  assert.match(nonRealmCss,/:fullscreen > \.game-play-window > :is\(\.game-specific-actions,\.game-window-actions\)>\.action\{[\s\S]*?grid-column:auto!important[\s\S]*?flex:0 0 38px!important/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -165,6 +170,19 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(core,/cleanStreak:\{ label:'Clean Streak Bonus', perStepPct:5, maxPct:100 \}/);
   assert.match(core,/Winning Streak[\s\S]*?Clean Streak Bonus/);
   assert.match(core,/Ranked Up! Player Rank/);
+  assert.match(core,/round-status-previous">Previous round — '\+previousXp\+' XP/);
+  assert.match(core,/profile&&profile\.lastRoundXp/);
+  assert.match(core,/pairsBoardState\.hadFailure = true;[\s\S]*?profiles\.pairs\.cleanWinStreak = 0/);
+  assert.match(core,/const cleanWin = !make24State\.hadFailure;[\s\S]*?const nextClean = cleanWin \? profiles\.make24\.cleanWinStreak \+ 1 : 0/);
+  assert.match(core,/make24State\.hadFailure = true;[\s\S]*?profiles\.make24\.cleanWinStreak = 0/);
+  assert.match(core,/const cleanWin = !wordState\.hadFailure;[\s\S]*?const nextClean = cleanWin \? profile\.cleanWinStreak \+ 1 : 0/);
+  assert.match(core,/wordState\.hadFailure = true;[\s\S]*?profiles\.detectword\.cleanWinStreak = 0/);
+  assert.match(crossnumber,/const cleanWin=Boolean\(round && !round\.hadFailure\)/);
+  assert.match(crossnumber,/round\.hadFailure=true;[\s\S]*?profile\.cleanWinStreak=0/);
+  assert.match(colourSort,/const cleanWin=!active\.hadFailure/);
+  assert.match(colourSort,/active\.hadFailure = true;[\s\S]*?profile\.cleanWinStreak = 0/);
+  assert.match(colourSort,/round-status-previous">Previous round — '\+number\(profile\.lastRoundXp\)\+' XP/);
+  assert.match(blockGrid,/round-status-previous">Previous round — '\+number\(profile\.lastRoundXp\)\+' XP/);
   assert.match(core,/refs\.wordRoundSummary\.innerHTML = coherentRoundStatusHtml\('Round Status',wordState\.lastMessage,profiles\.detectword,currentWordTier\(\)\.name\)/);
   assert.match(core,/Board cleared\. \+' \+ rewards\.bank \+ ' Bank Coins · \+' \+ rewards\.xp \+ ' XP'/);
   assert.match(core,/Clean Streak Bonus \+' \+ rewards\.cleanPct \+ '%'/);
