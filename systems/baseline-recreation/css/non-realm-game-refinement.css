@@ -1429,7 +1429,8 @@ body[data-app="recreation"] :is(
     min-height:0!important;
     max-height:100%!important;
     overflow:auto!important;
-    align-self:stretch!important;
+    align-self:start!important;
+    height:auto!important;
     padding:10px!important;
     border:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
     background:rgba(var(--recreation-burgundy-rgb),.34)!important;
@@ -2092,6 +2093,8 @@ body[data-app="recreation"] :is(
   grid-auto-rows:max-content!important;
   align-content:start!important;
   justify-content:stretch!important;
+  align-self:start!important;
+  height:auto!important;
   text-align:left!important;
 }
 body[data-app="recreation"] .round-status-card .round-status-heading{
