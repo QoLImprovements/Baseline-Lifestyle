@@ -2,7 +2,7 @@
   'use strict';
 
   const APP='crossnumber';
-  const BUILD='CROSS_NUMBER_FULLSCREEN_STATUS_20261025_1';
+  const BUILD='CROSS_NUMBER_FULLSCREEN_WINDOW_TABS_20261025_1';
   const root=document.getElementById('crossnumberGame');
   if(!root) return;
   const panel=root.closest('#crossnumberPanel');
