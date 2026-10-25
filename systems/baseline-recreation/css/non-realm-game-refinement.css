@@ -167,14 +167,9 @@
   border:3px solid rgba(96,60,5,.56)!important;
   box-shadow:0 4px 0 rgba(95,61,8,.34),0 0 24px rgba(244,197,108,.62)!important;
 }
-#trackcoinPanel .trackcoin-scene.is-phase-hide .trackcoin-game-status,
 #trackcoinPanel .trackcoin-scene.is-phase-hide .trackcoin-status{
   opacity:.16;
   transition:opacity .25s ease;
-}
-#trackcoinPanel .trackcoin-scene.is-phase-pick .trackcoin-game-status{
-  border-color:rgba(244,197,108,.62)!important;
-  box-shadow:0 0 0 3px rgba(244,197,108,.12);
 }
 #trackcoinPanel .trackcoin-pick-prompt{
   position:absolute;
@@ -922,7 +917,6 @@ body[data-app="recreation"] #trackcoinPanel .trackcoin-item-token::before{
   border:2px solid rgba(105,65,5,.45)!important;
   background:radial-gradient(circle,rgba(255,249,197,.36),rgba(196,129,12,.10))!important;
 }
-body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-show .trackcoin-game-status,
 body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-show .trackcoin-status{
   opacity:1!important;
 }
@@ -1733,11 +1727,6 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
     grid-template-rows:auto auto minmax(280px,1fr)!important;
     gap:10px!important;
     overflow:hidden!important;
-  }
-  body[data-app="recreation"] #trackcoinPanel .trackcoin-game-status{
-    position:relative!important;
-    z-index:2!important;
-    margin:0!important;
   }
   body[data-app="recreation"] #trackcoinPanel .trackcoin-status{
     position:relative!important;
