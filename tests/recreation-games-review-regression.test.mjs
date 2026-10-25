@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_FULLSCREEN_WINDOW_TABS_20261025_2/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -293,7 +293,7 @@ test('fullscreen right rail mirrors each game windowed tabs and defaults to Game
 test('fullscreen common controls use one centred icon geometry including the keyboard toggle',()=>{
   assert.match(nonRealmCss,/game-window-actions\.game-common-actions\{[\s\S]*?justify-content:center!important[\s\S]*?align-items:center!important/);
   assert.match(nonRealmCss,/\.desktop-keypad-toggle[\s\S]*?flex:0 0 44px!important[\s\S]*?width:44px!important[\s\S]*?height:44px!important[\s\S]*?place-items:center!important/);
-  assert.match(nonRealmCss,/\.desktop-keypad-toggle \.game-shell-action__svg\{[\s\S]*?width:20px!important[\s\S]*?height:20px!important[\s\S]*?margin:0!important[\s\S]*?transform:none!important/);
+  assert.match(nonRealmCss,/\.desktop-keypad-toggle \.game-shell-action__svg\{[\s\S]*?position:absolute!important[\s\S]*?left:50%!important[\s\S]*?top:50%!important[\s\S]*?width:20px!important[\s\S]*?height:20px!important[\s\S]*?margin:0!important[\s\S]*?transform:translate\(-50%,-50%\)!important/);
 });
 
 test('fullscreen layouts use bounded side panels except the deliberately independent Jigsaw workspace',()=>{
