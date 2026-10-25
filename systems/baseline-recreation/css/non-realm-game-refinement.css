@@ -2079,10 +2079,6 @@ body[data-app="recreation"] :is(#blockGridGameCard,#colourSortGameCard) .round-s
   body[data-app="recreation"] #wordGameCard:fullscreen .mobile-word-keypad{
     margin-top:10px!important;
   }
-}
-
-
-@media(pointer:fine){
   body[data-app="recreation"] #wordGameCard:fullscreen .letter-cell.absent{
     background:linear-gradient(
       180deg,
