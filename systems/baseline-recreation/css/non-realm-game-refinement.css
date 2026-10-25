@@ -2678,3 +2678,32 @@ body[data-app="recreation"] :is(
     min-height:91px!important;
   }
 }
+
+
+/* Exact root-level authority: older fullscreen/windowed rules use ID-scoped
+   !important flex declarations, so the final coherent dock must match that
+   specificity rather than relying on source order alone. */
+body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+):not(:fullscreen) > .game-play-window > .game-window-actions.game-common-actions,
+body[data-app="recreation"] :is(
+  #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+):not(:fullscreen) .game-window-actions.game-common-actions{
+  display:grid!important;
+  grid-template-columns:42px 42px minmax(16px,1fr) 42px 42px!important;
+  grid-template-rows:42px 42px!important;
+  justify-content:stretch!important;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-window-actions.game-common-actions,
+  body[data-app="recreation"] :is(
+    #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ):fullscreen > .game-window-actions.game-common-actions{
+    display:grid!important;
+    grid-template-columns:44px 44px minmax(16px,1fr) 44px 44px!important;
+    grid-template-rows:44px 44px!important;
+    justify-content:stretch!important;
+  }
+}
