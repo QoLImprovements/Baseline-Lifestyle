@@ -54,12 +54,17 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(core,/wordBoard\.innerHTML = '<div class="empty-box"/);
   assert.match(core,/make24Board\.innerHTML = '<div class="empty-box"/);
   assert.match(core,/trackCoinBoard\.innerHTML = '<div class="empty-box trackcoin-idle-card"/);
+  assert.match(html,/id="trackCoinRoundSummary"/);
+  assert.match(html,/id="trackCoinRoundSummary"[\s\S]*?id="trackCoinBoard"/);
+  assert.match(core,/refs\.trackCoinRoundSummary\.innerHTML=coherentRoundStatusHtml\('Round Status'/);
+  assert.doesNotMatch(core,/trackCoinBoard\.innerHTML[\s\S]{0,500}?round-status-card/);
+  assert.match(nonRealmCss,/Track the Coin scene owns only gameplay/);
   assert.match(core,/ruleShiftBoard\.innerHTML = '<div class="empty-box ruleshift-idle-card"/);
   assert.match(nonRealmCss,/Recreation idle\/start alignment authority/);
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_STATUS_AUTHORITY_20261024_6/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_STATUS_AUTHORITY_20261024_7/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
