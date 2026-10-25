@@ -2012,15 +2012,46 @@ body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle) .memory-
 body[data-app="recreation"] .round-status-card .round-status-previous,
 body[data-app="recreation"] #crossnumberGame .round-status-previous,
 body[data-app="recreation"] :is(#blockGridGameCard,#colourSortGameCard) .round-status-previous{
+  display:grid!important;
+  gap:7px!important;
   margin:8px 0 10px!important;
-  padding:7px 9px!important;
+  padding:9px 10px!important;
   border:1px solid rgba(var(--recreation-copper-light-rgb),.18)!important;
   border-radius:10px!important;
   background:rgba(var(--recreation-copper-deep-rgb),.10)!important;
   color:var(--games-muted)!important;
-  font-size:12px!important;
-  font-weight:800!important;
   letter-spacing:.015em!important;
+}
+body[data-app="recreation"] .round-status-previous-heading{
+  color:var(--games-ink)!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  letter-spacing:.045em!important;
+  text-transform:uppercase!important;
+}
+body[data-app="recreation"] .round-status-previous-grid{
+  display:grid!important;
+  gap:5px!important;
+}
+body[data-app="recreation"] .round-status-previous-grid>div{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:baseline!important;
+  gap:10px!important;
+  min-width:0!important;
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+body[data-app="recreation"] .round-status-previous-grid span{
+  min-width:0!important;
+  font-weight:700!important;
+}
+body[data-app="recreation"] .round-status-previous-grid strong{
+  min-width:0!important;
+  color:var(--games-ink)!important;
+  font-weight:900!important;
+  text-align:right!important;
+  overflow-wrap:anywhere!important;
 }
 
 /* The fullscreen word workspace should read as the normal Recreation play
@@ -2275,4 +2306,93 @@ body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trac
   cursor:pointer!important;
   touch-action:manipulation!important;
   user-select:none!important;
+}
+
+
+/* 2026-10-25 immersive Round / Tier / Skills authority.
+   The Round Status card remains the single in-game information owner. Windowed
+   play shows Round as before; fullscreen and mobile game mode expose Tier and
+   Skills without leaving the play surface. */
+body[data-app="recreation"] .round-status-tabs{
+  display:none!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:6px!important;
+  width:100%!important;
+  margin:0 0 10px!important;
+}
+body[data-app="recreation"] .round-status-tabs>button{
+  min-width:0!important;
+  min-height:38px!important;
+  padding:7px 8px!important;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.22)!important;
+  border-radius:10px!important;
+  background:rgba(var(--recreation-copper-deep-rgb),.12)!important;
+  color:var(--games-muted)!important;
+  font:900 13px/1.1 inherit!important;
+  cursor:pointer!important;
+}
+body[data-app="recreation"] .round-status-tabs>button.is-active{
+  background:var(--games-accent)!important;
+  color:var(--games-ink)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.52)!important;
+}
+body[data-app="recreation"] .round-status-pane{
+  min-width:0!important;
+  width:100%!important;
+}
+body[data-app="recreation"] .round-status-pane[hidden]{
+  display:none!important;
+}
+body[data-app="recreation"] .round-status-pane--tier,
+body[data-app="recreation"] .round-status-pane--skills{
+  display:grid!important;
+  align-content:start!important;
+  gap:8px!important;
+}
+body[data-app="recreation"] .round-status-pane--tier[hidden],
+body[data-app="recreation"] .round-status-pane--skills[hidden]{
+  display:none!important;
+}
+body[data-app="recreation"] .round-status-pane :is(
+  .board-tier-list,.tier-list,.block-grid-mode-list,.colour-sort-tier-list,
+  [data-crossnumber-tiers],.grid-two,.block-grid-skill-unlock-list,
+  [data-crossnumber-skills]
+){
+  min-width:0!important;
+  max-width:100%!important;
+}
+body[data-app="recreation"] .round-status-pane :is(
+  .tier-btn,.block-grid-mode,.colour-sort-tier-choice,.crossnumber-tier-button
+){
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+body[data-app="recreation"] .round-status-empty-pane{
+  padding:12px!important;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
+  border-radius:10px!important;
+  color:var(--games-muted)!important;
+  font-size:13px!important;
+  line-height:1.45!important;
+}
+body[data-app="recreation"] :fullscreen .round-status-card[data-round-status-game] .round-status-tabs,
+body[data-app="recreation"] .is-mobile-game-root .round-status-card[data-round-status-game] .round-status-tabs{
+  display:grid!important;
+}
+body[data-app="recreation"] :fullscreen .round-status-card[data-round-status-game],
+body[data-app="recreation"] .is-mobile-game-root .round-status-card[data-round-status-game]{
+  overflow:hidden!important;
+}
+body[data-app="recreation"] :fullscreen .round-status-card[data-round-status-game] .round-status-pane,
+body[data-app="recreation"] .is-mobile-game-root .round-status-card[data-round-status-game] .round-status-pane{
+  max-height:min(54dvh,520px)!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  scrollbar-width:thin!important;
+}
+body[data-app="recreation"] :fullscreen .round-status-card[data-round-status-game] .round-status-pane[data-round-status-pane="round"],
+body[data-app="recreation"] .is-mobile-game-root .round-status-card[data-round-status-game] .round-status-pane[data-round-status-pane="round"]{
+  overflow:visible!important;
+  max-height:none!important;
 }
