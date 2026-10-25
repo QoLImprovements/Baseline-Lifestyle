@@ -888,10 +888,10 @@ body[data-app="recreation"] #crossnumberGamePanel .crossnumber-round-status{
 }
 
 
-/* 2026-10-24 mobile Cross Number playability authority.
-   Phones keep readable cells and scroll the equation network itself instead of
-   shrinking the entire puzzle to a microscopic fit. Fullscreen stacks the
-   number bank below the board rather than forcing the desktop side rail. */
+/* 2026-10-25 mobile Cross Number fit authority.
+   The equation network always fits its available width. The board itself never
+   becomes a nested scroll viewport on phone or desktop; page-level flow remains
+   available for the number bank and controls. */
 @media(max-width:820px){
   body[data-app="recreation"] #crossnumberGamePanel{
     min-width:0!important;
@@ -911,45 +911,53 @@ body[data-app="recreation"] #crossnumberGamePanel .crossnumber-round-status{
   }
   body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board-column,
   body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-column{
-    display:block!important;
+    display:grid!important;
+    place-items:center!important;
     width:100%!important;
     height:auto!important;
     min-width:0!important;
     min-height:0!important;
-    overflow:visible!important;
+    overflow:hidden!important;
   }
   body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board-scroll,
   body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-scroll{
-    display:block!important;
+    display:grid!important;
+    place-items:center!important;
+    box-sizing:border-box!important;
     width:100%!important;
     height:auto!important;
-    min-height:220px!important;
-    max-height:min(58dvh,520px)!important;
-    padding:8px!important;
-    overflow:auto!important;
-    overscroll-behavior:contain!important;
-    -webkit-overflow-scrolling:touch;
-    touch-action:pan-x pan-y!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:5px!important;
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+    touch-action:manipulation!important;
+    scrollbar-width:none!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board-scroll::-webkit-scrollbar,
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-scroll::-webkit-scrollbar{
+    display:none!important;
   }
   body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board,
   body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board{
-    grid-template-columns:repeat(var(--crossnumber-cols,13),34px)!important;
-    grid-template-rows:repeat(var(--crossnumber-rows,13),34px)!important;
-    gap:2px!important;
-    width:max-content!important;
-    height:max-content!important;
+    grid-template-columns:repeat(var(--crossnumber-cols,13),minmax(0,1fr))!important;
+    grid-template-rows:repeat(var(--crossnumber-rows,13),minmax(0,1fr))!important;
+    gap:1px!important;
+    width:min(100%,560px)!important;
+    height:auto!important;
     min-width:0!important;
-    max-width:none!important;
+    max-width:100%!important;
     max-height:none!important;
-    aspect-ratio:auto!important;
+    aspect-ratio:var(--crossnumber-cols,13) / var(--crossnumber-rows,13)!important;
     margin:0 auto!important;
   }
   body[data-app="recreation"] #crossnumberGamePanel :is(.crossnumber-number-cell,.crossnumber-symbol-cell){
-    width:34px!important;
-    height:34px!important;
-    min-width:34px!important;
-    min-height:34px!important;
-    font-size:16px!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    font-size:clamp(10px,2.8vw,16px)!important;
   }
   body[data-app="recreation"] #crossnumberGamePanel .crossnumber-bank-panel,
   body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-bank-panel{
@@ -976,6 +984,7 @@ body[data-app="recreation"] #crossnumberGamePanel .crossnumber-round-status{
   body[data-app="recreation"] #crossnumberGamePanel:fullscreen{
     display:flex!important;
     flex-direction:column!important;
+    box-sizing:border-box!important;
     width:100vw!important;
     height:100dvh!important;
     max-height:100dvh!important;
@@ -983,30 +992,22 @@ body[data-app="recreation"] #crossnumberGamePanel .crossnumber-round-status{
     gap:8px!important;
     overflow-y:auto!important;
     overflow-x:hidden!important;
+    scrollbar-width:none!important;
     overscroll-behavior:contain!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen::-webkit-scrollbar{
+    display:none!important;
   }
   body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-play-layout{
     flex:0 0 auto!important;
-  }
-  body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board-scroll{
-    max-height:52dvh!important;
   }
   body[data-app="recreation"] #crossnumberGamePanel .crossnumber-specific-actions{
     flex-wrap:wrap!important;
   }
 }
 @media(max-width:420px){
-  body[data-app="recreation"] #crossnumberGamePanel .crossnumber-board,
-  body[data-app="recreation"] #crossnumberGamePanel:fullscreen .crossnumber-board{
-    grid-template-columns:repeat(var(--crossnumber-cols,13),32px)!important;
-    grid-template-rows:repeat(var(--crossnumber-rows,13),32px)!important;
-  }
   body[data-app="recreation"] #crossnumberGamePanel :is(.crossnumber-number-cell,.crossnumber-symbol-cell){
-    width:32px!important;
-    height:32px!important;
-    min-width:32px!important;
-    min-height:32px!important;
-    font-size:15px!important;
+    font-size:clamp(9px,2.6vw,14px)!important;
   }
 }
 
