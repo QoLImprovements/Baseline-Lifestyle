@@ -439,11 +439,21 @@ function blockTabUrl(name) {
 
 function setTab(name, historyMode = 'none') {
   const next = BLOCK_TABS.includes(name) ? name : 'game';
-  document.querySelectorAll('[data-block-tab]').forEach(button => button.classList.toggle('is-active', button.dataset.blockTab === next));
-  for (const id of ['Game','Skills','Modes','Progress']) {
-    const card = document.getElementById(`blockGrid${id}Card`);
-    if (card) card.hidden = id.toLowerCase() !== next;
-  }
+  const cards={
+    game:'blockGridGameCard',
+    skills:'blockGridSkillsCard',
+    modes:'blockGridModesCard',
+    progress:'blockGridProgressCard'
+  };
+  document.querySelectorAll('[data-block-tab]').forEach(button => {
+    const selected=button.dataset.blockTab === next;
+    button.classList.toggle('is-active', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  });
+  Object.entries(cards).forEach(([key,id])=>{
+    const card=document.getElementById(id);
+    if(card) card.hidden=key!==next;
+  });
   if (historyMode !== 'none' && /^\/baseline-recreation\/games\/block-grid\/?$/i.test(String(location.pathname || ''))) {
     try {
       const nextUrl = blockTabUrl(next);
@@ -462,6 +472,7 @@ function render() {
   renderSkills();
   renderProgress();
   renderGame();
+  setTab(blockTabFromLocation(), 'none');
   shell.refreshOverview();
 }
 
