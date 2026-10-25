@@ -60,7 +60,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_STATUS_AUTHORITY_20261024_6/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_COHERENT_RAIL_20261025_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -412,7 +412,7 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/Cross Number touch-drag authority/);
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
-  assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_TOUCH_DRAG_CLEAN_XP_20261024_1/);
+  assert.match(html,/crossnumber\.css\?v=RECREATION_FLEX_CONTROLS_20261025_1/);
   assert.match(html,/crossnumber\.js\?v=CROSSNUMBER_TOUCH_DRAG_CLEAN_XP_20261024_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
