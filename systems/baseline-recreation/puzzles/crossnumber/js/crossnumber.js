@@ -824,12 +824,16 @@
     const tier=tierDefinition(round?.tierId||profile.selectedTier);
     refs.status.innerHTML='<div class="round-status-heading">Round Status</div>'
       + '<div class="round-status-outcome">'+escapeHtml(String(message||''))+'</div>'
-      + '<div class="round-status-previous">Previous round - '+Math.max(0,int(profile.lastRoundXp,0))+' XP</div>'
+      + '<section class="round-status-previous" aria-label="Previous Round"><div class="round-status-previous-heading">Previous Round</div><div class="round-status-previous-grid">'
+      + '<div><span>Exp</span><strong>'+Math.max(0,int(profile.lastRoundXp,0))+' XP</strong></div>'
+      + '</div></section>'
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
       + '<div><span>Winning Streak</span><strong>'+Math.max(0,int(profile.cleanWinStreak,0))+'</strong></div>'
       + '<div><span>Clean Streak Bonus</span><strong>'+cleanBonusPct(profile.cleanWinStreak)+'%</strong></div>'
       + '</div>';
+    const roundTabs=window.BaselineRoundStatusTabs;
+    if(roundTabs?.enhance) roundTabs.enhance(refs.status,APP,{tierHtml:refs.tiers?.innerHTML||'',skillsHtml:refs.skills?.innerHTML||''});
   }
 
   function renderRoundHud(){
@@ -955,6 +959,8 @@
     }
 
     renderTiers();renderSkills();renderRealmContribution();renderStats();
+    const roundTabs=window.BaselineRoundStatusTabs;
+    if(refs.status&&roundTabs?.enhance) roundTabs.enhance(refs.status,APP,{tierHtml:refs.tiers?.innerHTML||'',skillsHtml:refs.skills?.innerHTML||''});
     try{autoNextApi()?.sync?.();}catch(_error){}
   }
 
