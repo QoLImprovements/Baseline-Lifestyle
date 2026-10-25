@@ -95,9 +95,15 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.doesNotMatch(nonRealmCss,/2026-10-24 fullscreen control dock/);
   assert.doesNotMatch(nonRealmCss,/repeat\(7,38px\)/);
   assert.doesNotMatch(blockCss,/repeat\(7,38px\)/);
+  assert.doesNotMatch(colourCss,/repeat\(7,38px\)/);
+  assert.doesNotMatch(crossnumberCss,/repeat\(7,38px\)/);
   assert.doesNotMatch(nonRealmCss,/games-settings-trigger\{grid-column:7/);
-  assert.doesNotMatch(blockCss,/games-settings-trigger[^}]*grid-column:7/);
-  assert.doesNotMatch(blockCss,/game-fullscreen-toggle[^}]*grid-column:7/);
+  for(const stylesheet of [blockCss,colourCss,crossnumberCss]){
+    assert.doesNotMatch(stylesheet,/games-settings-trigger[^}]*grid-column:7/);
+    assert.doesNotMatch(stylesheet,/game-fullscreen-toggle[^}]*grid-column:7/);
+    assert.doesNotMatch(stylesheet,/games-music-quick-toggle[^}]*grid-column:6/);
+  }
+  assert.match(nonRealmCss,/Extension\/puzzle games keep their own information-row positions[\s\S]*?#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
   assert.match(nonRealmCss,/\.round-status-card\{[\s\S]*?align-content:start!important/);
   assert.match(nonRealmCss,/:fullscreen > \.game-play-window > :is\(\.game-specific-actions,\.game-window-actions\)>\.action\{[\s\S]*?grid-column:auto!important[\s\S]*?flex:0 0 38px!important/);
 });
