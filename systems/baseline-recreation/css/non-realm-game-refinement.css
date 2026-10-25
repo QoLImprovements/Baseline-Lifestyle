@@ -2309,10 +2309,10 @@ body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trac
 }
 
 
-/* 2026-10-25 immersive Round / Tier / Skills authority.
-   The Round Status card remains the single in-game information owner. Windowed
-   play shows Round as before; fullscreen and mobile game mode expose Tier and
-   Skills without leaving the play surface. */
+/* 2026-10-25 Round / Tier / Skills authority.
+   The Round Status card remains the single in-game information owner. Its
+   Round / Tier / Skills tabs are visible in windowed, fullscreen and mobile
+   play so the same information architecture is available everywhere. */
 body[data-app="recreation"] .round-status-tabs{
   display:grid!important;
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
