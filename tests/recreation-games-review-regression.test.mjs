@@ -13,6 +13,7 @@ const config=read('systems/baseline-recreation/js/games-core-config.js');
 const blockGrid=read('systems/baseline-recreation/games/block-grid/js/block-grid.js');
 const blockCss=read('systems/baseline-recreation/games/block-grid/css/block-grid.css');
 const colourSort=read('systems/baseline-recreation/games/colour-sort/js/colour-sort.js');
+const colourCss=read('systems/baseline-recreation/games/colour-sort/css/colour-sort.css');
 const crossnumber=read('systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js');
 const extensionSupport=read('systems/baseline-recreation/js/game-extension-support.mjs');
 const crossnumberCss=read('systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css');
