@@ -832,8 +832,6 @@
       + '<div><span>Winning Streak</span><strong>'+Math.max(0,int(profile.cleanWinStreak,0))+'</strong></div>'
       + '<div><span>Clean Streak Bonus</span><strong>'+cleanBonusPct(profile.cleanWinStreak)+'%</strong></div>'
       + '</div>';
-    const roundTabs=window.BaselineRoundStatusTabs;
-    if(roundTabs?.enhance) roundTabs.enhance(refs.status,APP,{tierHtml:refs.tiers?.innerHTML||'',skillsHtml:refs.skills?.innerHTML||''});
   }
 
   function renderRoundHud(){
@@ -1028,10 +1026,12 @@
       if(refs.bankCount) refs.bankCount.textContent='0 remaining';
       renderRoundHud();
       renderProgression();
+      window.BaselineFullscreenTabs?.sync?.(APP);
       return;
     }
     if(!layout||layout.seed!==round.seed||layout.tierId!==round.tierId) layout=generateLayout(round.seed,round.tierId);
     buildBoard();renderBank();renderRoundHud();renderProgression();
+    window.BaselineFullscreenTabs?.sync?.(APP);
     window.requestAnimationFrame(fitCrossNumberBoard);
   }
 
