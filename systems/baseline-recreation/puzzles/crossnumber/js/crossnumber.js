@@ -2,7 +2,7 @@
   'use strict';
 
   const APP='crossnumber';
-  const BUILD='CROSS_NUMBER_RECREATION_COHERENCE_20261024_1';
+  const BUILD='CROSS_NUMBER_AUTONEXT_20261025_1';
   const root=document.getElementById('crossnumberGame');
   if(!root) return;
   const panel=root.closest('#crossnumberPanel');
@@ -87,6 +87,7 @@
   let suppressBankClick=false;
   let storageReloaded=false;
   let newGamePointerAt=0;
+  let autoNextTerminal=false;
 
   function clone(value){
     try{return JSON.parse(JSON.stringify(value));}catch(_error){return null;}
@@ -458,6 +459,7 @@
   function createNewRound(options){
     options=options||{};
     try{autoNextApi()?.clear?.(APP);}catch(_error){}
+    autoNextTerminal=false;
     const tier=tierDefinition(options.tierId||profile.selectedTier);
     if(profile.level<tier.unlockLevel) return;
     profile.selectedTier=tier.id;
@@ -737,8 +739,9 @@
       if(refs.completeScore) refs.completeScore.textContent=String(score);
       if(refs.completeReward) refs.completeReward.textContent='+'+rewards.bank+' Bank Coins · +'+rewards.xp+' XP'+(rewards.cleanPct?' · Clean Streak Bonus +'+rewards.cleanPct+'%':'')+(levels?' · Player Rank +'+levels:'');
     }
+    autoNextTerminal=true;
     setStatus('Every equation balances. Cross Number complete.');
-    try{autoNextApi()?.schedule?.(APP,function(){createNewRound({tierId:profile.selectedTier});});}catch(_error){}
+    try{autoNextApi()?.complete?.(APP);}catch(_error){}
   }
 
   function spendSkill(id){
@@ -1329,6 +1332,13 @@
   profile=normaliseProfile(profile);
   round=null;
   layout=null;
+  try{
+    autoNextApi()?.register?.(
+      APP,
+      function(){createNewRound({tierId:profile.selectedTier});},
+      function(){return autoNextTerminal;}
+    );
+  }catch(_error){}
   renderAll();
   syncFullscreenControl();
   setCrossnumberPanel(panelFromLocation(),'none');
