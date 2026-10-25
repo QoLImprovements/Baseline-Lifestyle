@@ -561,7 +561,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     ensureGamePlayContract();
     const root = mobileGameRootElement(id);
     if(!root) return;
-    const enteringMobileGame=!root.classList.contains('is-mobile-game-root');
     qsa('.is-mobile-game-root').forEach(function(el){
       if(el !== root){
         el.classList.remove('is-mobile-game-root');
@@ -572,7 +571,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     document.body.setAttribute('data-mobile-game', id);
     root.classList.add('is-mobile-game-root');
     root.setAttribute('data-mobile-game-root', id);
-    if(enteringMobileGame) window.BaselineRoundStatusTabs?.reset?.(id);
     if(id !== 'ninja' && !q(':scope > .mobile-game-exit', root)){
       root.insertAdjacentHTML('afterbegin', '<button class="mobile-game-exit" data-exit-mobile-game-mode type="button" aria-label="Back to Games Overview">Back To Games Overview</button>');
     }
