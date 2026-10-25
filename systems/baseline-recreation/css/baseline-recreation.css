@@ -2007,9 +2007,9 @@ body[data-app="recreation"] .trackcoin-item-token::before{
 }
 @media (max-width:820px), (hover:none) and (pointer:coarse){
   body[data-app="recreation"] .is-mobile-game-root[data-mobile-game-root="trackcoin"] .trackcoin-lane{
-    height:clamp(260px,44svh,360px)!important;
-    min-height:260px!important;
-    max-height:360px!important;
+    height:clamp(230px,42dvh,340px)!important;
+    min-height:230px!important;
+    max-height:340px!important;
     overflow:hidden!important;
   }
   body[data-app="recreation"] .is-mobile-game-root[data-mobile-game-root="trackcoin"] .trackcoin-cup{
