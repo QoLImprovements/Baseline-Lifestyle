@@ -532,23 +532,15 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
   justify-content:flex-start!important;
   gap:8px!important;
 }
-#blockGridPanel .block-grid-skill-actions .game-control-icon{
+#blockGridPanel .block-grid-skill-button{
   display:grid!important;
-  place-items:center!important;
-  flex:0 0 46px!important;
-  width:46px!important;
-  min-width:46px!important;
-  height:46px!important;
-  min-height:46px!important;
-  padding:0!important;
-  font-size:20px!important;
+  grid-template-columns:30px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-height:42px!important;
+  padding:7px 9px!important;
+  text-align:left!important;
 }
-#blockGridPanel #blockGridGameCard:fullscreen > .block-grid-skill .block-grid-skill-actions{
-  display:flex!important;
-  grid-template-columns:none!important;
-  justify-content:flex-start!important;
-}
-
 
 
 /* 2026-10-24 continuous drag + draggable Special tools. */
