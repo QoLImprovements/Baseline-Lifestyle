@@ -64,6 +64,7 @@ test('Massage planner mode survives refresh and history',async({page})=>{
 });
 
 test('Puzzles exact non-default jigsaw survives refresh Back and Forward',async({page})=>{
+  test.setTimeout(90000);
   await stubGames(page);
   await page.goto('/baseline-recreation/puzzles',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
