@@ -94,7 +94,10 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(nonRealmCss,/final non-Realm coherence authority[\s\S]*?\.game-window-actions\.game-common-actions[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
   assert.doesNotMatch(nonRealmCss,/2026-10-24 fullscreen control dock/);
   assert.doesNotMatch(nonRealmCss,/repeat\(7,38px\)/);
+  assert.doesNotMatch(blockCss,/repeat\(7,38px\)/);
   assert.doesNotMatch(nonRealmCss,/games-settings-trigger\{grid-column:7/);
+  assert.doesNotMatch(blockCss,/games-settings-trigger[^}]*grid-column:7/);
+  assert.doesNotMatch(blockCss,/game-fullscreen-toggle[^}]*grid-column:7/);
   assert.match(nonRealmCss,/\.round-status-card\{[\s\S]*?align-content:start!important/);
   assert.match(nonRealmCss,/:fullscreen > \.game-play-window > :is\(\.game-specific-actions,\.game-window-actions\)>\.action\{[\s\S]*?grid-column:auto!important[\s\S]*?flex:0 0 38px!important/);
 });
@@ -144,6 +147,10 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/everyCupMoves/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-scene\.is-phase-pick \.trackcoin-cup\.is-selectable[\s\S]*?pointer-events:auto!important/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-cup\{[\s\S]*?opacity:1!important/);
+  assert.match(html,/data-game-play-window="trackcoin">[\s\S]*?id="trackCoinSummary"[\s\S]*?id="trackCoinBoard"/);
+  assert.match(core,/const trackCoinSummary = document\.getElementById\('trackCoinSummary'\);[\s\S]*?trackCoinSummary\.innerHTML = coherentRoundStatusHtml/);
+  assert.doesNotMatch(core,/trackCoinBoard\.innerHTML[\s\S]{0,500}?roundStatusHtml/);
+  assert.doesNotMatch(nonRealmCss,/trackcoin-scene\.is-phase-(?:show|hide|pick) \.trackcoin-game-status/);
 });
 
 test('Recreation music preferences are server-side and quick controls stay inside activity controls',()=>{
@@ -306,7 +313,14 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/blockSkillUnlocked\(skill\.id\)/);
   assert.match(blockGrid,/data-block-action="' \+ skill\.id/);
   assert.match(blockGrid,/skill\.icon : '🔒'/);
-  assert.match(blockCss,/block-grid-score-window[\s\S]*?grid-column:1!important/);
+  assert.match(blockCss,/canonical Block Grid Recreation layout authority/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-play-cluster[\s\S]*?grid-column:1!important[\s\S]*?grid-row:1\/7!important/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-score-window[\s\S]*?grid-column:2!important[\s\S]*?grid-row:1!important/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.game-live-xp[\s\S]*?grid-column:2!important[\s\S]*?grid-row:2!important/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.round-status-card[\s\S]*?grid-column:2!important[\s\S]*?grid-row:3!important/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-run-objective[\s\S]*?grid-column:2!important[\s\S]*?grid-row:4!important/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-skill[\s\S]*?grid-column:2!important[\s\S]*?grid-row:5!important/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.game-window-actions[\s\S]*?grid-column:2!important[\s\S]*?grid-row:6!important[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
   assert.match(blockGrid,/active\.gameOver = !hasAnyPlacement\(active\.board, active\.tray\)/);
   assert.match(blockGrid,/function xpForRunScore\(score\)[\s\S]*?const points=number\(score\)[\s\S]*?Math\.round\(points \/ 10\)/);
   assert.match(blockGrid,/function settleRunXp\(active\)[\s\S]*?active\.xpSettled=true[\s\S]*?awardXp\(profile,gained\)/);
@@ -316,10 +330,9 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/BLOCK_TABS = Object\.freeze\(\['game','skills','modes','progress'\]\)/);
   assert.match(blockGrid,/id="blockGridSkillsCard"/);
   assert.match(blockGrid,/Score-based progression[\s\S]*?10 points = 1 XP/);
-  assert.match(blockCss,/Block Grid windowed composition \+ score progression/);
-  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-score-window[\s\S]*?grid-column:1!important[\s\S]*?background:transparent!important/);
-  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-play-cluster[\s\S]*?grid-column:2!important[\s\S]*?grid-row:1\/4!important/);
-  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.round-status-card[\s\S]*?grid-column:1\/-1!important/);
+  assert.doesNotMatch(blockCss,/Block Grid windowed composition \+ score progression/);
+  assert.doesNotMatch(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.round-status-card[\s\S]{0,180}?grid-column:1\/-1!important/);
+  assert.match(blockCss,/#blockGridGameCard:fullscreen > \.game-window-actions\{[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
 
   assert.match(blockGrid,/class="block-grid-play-cluster"/);
   assert.match(blockGrid,/addEventListener\('dragstart'[\s\S]*?preventDefault/);
