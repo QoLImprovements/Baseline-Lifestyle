@@ -812,7 +812,9 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   const ruleStatus=page.locator('#ruleShiftRoundSummary');
   const ruleHeading=ruleStatus.locator('.round-status-heading');
   await expect(ruleHeading).toHaveText('Round Status');
-  await expect(ruleStatus).toContainText('Previous Run - 0 XP');
+  await expect(ruleStatus.locator('.round-status-previous-heading')).toHaveText('Previous Round');
+  await expect(ruleStatus.locator('.round-status-previous-grid')).toContainText('Exp');
+  await expect(ruleStatus.locator('.round-status-previous-grid')).toContainText('0 XP');
   expect(await ruleHeading.evaluate((node) => getComputedStyle(node).textAlign)).toBe('center');
   expect(await ruleStatus.evaluate((node) => getComputedStyle(node).alignContent)).toBe('start');
 
@@ -834,6 +836,48 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(fullscreenBox.x).toBeGreaterThanOrEqual(cardBox.x-1);
   expect(settingsBox.x+settingsBox.width).toBeLessThanOrEqual(cardBox.x+cardBox.width+1);
   expect(fullscreenBox.x+fullscreenBox.width).toBeLessThanOrEqual(cardBox.x+cardBox.width+1);
+
+  // Detect The Word fullscreen must mirror the windowed tabs and keep every
+  // common action on one geometric centre line, including the keypad toggle.
+  await page.setViewportSize({width:1280,height:760});
+  await page.goto('/baseline-recreation/games/detect-the-word', {waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
+  const wordFullscreen=page.locator('#wordGameCard [data-game-fullscreen="detectword"]');
+  await expect(wordFullscreen).toBeVisible();
+  await wordFullscreen.click();
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='wordGameCard');
+
+  const wordTabs=page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
+  await expect(wordTabs).toBeVisible();
+  expect(await wordTabs.getByRole('tab').allTextContents()).toEqual(['Game','Skills','Tiers','Progress']);
+  await expect(wordTabs.getByRole('tab',{name:'Game',exact:true})).toHaveClass(/is-active/);
+  await wordTabs.getByRole('tab',{name:'Skills',exact:true}).click();
+  await expect(page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Detect The Word Skill Tree');
+  await wordTabs.getByRole('tab',{name:'Tiers',exact:true}).click();
+  await expect(page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Tiers');
+  await wordTabs.getByRole('tab',{name:'Progress',exact:true}).click();
+  await expect(page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Progress');
+  await wordTabs.getByRole('tab',{name:'Game',exact:true}).click();
+
+  const wordKeyboard=page.locator('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"]');
+  const wordStart=page.locator('#wordGameCard .game-window-actions #newWordRoundBtn');
+  const wordAuto=page.locator('#wordGameCard .game-window-actions [data-auto-next-toggle="detectword"]');
+  const wordKeyboardIcon=wordKeyboard.locator('.game-shell-action__svg');
+  for(const locator of [wordKeyboard,wordStart,wordAuto,wordKeyboardIcon]) await expect(locator).toBeVisible();
+  const [wordKeyboardBox,wordStartBox,wordAutoBox,wordIconBox]=await Promise.all([
+    wordKeyboard.boundingBox(),wordStart.boundingBox(),wordAuto.boundingBox(),wordKeyboardIcon.boundingBox()
+  ]);
+  for(const box of [wordKeyboardBox,wordStartBox,wordAutoBox,wordIconBox]) expect(box).not.toBeNull();
+  expect(Math.abs(wordKeyboardBox.width-44)).toBeLessThanOrEqual(1);
+  expect(Math.abs(wordKeyboardBox.height-44)).toBeLessThanOrEqual(1);
+  const wordKeyboardCx=wordKeyboardBox.x+wordKeyboardBox.width/2;
+  const wordKeyboardCy=wordKeyboardBox.y+wordKeyboardBox.height/2;
+  expect(Math.abs(wordKeyboardCy-(wordStartBox.y+wordStartBox.height/2))).toBeLessThanOrEqual(1);
+  expect(Math.abs(wordKeyboardCy-(wordAutoBox.y+wordAutoBox.height/2))).toBeLessThanOrEqual(1);
+  expect(Math.abs(wordKeyboardCx-(wordIconBox.x+wordIconBox.width/2))).toBeLessThanOrEqual(1);
+  expect(Math.abs(wordKeyboardCy-(wordIconBox.y+wordIconBox.height/2))).toBeLessThanOrEqual(1);
+  await page.evaluate(()=>document.exitFullscreen());
+  await page.waitForFunction(()=>document.fullscreenElement===null);
 
   // Block Grid uses the same conceptual composition rather than a bespoke
   // sidebar: play LEFT and the ordered information/control hierarchy RIGHT.
@@ -886,49 +930,6 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
   expect(recreationPageErrors).toEqual([]);
-});
-
-test('Detect The Word fullscreen common controls keep the keypad icon geometrically centred', async ({ page }) => {
-  const errors=[];
-  page.on('pageerror',(error)=>errors.push(String(error&&error.stack||error&&error.message||error)));
-  await page.goto('/baseline-recreation/games/detect-the-word', { waitUntil:'domcontentloaded' });
-  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
-  await page.setViewportSize({width:1280,height:760});
-
-  const full=page.locator('#wordGameCard [data-game-fullscreen="detectword"]');
-  await expect(full).toBeVisible();
-  await full.click();
-  await page.waitForFunction(()=>document.fullscreenElement?.id==='wordGameCard');
-
-  const tabs=page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
-  await expect(tabs).toBeVisible();
-  expect(await tabs.getByRole('tab').allTextContents()).toEqual(['Game','Skills','Tiers','Progress']);
-  await expect(tabs.getByRole('tab',{name:'Game',exact:true})).toHaveClass(/is-active/);
-
-  const keyboard=page.locator('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"]');
-  const start=page.locator('#wordGameCard .game-window-actions #newWordRoundBtn');
-  const autoNext=page.locator('#wordGameCard .game-window-actions [data-auto-next-toggle="detectword"]');
-  const keyboardIcon=keyboard.locator('.game-shell-action__svg');
-  await expect(keyboard).toBeVisible();
-  await expect(start).toBeVisible();
-  await expect(autoNext).toBeVisible();
-
-  const [keyboardBox,startBox,autoBox,iconBox]=await Promise.all([
-    keyboard.boundingBox(),start.boundingBox(),autoNext.boundingBox(),keyboardIcon.boundingBox()
-  ]);
-  for(const box of [keyboardBox,startBox,autoBox,iconBox]) expect(box).not.toBeNull();
-  expect(Math.abs(keyboardBox.width-44)).toBeLessThanOrEqual(1);
-  expect(Math.abs(keyboardBox.height-44)).toBeLessThanOrEqual(1);
-  const keyboardCx=keyboardBox.x+keyboardBox.width/2;
-  const keyboardCy=keyboardBox.y+keyboardBox.height/2;
-  expect(Math.abs(keyboardCy-(startBox.y+startBox.height/2))).toBeLessThanOrEqual(1);
-  expect(Math.abs(keyboardCy-(autoBox.y+autoBox.height/2))).toBeLessThanOrEqual(1);
-  expect(Math.abs(keyboardCx-(iconBox.x+iconBox.width/2))).toBeLessThanOrEqual(1);
-  expect(Math.abs(keyboardCy-(iconBox.y+iconBox.height/2))).toBeLessThanOrEqual(1);
-
-  await page.evaluate(()=>document.exitFullscreen());
-  await page.waitForFunction(()=>document.fullscreenElement===null);
-  expect(errors).toEqual([]);
 });
 
 test('Badminton loads shared server state into the normal session interface', async ({ page }) => {
