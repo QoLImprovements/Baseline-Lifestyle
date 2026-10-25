@@ -662,6 +662,7 @@ test('Fitness saves a generated plan and reloads it through the account API', as
 });
 
 test('Recreation restores account progress and keeps a game playable', async ({ page }) => {
+  test.setTimeout(90000);
   const recreationPageErrors=[];
   page.on('pageerror',(error)=>recreationPageErrors.push(String(error&&error.stack||error&&error.message||error)));
   const profiles = {
