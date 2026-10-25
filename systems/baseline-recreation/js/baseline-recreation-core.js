@@ -1041,7 +1041,28 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_MOBILE_STREAK_20261025_1';
     const pct = cleanWinBonusPct(streak);
     return pct ? ' · Clean Streak Bonus +' + pct + '%' : '';
   }
-  function coherentRoundStatusHtml(label,message,profile,tierName,previousLabel){
+  const roundStatusTabState=Object.create(null);
+  const ROUND_STATUS_TAB_SOURCES=Object.freeze({
+    pairs:{tier:'#pairsTierSelectList',skills:'#pairsSkillTreeGrid',skillSummary:'#pairsSkillSummary'},
+    detectword:{tier:'#wordTierSelectList',skills:'#wordSkillTreeGrid',skillSummary:'#wordSkillSummary'},
+    make24:{tier:'#make24TierSelectList',skills:'#make24SkillTreeGrid',skillSummary:'#make24SkillSummary'},
+    trackcoin:{tier:'#trackCoinTierSelectList',skills:'#trackCoinSkillTreeGrid',skillSummary:'#trackCoinSkillSummary'},
+    ruleshift:{tier:'#ruleShiftTierSelectList',skills:'#ruleShiftSkillTreeGrid',skillSummary:'#ruleShiftSkillSummary'}
+  });
+  function previousRoundSectionHtml(profile,extraRows){
+    const previousXp=Math.max(0,Math.round(Number(profile&&profile.lastRoundXp||0)));
+    const rows=[['Exp',previousXp+' XP']].concat(Array.isArray(extraRows)?extraRows:[]);
+    return '<section class="round-status-previous" aria-label="Previous Round">'
+      + '<div class="round-status-previous-heading">Previous Round</div>'
+      + '<div class="round-status-previous-grid">'
+      + rows.map(function(row){
+          const label=Array.isArray(row)?row[0]:'';
+          const value=Array.isArray(row)?row[1]:'';
+          return '<div><span>'+escapeHtml(label||'')+'</span><strong>'+escapeHtml(value==null?'—':String(value))+'</strong></div>';
+        }).join('')
+      + '</div></section>';
+  }
+  function coherentRoundStatusHtml(label,message,profile,tierName,_previousLabel,previousRows){
     const source=String(message||'').trim();
     const rankMatch=source.match(/(?:Player Rank(?: up)?|Rank)\s*\+(\d+)/i);
     const cleaned=source
@@ -1054,18 +1075,68 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_MOBILE_STREAK_20261025_1';
     const cleanStreak=Math.max(0,Math.round(Number(profile&&profile.cleanWinStreak||0)));
     const winningStreak=Math.max(0,Math.round(Number(profile&&profile.currentStreak!==undefined?profile.currentStreak:cleanStreak)));
     const rankUp=rankMatch ? '<div class="round-status-rankup">Ranked Up! Player Rank '+Math.max(1,Math.round(Number(profile&&profile.level||1)))+'</div>' : '';
-    const previousXp=Math.max(0,Math.round(Number(profile&&profile.lastRoundXp||0)));
-    const previousResultLabel=String(previousLabel||'Previous round').trim()||'Previous Round';
     return '<div class="round-status-heading">'+escapeHtml(label||'Round Status')+'</div>'
       + (cleaned?'<div class="round-status-outcome">'+escapeHtml(cleaned)+'</div>':'')
       + rankUp
-      + '<div class="round-status-previous">'+escapeHtml(previousResultLabel)+' - '+previousXp+' XP</div>'
+      + previousRoundSectionHtml(profile,previousRows)
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tierName||'—')+'</strong></div>'
       + '<div><span>Winning Streak</span><strong>'+winningStreak+'</strong></div>'
       + '<div><span>Clean Streak Bonus</span><strong>'+cleanWinBonusPct(cleanStreak)+'%</strong></div>'
       + '</div>';
   }
+  function roundStatusSourceHtml(selector){
+    const node=selector?q(selector):null;
+    return node ? node.innerHTML : '';
+  }
+  function syncRoundStatusTabs(card,activeTab){
+    if(!card) return;
+    const active=['round','tier','skills'].includes(activeTab)?activeTab:'round';
+    card.querySelectorAll('[data-round-status-tab]').forEach(function(button){
+      const selected=button.getAttribute('data-round-status-tab')===active;
+      button.classList.toggle('is-active',selected);
+      button.setAttribute('aria-selected',String(selected));
+      button.tabIndex=selected?0:-1;
+    });
+    card.querySelectorAll('[data-round-status-pane]').forEach(function(pane){
+      const selected=pane.getAttribute('data-round-status-pane')===active;
+      pane.hidden=!selected;
+      pane.classList.toggle('is-active',selected);
+    });
+  }
+  function enhanceRoundStatusCard(gameId,statusEl,options){
+    if(!statusEl) return;
+    const id=normaliseGameId(gameId)||String(gameId||'');
+    if(!id) return;
+    const source=ROUND_STATUS_TAB_SOURCES[id]||{};
+    const opts=options||{};
+    const currentRound=statusEl.querySelector(':scope > [data-round-status-pane="round"]');
+    const roundHtml=currentRound?currentRound.innerHTML:statusEl.innerHTML;
+    const tierHtml=Object.prototype.hasOwnProperty.call(opts,'tierHtml')?String(opts.tierHtml||''):roundStatusSourceHtml(source.tier);
+    const skillCore=Object.prototype.hasOwnProperty.call(opts,'skillsHtml')?String(opts.skillsHtml||''):roundStatusSourceHtml(source.skills);
+    const skillSummary=Object.prototype.hasOwnProperty.call(opts,'skillSummaryHtml')?String(opts.skillSummaryHtml||''):roundStatusSourceHtml(source.skillSummary);
+    const skillsHtml=(skillCore||skillSummary)?(skillCore+skillSummary):'<div class="round-status-empty-pane">No skill tree is attached to this game.</div>';
+    const safeTier=tierHtml||'<div class="round-status-empty-pane">No tier controls are available for this game.</div>';
+    const immersive=!!(document.fullscreenElement&&document.fullscreenElement.contains(statusEl))||!!statusEl.closest('.is-mobile-game-root');
+    const active=immersive?(roundStatusTabState[id]||'round'):'round';
+    statusEl.setAttribute('data-round-status-game',id);
+    statusEl.innerHTML='<div class="round-status-tabs" role="tablist" aria-label="Game status views">'
+      + '<button type="button" role="tab" data-round-status-tab="round">Round</button>'
+      + '<button type="button" role="tab" data-round-status-tab="tier">Tier</button>'
+      + '<button type="button" role="tab" data-round-status-tab="skills">Skills</button>'
+      + '</div>'
+      + '<div class="round-status-pane" data-round-status-pane="round">'+roundHtml+'</div>'
+      + '<div class="round-status-pane round-status-pane--tier" data-round-status-pane="tier">'+safeTier+'</div>'
+      + '<div class="round-status-pane round-status-pane--skills" data-round-status-pane="skills">'+skillsHtml+'</div>';
+    syncRoundStatusTabs(statusEl,active);
+  }
+  function enhanceCoreRoundStatusCard(gameId,statusEl){
+    enhanceRoundStatusCard(gameId,statusEl);
+  }
+  window.BaselineRoundStatusTabs=Object.freeze({
+    enhance:enhanceRoundStatusCard,
+    previousRoundHtml:previousRoundSectionHtml
+  });
   function shuffle(list){
     const copy = list.slice();
     for(let i = copy.length - 1; i > 0; i -= 1){
