@@ -2328,7 +2328,10 @@ body[data-app="recreation"] .round-status-tabs>button{
   border-radius:10px!important;
   background:rgba(var(--recreation-copper-deep-rgb),.12)!important;
   color:var(--games-muted)!important;
-  font:900 13px/1.1 inherit!important;
+  font-family:inherit!important;
+  font-size:13px!important;
+  font-weight:900!important;
+  line-height:1.1!important;
   cursor:pointer!important;
 }
 body[data-app="recreation"] .round-status-tabs>button.is-active{
