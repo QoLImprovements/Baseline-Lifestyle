@@ -1031,7 +1031,7 @@ function init() {
   document.addEventListener('dragstart', event => { if(event.target instanceof Element && event.target.closest('#blockGridPanel')) event.preventDefault(); });
   document.addEventListener('pointercancel', () => { destroyDragGhost(); dragState = null; destroySpecialDrag(); previewAnchor = null; paintPreview(); });
   document.addEventListener('keydown', handleKeydown);
-  document.addEventListener('fullscreenchange', renderGame);
+  document.addEventListener('fullscreenchange', render);
   document.addEventListener('baseline:game-storage', event => {
     const authenticated = Boolean(event.detail?.authenticated);
     if (authenticated === storageAuth) return;
