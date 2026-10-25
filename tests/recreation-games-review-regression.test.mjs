@@ -134,7 +134,7 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_EXTENSION_ROUTE_OWNERSHIP_20261025_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
   assert.match(html,/block-grid\.js\?v=BLOCK_GRID_CONTROL_DOCK_20261025_1/);
   assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_CONTROL_DOCK_20261025_1/);
