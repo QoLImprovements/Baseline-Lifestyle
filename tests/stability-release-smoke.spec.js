@@ -803,8 +803,12 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   // Block Grid uses the same conceptual composition rather than a bespoke
   // sidebar: play LEFT and the ordered information/control hierarchy RIGHT.
   await page.setViewportSize({ width:1440, height:900 });
-  await page.goto('/baseline-recreation/games/block-grid', { waitUntil:'domcontentloaded' });
+  await page.goto('/baseline-recreation/system', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(()=>Boolean(document.documentElement.dataset.blockGridRuntime));
+  await page.getByRole('button', { name:'Games', exact:true }).click();
+  const blockGridOpen=page.locator('[data-open-game-extension="block-grid"]');
+  await expect(blockGridOpen).toBeVisible();
+  await blockGridOpen.click();
   await expect(page.locator('#blockGridPanel')).toHaveClass(/is-active/);
   await page.locator('#blockGridGameCard [data-block-action="new"]').click();
   const blockCard=page.locator('#blockGridGameCard');
