@@ -132,6 +132,7 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
   assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_FULLSCREEN_STATUS_20261025_1/);
+  assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
   assert.match(html,/block-grid\.js\?v=BLOCK_GRID_FULLSCREEN_STATUS_20261025_1/);
   assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_FULLSCREEN_STATUS_20261025_1/);
 });
@@ -235,12 +236,13 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(core,/Detect the Word counts consecutive completed wins[\s\S]*?const nextClean = profile\.cleanWinStreak \+ 1/);
   assert.doesNotMatch(core,/wordState\.hadFailure = true;\s*profiles\.detectword\.cleanWinStreak = 0;\s*if\(wordState\.guesses\.length >= wordState\.maxGuesses\)/);
   assert.match(core,/if\(wordState\.guesses\.length >= wordState\.maxGuesses\)\{[\s\S]*?wordState\.hadFailure = true;[\s\S]*?profiles\.detectword\.cleanWinStreak = 0/);
+  assert.match(crossnumber,/BaselineRoundStatusTabs\?\.previousRoundHtml\?\.\(profile\)/);
   assert.match(crossnumber,/const cleanWin=Boolean\(round && !round\.hadFailure\)/);
   assert.match(crossnumber,/round\.hadFailure=true;[\s\S]*?profile\.cleanWinStreak=0/);
   assert.match(colourSort,/const cleanWin=!active\.hadFailure/);
   assert.match(colourSort,/active\.hadFailure = true;[\s\S]*?profile\.cleanWinStreak = 0/);
-  assert.match(colourSort,/round-status-previous-heading">Previous Round[\s\S]*?<span>Exp<\/span><strong>'\+number\(profile\.lastRoundXp\)\+' XP/);
-  assert.match(blockGrid,/round-status-previous-heading">Previous Round[\s\S]*?<span>Exp<\/span><strong>'\+number\(profile\.lastRoundXp\)\+' XP[\s\S]*?Previous Score/);
+  assert.match(colourSort,/BaselineRoundStatusTabs\?\.previousRoundHtml\?\.\(profile\)/);
+  assert.match(blockGrid,/BaselineRoundStatusTabs\?\.previousRoundHtml\?\.\(profile,\[\['Previous Score',number\(profile\.lastRunScore\)\+' points'\]\]\)/);
   assert.match(core,/refs\.wordRoundSummary\.innerHTML = coherentRoundStatusHtml\('Round Status',wordState\.lastMessage,profiles\.detectword,currentWordTier\(\)\.name,undefined,\[\['Previous Word',profiles\.detectword\.lastRoundWord\|\|'—'\]\]\)/);
   assert.match(profileRules,/lastRoundWord:''/);
   assert.match(profileRules,/merged\.lastRoundWord = String\(merged\.lastRoundWord \|\| ''\)\.toUpperCase\(\)/);
