@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_FULLSCREEN_STATUS_20261025_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_STATUS_TABS_20261025_2/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -133,7 +133,7 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
   assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_FULLSCREEN_STATUS_20261025_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_FULLSCREEN_STATUS_20261025_1/);
+  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_TAB_ROUTING_20261025_1/);
   assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_FULLSCREEN_STATUS_20261025_1/);
 });
 
@@ -273,8 +273,13 @@ test('immersive Round Status exposes coherent Round, Tier and Skills views',()=>
   assert.match(core,/document\.addEventListener\('fullscreenchange'[\s\S]*?resetRoundStatusTab\(id\|\|''\)/);
   assert.match(core,/window\.BaselineRoundStatusTabs=Object\.freeze/);
   assert.match(nonRealmCss,/immersive Round \/ Tier \/ Skills authority/);
-  assert.match(nonRealmCss,/:fullscreen \.round-status-card\[data-round-status-game\] \.round-status-tabs/);
-  assert.match(nonRealmCss,/\.is-mobile-game-root \.round-status-card\[data-round-status-game\] \.round-status-tabs/);
+  assert.match(nonRealmCss,/\.round-status-tabs\{\s*display:grid!important/);
+  assert.doesNotMatch(nonRealmCss,/\.round-status-tabs\{\s*display:none!important/);
+  assert.match(nonRealmCss,/:fullscreen \.round-status-card\[data-round-status-game\]/);
+  assert.match(nonRealmCss,/\.is-mobile-game-root \.round-status-card\[data-round-status-game\]/);
+  assert.match(blockGrid,/const cards=\{[\s\S]*?game:'blockGridGameCard'[\s\S]*?skills:'blockGridSkillsCard'[\s\S]*?modes:'blockGridModesCard'[\s\S]*?progress:'blockGridProgressCard'/);
+  assert.match(blockGrid,/setTab\(blockTabFromLocation\(\), 'none'\);/);
+  assert.match(blockGrid,/button\.setAttribute\('aria-pressed', String\(selected\)\)/);
   assert.match(blockGrid,/roundTabs\.enhance\(statusCard,APP,[\s\S]*?blockGridModesCard[\s\S]*?blockGridSkillsCard/);
   assert.match(colourSort,/roundTabs\.enhance\(statusCard,APP,[\s\S]*?colourSortLevelsCard[\s\S]*?currently has no skill tree/);
   assert.match(crossnumber,/roundTabs\?\.enhance[\s\S]*?tierHtml:refs\.tiers\?\.innerHTML[\s\S]*?skillsHtml:refs\.skills\?\.innerHTML/);
