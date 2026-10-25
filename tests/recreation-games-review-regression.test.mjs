@@ -284,6 +284,10 @@ test('fullscreen right rail mirrors each game windowed tabs and defaults to Game
   assert.match(blockGrid,/BaselineFullscreenTabs\?\.sync\?\.\(APP\)/);
   assert.match(colourSort,/BaselineFullscreenTabs\?\.sync\?\.\(APP\)/);
   assert.match(crossnumber,/BaselineFullscreenTabs\?\.sync\?\.\(APP\)/);
+  assert.match(blockGrid,/document\.addEventListener\('fullscreenchange', render\);/);
+  assert.doesNotMatch(blockGrid,/document\.addEventListener\('fullscreenchange', renderGame\);/);
+  assert.match(colourSort,/document\.addEventListener\('fullscreenchange', render\);/);
+  assert.doesNotMatch(colourSort,/document\.addEventListener\('fullscreenchange', renderGame\);/);
 });
 
 test('fullscreen common controls use one centred icon geometry including the keyboard toggle',()=>{
