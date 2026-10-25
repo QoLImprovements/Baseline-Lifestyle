@@ -76,13 +76,11 @@ body[data-app="recreation"] .crossnumber-board-column{min-width:0}
 body[data-app="recreation"] .crossnumber-board-scroll{
   width:100%;
   min-width:0;
-  overflow:auto;
+  overflow:hidden;
   padding:8px;
   border:1px solid var(--cn-border);
   border-radius:14px;
   background:var(--cn-deep);
-  scrollbar-width:thin;
-  scrollbar-color:var(--cn-active) var(--cn-deep);
 }
 body[data-app="recreation"] .crossnumber-board{
   display:grid;
