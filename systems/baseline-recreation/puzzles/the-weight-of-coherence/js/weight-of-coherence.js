@@ -1633,13 +1633,14 @@
 
   function beginBoardLens(){
     if(!state || !imageReady || !refs.boardWrap) return false;
-    resetPieceZoom();
+    // Board inspection is independent from whole-piece inspection. Keep an
+    // enlarged tray piece open while the board lens is used for comparison.
     boardLensActive=true;
     root.classList.add('is-board-lens-active');
     const point=boardLensPoint();
     updateBoardLens(point.x,point.y);
     syncZoomControls();
-    setStatus('Magnifier ' + Math.round(zoomLevel*100) + '%. Keep Z held and move over the jigsaw; use − and + to adjust.','');
+    setStatus('Board magnifier ' + Math.round(zoomLevel*100) + '%. Keep Z held and move over the jigsaw. Any enlarged piece remains open for comparison.','');
     return true;
   }
 
@@ -1648,6 +1649,13 @@
     boardLensActive=false;
     root.classList.remove('is-board-lens-active');
     if(boardLens) boardLens.hidden=true;
+    // When a piece is still enlarged, return the shared zoom controls to that
+    // piece's actual scale rather than leaving the board-lens scale displayed.
+    if(zoomTarget && zoomTarget.isConnected && zoomScale>=PIECE_ZOOM_DEFAULT){
+      zoomLevel=zoomScale;
+      saveJigsawZoom();
+      updatePieceOverlay(zoomTarget);
+    }
     syncZoomControls();
   }
 
@@ -1685,14 +1693,14 @@
   function togglePieceZoom(target){
     const piece=target && target!==refs.boardWrap ? target : null;
     if(!piece) return false;
-    endBoardLens();
+    // Do not close the board lens here: piece and board inspection can coexist.
     if(zoomTarget===piece){
       resetPieceZoom();
       setStatus('Piece zoom reset to 200%.','');
       return true;
     }
     applyPieceZoom(piece,zoomLevel);
-    setStatus('Whole-piece zoom ' + Math.round(zoomLevel*100) + '%. The entire jigsaw piece is shown above the workspace; use − and + to adjust, or press Z again to close.','');
+    setStatus('Whole-piece zoom ' + Math.round(zoomLevel*100) + '%. The enlarged piece remains available while you hold Z over the jigsaw to compare against the board.','');
     return true;
   }
 

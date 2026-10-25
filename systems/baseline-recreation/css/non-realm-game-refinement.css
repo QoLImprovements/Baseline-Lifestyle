@@ -63,7 +63,8 @@
 }
 :is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel) .round-status-card{
   min-height:64px!important;
-  align-content:center!important;
+  align-content:start!important;
+  justify-content:stretch!important;
 }
 :is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel) .game-window-actions{
   gap:8px!important;
@@ -1663,85 +1664,6 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
 }
 
 
-/* 2026-10-24 fullscreen control dock.
-   Requested positions:
-   row 1: New | G1 | G3 | G5 | · | Music | Fullscreen
-   row 2: Auto| G2 | G4 | G6 | · | ·     | Settings
-   Specific/common layers overlap the same grid without moving DOM nodes. */
-@media(min-width:821px){
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions){
-    grid-column:2!important;
-    grid-row:4/6!important;
-    display:grid!important;
-    grid-template-columns:repeat(7,38px)!important;
-    grid-template-rows:38px 38px!important;
-    gap:6px!important;
-    width:max-content!important;
-    max-width:100%!important;
-    height:92px!important;
-    margin:0 8px!important;
-    padding:0!important;
-    border:0!important;
-    justify-content:start!important;
-    align-content:end!important;
-    align-self:end!important;
-    pointer-events:none;
-  }
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions)>.action{
-    pointer-events:auto;
-    margin:0!important;
-    width:38px!important;
-    min-width:38px!important;
-    height:38px!important;
-    min-height:38px!important;
-    padding:0!important;
-  }
-
-  /* G1/G2, G3/G4, G5/G6. */
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(1){grid-column:2;grid-row:1}
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(2){grid-column:2;grid-row:2}
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(3){grid-column:3;grid-row:1}
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(4){grid-column:3;grid-row:2}
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(5){grid-column:4;grid-row:1}
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > .game-play-window > .game-specific-actions>.action:nth-child(6){grid-column:4;grid-row:2}
-
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen .game-window-actions>.start-new-game-toggle{grid-column:1!important;grid-row:1!important}
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen .game-window-actions>.auto-next-toggle{grid-column:1!important;grid-row:2!important}
-  body[data-app="recreation"] :is(#wordGameCard,#make24GameCard):fullscreen .game-window-actions>.desktop-keypad-toggle{
-    grid-column:2!important;grid-row:1!important
-  }
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen .game-window-actions>.games-music-quick-toggle{grid-column:6!important;grid-row:1!important}
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen .game-window-actions>.game-fullscreen-toggle{grid-column:7!important;grid-row:1!important}
-  body[data-app="recreation"] :is(
-    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen .game-window-actions>.games-settings-trigger{grid-column:7!important;grid-row:2!important}
-}
-
-
 /* 2026-10-24 mobile playability authority.
    Phone layouts keep status text contained, common controls on-screen, and
    Track the Coin's choice surface clear of its prompt. */
@@ -1858,3 +1780,448 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
   }
 }
 
+
+
+/* 2026-10-24 Recreation idle/start alignment authority.
+   Idle content must not inherit the multi-column geometry used by an active
+   game. Every standard Recreation start state is centred as one deliberate
+   content group, with its common controls centred beneath the message. */
+body[data-app="recreation"] :is(
+  #pairsPanel #pairsBoard.is-pairs-idle > .empty-box,
+  #detectwordPanel #wordBoard > .empty-box,
+  #make24Panel #make24Board > .empty-box,
+  #trackcoinPanel #trackCoinBoard > .trackcoin-idle-card,
+  #ruleshiftPanel #ruleShiftBoard > .ruleshift-idle-card,
+  #blockGridPanel #blockGridGameCard > .block-grid-empty,
+  #colourSortPanel #colourSortGameCard > .colour-sort-empty
+){
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-content:center!important;
+  justify-items:center!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:clamp(22px,4vw,42px)!important;
+  gap:12px!important;
+  text-align:center!important;
+}
+body[data-app="recreation"] :is(
+  #pairsPanel #pairsBoard.is-pairs-idle > .empty-box,
+  #detectwordPanel #wordBoard > .empty-box,
+  #make24Panel #make24Board > .empty-box,
+  #trackcoinPanel #trackCoinBoard > .trackcoin-idle-card,
+  #ruleshiftPanel #ruleShiftBoard > .ruleshift-idle-card,
+  #blockGridPanel #blockGridGameCard > .block-grid-empty,
+  #colourSortPanel #colourSortGameCard > .colour-sort-empty
+) > :is(p,strong,.inline-note){
+  width:min(100%,620px)!important;
+  max-width:620px!important;
+  margin-inline:auto!important;
+  text-align:center!important;
+}
+body[data-app="recreation"] :is(
+  #blockGridPanel #blockGridGameCard,
+  #colourSortPanel #colourSortGameCard
+) > :is(.block-grid-empty,.colour-sort-empty){
+  grid-column:1/-1!important;
+  grid-row:1/-1!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  min-height:clamp(320px,45vh,520px)!important;
+}
+body[data-app="recreation"] :is(
+  #blockGridPanel #blockGridGameCard > .block-grid-empty,
+  #colourSortPanel #colourSortGameCard > .colour-sort-empty
+) > .game-window-actions.game-common-actions{
+  display:flex!important;
+  width:max-content!important;
+  max-width:100%!important;
+  margin:6px auto 0!important;
+  justify-self:center!important;
+  align-self:center!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:8px!important;
+}
+@media(max-width:820px){
+  body[data-app="recreation"] :is(
+    #blockGridPanel #blockGridGameCard,
+    #colourSortPanel #colourSortGameCard
+  ) > :is(.block-grid-empty,.colour-sort-empty){
+    min-height:280px!important;
+  }
+}
+
+
+/* 2026-10-24 zoom-safe common controls + tier-complete Pairs fit.
+   Browser zoom may shrink the CSS viewport, but it must not delete or clip
+   Settings / Music / Fullscreen controls on a fine-pointer desktop. */
+body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+  #blockGridGameCard,#colourSortGameCard
+):not(:fullscreen) .game-window-actions.game-common-actions{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:42px!important;
+  height:auto!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+  #blockGridGameCard,#colourSortGameCard
+):not(:fullscreen) .game-window-actions.game-common-actions>.action{
+  flex:0 0 42px!important;
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+}
+
+/* Every Pairs tier owns a bounded matrix. The card size is derived from both
+   its column and row counts so adding pairs cannot push cards under the
+   information rail or below the game section. */
+body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle){
+  box-sizing:border-box!important;
+  position:relative!important;
+  width:min(100%,var(--pairs-board-max,630px))!important;
+  height:min(var(--pairs-fit-height,520px),calc(100dvh - 250px))!important;
+  max-width:100%!important;
+  max-height:calc(100dvh - 250px)!important;
+  min-height:0!important;
+  grid-template-columns:repeat(var(--pairs-cols-desktop,4),minmax(0,1fr))!important;
+  grid-template-rows:repeat(var(--pairs-rows-desktop,3),minmax(0,1fr))!important;
+  align-content:stretch!important;
+  align-items:stretch!important;
+  overflow:visible!important;
+}
+body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle) .memory-card{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  aspect-ratio:auto!important;
+}
+
+/* Windowed desktop keeps Pairs as a clear play field plus a bounded right
+   information/control rail. At browser zoom below this breakpoint the rail
+   naturally stacks instead of overlapping the cards. */
+@media(min-width:900px) and (pointer:fine){
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen){
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(230px,280px)!important;
+    grid-template-rows:auto auto minmax(0,1fr) auto auto!important;
+    gap:8px 14px!important;
+    align-items:start!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen)>.game-toolbar{
+    grid-column:2!important;
+    grid-row:1!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:8px!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen)>.game-toolbar .stat-pills{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:5px!important;
+    width:100%!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen)>.game-live-xp{
+    grid-column:2!important;
+    grid-row:2!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen)>.game-play-window{
+    display:contents!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen) #pairsBoard{
+    grid-column:1!important;
+    grid-row:1/6!important;
+    place-self:center!important;
+    margin:0!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen) .round-status-card{
+    grid-column:2!important;
+    grid-row:3!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-height:100%!important;
+    overflow:auto!important;
+    margin:0!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen) .game-specific-actions{
+    grid-column:2!important;
+    grid-row:4!important;
+    width:100%!important;
+    justify-content:flex-start!important;
+    margin:0!important;
+  }
+  body[data-app="recreation"] #pairsPanel #pairsGameCard:not(:fullscreen) .game-window-actions{
+    grid-column:2!important;
+    grid-row:5!important;
+    width:100%!important;
+    justify-content:flex-start!important;
+    margin:0!important;
+    align-self:end!important;
+  }
+}
+@media(max-width:899px){
+  body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle){
+    width:100%!important;
+    max-width:100%!important;
+    height:min(var(--pairs-fit-height,520px),58dvh)!important;
+    max-height:58dvh!important;
+  }
+}
+
+
+@media(max-width:820px){
+  body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle){
+    grid-template-columns:repeat(var(--pairs-cols-mobile,4),minmax(0,1fr))!important;
+    grid-template-rows:repeat(var(--pairs-rows-mobile,4),minmax(0,1fr))!important;
+  }
+}
+@media(max-width:520px){
+  body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle){
+    grid-template-columns:repeat(var(--pairs-cols-phone,3),minmax(0,1fr))!important;
+    grid-template-rows:repeat(var(--pairs-rows-phone,4),minmax(0,1fr))!important;
+  }
+}
+
+
+/* 2026-10-24 round-result clarity + Detect The Word fullscreen refinement. */
+body[data-app="recreation"] .round-status-card .round-status-previous,
+body[data-app="recreation"] #crossnumberGame .round-status-previous,
+body[data-app="recreation"] :is(#blockGridGameCard,#colourSortGameCard) .round-status-previous{
+  margin:8px 0 10px!important;
+  padding:7px 9px!important;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.18)!important;
+  border-radius:10px!important;
+  background:rgba(var(--recreation-copper-deep-rgb),.10)!important;
+  color:var(--games-muted)!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  letter-spacing:.015em!important;
+}
+
+/* The fullscreen word workspace should read as the normal Recreation play
+   surface, not as a large near-black burgundy field. */
+@media(min-width:821px){
+  body[data-app="recreation"] #wordGameCard:fullscreen{
+    background:
+      radial-gradient(circle at 35% 30%,rgba(var(--recreation-copper-light-rgb),.10),transparent 36%),
+      linear-gradient(120deg,rgba(var(--recreation-rose-rgb),.72),rgba(var(--recreation-burgundy-rgb),.86) 58%,rgba(var(--recreation-rose-rgb),.62))!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen #wordBoard{
+    gap:14px!important;
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.14)!important;
+    border-radius:18px!important;
+    background:
+      radial-gradient(circle at 50% 24%,rgba(var(--recreation-copper-light-rgb),.08),transparent 38%),
+      linear-gradient(160deg,rgba(var(--recreation-rose-rgb),.24),rgba(var(--recreation-burgundy-rgb),.18))!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen #wordBoard>.word-box{
+    background:linear-gradient(160deg,rgba(var(--recreation-rose-rgb),.34),rgba(var(--recreation-copper-deep-rgb),.15))!important;
+    border-color:rgba(var(--recreation-copper-light-rgb),.24)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .letter-cell:not(.correct):not(.present):not(.absent){
+    background:linear-gradient(180deg,rgba(var(--recreation-rose-rgb),.24),rgba(var(--recreation-copper-deep-rgb),.12))!important;
+    border-color:rgba(var(--recreation-copper-light-rgb),.22)!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .word-entry-stack{
+    margin-top:10px!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .mobile-word-keypad{
+    margin:10px 0 0!important;
+  }
+}
+
+/* Fine-pointer fullscreen remains desktop-coherent even when browser zoom
+   reduces the CSS viewport below the ordinary desktop breakpoint. */
+@media(pointer:fine){
+  body[data-app="recreation"] #wordGameCard:fullscreen{
+    background:
+      radial-gradient(circle at 35% 30%,rgba(var(--recreation-copper-light-rgb),.10),transparent 36%),
+      linear-gradient(120deg,rgba(var(--recreation-rose-rgb),.72),rgba(var(--recreation-burgundy-rgb),.86) 58%,rgba(var(--recreation-rose-rgb),.62))!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen #wordBoard{
+    gap:14px!important;
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.14)!important;
+    border-radius:18px!important;
+    background:
+      radial-gradient(circle at 50% 24%,rgba(var(--recreation-copper-light-rgb),.08),transparent 38%),
+      linear-gradient(160deg,rgba(var(--recreation-rose-rgb),.24),rgba(var(--recreation-burgundy-rgb),.18))!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen #wordBoard>.word-box{
+    background:linear-gradient(160deg,rgba(var(--recreation-rose-rgb),.34),rgba(var(--recreation-copper-deep-rgb),.15))!important;
+    border-color:rgba(var(--recreation-copper-light-rgb),.24)!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .letter-cell:not(.correct):not(.present):not(.absent){
+    background:linear-gradient(180deg,rgba(var(--recreation-rose-rgb),.24),rgba(var(--recreation-copper-deep-rgb),.12))!important;
+    border-color:rgba(var(--recreation-copper-light-rgb),.22)!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .word-entry-stack{
+    margin-top:10px!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .mobile-word-keypad{
+    margin-top:10px!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .letter-cell.absent{
+    background:linear-gradient(
+      180deg,
+      rgba(var(--recreation-rose-rgb),.46),
+      rgba(var(--recreation-copper-deep-rgb),.26)
+    )!important;
+    border-color:rgba(var(--recreation-copper-light-rgb),.20)!important;
+    color:rgba(var(--recreation-ink-rgb),.76)!important;
+    -webkit-text-fill-color:rgba(var(--recreation-ink-rgb),.76)!important;
+  }
+}
+
+
+/* 2026-10-24 final non-Realm coherence authority.
+   This replaces the retired fixed-position control dock instead of layering
+   another override over it. */
+body[data-app="recreation"] :is(
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
+) .round-status-card{
+  display:grid!important;
+  grid-auto-rows:max-content!important;
+  align-content:start!important;
+  justify-content:stretch!important;
+  text-align:left!important;
+}
+body[data-app="recreation"] .round-status-card .round-status-heading{
+  align-self:start!important;
+  justify-self:stretch!important;
+  text-align:center!important;
+}
+body[data-app="recreation"] .round-status-card .round-status-previous{
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+body[data-app="recreation"] :is(
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+) .game-specific-actions,
+body[data-app="recreation"] :is(
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+) .game-window-actions.game-common-actions{
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:auto!important;
+  overflow:visible!important;
+  gap:7px!important;
+}
+body[data-app="recreation"] :is(
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+) .game-specific-actions>.action,
+body[data-app="recreation"] :is(
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+) .game-window-actions.game-common-actions>.action{
+  flex:0 0 42px!important;
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .round-status-card{
+    align-content:start!important;
+    justify-content:stretch!important;
+    overflow:auto!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions){
+    display:flex!important;
+    flex-wrap:wrap!important;
+    grid-template-columns:none!important;
+    grid-template-rows:none!important;
+    width:calc(100% - 16px)!important;
+    max-width:calc(100% - 16px)!important;
+    min-width:0!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+    margin-inline:8px!important;
+    gap:6px!important;
+    justify-content:flex-start!important;
+    align-content:flex-end!important;
+    pointer-events:auto!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > :is(.game-specific-actions,.game-window-actions)>.action{
+    grid-column:auto!important;
+    grid-row:auto!important;
+    flex:0 0 38px!important;
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+  }
+}
+
+/* Rule Shift terminal state stays compact inside the large play surface.
+   Grid-track stretching previously scattered the three result lines vertically. */
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-complete-card{
+  grid-auto-rows:max-content!important;
+  align-content:center!important;
+  justify-items:center!important;
+  text-align:center!important;
+  min-width:0!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-complete-card>strong{
+  font-size:clamp(1.2rem,2vw,1.6rem)!important;
+  line-height:1.2!important;
+}
+body[data-app="recreation"] #ruleshiftPanel .ruleshift-complete-card>.inline-note{
+  width:min(100%,680px)!important;
+  margin:0 auto!important;
+  text-align:center!important;
+  line-height:1.48!important;
+}
+
+/* Track the Coin selection phase: the cup itself is the interaction surface.
+   Prompt/status layers never intercept the pointer. */
+body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trackcoin-lane{
+  position:relative!important;
+  z-index:5!important;
+  pointer-events:auto!important;
+}
+body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick :is(
+  .trackcoin-game-status,.trackcoin-status,.trackcoin-pick-prompt
+){
+  pointer-events:none!important;
+}
+body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trackcoin-cup.is-selectable{
+  position:absolute!important;
+  z-index:30!important;
+  pointer-events:auto!important;
+  cursor:pointer!important;
+  touch-action:manipulation!important;
+  user-select:none!important;
+}

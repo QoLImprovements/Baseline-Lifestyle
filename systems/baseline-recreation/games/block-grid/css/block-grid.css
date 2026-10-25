@@ -684,3 +684,119 @@ html.is-dragging-block-grid-special body{
 .block-grid-drag-ghost .block-grid-piece-cell{
   transition:none!important;
 }
+
+
+/* 2026-10-24 Block Grid windowed composition + score progression.
+   Windowed play uses a compact left-of-board control cluster, never a tall
+   information rail. Round Status remains a normal Recreation card below the
+   play row. */
+#blockGridPanel .block-grid-skill-unlock-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+}
+#blockGridPanel .block-grid-skill-unlock.is-locked{
+  opacity:.58;
+}
+#blockGridPanel .block-grid-skill-button.is-locked{
+  opacity:.5!important;
+  filter:saturate(.55);
+}
+#blockGridPanel .block-grid-skill-button.is-unlocked{
+  border-color:rgba(var(--recreation-copper-light-rgb),.54)!important;
+}
+@media(min-width:1080px){
+  #blockGridPanel #blockGridGameCard:not(:fullscreen){
+    display:grid!important;
+    grid-template-columns:minmax(170px,220px) minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto auto auto auto!important;
+    gap:10px 14px!important;
+    align-items:start!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.block-grid-score-window{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.block-grid-score-window .stat-pills{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important;
+    width:100%!important;
+    justify-content:start!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.block-grid-score-window .stat-pill{
+    min-width:0!important;
+    width:100%!important;
+    padding:7px 9px!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.game-live-xp{
+    grid-column:1!important;
+    grid-row:2!important;
+    width:100%!important;
+    margin:0!important;
+    padding:9px 10px!important;
+    border-radius:14px!important;
+    align-self:start!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.block-grid-skill{
+    grid-column:1!important;
+    grid-row:3!important;
+    width:100%!important;
+    margin:0!important;
+    padding:10px!important;
+    border:1px solid rgba(var(--recreation-copper-light-rgb),.20)!important;
+    border-radius:14px!important;
+    background:rgba(var(--recreation-burgundy-rgb),.26)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+    align-self:start!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.block-grid-skill .block-grid-skill-actions{
+    justify-content:flex-start!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.block-grid-play-cluster{
+    grid-column:2!important;
+    grid-row:1/4!important;
+    width:min(100%,900px)!important;
+    max-width:900px!important;
+    min-width:0!important;
+    margin:0 auto!important;
+    align-self:start!important;
+    justify-self:center!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.round-status-card{
+    grid-column:1/-1!important;
+    grid-row:4!important;
+    width:100%!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:10px 12px!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.block-grid-run-objective{
+    grid-column:1/-1!important;
+    grid-row:5!important;
+    width:100%!important;
+    margin:0!important;
+    padding:0 2px!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.game-window-actions{
+    grid-column:1/-1!important;
+    grid-row:6!important;
+    width:100%!important;
+    margin:0!important;
+    justify-content:flex-end!important;
+  }
+}
+@media(max-width:1079px){
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.block-grid-score-window .stat-pills{
+    justify-content:center!important;
+  }
+  #blockGridPanel #blockGridGameCard:not(:fullscreen)>.block-grid-skill{
+    width:100%!important;
+  }
+}

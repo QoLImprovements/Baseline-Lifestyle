@@ -17,7 +17,8 @@ const files = {
   blockCss:'systems/baseline-recreation/games/block-grid/css/block-grid.css',
   colourCss:'systems/baseline-recreation/games/colour-sort/css/colour-sort.css',
   blockJs:'systems/baseline-recreation/games/block-grid/js/block-grid.js',
-  colourJs:'systems/baseline-recreation/games/colour-sort/js/colour-sort.js'
+  colourJs:'systems/baseline-recreation/games/colour-sort/js/colour-sort.js',
+  sitewide:'sitewide/css/baseline-sitewide.css'
 };
 
 const recreation = Object.freeze({
@@ -64,6 +65,20 @@ test('theme-facing Games CSS contains no retired indigo/navy chrome',async()=>{
     read(files.colourCss)
   ]);
   sources.forEach(source => assert.doesNotMatch(source,retiredThemeBlue));
+});
+
+test('Recreation account UI has one burgundy/copper palette authority',async()=>{
+  const [theme,sitewide,hub] = await Promise.all([
+    read(files.theme),read(files.sitewide),read(files.hub)
+  ]);
+  assert.doesNotMatch(sitewide,/BASELINE-GAMES-FLYOUT-G01-INDIGO-AUTHORITY/);
+  assert.doesNotMatch(sitewide,/body\[data-app="recreation"\][\s\S]{0,500}?#(?:080D22|1E2759|4656A6|1A244D|526BC2|8CA7FF)/i);
+  assert.match(sitewide,/--bl-surface-card-solid:var\(--recreation-card\)/);
+  assert.match(sitewide,/--bl-surface-active-solid:var\(--recreation-copper-deep\)/);
+  assert.match(theme,/#bl-auth-flyout select/);
+  assert.match(theme,/#bl-auth-flyout #bl-favorites-select \+ \.bl-select-btn/);
+  assert.match(hub,/baseline-sitewide\.css\?v=SITEWIDE_RECREATION_PALETTE_CLEANUP_20261024_1/);
+  assert.match(hub,/recreation-theme\.css\?v=RECREATION_ACCOUNT_COHERENCE_20261024_1/);
 });
 
 test('Block Grid and Colour Sort consume the Recreation theme instead of owning a blue shell',async()=>{
@@ -118,11 +133,11 @@ test('Block Grid and Colour Sort asset URLs are versioned for the new palette',a
     read(files.hub),read(files.blockJs),read(files.colourJs)
   ]);
   assert.match(blockJs,/block-grid-overview\.svg\?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2/);
-  assert.match(blockJs,/block-grid\.css\?v=BLOCK_GRID_MOBILE_PLAYABILITY_20261024_1/);
+  assert.match(blockJs,/block-grid\.css\?v=BLOCK_GRID_SCORE_XP_SKILLS_20261024_1/);
   assert.match(colourJs,/colour-sort-overview\.svg\?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2/);
   assert.match(colourJs,/colour-sort\.css\?v=COLOUR_SORT_MOBILE_PLAYABILITY_20261024_1/);
-  assert.match(hub,/block-grid\.js\?v=BLOCK_GRID_MOBILE_PLAYABILITY_20261024_1/);
-  assert.match(hub,/colour-sort\.js\?v=COLOUR_SORT_MOBILE_PLAYABILITY_20261024_1/);
+  assert.match(hub,/block-grid\.js\?v=BLOCK_GRID_PREVIOUS_XP_20261024_1/);
+  assert.match(hub,/colour-sort\.js\?v=COLOUR_SORT_CLEAN_STREAK_XP_20261024_1/);
 });
 
 test('normal text passes WCAG AA at every mirror-gradient stop',()=>{

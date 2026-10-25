@@ -75,6 +75,7 @@ const DEFAULT_PROFILE = Object.freeze({
   recentLevels:[],
   cleanWinStreak:0,
   bestStreak:0,
+  lastRoundXp:0,
   activePuzzle:null
 });
 
@@ -117,7 +118,8 @@ function validPuzzle(value) {
     level,
     bottles:source.map(bottle => bottle.slice()),
     moves:number(value.moves),
-    settled:Boolean(value.settled)
+    settled:Boolean(value.settled),
+    hadFailure:Boolean(value.hadFailure)
   };
 }
 
@@ -152,6 +154,7 @@ function normaliseProfile(value) {
     recentLevels,
     cleanWinStreak:number(source.cleanWinStreak),
     bestStreak:number(source.bestStreak),
+    lastRoundXp:number(source.lastRoundXp),
     activePuzzle:validPuzzle(source.activePuzzle)
   };
 }
@@ -179,7 +182,7 @@ function startLevel(levelId, { persistChange = true } = {}) {
   const level = clampLevel(levelId);
   profile.selectedLevel = level;
   profile.selectedTier = tierForLevel(level).id;
-  profile.activePuzzle = { level, bottles:initialBottles(level), moves:0, settled:false };
+  profile.activePuzzle = { level, bottles:initialBottles(level), moves:0, settled:false, hadFailure:false };
   selectedBottle = -1;
   undoStack = [];
   hint = null;
@@ -284,6 +287,7 @@ function statusHtml() {
   }
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
+    + '<div class="round-status-previous">Previous round - '+number(profile.lastRoundXp)+' XP</div>'
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+number(profile.cleanWinStreak)+'</strong></div>'
@@ -825,6 +829,10 @@ async function animatePour(from, to, result, { dragVisual = null } = {}) {
 async function performPour(from, to, { dragVisual = null } = {}) {
   const active = puzzle();
   if (!active || isAnimating || isBottleLocked(active,from) || isBottleLocked(active,to) || !canPour(active.bottles, from, to)) {
+    if(active){
+      active.hadFailure=true;
+      profile.cleanWinStreak=0;
+    }
     dragVisual?.ghost?.remove();
     dragVisual?.sourceElement?.classList.remove('is-drag-origin');
     return false;
@@ -866,12 +874,15 @@ function settleSolvedPuzzle() {
     profile.completedLevels.sort((a, b) => a - b);
   }
   const colourCount = levelColours(levelById(active.level)).length;
-  profile.cleanWinStreak=number(profile.cleanWinStreak)+1;
+  const cleanWin=!active.hadFailure;
+  profile.cleanWinStreak=cleanWin ? number(profile.cleanWinStreak)+1 : 0;
   profile.bestStreak=Math.max(number(profile.bestStreak),profile.cleanWinStreak);
-  const cleanBonus=Math.min(100,profile.cleanWinStreak*5);
+  const cleanBonus=cleanWin ? Math.min(100,profile.cleanWinStreak*5) : 0;
   const baseXp=firstCompletion ? 34 + colourCount * 8 + Math.max(0, 30 - active.moves) : 10 + colourCount;
-  awardXp(profile,Math.round(baseXp*(1+(cleanBonus/100))));
-  statusMessage='Game complete. Clean Streak Bonus +'+cleanBonus+'%.';
+  const xpGain=Math.round(baseXp*(1+(cleanBonus/100)));
+  awardXp(profile,xpGain);
+  profile.lastRoundXp=xpGain;
+  statusMessage='Game complete.'+(cleanBonus?' Clean Streak Bonus +'+cleanBonus+'%.':'');
   undoStack = [];
   const completedTier=tierForLevel(active.level).id;
   try { autoNextApi()?.schedule?.(APP, () => startTierGame(completedTier)); } catch (_) {}
@@ -905,6 +916,8 @@ function selectBottle(index) {
     return;
   }
   if (!canPour(active.bottles, selectedBottle, index)) {
+    active.hadFailure = true;
+    profile.cleanWinStreak = 0;
     if (active.bottles[index].length) {
       selectedBottle = index;
       statusMessage = `That pour is blocked; bottle ${index + 1} is selected instead.`;

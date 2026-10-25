@@ -155,6 +155,19 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     }
   }
 
+  function isTouchOnlyGameDevice(){
+    if(typeof window === 'undefined') return false;
+    try{
+      const coarse = !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
+      const fine = !!(window.matchMedia && window.matchMedia('(pointer:fine)').matches);
+      const hover = !!(window.matchMedia && window.matchMedia('(hover:hover)').matches);
+      const touchPoints = Number((window.navigator && window.navigator.maxTouchPoints) || 0);
+      return (coarse || touchPoints > 0) && !fine && !hover;
+    }catch(_error){
+      return false;
+    }
+  }
+
   function roundIsTerminal(gameId){
     if(gameId === 'pairs') return Boolean(pairsBoardState && pairsBoardState.completed);
     if(gameId === 'make24') return Boolean(make24State && make24State.completed);
@@ -978,24 +991,29 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const pct = cleanWinBonusPct(streak);
     return pct ? ' · Clean Streak Bonus +' + pct + '%' : '';
   }
-  function coherentRoundStatusHtml(label,message,profile,tierName){
+  function coherentRoundStatusHtml(label,message,profile,tierName,previousLabel){
     const source=String(message||'').trim();
     const rankMatch=source.match(/(?:Player Rank(?: up)?|Rank)\s*\+(\d+)/i);
     const cleaned=source
       .replace(/\s*[·.]?\s*Clean Streak Bonus \+\d+%/ig,'')
+      .replace(/\s*·?\s*\+\d+\s*XP/ig,'')
       .replace(/\s*[·.]?\s*(?:Player Rank(?: up)?|Rank)\s*\+\d+/ig,'')
       .replace(/\s+\./g,'.')
       .replace(/\s*·\s*$/,'')
       .trim();
-    const streak=Math.max(0,Math.round(Number(profile&&profile.cleanWinStreak||0)));
+    const cleanStreak=Math.max(0,Math.round(Number(profile&&profile.cleanWinStreak||0)));
+    const winningStreak=Math.max(0,Math.round(Number(profile&&profile.currentStreak!==undefined?profile.currentStreak:cleanStreak)));
     const rankUp=rankMatch ? '<div class="round-status-rankup">Ranked Up! Player Rank '+Math.max(1,Math.round(Number(profile&&profile.level||1)))+'</div>' : '';
+    const previousXp=Math.max(0,Math.round(Number(profile&&profile.lastRoundXp||0)));
+    const previousResultLabel=String(previousLabel||'Previous round').trim()||'Previous Round';
     return '<div class="round-status-heading">'+escapeHtml(label||'Round Status')+'</div>'
       + (cleaned?'<div class="round-status-outcome">'+escapeHtml(cleaned)+'</div>':'')
       + rankUp
+      + '<div class="round-status-previous">'+escapeHtml(previousResultLabel)+' - '+previousXp+' XP</div>'
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tierName||'—')+'</strong></div>'
-      + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
-      + '<div><span>Clean Streak Bonus</span><strong>'+cleanWinBonusPct(streak)+'%</strong></div>'
+      + '<div><span>Winning Streak</span><strong>'+winningStreak+'</strong></div>'
+      + '<div><span>Clean Streak Bonus</span><strong>'+cleanWinBonusPct(cleanStreak)+'%</strong></div>'
       + '</div>';
   }
   function shuffle(list){
@@ -1086,6 +1104,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   const normaliseWordProfile = CORE_PROFILE_RULES.normaliseWordProfile;
   const normaliseRuleShiftProfile = CORE_PROFILE_RULES.normaliseRuleShiftProfile;
   const normaliseTrackCoinProfile = CORE_PROFILE_RULES.normaliseTrackCoinProfile;
+  const highestUnlockedTrackCoinTier = CORE_PROFILE_RULES.highestUnlockedTrackCoinTier;
+  if(typeof highestUnlockedTrackCoinTier !== 'function') throw new Error('games_profile_trackcoin_unlock_authority_missing');
 
 
 
@@ -1581,8 +1601,16 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     refs.pairsBoard.style.setProperty('--pairs-cols-desktop',String(layout.desktopCols));
     refs.pairsBoard.style.setProperty('--pairs-cols-mobile',String(layout.mobileCols));
     refs.pairsBoard.style.setProperty('--pairs-cols-phone',String(layout.phoneCols));
-    refs.pairsBoard.style.setProperty('--pairs-rows-desktop',String(Math.ceil((Math.max(1,Number(tier&&tier.pairs)||1)*2)/Math.max(1,layout.desktopCols))));
+    const pairCount=Math.max(1,Number(tier&&tier.pairs)||1);
+    const cardCount=pairCount*2;
+    const desktopRows=Math.ceil(cardCount/Math.max(1,layout.desktopCols));
+    const mobileRows=Math.ceil(cardCount/Math.max(1,layout.mobileCols));
+    const phoneRows=Math.ceil(cardCount/Math.max(1,layout.phoneCols));
+    refs.pairsBoard.style.setProperty('--pairs-rows-desktop',String(desktopRows));
+    refs.pairsBoard.style.setProperty('--pairs-rows-mobile',String(mobileRows));
+    refs.pairsBoard.style.setProperty('--pairs-rows-phone',String(phoneRows));
     refs.pairsBoard.style.setProperty('--pairs-board-max',layout.boardMax+'px');
+    refs.pairsBoard.style.setProperty('--pairs-fit-height',Math.min(720,(desktopRows*128)+((desktopRows-1)*10))+'px');
   }
   function startPairsBoard(){
     clearAutoNextTimer('pairs');
@@ -1624,6 +1652,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     profile.currentStreak = rewards.nextStreak;
     profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
     profile.cleanWinStreak = rewards.nextClean;
+    profile.lastRoundXp = rewards.xp;
     const levels = levelUpFromGain(profile, rewards.xp);
     pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank Coins · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · Clean Streak Bonus +' + rewards.cleanPct + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
     pairsBoardState.roundBank += rewards.bank;
@@ -1642,14 +1671,15 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       profiles.pairs.bank = Math.max(0, profiles.pairs.bank - penalty);
       pairsBoardState.roundBank -= penalty;
     }
-    if(cleanBreak) pairsBoardState.hadFailure = true;
+    pairsBoardState.hadFailure = true;
+    profiles.pairs.cleanWinStreak = 0;
     profiles.pairs.currentStreak = 0;
     if(penaltyEligible && penalty > 0){
       pairsBoardState.lastMessage = 'Repeated miss. -' + penalty + ' Bank Coins. Continue the board.';
     }else if(cleanBreak){
       pairsBoardState.lastMessage = 'A previously selected card was chosen again in a miss. Continue the board.';
     }else{
-      pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections, so clean status is preserved. Continue the board.';
+      pairsBoardState.lastMessage = 'Mismatch. Continue the board; this round is no longer clean.';
     }
     persistPairsRound();
     window.setTimeout(function(){
@@ -1916,16 +1946,18 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     try{ value = Function('"use strict"; return (' + raw + ');')(); }catch(_e){ value = NaN; }
     if(Number.isFinite(value) && Math.abs(value - (make24State.target || 24)) < 1e-6){
       const tier = currentMake24Tier();
-      const nextClean = profiles.make24.cleanWinStreak + 1;
-      const cleanPct = cleanWinBonusPct(nextClean) / 100;
+      const cleanWin = !make24State.hadFailure;
+      const nextClean = cleanWin ? profiles.make24.cleanWinStreak + 1 : 0;
+      const cleanPct = cleanWin ? cleanWinBonusPct(nextClean) / 100 : 0;
       const bankGain = Math.round(tier.bankReward * (1 + (profiles.make24.skills.banker || 0) * 0.10) * (1 + cleanPct));
       const xpGain = Math.round(tier.xpReward * (1 + (profiles.make24.skills.flow || 0) * 0.08) * (1 + cleanPct));
       profiles.make24.bank += bankGain;
       profiles.make24.puzzlesSolved += 1;
       profiles.make24.cleanWinStreak = nextClean;
+      profiles.make24.lastRoundXp = xpGain;
       const levels = levelUpFromGain(profiles.make24, xpGain);
       make24State.roundBank += bankGain;
-      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + (nextClean ? ' · Clean Streak Bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
+      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + (cleanWin && nextClean ? ' · Clean Streak Bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
       make24State.revealSolution = '';
       make24State.draftExpression = '';
       make24State.completed = true;
@@ -1937,6 +1969,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     }
     make24State.mistakes += 1;
     make24State.hadFailure = true;
+    profiles.make24.cleanWinStreak = 0;
     const penalty = Math.max(0, currentMake24Tier().penalty - (profiles.make24.skills.precision || 0));
     if(make24State.mistakes > 1 && penalty > 0){
       profiles.make24.bank = Math.max(0, profiles.make24.bank - penalty);
@@ -2510,16 +2543,18 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       const profile = profiles.detectword;
       profile.wordsSolved += 1;
       profile.currentStreak += 1;
-      const nextClean = profile.cleanWinStreak + 1;
+      const cleanWin = !wordState.hadFailure;
+      const nextClean = cleanWin ? profile.cleanWinStreak + 1 : 0;
       profile.cleanWinStreak = nextClean;
       profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
-      const rewardMult = computeWordRewardMultiplier(profile) * (1 + (cleanWinBonusPct(nextClean) / 100));
+      const rewardMult = computeWordRewardMultiplier(profile) * (1 + ((cleanWin ? cleanWinBonusPct(nextClean) : 0) / 100));
       const bankGain = Math.round(tier.bankReward * (1 + (profile.skills.banker || 0) * 0.10) * rewardMult);
       const xpGain = Math.round(tier.xpReward * (1 + (profile.skills.flow || 0) * 0.08) * rewardMult);
       profile.bank += bankGain;
+      profile.lastRoundXp = xpGain;
       const levels = levelUpFromGain(profile, xpGain);
       wordState.roundBank += bankGain;
-      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · Player Rank +' + levels : '') + '.';
+      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + (cleanWin ? cleanBonusRewardText(nextClean) : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
       resolveNinjaBonuses();
@@ -2528,9 +2563,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       return;
     }
     wordState.hadFailure = true;
+    profiles.detectword.cleanWinStreak = 0;
     if(wordState.guesses.length >= wordState.maxGuesses){
       profiles.detectword.currentStreak = 0;
       profiles.detectword.cleanWinStreak = 0;
+      profiles.detectword.lastRoundXp = 0;
       wordState.lastMessage = 'Round ended. Word was ' + wordState.secret.toUpperCase() + '.';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
@@ -2993,6 +3030,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     profile.totalRounds += 1;
     profile.totalXpEarned += xpGain;
     profile.totalCoinsEarned += coinGain;
+    profile.lastRoundXp = xpGain;
     profile.coins += coinGain;
     const levelUps = levelUpFromGain(profile, xpGain);
     profile.highestUnlockedTier = highestUnlockedTrackCoinTier(profile);
@@ -3005,18 +3043,22 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     return { xpGain, coinGain, levelUps, cleanPct, previousSpeed, roundSpeed, nextSpeed:trackCoinCurrentSpeedPercent(profile) };
   }
   function chooseTrackCoinCup(choiceRaw){
-    if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
+    // Pick phase is the single interaction authority. A separate pickLocked
+    // guard could become stale while the rendered cup was visibly selectable,
+    // causing taps/clicks to flash but be ignored.
+    if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.resolved) return false;
+    trackCoinState.pickLocked = true;
     cancelTrackCoinAnimation();
     const choice=String(choiceRaw==null?'':choiceRaw);
     let pickedCup=trackCoinState.cups.find(function(cup){ return cup.id===choice; });
     if(!pickedCup){
       const choiceIndex=Number(choiceRaw);
-      if(Number.isNaN(choiceIndex)) return;
+      if(Number.isNaN(choiceIndex)){ trackCoinState.pickLocked=false; return false; }
       pickedCup=trackCoinState.cups[choiceIndex];
     }
-    if(!pickedCup) return;
-    trackCoinState.pickLocked = true;
+    if(!pickedCup){ trackCoinState.pickLocked=false; return false; }
     trackCoinState.resolved = true;
+    trackCoinState.phase = 'review';
     trackCoinState.revealAll = true;
     trackCoinState.pickedCupId = pickedCup.id;
     const correct = pickedCup.id === trackCoinState.coinCupId;
@@ -3029,6 +3071,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     resolveNinjaBonuses();
     renderAll();
     scheduleAutoNext('trackcoin', function(){ startTrackCoinRound({ startWindowMs:3000 }); }, AUTO_NEXT_DELAYS.trackcoin);
+    return true;
   }
   function resumeRestoredTrackCoinRound(){
     if(!trackCoinState||!trackCoinState.restoredWaiting||trackCoinState.resolved) return;
@@ -3094,6 +3137,26 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       }, 700);
     }, 1100);
   }
+  function bindTrackCoinCupChoices(){
+    if(!refs.trackCoinBoard) return;
+    qsa('.trackcoin-cup[data-trackcoin-pick]',refs.trackCoinBoard).forEach(function(cup){
+      const commitChoice=function(event){
+        if(!cup.classList.contains('is-selectable')) return;
+        if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.resolved) return;
+        if(event){ event.preventDefault(); event.stopPropagation(); }
+        chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
+      };
+      cup.addEventListener('pointerdown',commitChoice);
+      // Keep a standard click fallback for assistive technology and synthetic
+      // activation. The state guard above makes this idempotent after pointerdown.
+      cup.addEventListener('click',commitChoice);
+      cup.addEventListener('keydown',function(event){
+        if(event.key!=='Enter' && event.key!==' ') return;
+        commitChoice(event);
+      });
+    });
+  }
+
   function renderTrackCoinTierList(){
     const profile = profiles.trackcoin;
     refs.trackCoinTierSelectList.innerHTML = TRACKCOIN_TIERS.map(tier => {
@@ -3195,6 +3258,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       : '';
     const pickPrompt=trackCoinState.phase==='pick'&&!trackCoinState.resolved ? '<div class="trackcoin-pick-prompt">Choose the cup</div>' : '';
     refs.trackCoinBoard.innerHTML = '<div id="trackCoinScene" class="trackcoin-scene' + phaseClass + (trackCoinState.phase === 'hide' ? ' is-busy' : '') + (trackCoinState.resolved ? ' is-resolved' : '') + '">' + roundStatusHtml + '<div class="trackcoin-status"><strong>' + escapeHtml(tier.name) + '</strong><span class="inline-note">Containers ' + tier.containers + ' · ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '</span></div>' + resumeHtml + '<div class="trackcoin-lane" data-cups="' + tier.containers + '">' + pickPrompt + coinHtml + positions + '</div></div>';
+    bindTrackCoinCupChoices();
     ensureGamePlayContract();
   }
   function renderTrackCoinSummary(){
@@ -3291,9 +3355,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const colourName = ruleShiftName(RULESHIFT_COLOURS, option.colour);
     const shapeName = ruleShiftName(RULESHIFT_SHAPES, option.shape);
     const sizeName = ruleShiftName(RULESHIFT_SIZES, option.size);
-    if(rule.type === 'colour') return colourMatch ? 'Colour matched.' : 'Colour did not match: you chose ' + colourName + '.';
-    if(rule.type === 'shape') return shapeMatch ? 'Shape matched.' : 'Shape did not match: you chose ' + shapeName + '.';
-    if(rule.type === 'size') return sizeMatch ? 'Size matched.' : 'Size did not match: you chose ' + sizeName + '.';
+    if(rule.type === 'colour') return colourMatch ? 'Colour matched.' : 'You chose ' + colourName + '; the rule required ' + ruleShiftName(RULESHIFT_COLOURS, rule.colour) + '.';
+    if(rule.type === 'shape') return shapeMatch ? 'Shape matched.' : 'You chose ' + shapeName + '; the rule required ' + ruleShiftName(RULESHIFT_SHAPES, rule.shape) + '.';
+    if(rule.type === 'size') return sizeMatch ? 'Size matched.' : 'You chose ' + sizeName + '; the rule required ' + ruleShiftName(RULESHIFT_SIZES, rule.size) + '.';
     if(rule.type === 'notColour') return !colourMatch ? 'Colour correctly avoided the excluded colour.' : 'The selected colour was the one the rule excluded.';
     if(rule.type === 'notShape') return !shapeMatch ? 'Shape correctly avoided the excluded shape.' : 'The selected shape was the one the rule excluded.';
     if(rule.type === 'colourShape') return 'Colour ' + (colourMatch ? 'matched' : 'did not match') + '; shape ' + (shapeMatch ? 'matched' : 'did not match') + '.';
@@ -3363,7 +3427,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     clearRuleShiftTimer();
     const profile = profiles.ruleshift;
     profile.wrongAnswers += 1;
-    failRuleShiftRun('Time ran out. Run failed — no reward awarded.');
+    failRuleShiftRun('Time ran out. No reward awarded.');
     ruleShiftState.resolvingTimeout = false;
   }
 
@@ -3452,6 +3516,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const profile = profiles.ruleshift;
     profile.currentStreak = 0;
     profile.cleanWinStreak = 0;
+    profile.lastRoundXp = 0;
     ruleShiftState.mistakes += 1;
     ruleShiftState.hadFailure = true;
     ruleShiftState.failed = true;
@@ -3476,6 +3541,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const leveled = levelUpFromGain(profile, xpGain);
     profile.bank += bankGain;
     profile.cleanWinStreak = nextClean;
+    profile.lastRoundXp = xpGain;
     ruleShiftState.finished = true;
     ruleShiftState.lastMessage = 'Run complete. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (leveled ? ' · Player Rank +' + leveled : '') + '.';
     persistRuleShiftRound();
@@ -3535,7 +3601,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     }
     profile.wrongAnswers += 1;
     const mismatchFeedback = ruleShiftMismatchFeedback(ruleShiftState.currentRule, option);
-    failRuleShiftRun('Incorrect choice. ' + mismatchFeedback + ' Run failed — no reward awarded. The rule was: ' + ruleShiftState.currentRule.label);
+    failRuleShiftRun('Incorrect choice. ' + mismatchFeedback + ' No reward awarded.');
   }
   function spendRuleShiftSkill(skillId){
     const profile = profiles.ruleshift;
@@ -3596,14 +3662,14 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     if(refs.ruleShiftRoundBankValue) refs.ruleShiftRoundBankValue.textContent = ruleShiftState ? ruleShiftState.roundBank : 0;
     if(!ruleShiftState){
       refs.ruleShiftBoard.innerHTML = '<div class="empty-box ruleshift-idle-card"><strong>Rule Shift is idle.</strong><span class="inline-note">' + escapeHtml(ruleShiftIdleMessage) + '</span><span class="inline-note">The target shape is always present. Start when ready.</span></div>';
-      refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No Rule Shift run is active yet.',profiles.ruleshift,currentRuleShiftTier().name);
+      refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No Rule Shift run is active yet.',profiles.ruleshift,currentRuleShiftTier().name,'Previous Run');
       return;
     }
-    refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',ruleShiftState.lastMessage,profiles.ruleshift,currentRuleShiftTier().name);
+    refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',ruleShiftState.lastMessage,profiles.ruleshift,currentRuleShiftTier().name,'Previous Run');
     if(ruleShiftState.finished){
       const finishedTitle = ruleShiftState.failed ? 'Run failed.' : 'Run complete.';
       const finishedPrompt = ruleShiftState.failed ? 'Incorrect answers end the run. Press New Game to try again.' : 'Press New Game to begin another switching run.';
-      refs.ruleShiftBoard.innerHTML = '<div class="ruleshift-complete-card' + (ruleShiftState.failed ? ' ruleshift-failed-card' : '') + '"><strong>' + finishedTitle + '</strong><span class="inline-note">' + escapeHtml(ruleShiftState.lastMessage) + '</span><span class="inline-note">' + finishedPrompt + '</span></div>';
+      refs.ruleShiftBoard.innerHTML = '<div class="ruleshift-complete-card' + (ruleShiftState.failed ? ' ruleshift-failed-card' : '') + '"><strong>' + finishedTitle + '</strong><span class="inline-note">' + finishedPrompt + '</span></div>';
       return;
     }
     const rule = ruleShiftState.currentRule;
@@ -3744,7 +3810,7 @@ function toggleGameFullscreen(gameId){
     ensureGamePlayContract();
     const target = gamePlayRootElement(id) || gamePlaySurfaceElement(id);
     if(!target) return;
-    if(isMobileGameViewport()) return;
+    if(isTouchOnlyGameDevice()) return;
     if(!document.fullscreenEnabled) return;
     if(document.fullscreenElement){
       document.exitFullscreen().catch(function(){});
@@ -3800,9 +3866,9 @@ function toggleGameFullscreen(gameId){
       const gameRoot = gameCardElement(id) || panel.querySelector('[data-game-play-root="' + id + '"]');
       const windowActions = gameRoot ? gameRoot.querySelector('.game-window-actions') : null;
       qsa('[data-game-fullscreen="' + id + '"]', panel).forEach(function(existingBtn){
-        if(id === 'ninja' || isMobileGameViewport()) existingBtn.remove();
+        if(id === 'ninja' || isTouchOnlyGameDevice()) existingBtn.remove();
       });
-      if(id !== 'ninja' && !isMobileGameViewport() && !panel.querySelector('[data-game-fullscreen="' + id + '"]')){
+      if(id !== 'ninja' && !isTouchOnlyGameDevice() && !panel.querySelector('[data-game-fullscreen="' + id + '"]')){
         const btn = document.createElement('button');
         btn.className = 'action ghost game-fullscreen-toggle';
         btn.type = 'button';
@@ -4080,12 +4146,6 @@ function toggleGameFullscreen(gameId){
       const make24BoardRerollBtn = event.target.closest('#make24BoardRerollBtn'); if(make24BoardRerollBtn){ rerollMake24Puzzle(); return; }
       const trackCoinResume = event.target.closest('[data-action="resume-trackcoin"]'); if(trackCoinResume){ if(event){ event.preventDefault(); event.stopPropagation(); } resumeRestoredTrackCoinRound(); return; }
             const trackCoinReplay = event.target.closest('[data-action="replay-trackcoin"], #replayTrackCoinShuffleBtn'); if(trackCoinReplay){ if(event){ event.preventDefault(); event.stopPropagation(); } replayTrackCoinShuffle(); return; }
-      const trackCoinCup = event.target.closest('[data-trackcoin-pick]');
-      if(trackCoinCup){
-        event.preventDefault();
-        chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick'));
-        return;
-      }
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
 
     });
@@ -4176,22 +4236,6 @@ function toggleGameFullscreen(gameId){
         event.stopPropagation();
         handlePairsCardFlip(pairCard.getAttribute('data-card'));
       });
-    }
-    if(refs.trackCoinBoard){
-      const selectTrackCoinCup=function(event){
-        const cup=event.target instanceof Element ? event.target.closest('.trackcoin-cup[data-trackcoin-pick]') : null;
-        if(!cup || !refs.trackCoinBoard.contains(cup)) return;
-        if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
-        event.preventDefault();
-        event.stopPropagation();
-        chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
-      };
-      // Resolve the choice on pointer-down on coarse/touch input. Waiting for
-      // pointer-up allowed browser tap/scroll handling to consume the gesture on
-      // some mobile browsers, which made the cup flash without resolving.
-      refs.trackCoinBoard.addEventListener('pointerdown',selectTrackCoinCup,true);
-      refs.trackCoinBoard.addEventListener('pointerup',selectTrackCoinCup,true);
-      refs.trackCoinBoard.addEventListener('click',selectTrackCoinCup,true);
     }
     if(refs.pairsHintBtn){ setCompactActionButton(refs.pairsHintBtn,'?','Hint','H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
     if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard', 'push'); });

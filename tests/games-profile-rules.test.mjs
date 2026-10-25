@@ -39,7 +39,7 @@ test('Core Games profile authority preserves canonical default profile shapes',(
   assert.deepEqual(
     JSON.parse(JSON.stringify(rules.defaultPairsProfile())),
     {
-      app:'pairs',bank:0,xp:0,level:1,skillPoints:1,boardsCleared:0,gamesPlayed:0,currentStreak:0,bestStreak:0,cleanWinStreak:0,
+      app:'pairs',bank:0,xp:0,level:1,skillPoints:1,boardsCleared:0,gamesPlayed:0,currentStreak:0,bestStreak:0,cleanWinStreak:0,lastRoundXp:0,
       skills:{insight:0,flow:0,banker:0,recall:0,tempo:0},selectedTier:'starter',cardTheme:'woodland',activeRound:null
     }
   );
@@ -62,6 +62,11 @@ test('Core Games profile authority repairs locked tiers themes and skills',()=>{
   assert.equal(pairs.cardTheme,'woodland');
   assert.equal(pairs.skills.insight,0);
   assert.equal(pairs.skillPoints,1);
+  assert.equal(rules.normalisePairsProfile({lastRoundXp:27}).lastRoundXp,27);
+  assert.equal(rules.normaliseMake24Profile({lastRoundXp:18}).lastRoundXp,18);
+  assert.equal(rules.normaliseWordProfile({lastRoundXp:14}).lastRoundXp,14);
+  assert.equal(rules.normaliseRuleShiftProfile({lastRoundXp:21}).lastRoundXp,21);
+  assert.equal(rules.normaliseTrackCoinProfile({lastRoundXp:9}).lastRoundXp,9);
 
   const make24=rules.normaliseMake24Profile({level:1,selectedTier:'crown',skills:{clarity:4}});
   assert.equal(make24.selectedTier,'starter');
@@ -108,6 +113,9 @@ test('Track Coin profile authority preserves speed floor and unlocked-tier repai
   assert.equal(profile.highestUnlockedTier,'tier1');
   assert.equal(profile.selectedTier,'tier1');
   assert.equal(profile.currentTier,'tier1');
+  assert.equal(rules.highestUnlockedTrackCoinTier({level:1}),'tier1');
+  assert.equal(rules.highestUnlockedTrackCoinTier({level:6}),'tier3');
+  assert.equal(rules.highestUnlockedTrackCoinTier({level:15}),'tier5');
 });
 
 test('Recreation core delegates Core Games profile rules and keeps Realm compatibility separate',()=>{
@@ -134,7 +142,7 @@ test('Core Games profile authority is loaded before core and stays pure',()=>{
   assert.doesNotMatch(source,/addEventListener|createElement|innerHTML|classList|history\./);
 
   const configIndex=html.indexOf('/systems/baseline-recreation/js/games-core-config.js');
-  const rulesIndex=html.indexOf('/systems/baseline-recreation/js/games-profile-rules.js?v=GAMES_PROFILE_RULES_AUTHORITY_20261021_1');
+  const rulesIndex=html.indexOf('/systems/baseline-recreation/js/games-profile-rules.js?v=GAMES_PROFILE_TRACKCOIN_UNLOCK_20261025_1');
   const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js');
   assert.ok(configIndex>=0 && rulesIndex>configIndex && coreIndex>rulesIndex);
 });

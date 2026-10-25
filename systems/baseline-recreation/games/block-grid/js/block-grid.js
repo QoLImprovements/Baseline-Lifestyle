@@ -19,8 +19,12 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
-const BUILD = 'BLOCK_GRID_MOBILE_PLAYABILITY_20261024_1';
+const BUILD = 'BLOCK_GRID_SCORE_XP_SKILLS_20261024_1';
 const APP = 'blockgrid';
+const BLOCK_SKILLS = Object.freeze([
+  { id:'blast', name:'Bomb', icon:'💣', unlockLevel:2, description:'Drag onto the board to clear a 4 × 4 area.' },
+  { id:'rows', name:'Plough', icon:'🚜', unlockLevel:5, description:'Drag onto the board to clear two adjacent rows.' }
+]);
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
   level:1,
@@ -29,6 +33,7 @@ const DEFAULT_PROFILE = Object.freeze({
   gamesPlayed:0,
   totalLines:0,
   totalPieces:0,
+  lastRoundXp:0,
   selectedMode:'classic',
   activeRun:null
 });
@@ -63,7 +68,9 @@ function normaliseRun(value) {
     lines:number(value.lines),
     pieces:number(value.pieces),
     skillCharge:Math.max(0,Math.min(100,number(value.skillCharge))),
-    gameOver:Boolean(value.gameOver)
+    gameOver:Boolean(value.gameOver),
+    xpSettled:Object.prototype.hasOwnProperty.call(value,'xpSettled') ? Boolean(value.xpSettled) : true,
+    xpEarned:number(value.xpEarned)
   };
   if (!run.gameOver && run.tray.length === 0) run.tray = createTray(run.board, profile?.selectedMode || 'classic');
   if (!run.gameOver && run.tray.length && !hasAnyPlacement(run.board, run.tray)) run.gameOver = true;
@@ -81,6 +88,7 @@ function normaliseProfile(value) {
     gamesPlayed:number(source.gamesPlayed),
     totalLines:number(source.totalLines),
     totalPieces:number(source.totalPieces),
+    lastRoundXp:number(source.lastRoundXp),
     selectedMode:mode,
     activeRun:null
   };
@@ -104,7 +112,31 @@ function syncAutoNextControl() {
 
 function createRun() {
   const board = emptyBoard();
-  return { board, tray:createTray(board, profile.selectedMode), score:0, combo:0, lines:0, pieces:0, skillCharge:0, gameOver:false };
+  return { board, tray:createTray(board, profile.selectedMode), score:0, combo:0, lines:0, pieces:0, skillCharge:0, gameOver:false, xpSettled:false, xpEarned:0 };
+}
+
+function blockSkill(id) {
+  return BLOCK_SKILLS.find(skill => skill.id === id) || null;
+}
+
+function blockSkillUnlocked(id) {
+  const skill=blockSkill(id);
+  return Boolean(skill && profile && profile.level >= skill.unlockLevel);
+}
+
+function xpForRunScore(score) {
+  const points=number(score);
+  return points > 0 ? Math.max(1, Math.round(points / 10)) : 0;
+}
+
+function settleRunXp(active) {
+  if(!active || !active.gameOver || active.xpSettled) return 0;
+  const gained=xpForRunScore(active.score);
+  active.xpSettled=true;
+  active.xpEarned=gained;
+  profile.lastRoundXp=gained;
+  if(gained > 0) awardXp(profile,gained);
+  return gained;
 }
 
 function persist() {
@@ -237,6 +269,7 @@ function statusHtml() {
       : (selectedPiece >= 0 ? `Piece ${selectedPiece + 1} selected. ` : '') + (statusMessage || 'Keep space available for the next tray.');
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
+    + '<div class="round-status-previous">Previous round - '+number(profile.lastRoundXp)+' XP</div>'
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(currentMode().name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
@@ -265,7 +298,7 @@ function renderGameInfo() {
         <div class="stat-pill">Pieces Placed <span>${profile.totalPieces}</span></div>
       </div>
     </div>
-    <div class="summary-box"><strong>Place without rotating.</strong><span class="inline-note">Choose or drag one of the three supplied pieces onto the 8 × 8 board. Complete a full row or column to clear it. Multiple lines and consecutive clears increase the score. The run ends when none of the available pieces can fit.</span></div>`;
+    <div class="summary-box"><strong>Place without rotating.</strong><span class="inline-note">Choose or drag one of the three supplied pieces onto the 8 × 8 board. Complete a full row or column to clear it. Multiple lines and consecutive clears increase the score. When the run ends, every 10 score points become 1 XP; Player Rank then unlocks Specials over time.</span></div>`;
 }
 
 function renderGame() {
@@ -278,14 +311,12 @@ function renderGame() {
     return;
   }
   const occupancy = boardOccupancy(active);
-  const openPercent = Math.max(0, Math.round((1 - occupancy) * 100));
   root.innerHTML = `
     <div class="block-grid-active-header block-grid-score-window">
       <div class="stat-pills">
         <div class="stat-pill">Score <span>${active.score}</span></div>
         <div class="stat-pill">Lines <span>${active.lines}</span></div>
         <div class="stat-pill">Combo <span>${active.combo ? `×${active.combo}` : '—'}</span></div>
-        <div class="stat-pill">Open Space <span>${openPercent}%</span></div>
       </div>
     </div>
     <div class="game-live-xp" data-live-xp="blockgrid"><strong>Player Rank ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
@@ -298,8 +329,12 @@ function renderGame() {
       <div class="block-grid-skill-head"><strong>Special</strong><span>${Math.round(active.skillCharge || 0)}%</span></div>
       <div class="block-grid-skill-meter" role="progressbar" aria-label="Special skill charge" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(active.skillCharge || 0)}"><span style="width:${Math.min(100,active.skillCharge || 0)}%"></span></div>
       <div class="block-grid-skill-actions">
-        <button class="action ghost game-control-icon" data-block-action="blast" type="button" data-tooltip="Clear 4 × 4 · Bomb" title="Clear 4 × 4 · Bomb" aria-label="Clear 4 by 4" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}><span aria-hidden="true">💣</span><span class="sr-only">Clear 4 × 4</span></button>
-        <button class="action ghost game-control-icon" data-block-action="rows" type="button" data-tooltip="Clear 2 Rows · Plow" title="Clear 2 Rows · Plow" aria-label="Clear 2 rows" ${(active.skillCharge || 0) < 100 ? 'disabled' : ''}><span aria-hidden="true">🚜</span><span class="sr-only">Clear 2 Rows</span></button>
+        ${BLOCK_SKILLS.map(skill => {
+          const unlocked=blockSkillUnlocked(skill.id);
+          const ready=unlocked && (active.skillCharge || 0) >= 100;
+          const label=unlocked ? skill.description : ('Unlocks at Player Rank ' + skill.unlockLevel);
+          return '<button class="action ghost game-control-icon block-grid-skill-button' + (unlocked ? ' is-unlocked' : ' is-locked') + '" data-block-action="' + skill.id + '" type="button" data-tooltip="' + escapeHtml(label) + '" title="' + escapeHtml(label) + '" aria-label="' + escapeHtml(skill.name) + '" ' + (ready ? '' : 'disabled') + '><span aria-hidden="true">' + (unlocked ? skill.icon : '🔒') + '</span><span class="sr-only">' + escapeHtml(skill.name) + '</span></button>';
+        }).join('')}
       </div>
     </div>
     <div class="block-grid-play-cluster">
@@ -331,6 +366,15 @@ function renderModes() {
     <div class="summary-box"><strong>Difficulty tiers</strong><span class="inline-note">Each tier produces many unpredictable games from random piece trays. Difficulty comes from the tier rules, not a fixed sequence of levels.</span></div>`;
 }
 
+function renderSkills() {
+  const root=document.getElementById('blockGridSkillsCard');
+  if(!root || !profile) return;
+  root.innerHTML = '<div class="block-grid-skill-unlock-list">' + BLOCK_SKILLS.map(skill => {
+    const unlocked=profile.level >= skill.unlockLevel;
+    return '<article class="skill-item block-grid-skill-unlock' + (unlocked ? ' is-unlocked' : ' is-locked') + '"><div class="skill-meta"><h4>' + skill.icon + ' ' + escapeHtml(skill.name) + '</h4><span>' + (unlocked ? 'Unlocked' : 'Player Rank ' + skill.unlockLevel) + '</span></div><p>' + escapeHtml(skill.description) + '</p></article>';
+  }).join('') + '</div><div class="summary-box"><strong>Score-based progression</strong><span class="inline-note">Each completed run converts score to XP at 10 points = 1 XP. Higher scores therefore advance Player Rank and unlock Specials over time.</span></div>';
+}
+
 function renderProgress() {
   const root = document.getElementById('blockGridProgressCard');
   if (!root) return;
@@ -349,10 +393,11 @@ function renderProgress() {
       <div class="coherent-progress-stat"><span>Lines cleared</span><strong>${profile.totalLines}</strong></div>
       <div class="coherent-progress-stat"><span>Pieces placed</span><strong>${profile.totalPieces}</strong></div>
       <div class="coherent-progress-stat"><span>Current tier</span><strong>${escapeHtml(currentMode().name)}</strong></div>
+      <div class="coherent-progress-stat"><span>Specials unlocked</span><strong>${BLOCK_SKILLS.filter(skill => profile.level >= skill.unlockLevel).length} / ${BLOCK_SKILLS.length}</strong></div>
     </div>`;
 }
 
-const BLOCK_TABS = Object.freeze(['game','modes','progress']);
+const BLOCK_TABS = Object.freeze(['game','skills','modes','progress']);
 
 function blockTabFromLocation() {
   if (!/^\/baseline-recreation\/games\/block-grid\/?$/i.test(String(location.pathname || ''))) return 'game';
@@ -375,7 +420,7 @@ function blockTabUrl(name) {
 function setTab(name, historyMode = 'none') {
   const next = BLOCK_TABS.includes(name) ? name : 'game';
   document.querySelectorAll('[data-block-tab]').forEach(button => button.classList.toggle('is-active', button.dataset.blockTab === next));
-  for (const id of ['Game','Modes','Progress']) {
+  for (const id of ['Game','Skills','Modes','Progress']) {
     const card = document.getElementById(`blockGrid${id}Card`);
     if (card) card.hidden = id.toLowerCase() !== next;
   }
@@ -395,6 +440,7 @@ function render() {
   renderGameInfo();
   renderGame();
   renderModes();
+  renderSkills();
   renderProgress();
   shell.refreshOverview();
 }
@@ -649,13 +695,13 @@ function placeSelected(row, col) {
   active.tray.splice(selectedPiece, 1);
   profile.totalPieces += 1;
   profile.totalLines += result.linesCleared;
-  awardXp(profile, Math.max(1, Math.ceil(awardedScore / 5) + result.linesCleared * 2));
   profile.bestScore = Math.max(profile.bestScore, active.score);
   if (!active.tray.length) {
     active.tray = createTray(active.board, profile.selectedMode);
     boardMotion.newTray = true;
   }
   active.gameOver = !hasAnyPlacement(active.board, active.tray);
+  if(active.gameOver) settleRunXp(active);
   selectedPiece = -1;
   previewAnchor = null;
   statusMessage = perfectClear
@@ -684,7 +730,7 @@ function consumeSpecialCharge(active) {
 }
 function clearSpecialBlast(row, col) {
   const active = run();
-  if (!active || (active.skillCharge || 0) < 100) return false;
+  if (!active || !blockSkillUnlocked('blast') || (active.skillCharge || 0) < 100) return false;
   const startRow=Math.max(0,Math.min(active.board.length-4,row-1));
   const startCol=Math.max(0,Math.min(active.board.length-4,col-1));
   let cleared=0;
@@ -700,7 +746,7 @@ function clearSpecialBlast(row, col) {
 }
 function clearSpecialRows(row) {
   const active=run();
-  if(!active || (active.skillCharge || 0)<100) return false;
+  if(!active || !blockSkillUnlocked('rows') || (active.skillCharge || 0)<100) return false;
   let indices;
   if(Number.isFinite(Number(row))) indices=specialRowsFor(Number(row));
   else{
@@ -750,7 +796,7 @@ function handleClick(event) {
     if(performance.now()-newGamePointerAt<700){ event.preventDefault(); return; }
     startNewGame();
   }
-    if (action === 'blast' || action === 'rows') { if((run()?.skillCharge || 0)>=100){ specialMode=action; selectedPiece=-1; previewAnchor=null; statusMessage=action==='blast'?'Special ready: drag the bomb over a 4 × 4 area, or tap its centre.':'Special ready: drag the plough over the two rows to clear, or tap either row.'; render(); } }
+    if (action === 'blast' || action === 'rows') { if(blockSkillUnlocked(action) && (run()?.skillCharge || 0)>=100){ specialMode=action; selectedPiece=-1; previewAnchor=null; statusMessage=action==='blast'?'Special ready: drag the bomb over a 4 × 4 area, or tap its centre.':'Special ready: drag the plough over the two rows to clear, or tap either row.'; render(); } }
     if (action === 'fullscreen') toggleFullscreen();
     return;
   }
@@ -783,7 +829,7 @@ function handlePointerDown(event) {
     return;
   }
   const specialButton=rawTarget?.closest('[data-block-action="blast"],[data-block-action="rows"]');
-  if(specialButton && document.getElementById('blockGridPanel')?.classList.contains('is-active') && (run()?.skillCharge||0)>=100){
+  if(specialButton && document.getElementById('blockGridPanel')?.classList.contains('is-active') && blockSkillUnlocked(specialButton.getAttribute('data-block-action')) && (run()?.skillCharge||0)>=100){
     const type=specialButton.getAttribute('data-block-action');
     event.preventDefault();
     specialMode=type;
@@ -928,11 +974,13 @@ function panelHtml() {
       </details>
       <div class="game-toggle-row">
         <button class="action ghost game-toggle-btn is-active" data-block-tab="game" type="button">Game</button>
+        <button class="action ghost game-toggle-btn" data-block-tab="skills" type="button">Skills</button>
         <button class="action ghost game-toggle-btn" data-block-tab="modes" type="button">Tiers</button>
         <button class="action ghost game-toggle-btn" data-block-tab="progress" type="button">Progress</button>
       </div>
       <div class="game-panel-stack">
         <section class="card game-card game-play-root" id="blockGridGameCard" data-game-play-root="block-grid"></section>
+        <section class="card game-card" id="blockGridSkillsCard" hidden></section>
         <section class="card game-card" id="blockGridModesCard" hidden></section>
         <section class="card game-card" id="blockGridProgressCard" hidden></section>
       </div>
@@ -946,7 +994,7 @@ const shell = createGameExtensionShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=BLOCK_GRID_MOBILE_PLAYABILITY_20261024_1',
+  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=BLOCK_GRID_SCORE_XP_SKILLS_20261024_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `${currentMode().name} Tier · Best ${profile.bestScore}` : 'Ready',

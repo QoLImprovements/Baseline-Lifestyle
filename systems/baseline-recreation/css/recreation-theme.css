@@ -218,7 +218,8 @@ html[data-app="recreation"] body[data-app="recreation"] :is(
   border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
 }
 html[data-app="recreation"] body[data-app="recreation"] :is(
-  #bl-auth-flyout .bl-auth-input-shell,#bl-auth-flyout input,
+  #bl-auth-flyout .bl-auth-input-shell,#bl-auth-flyout input,#bl-auth-flyout select,
+  #bl-auth-flyout #bl-favorites-select + .bl-select-btn,
   #bl-beats-flyout input:not([type="range"]),#bl-beats-flyout select,
   #bl-voice-flyout input:not([type="range"])
 ){

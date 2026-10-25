@@ -662,11 +662,28 @@ test('Fitness saves a generated plan and reloads it through the account API', as
 });
 
 test('Recreation restores account progress and keeps a game playable', async ({ page }) => {
+  const recreationPageErrors=[];
+  page.on('pageerror',(error)=>recreationPageErrors.push(String(error&&error.stack||error&&error.message||error)));
   const profiles = {
     pairs: { app: 'pairs', level: 4, xp: 0, bank: 25, boardsCleared: 7, gamesPlayed: 7, currentStreak: 0, bestStreak: 2, cleanWinStreak: 0, skillPoints: 0, skills: {} },
     make24: { app: 'make24', level: 1, xp: 0, bank: 0, puzzlesSolved: 0, gamesPlayed: 0, currentStreak: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {} },
     detectword: { app: 'detectword', level: 1, xp: 0, bank: 0, wordsSolved: 0, gamesPlayed: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {} },
-    trackcoin: { app: 'trackcoin', level: 1, xp: 0, coins: 0, totalCorrect: 0, totalRounds: 0, currentStreak: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {} },
+    trackcoin: {
+      app: 'trackcoin', level: 1, xp: 0, coins: 0, totalCorrect: 0, totalRounds: 0,
+      currentStreak: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {},
+      selectedTier:'tier1',
+      activeRound:{
+        tierId:'tier1', phase:'pick', coinCupId:'cup0', pickedCupId:'',
+        sequence:[{duration:500,pattern:'cross',order:['cup0','cup1','cup2']}],
+        cups:[
+          {id:'cup0',left:18,top:68,tilt:0},
+          {id:'cup1',left:50,top:68,tilt:0},
+          {id:'cup2',left:82,top:68,tilt:0}
+        ],
+        baseTop:68,totalDuration:500,speedPercent:100,speedMultiplier:1,
+        movementSpeedMultiplier:1,targetDuration:500,resolved:false,lastResult:'',message:''
+      }
+    },
     ruleshift: { app: 'ruleshift', level: 1, xp: 0, bank: 0, correctAnswers: 0, gamesPlayed: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {} },
     ninja: { app: 'ninja', level: 3, xp: 10, coins: 250, spirit: 12, stage: 4, highestStage: 4, enemyHp: 50, totalKills: 2, currentStreak: 0, bestStreak: 1, cleanWinStreak: 0, bossesDefeated: 0, totalCoinsEarned: 250, upgrades: {}, spiritShop: {} }
   };
@@ -685,12 +702,74 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await page.goto('/baseline-recreation/system', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => globalThis.BASELINE_RECREATION_CORE_READY === true);
   await page.getByRole('button', { name: 'Games', exact: true }).click();
-  await expect(page.locator('[data-select-game="pairs"]:visible').first()).toContainText('Level 4 · 7 cleared');
-  await expect(page.locator('[data-select-game="ninja"]:visible').first()).toContainText('Level 3 · Stage 4');
+  await expect(page.locator('[data-select-game="pairs"]:visible').first()).toContainText('Player Rank 4 · 7 cleared');
+  await expect(page.locator('[data-select-game="ninja"]:visible').first()).toContainText('Player Rank 3 · Stage 4');
   await page.locator('[data-select-game="pairs"]:visible').first().click();
   await expect(page.locator('#pairsPanel')).toHaveClass(/is-active/);
   await page.locator('#newPairsBoardBtn').click();
   await expect(page.locator('#pairsBoard [data-card]').first()).toBeVisible();
+
+  // Regression: a restored Track the Coin round in the pick phase must accept
+  // a real browser pointer click on the cup itself and resolve immediately.
+  await page.goto('/baseline-recreation/games/track-the-coin', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => globalThis.BASELINE_RECREATION_CORE_READY === true);
+  await expect(page.locator('#trackcoinPanel')).toHaveClass(/is-active/);
+  await expect(page.locator('#trackCoinScene')).toHaveClass(/is-phase-pick/);
+  await expect(page.locator('.trackcoin-pick-prompt')).toHaveText('Choose the cup');
+  const selectableCup=page.locator('#trackCoinScene .trackcoin-cup.is-selectable').first();
+  await expect(selectableCup).toBeVisible();
+  await page.evaluate(()=>{
+    window.__trackCoinPointerTrace=[];
+    const record=(event)=>{
+      const target=event.target instanceof Element ? event.target.closest('.trackcoin-cup[data-trackcoin-pick]') : null;
+      if(target) window.__trackCoinPointerTrace.push({type:event.type,cup:target.getAttribute('data-trackcoin-pick')||'',phase:document.querySelector('#trackCoinScene')?.className||''});
+    };
+    document.addEventListener('pointerdown',record,true);
+    document.addEventListener('click',record,true);
+  });
+  await selectableCup.click();
+  await page.waitForTimeout(200);
+  const trackCoinDiagnostic=await page.evaluate(()=>({
+    sceneClass:document.querySelector('#trackCoinScene')?.className||'',
+    trace:Array.isArray(window.__trackCoinPointerTrace)?window.__trackCoinPointerTrace:[]
+  }));
+  if(!trackCoinDiagnostic.sceneClass.includes('is-resolved')){
+    throw new Error('Track Coin click did not resolve. Diagnostic='+JSON.stringify(trackCoinDiagnostic)+' pageErrors='+JSON.stringify(recreationPageErrors));
+  }
+  await expect(page.locator('#trackCoinScene')).toHaveClass(/is-resolved/);
+  await expect(page.locator('#trackCoinScene')).toHaveClass(/is-phase-review/);
+  expect(recreationPageErrors).toEqual([]);
+
+  // Regression: Rule Shift Round Status must render the shared status contract,
+  // not merely contain source CSS that loses in the cascade.
+  await page.goto('/baseline-recreation/games/rule-shift', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => globalThis.BASELINE_RECREATION_CORE_READY === true);
+  await expect(page.locator('#ruleshiftPanel')).toHaveClass(/is-active/);
+  const ruleStatus=page.locator('#ruleShiftRoundSummary');
+  const ruleHeading=ruleStatus.locator('.round-status-heading');
+  await expect(ruleHeading).toHaveText('Round Status');
+  await expect(ruleStatus).toContainText('Previous Run - 0 XP');
+  expect(await ruleHeading.evaluate((node) => getComputedStyle(node).textAlign)).toBe('center');
+  expect(await ruleStatus.evaluate((node) => getComputedStyle(node).alignContent)).toBe('start');
+
+  // Browser zoom reduces the effective CSS viewport. At a constrained desktop
+  // width the shared control rail must wrap rather than eject Settings/Fullscreen.
+  await page.setViewportSize({ width:900, height:700 });
+  const ruleCard=page.locator('#ruleShiftGameCard');
+  const settingsControl=ruleCard.locator('[data-games-settings]');
+  const fullscreenControl=ruleCard.locator('[data-game-fullscreen="ruleshift"]');
+  await expect(settingsControl).toBeVisible();
+  await expect(fullscreenControl).toBeVisible();
+  const [cardBox,settingsBox,fullscreenBox]=await Promise.all([
+    ruleCard.boundingBox(),settingsControl.boundingBox(),fullscreenControl.boundingBox()
+  ]);
+  expect(cardBox).not.toBeNull();
+  expect(settingsBox).not.toBeNull();
+  expect(fullscreenBox).not.toBeNull();
+  expect(settingsBox.x).toBeGreaterThanOrEqual(cardBox.x-1);
+  expect(fullscreenBox.x).toBeGreaterThanOrEqual(cardBox.x-1);
+  expect(settingsBox.x+settingsBox.width).toBeLessThanOrEqual(cardBox.x+cardBox.width+1);
+  expect(fullscreenBox.x+fullscreenBox.width).toBeLessThanOrEqual(cardBox.x+cardBox.width+1);
 });
 
 test('Badminton loads shared server state into the normal session interface', async ({ page }) => {

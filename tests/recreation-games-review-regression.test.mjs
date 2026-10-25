@@ -47,6 +47,21 @@ test('core New Game is one-click, opens Pairs idle, and keeps Full Screen inside
   assert.match(core,/if\(fullBtn && windowActions && fullBtn\.parentElement!==windowActions\) windowActions\.appendChild\(fullBtn\)/);
 });
 
+test('Recreation idle start states stay centred and cannot inherit active game columns',()=>{
+  assert.match(blockGrid,/class="block-grid-empty"/);
+  assert.match(colourSort,/class="colour-sort-empty"/);
+  assert.match(core,/pairsBoard\.innerHTML = '<div class="empty-box"/);
+  assert.match(core,/wordBoard\.innerHTML = '<div class="empty-box"/);
+  assert.match(core,/make24Board\.innerHTML = '<div class="empty-box"/);
+  assert.match(core,/trackCoinBoard\.innerHTML = '<div class="empty-box trackcoin-idle-card"/);
+  assert.match(core,/ruleShiftBoard\.innerHTML = '<div class="empty-box ruleshift-idle-card"/);
+  assert.match(nonRealmCss,/Recreation idle\/start alignment authority/);
+  assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
+  assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
+  assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_STATUS_AUTHORITY_20261024_6/);
+});
+
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
   assert.doesNotMatch(html,/Game Info<\/span><span class="inline-note">Level \/ XP \/ stats/);
   assert.match(html,/Game Info<\/span><span class="inline-note">Player Rank \/ XP \/ stats/);
@@ -73,6 +88,15 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(core,/Object\.prototype\.hasOwnProperty\.call\(temporary,'activeRound'\)/);
   assert.match(core,/profiles\[app\]\.activeRound=temporary\.activeRound/);
   assert.match(nonRealmCss,/#detectwordPanel \.letter-cell\.absent[\s\S]*?linear-gradient\(180deg,#401522 0%,#250b14 100%\)/);
+  assert.match(nonRealmCss,/Detect The Word fullscreen refinement/);
+  assert.match(nonRealmCss,/#wordGameCard:fullscreen #wordBoard[\s\S]*?linear-gradient\(160deg,rgba\(var\(--recreation-rose-rgb\),\.24\)/);
+  assert.match(nonRealmCss,/#wordGameCard:fullscreen \.word-entry-stack\{[\s\S]*?margin-top:10px!important/);
+  assert.match(nonRealmCss,/final non-Realm coherence authority[\s\S]*?\.game-window-actions\.game-common-actions[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
+  assert.doesNotMatch(nonRealmCss,/2026-10-24 fullscreen control dock/);
+  assert.doesNotMatch(nonRealmCss,/repeat\(7,38px\)/);
+  assert.doesNotMatch(nonRealmCss,/games-settings-trigger\{grid-column:7/);
+  assert.match(nonRealmCss,/\.round-status-card\{[\s\S]*?align-content:start!important/);
+  assert.match(nonRealmCss,/:fullscreen > \.game-play-window > :is\(\.game-specific-actions,\.game-window-actions\)>\.action\{[\s\S]*?grid-column:auto!important[\s\S]*?flex:0 0 38px!important/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -82,6 +106,11 @@ test('Rule Shift uses a true oval and unmistakably separated categorical colours
   assert.doesNotMatch(core,/ruleshift-token-caption" aria-hidden/);
   assert.match(core,/if\(rule && rule\.shape==='pill'\) rule\.shape='oval'/);
   assert.match(core,/if\(rule && \(rule\.colour==='teal'\|\|rule\.colour==='lime'\)\) rule\.colour='white'/);
+  assert.match(core,/failRuleShiftRun\('Incorrect choice\. ' \+ mismatchFeedback \+ ' No reward awarded\.'/);
+  assert.doesNotMatch(core,/The rule was:/);
+  assert.match(core,/ruleshift-complete-card[\s\S]*?finishedPrompt/);
+  assert.doesNotMatch(core,/ruleshift-complete-card[\s\S]{0,500}?ruleShiftState\.lastMessage/);
+  assert.match(nonRealmCss,/#ruleshiftPanel \.ruleshift-complete-card\{[\s\S]*?grid-auto-rows:max-content!important[\s\S]*?align-content:center!important[\s\S]*?text-align:center!important/);
   assert.match(nonRealmCss,/ruleshift-colour--red \.ruleshift-shape\{[\s\S]*?background:#e21837!important/i);
   assert.match(nonRealmCss,/ruleshift-colour--white \.ruleshift-shape\{[\s\S]*?background:#f4f7fa!important/i);
   assert.equal((nonRealmCss.match(/ruleshift-colour--red \.ruleshift-shape\{/gi)||[]).length,1);
@@ -102,10 +131,13 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/trackCoinAnimationFrame=window\.requestAnimationFrame\(frame\)/);
   assert.match(core,/data-trackcoin-pick="' \+ escapeHtml\(cup\.id\) \+ '"/);
   assert.match(core,/trackCoinState\.cups\.find\(function\(cup\)\{ return cup\.id===choice; \}\)/);
-  assert.match(core,/refs\.trackCoinBoard\.addEventListener\('pointerdown',selectTrackCoinCup,true\)/);
-  assert.match(core,/refs\.trackCoinBoard\.addEventListener\('pointerup',selectTrackCoinCup,true\)/);
-  assert.match(core,/refs\.trackCoinBoard\.addEventListener\('click',selectTrackCoinCup,true\)/);
-  assert.match(core,/const selectTrackCoinCup=function\(event\)[\s\S]*?trackCoinState\.phase!==\'pick\'[\s\S]*?chooseTrackCoinCup/);
+  assert.match(core,/function bindTrackCoinCupChoices\(\)[\s\S]*?\.trackcoin-cup\[data-trackcoin-pick\][\s\S]*?chooseTrackCoinCup\(cup\.getAttribute\('data-trackcoin-pick'\)\)[\s\S]*?cup\.addEventListener\('pointerdown',commitChoice\)/);
+  assert.match(core,/cup\.addEventListener\('click',commitChoice\)/);
+  assert.match(core,/trackCoinState\.resolved = true;[\s\S]*?trackCoinState\.phase = 'review';/);
+  assert.match(core,/cup\.addEventListener\('keydown'[\s\S]*?event\.key!=='Enter'[\s\S]*?event\.key!==' '/);
+  assert.match(core,/refs\.trackCoinBoard\.innerHTML[\s\S]*?bindTrackCoinCupChoices\(\)/);
+  assert.doesNotMatch(core,/refs\.trackCoinBoard\.addEventListener\('pointer(?:down|up)'[\s\S]*?selectTrackCoinCup/);
+  assert.doesNotMatch(core,/const trackCoinCup = event\.target\.closest\('\[data-trackcoin-pick\]'\)/);
   assert.doesNotMatch(core,/event\.detail===0/);
   assert.doesNotMatch(core,/trackCoinPointerPickAt/);
   assert.match(core,/trackCoinState\.phase!==\'pick\'/);
@@ -146,10 +178,24 @@ test('Recreation music preferences are server-side and quick controls stay insid
 });
 
 test('Round Status and reward terminology stay coherent across Recreation',()=>{
-  assert.match(core,/function coherentRoundStatusHtml\(label,message,profile,tierName\)/);
+  assert.match(core,/function coherentRoundStatusHtml\(label,message,profile,tierName,previousLabel\)/);
   assert.match(core,/cleanStreak:\{ label:'Clean Streak Bonus', perStepPct:5, maxPct:100 \}/);
   assert.match(core,/Winning Streak[\s\S]*?Clean Streak Bonus/);
   assert.match(core,/Ranked Up! Player Rank/);
+  assert.match(core,/const previousResultLabel=String\(previousLabel\|\|'Previous round'\)/);
+  assert.match(core,/round-status-previous">'\+escapeHtml\(previousResultLabel\)\+' - '\+previousXp\+' XP/);
+  assert.match(core,/profile&&profile\.lastRoundXp/);
+  assert.match(core,/pairsBoardState\.hadFailure = true;[\s\S]*?profiles\.pairs\.cleanWinStreak = 0/);
+  assert.match(core,/const cleanWin = !make24State\.hadFailure;[\s\S]*?const nextClean = cleanWin \? profiles\.make24\.cleanWinStreak \+ 1 : 0/);
+  assert.match(core,/make24State\.hadFailure = true;[\s\S]*?profiles\.make24\.cleanWinStreak = 0/);
+  assert.match(core,/const cleanWin = !wordState\.hadFailure;[\s\S]*?const nextClean = cleanWin \? profile\.cleanWinStreak \+ 1 : 0/);
+  assert.match(core,/wordState\.hadFailure = true;[\s\S]*?profiles\.detectword\.cleanWinStreak = 0/);
+  assert.match(crossnumber,/const cleanWin=Boolean\(round && !round\.hadFailure\)/);
+  assert.match(crossnumber,/round\.hadFailure=true;[\s\S]*?profile\.cleanWinStreak=0/);
+  assert.match(colourSort,/const cleanWin=!active\.hadFailure/);
+  assert.match(colourSort,/active\.hadFailure = true;[\s\S]*?profile\.cleanWinStreak = 0/);
+  assert.match(colourSort,/round-status-previous">Previous round - '\+number\(profile\.lastRoundXp\)\+' XP/);
+  assert.match(blockGrid,/round-status-previous">Previous round - '\+number\(profile\.lastRoundXp\)\+' XP/);
   assert.match(core,/refs\.wordRoundSummary\.innerHTML = coherentRoundStatusHtml\('Round Status',wordState\.lastMessage,profiles\.detectword,currentWordTier\(\)\.name\)/);
   assert.match(core,/Board cleared\. \+' \+ rewards\.bank \+ ' Bank Coins · \+' \+ rewards\.xp \+ ' XP'/);
   assert.match(core,/Clean Streak Bonus \+' \+ rewards\.cleanPct \+ '%'/);
@@ -212,6 +258,23 @@ test('reported Recreation interaction repairs remain wired',()=>{
   assert.match(nonRealmCss,/@media\(max-width:820px\)\{[\s\S]*?#ruleshiftPanel \.ruleshift-options-grid\{[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important[\s\S]*?justify-content:center!important/);
   assert.match(core,/--pairs-rows-desktop/);
   assert.match(nonRealmCss,/#pairsGameCard:fullscreen #pairsBoard\{[\s\S]*?grid-template-rows:repeat\(var\(--pairs-rows-desktop,3\)/);
+  assert.match(core,/function isTouchOnlyGameDevice\(\)/);
+  assert.match(core,/if\(isTouchOnlyGameDevice\(\)\) return;[\s\S]*?document\.fullscreenEnabled/);
+  assert.match(core,/if\(id === 'ninja' \|\| isTouchOnlyGameDevice\(\)\) existingBtn\.remove\(\)/);
+  assert.doesNotMatch(core,/if\(id === 'ninja' \|\| isMobileGameViewport\(\)\) existingBtn\.remove\(\)/);
+  assert.match(core,/--pairs-fit-height/);
+  assert.match(core,/--pairs-rows-mobile/);
+  assert.match(core,/--pairs-rows-phone/);
+  assert.match(nonRealmCss,/@media\(max-width:820px\)[\s\S]*?#pairsPanel #pairsBoard:not\(\.is-pairs-idle\)[\s\S]*?grid-template-rows:repeat\(var\(--pairs-rows-mobile,4\)/);
+  assert.match(nonRealmCss,/@media\(max-width:520px\)[\s\S]*?#pairsPanel #pairsBoard:not\(\.is-pairs-idle\)[\s\S]*?grid-template-rows:repeat\(var\(--pairs-rows-phone,4\)/);
+  assert.match(nonRealmCss,/tier-complete Pairs fit/);
+  assert.match(nonRealmCss,/#pairsPanel #pairsBoard:not\(\.is-pairs-idle\)\{[\s\S]*?height:min\(var\(--pairs-fit-height,520px\),calc\(100dvh - 250px\)\)!important[\s\S]*?grid-template-rows:repeat\(var\(--pairs-rows-desktop,3\)/);
+  assert.match(nonRealmCss,/@media\(min-width:900px\) and \(pointer:fine\)[\s\S]*?#pairsPanel #pairsGameCard:not\(:fullscreen\)[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(230px,280px\)!important/);
+  assert.match(nonRealmCss,/#pairsPanel #pairsGameCard:not\(:fullscreen\) #pairsBoard\{[\s\S]*?grid-column:1!important[\s\S]*?grid-row:1\/6!important/);
+  assert.match(nonRealmCss,/zoom-safe common controls[\s\S]*?game-window-actions\.game-common-actions\{[\s\S]*?flex-wrap:wrap!important[\s\S]*?overflow:visible!important/);
+  assert.match(music,/roots = \['pairsGameCard'[\s\S]*?'blockGridGameCard'/);
+  assert.match(music,/btn\.className = 'action ghost games-settings-trigger/);
+
   assert.match(crossnumber,/function resetCrossNumberFit\(\)/);
   assert.match(crossnumber,/rawMaxR>Math\.max\(1,rawMaxC\)\*1\.35/);
   assert.match(crossnumberCss,/Cross Number coherence repair/);
@@ -239,12 +302,25 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/const row = Math\.round\(\(pieceTop - firstRect\.top\) \/ pitchY\)/);
   assert.match(blockGrid,/if \(suppressClick\) \{ suppressClick = false; event\.preventDefault\(\); return; \}[\s\S]*?const action = target\.closest\('\[data-block-action\]'\)/);
   assert.match(blockGrid,/skillCharge/);
-  assert.match(blockGrid,/data-block-action="blast"[\s\S]*?💣/);
-  assert.match(blockGrid,/data-block-action="rows"[\s\S]*?🚜/);
-  assert.match(blockGrid,/Clear 4 × 4/);
-  assert.match(blockGrid,/Clear 2 Rows/);
+  assert.match(blockGrid,/BLOCK_SKILLS = Object\.freeze\(\[[\s\S]*?id:'blast'[\s\S]*?unlockLevel:2[\s\S]*?id:'rows'[\s\S]*?unlockLevel:5/);
+  assert.match(blockGrid,/blockSkillUnlocked\(skill\.id\)/);
+  assert.match(blockGrid,/data-block-action="' \+ skill\.id/);
+  assert.match(blockGrid,/skill\.icon : '🔒'/);
   assert.match(blockCss,/block-grid-score-window[\s\S]*?grid-column:1!important/);
   assert.match(blockGrid,/active\.gameOver = !hasAnyPlacement\(active\.board, active\.tray\)/);
+  assert.match(blockGrid,/function xpForRunScore\(score\)[\s\S]*?const points=number\(score\)[\s\S]*?Math\.round\(points \/ 10\)/);
+  assert.match(blockGrid,/function settleRunXp\(active\)[\s\S]*?active\.xpSettled=true[\s\S]*?awardXp\(profile,gained\)/);
+  assert.match(blockGrid,/active\.gameOver = !hasAnyPlacement\(active\.board, active\.tray\);[\s\S]*?if\(active\.gameOver\) settleRunXp\(active\)/);
+  assert.doesNotMatch(blockGrid,/awardXp\(profile, Math\.max\(1, Math\.ceil\(awardedScore \/ 5\)/);
+  assert.doesNotMatch(blockGrid,/Open Space/);
+  assert.match(blockGrid,/BLOCK_TABS = Object\.freeze\(\['game','skills','modes','progress'\]\)/);
+  assert.match(blockGrid,/id="blockGridSkillsCard"/);
+  assert.match(blockGrid,/Score-based progression[\s\S]*?10 points = 1 XP/);
+  assert.match(blockCss,/Block Grid windowed composition \+ score progression/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-score-window[\s\S]*?grid-column:1!important[\s\S]*?background:transparent!important/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-play-cluster[\s\S]*?grid-column:2!important[\s\S]*?grid-row:1\/4!important/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.round-status-card[\s\S]*?grid-column:1\/-1!important/);
+
   assert.match(blockGrid,/class="block-grid-play-cluster"/);
   assert.match(blockGrid,/addEventListener\('dragstart'[\s\S]*?preventDefault/);
   assert.match(blockCss,/cursor:none!important;user-select:none!important/);
@@ -308,6 +384,16 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/const mobile=window\.matchMedia\?\.\('\(max-width:820px\)'\)\.matches[\s\S]*?if\(mobile\)[\s\S]*?removeProperty\('width'\)/);
   assert.match(crossnumberCss,/mobile Cross Number playability authority[\s\S]*?#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)!important/);
   assert.match(crossnumberCss,/grid-template-columns:repeat\(var\(--crossnumber-cols,13\),34px\)!important/);
+  assert.match(crossnumber,/refs\.bank\.addEventListener\('pointerdown'[\s\S]*?createTouchDragGhost/);
+  assert.match(crossnumber,/document\.elementFromPoint\(clientX,clientY\)[\s\S]*?is-touch-drop-target/);
+  assert.match(crossnumber,/function finishTouchDrag\(event,cancelled\)[\s\S]*?placeTile\(dropCell\.dataset\.node,state\.tileId\)/);
+  assert.match(crossnumber,/refs\.bank\.addEventListener\('pointerup'[\s\S]*?finishTouchDrag\(event,false\)/);
+  assert.match(crossnumber,/touchDragScrollStep[\s\S]*?window\.scrollBy\(0,touchDragScrollVelocity\)/);
+  assert.match(crossnumberCss,/Cross Number touch-drag authority/);
+  assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
+  assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
+  assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_TOUCH_DRAG_CLEAN_XP_20261024_1/);
+  assert.match(html,/crossnumber\.js\?v=CROSSNUMBER_TOUCH_DRAG_CLEAN_XP_20261024_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);

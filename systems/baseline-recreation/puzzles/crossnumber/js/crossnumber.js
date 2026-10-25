@@ -26,7 +26,7 @@
 
   const DEFAULT_PROFILE=Object.freeze({
     app:APP,bank:0,xp:0,level:1,skillPoints:1,puzzlesSolved:0,gamesPlayed:0,currentStreak:0,bestStreak:0,
-    cleanWinStreak:0,roundCounter:0,bestScore:0,selectedTier:'starter',recentLayouts:Object.freeze([]),
+    cleanWinStreak:0,lastRoundXp:0,roundCounter:0,bestScore:0,selectedTier:'starter',recentLayouts:Object.freeze([]),
     skills:Object.freeze({insight:0,flow:0,banker:0,precision:0,structure:0}),activeRound:null
   });
 
@@ -81,6 +81,10 @@
   let undoStack=[];
   let timerId=0;
   let dragTile='';
+  let touchDrag=null;
+  let touchDragScrollFrame=0;
+  let touchDragScrollVelocity=0;
+  let suppressBankClick=false;
   let storageReloaded=false;
   let newGamePointerAt=0;
 
@@ -149,6 +153,7 @@
       currentStreak:Math.max(0,int(source.currentStreak,0)),
       bestStreak:Math.max(0,int(source.bestStreak,0)),
       cleanWinStreak:Math.max(0,int(source.cleanWinStreak,0)),
+      lastRoundXp:Math.max(0,int(source.lastRoundXp,0)),
       roundCounter:Math.max(0,int(source.roundCounter,0)),
       bestScore:Math.max(0,int(source.bestScore,0)),
       selectedTier:String(source.selectedTier||'starter'),
@@ -639,6 +644,7 @@
     const penalty=Math.max(0,tier.penalty-Math.max(0,int(profile.skills.precision,0)));
     round.mistakes+=1;
     round.hadFailure=true;
+    profile.cleanWinStreak=0;
     profile.currentStreak=0;
     if(penalty>0) profile.bank=Math.max(0,profile.bank-penalty);
     const cell=refs.board.querySelector('[data-node="'+nodeId+'"]');
@@ -698,8 +704,9 @@
   }
   function calculateRewards(){
     const tier=currentTier();
-    const nextClean=profile.cleanWinStreak+1;
-    const cleanPct=cleanBonusPct(nextClean);
+    const cleanWin=Boolean(round && !round.hadFailure);
+    const nextClean=cleanWin ? profile.cleanWinStreak+1 : 0;
+    const cleanPct=cleanWin ? cleanBonusPct(nextClean) : 0;
     const cleanMult=1+(cleanPct/100);
     const xpMult=(1+(Math.max(0,int(profile.skills.flow,0))*0.08))*cleanMult;
     const bankMult=(1+(Math.max(0,int(profile.skills.banker,0))*0.10))*cleanMult;
@@ -716,6 +723,7 @@
     profile.currentStreak+=1;
     profile.bestStreak=Math.max(profile.bestStreak,profile.currentStreak);
     profile.cleanWinStreak=rewards.nextClean;
+    profile.lastRoundXp=rewards.xp;
     profile.bestScore=Math.max(profile.bestScore,score);
     const levels=awardXp(rewards.xp);
     const completedTime=round.seconds;
@@ -813,6 +821,7 @@
     const tier=tierDefinition(round?.tierId||profile.selectedTier);
     refs.status.innerHTML='<div class="round-status-heading">Round Status</div>'
       + '<div class="round-status-outcome">'+escapeHtml(String(message||''))+'</div>'
+      + '<div class="round-status-previous">Previous round - '+Math.max(0,int(profile.lastRoundXp,0))+' XP</div>'
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
       + '<div><span>Winning Streak</span><strong>'+Math.max(0,int(profile.cleanWinStreak,0))+'</strong></div>'
@@ -1019,7 +1028,153 @@
     window.requestAnimationFrame(fitCrossNumberBoard);
   }
 
+  function clearTouchDropTarget(){
+    refs.board.querySelectorAll('.is-touch-drop-target').forEach(function(cell){
+      cell.classList.remove('is-touch-drop-target');
+    });
+  }
+
+  function touchDropCellAt(clientX,clientY){
+    clearTouchDropTarget();
+    const element=document.elementFromPoint(clientX,clientY);
+    const cell=element&&element.closest?element.closest('[data-dropzone="true"]'):null;
+    if(!cell||!refs.board.contains(cell)) return null;
+    cell.classList.add('is-touch-drop-target');
+    return cell;
+  }
+
+  function touchDragHost(){
+    const panel=document.getElementById('crossnumberGamePanel');
+    return document.fullscreenElement===panel?panel:document.body;
+  }
+
+  function createTouchDragGhost(tile,tileId){
+    const ghost=tile.cloneNode(true);
+    ghost.removeAttribute('draggable');
+    ghost.removeAttribute('data-tile-id');
+    ghost.removeAttribute('aria-label');
+    ghost.setAttribute('aria-hidden','true');
+    ghost.classList.remove('is-selected');
+    ghost.classList.add('crossnumber-touch-drag-ghost');
+    ghost.textContent=String(tileValue(tileId));
+    touchDragHost().appendChild(ghost);
+    return ghost;
+  }
+
+  function positionTouchDragGhost(ghost,clientX,clientY){
+    if(!ghost) return;
+    ghost.style.left=clientX+'px';
+    ghost.style.top=clientY+'px';
+  }
+
+  function stopTouchDragAutoScroll(){
+    touchDragScrollVelocity=0;
+    if(touchDragScrollFrame){
+      window.cancelAnimationFrame(touchDragScrollFrame);
+      touchDragScrollFrame=0;
+    }
+  }
+
+  function touchDragScrollStep(){
+    touchDragScrollFrame=0;
+    if(!touchDrag||!touchDragScrollVelocity) return;
+    const panel=document.getElementById('crossnumberGamePanel');
+    if(document.fullscreenElement===panel) panel.scrollBy(0,touchDragScrollVelocity);
+    else window.scrollBy(0,touchDragScrollVelocity);
+    if(touchDrag.lastX!=null&&touchDrag.lastY!=null) touchDropCellAt(touchDrag.lastX,touchDrag.lastY);
+    touchDragScrollFrame=window.requestAnimationFrame(touchDragScrollStep);
+  }
+
+  function updateTouchDragAutoScroll(clientY){
+    const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
+    const edge=Math.min(84,Math.max(56,viewportHeight*.12));
+    let velocity=0;
+    if(clientY<edge) velocity=-Math.max(8,Math.round((edge-clientY)/4));
+    else if(clientY>viewportHeight-edge) velocity=Math.max(8,Math.round((clientY-(viewportHeight-edge))/4));
+    touchDragScrollVelocity=clamp(velocity,-22,22);
+    if(touchDragScrollVelocity&&!touchDragScrollFrame) touchDragScrollFrame=window.requestAnimationFrame(touchDragScrollStep);
+    if(!touchDragScrollVelocity) stopTouchDragAutoScroll();
+  }
+
+  function finishTouchDrag(event,cancelled){
+    if(!touchDrag||touchDrag.pointerId!==event.pointerId) return;
+    const state=touchDrag;
+    const dropCell=!cancelled&&state.moved?touchDropCellAt(event.clientX,event.clientY):null;
+    if(state.ghost?.isConnected) state.ghost.remove();
+    state.source?.classList.remove('is-touch-drag-source');
+    clearTouchDropTarget();
+    stopTouchDragAutoScroll();
+    touchDrag=null;
+    document.documentElement.classList.remove('is-dragging-crossnumber-tile');
+    suppressBankClick=true;
+
+    if(cancelled) return;
+    if(state.moved){
+      event.preventDefault();
+      if(dropCell) placeTile(dropCell.dataset.node,state.tileId);
+      else setStatus('Drag the number onto an open equation cell.');
+      return;
+    }
+
+    selectedTile=selectedTile===state.tileId?'':state.tileId;
+    renderBank();
+    if(selectedTile) setStatus('Number '+tileValue(selectedTile)+' selected. Choose an open equation cell.');
+  }
+
+  refs.bank.addEventListener('pointerdown',function(event){
+    if(event.pointerType==='mouse') return;
+    const tile=event.target.closest('[data-tile-id]');
+    if(!tile||!round) return;
+    suppressBankClick=false;
+    event.preventDefault();
+    const tileId=tile.dataset.tileId;
+    const ghost=createTouchDragGhost(tile,tileId);
+    touchDrag={
+      pointerId:event.pointerId,
+      tileId:tileId,
+      source:tile,
+      ghost:ghost,
+      startX:event.clientX,
+      startY:event.clientY,
+      lastX:event.clientX,
+      lastY:event.clientY,
+      moved:false
+    };
+    tile.classList.add('is-touch-drag-source');
+    document.documentElement.classList.add('is-dragging-crossnumber-tile');
+    tile.setPointerCapture?.(event.pointerId);
+    positionTouchDragGhost(ghost,event.clientX,event.clientY);
+  });
+
+  refs.bank.addEventListener('pointermove',function(event){
+    if(!touchDrag||touchDrag.pointerId!==event.pointerId) return;
+    const dx=event.clientX-touchDrag.startX;
+    const dy=event.clientY-touchDrag.startY;
+    if(!touchDrag.moved&&Math.hypot(dx,dy)>=6) touchDrag.moved=true;
+    touchDrag.lastX=event.clientX;
+    touchDrag.lastY=event.clientY;
+    positionTouchDragGhost(touchDrag.ghost,event.clientX,event.clientY);
+    if(touchDrag.moved){
+      event.preventDefault();
+      touchDropCellAt(event.clientX,event.clientY);
+      updateTouchDragAutoScroll(event.clientY);
+    }
+  });
+
+  refs.bank.addEventListener('pointerup',function(event){
+    finishTouchDrag(event,false);
+  });
+
+  refs.bank.addEventListener('pointercancel',function(event){
+    finishTouchDrag(event,true);
+  });
+
   refs.bank.addEventListener('click',function(event){
+    if(suppressBankClick){
+      suppressBankClick=false;
+      event.preventDefault();
+      return;
+    }
     const tile=event.target.closest('[data-tile-id]');
     if(!tile||!round) return;
     selectedTile=selectedTile===tile.dataset.tileId?'':tile.dataset.tileId;
