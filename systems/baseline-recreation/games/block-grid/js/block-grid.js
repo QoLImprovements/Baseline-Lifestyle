@@ -270,12 +270,11 @@ function statusHtml() {
     : active.gameOver
       ? 'Run complete. No remaining piece fits the board.'
       : (selectedPiece >= 0 ? `Piece ${selectedPiece + 1} selected. ` : '') + (statusMessage || 'Keep space available for the next tray.');
+  const previous=globalThis.BaselineRoundStatusTabs?.previousRoundHtml?.(profile,[['Previous Score',number(profile.lastRunScore)+' points']])
+    || '<section class="round-status-previous"><div class="round-status-previous-heading">Previous Round</div><div class="round-status-previous-grid"><div><span>Exp</span><strong>'+number(profile.lastRoundXp)+' XP</strong></div></div></section>';
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
-    + '<section class="round-status-previous" aria-label="Previous Round"><div class="round-status-previous-heading">Previous Round</div><div class="round-status-previous-grid">'
-    + '<div><span>Exp</span><strong>'+number(profile.lastRoundXp)+' XP</strong></div>'
-    + '<div><span>Previous Score</span><strong>'+number(profile.lastRunScore)+' points</strong></div>'
-    + '</div></section>'
+    + previous
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(currentMode().name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
