@@ -822,11 +822,11 @@
   function setStatus(message){
     if(!refs.status) return;
     const tier=tierDefinition(round?.tierId||profile.selectedTier);
+    const previous=window.BaselineRoundStatusTabs?.previousRoundHtml?.(profile)
+      || '<section class="round-status-previous"><div class="round-status-previous-heading">Previous Round</div><div class="round-status-previous-grid"><div><span>Exp</span><strong>'+Math.max(0,int(profile.lastRoundXp,0))+' XP</strong></div></div></section>';
     refs.status.innerHTML='<div class="round-status-heading">Round Status</div>'
       + '<div class="round-status-outcome">'+escapeHtml(String(message||''))+'</div>'
-      + '<section class="round-status-previous" aria-label="Previous Round"><div class="round-status-previous-heading">Previous Round</div><div class="round-status-previous-grid">'
-      + '<div><span>Exp</span><strong>'+Math.max(0,int(profile.lastRoundXp,0))+' XP</strong></div>'
-      + '</div></section>'
+      + previous
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
       + '<div><span>Winning Streak</span><strong>'+Math.max(0,int(profile.cleanWinStreak,0))+'</strong></div>'
