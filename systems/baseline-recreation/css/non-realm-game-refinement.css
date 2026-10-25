@@ -2104,10 +2104,12 @@ body[data-app="recreation"] .round-status-card .round-status-previous{
   box-sizing:border-box!important;
 }
 body[data-app="recreation"] :is(
-  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
 ) .game-specific-actions,
 body[data-app="recreation"] :is(
-  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
 ) .game-window-actions.game-common-actions{
   box-sizing:border-box!important;
   display:flex!important;
@@ -2120,10 +2122,12 @@ body[data-app="recreation"] :is(
   gap:7px!important;
 }
 body[data-app="recreation"] :is(
-  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
 ) .game-specific-actions>.action,
 body[data-app="recreation"] :is(
-  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
 ) .game-window-actions.game-common-actions>.action{
   flex:0 0 42px!important;
   width:42px!important;
@@ -2133,6 +2137,44 @@ body[data-app="recreation"] :is(
   min-height:42px!important;
   padding:0!important;
 }
+@media(min-width:821px){
+  /* Extension/puzzle games keep their own information-row positions, but
+     common and game-specific controls share the same flexible control owner. */
+  body[data-app="recreation"] :is(
+    #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ):fullscreen > :is(.game-specific-actions,.game-window-actions,.crossnumber-actions){
+    display:flex!important;
+    flex-wrap:wrap!important;
+    grid-template-columns:none!important;
+    grid-template-rows:none!important;
+    width:calc(100% - 16px)!important;
+    max-width:calc(100% - 16px)!important;
+    min-width:0!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+    margin-inline:8px!important;
+    gap:6px!important;
+    justify-content:flex-start!important;
+    align-content:flex-end!important;
+    pointer-events:auto!important;
+  }
+  body[data-app="recreation"] :is(
+    #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ):fullscreen > :is(.game-specific-actions,.game-window-actions,.crossnumber-actions)>.action{
+    grid-column:auto!important;
+    grid-row:auto!important;
+    flex:0 0 38px!important;
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    padding:0!important;
+    pointer-events:auto!important;
+  }
+}
+
 @media(min-width:821px){
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
