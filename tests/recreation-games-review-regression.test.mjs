@@ -60,7 +60,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_COHERENT_RAIL_20261025_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_VERTICAL_PLAY_20261025_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -158,6 +158,8 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/const trackCoinSummary = document\.getElementById\('trackCoinSummary'\);[\s\S]*?trackCoinSummary\.innerHTML = coherentRoundStatusHtml/);
   assert.doesNotMatch(core,/trackCoinBoard\.innerHTML[\s\S]{0,500}?roundStatusHtml/);
   assert.doesNotMatch(nonRealmCss,/trackcoin-scene\.is-phase-(?:show|hide|pick) \.trackcoin-game-status/);
+  assert.match(nonRealmCss,/#trackCoinGamePanel:fullscreen #trackCoinBoard[\s\S]*?place-items:center stretch!important/);
+  assert.match(nonRealmCss,/#trackCoinGamePanel:fullscreen #trackCoinBoard > \.trackcoin-scene[\s\S]*?grid-template-rows:auto auto!important[\s\S]*?align-self:center!important/);
 });
 
 test('Recreation music preferences are server-side and quick controls stay inside activity controls',()=>{
@@ -209,7 +211,7 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(colourSort,/const cleanWin=!active\.hadFailure/);
   assert.match(colourSort,/active\.hadFailure = true;[\s\S]*?profile\.cleanWinStreak = 0/);
   assert.match(colourSort,/round-status-previous">Previous round - '\+number\(profile\.lastRoundXp\)\+' XP/);
-  assert.match(blockGrid,/round-status-previous">Previous round - '\+number\(profile\.lastRoundXp\)\+' XP/);
+  assert.match(blockGrid,/round-status-previous">Previous Run - '\+number\(profile\.lastRunScore\)\+' points/);
   assert.match(core,/refs\.wordRoundSummary\.innerHTML = coherentRoundStatusHtml\('Round Status',wordState\.lastMessage,profiles\.detectword,currentWordTier\(\)\.name\)/);
   assert.match(core,/Board cleared\. \+' \+ rewards\.bank \+ ' Bank Coins · \+' \+ rewards\.xp \+ ' XP'/);
   assert.match(core,/Clean Streak Bonus \+' \+ rewards\.cleanPct \+ '%'/);
@@ -321,13 +323,16 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/data-block-action="' \+ skill\.id/);
   assert.match(blockGrid,/skill\.icon : '🔒'/);
   assert.match(blockCss,/canonical Block Grid Recreation layout authority/);
-  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-play-cluster[\s\S]*?grid-column:1!important[\s\S]*?grid-row:1\/7!important/);
-  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-score-window[\s\S]*?grid-column:2!important[\s\S]*?grid-row:1!important/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-play-cluster[\s\S]*?grid-column:1!important[\s\S]*?grid-row:1\/6!important/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-score-skills-rail[\s\S]*?grid-column:2!important[\s\S]*?grid-row:1!important/);
   assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.game-live-xp[\s\S]*?grid-column:2!important[\s\S]*?grid-row:2!important/);
   assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.round-status-card[\s\S]*?grid-column:2!important[\s\S]*?grid-row:3!important/);
   assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-run-objective[\s\S]*?grid-column:2!important[\s\S]*?grid-row:4!important/);
-  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.block-grid-skill[\s\S]*?grid-column:2!important[\s\S]*?grid-row:5!important/);
-  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.game-window-actions[\s\S]*?grid-column:2!important[\s\S]*?grid-row:6!important[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
+  assert.match(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.game-window-actions[\s\S]*?grid-column:2!important[\s\S]*?grid-row:5!important[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
+  assert.match(blockCss,/#blockGridGameCard:fullscreen[\s\S]*?--block-fs-left:clamp\(150px,11vw,190px\)[\s\S]*?grid-template-columns:var\(--block-fs-left\) minmax\(0,1fr\) var\(--block-fs-side\)!important/);
+  assert.match(blockCss,/#blockGridGameCard:fullscreen > \.block-grid-score-skills-rail[\s\S]*?grid-column:1!important/);
+  assert.match(blockCss,/#blockGridGameCard:fullscreen > \.block-grid-play-cluster[\s\S]*?grid-column:2!important/);
+  assert.match(blockCss,/#blockGridGameCard:fullscreen > :is\([\s\S]*?\.game-live-xp[\s\S]*?grid-column:3!important/);
   assert.match(blockGrid,/active\.gameOver = !hasAnyPlacement\(active\.board, active\.tray\)/);
   assert.match(blockGrid,/function xpForRunScore\(score\)[\s\S]*?const points=number\(score\)[\s\S]*?Math\.round\(points \/ 10\)/);
   assert.match(blockGrid,/function settleRunXp\(active\)[\s\S]*?active\.xpSettled=true[\s\S]*?awardXp\(profile,gained\)/);
@@ -347,8 +352,12 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockCss,/\.block-grid-drag-ghost,[\s\S]*?transform:none!important/);
   assert.match(blockCss,/\.block-grid-drag-ghost \.block-grid-piece-cell\{[\s\S]*?width:var\(--drag-cell,18px\)!important[\s\S]*?height:var\(--drag-cell,18px\)!important/);
   assert.doesNotMatch(blockCss,/\.block-grid-drag-ghost(?:\.is-over-board)?\{[^}]*scale\(/);
-  assert.match(blockCss,/--block-fs-side:clamp\(230px,20vw,330px\)[\s\S]*?grid-template-columns:minmax\(0,4fr\) var\(--block-fs-side\)!important/);
-  assert.match(blockGrid,/<strong>Special<\/strong>/);
+  assert.match(blockGrid,/class="block-grid-score-skills-rail"/);
+  assert.match(blockGrid,/<span class="block-grid-rail-label">Score<\/span>/);
+  assert.match(blockGrid,/<strong>Skills<\/strong>/);
+  assert.match(blockGrid,/block-grid-skill-name/);
+  assert.doesNotMatch(blockGrid,/Run complete — \$\{active\.score\} points/);
+  assert.match(blockGrid,/profile\.lastRunScore=number\(active\.score\)/);
   assert.doesNotMatch(blockGrid,/Special Skill/);
   assert.match(blockGrid,/const cleanStreakBonus = Math\.min\(100, streak \* 5\)/);
   assert.match(blockGrid,/Winning Streak[\s\S]*?Clean Streak Bonus/);

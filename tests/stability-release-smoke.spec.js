@@ -763,6 +763,9 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(trackCardBox).not.toBeNull();
   expect(trackStatusBox.x).toBeGreaterThan(trackBoardBox.x+trackBoardBox.width-1);
   expect(trackStatusBox.x+trackStatusBox.width).toBeLessThanOrEqual(trackCardBox.x+trackCardBox.width+1);
+  const trackSceneBox=await page.locator('#trackCoinScene').boundingBox();
+  expect(trackSceneBox).not.toBeNull();
+  expect(Math.abs((trackSceneBox.y+(trackSceneBox.height/2))-(trackBoardBox.y+(trackBoardBox.height/2)))).toBeLessThanOrEqual(8);
   expect(await trackStatus.evaluate((node)=>getComputedStyle(node).alignSelf)).toBe('start');
   expect(trackStatusBox.height).toBeLessThan(trackCardBox.height*.7);
   expect(await page.locator('#trackCoinGamePanel .game-window-actions').evaluate((node)=>getComputedStyle(node).flexWrap)).toBe('wrap');
@@ -830,7 +833,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(xpBox.y).toBeGreaterThanOrEqual(scoreBox.y);
   expect(statusBox.y).toBeGreaterThanOrEqual(xpBox.y);
   expect(tierBox.y).toBeGreaterThanOrEqual(statusBox.y);
-  expect(specialBox.y).toBeGreaterThanOrEqual(tierBox.y);
+  expect(specialBox.y).toBeGreaterThanOrEqual(scoreBox.y);
   expect(await blockStatus.evaluate((node)=>getComputedStyle(node).alignSelf)).toBe('start');
   expect(statusBox.height).toBeLessThan((await blockCard.boundingBox()).height*.7);
   expect(await blockControls.evaluate((node)=>getComputedStyle(node).flexWrap)).toBe('wrap');

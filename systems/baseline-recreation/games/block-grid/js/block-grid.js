@@ -19,7 +19,7 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
-const BUILD = 'BLOCK_GRID_COHERENT_RAIL_20261025_1';
+const BUILD = 'BLOCK_GRID_SCORE_SKILLS_RAIL_20261025_1';
 const APP = 'blockgrid';
 const BLOCK_SKILLS = Object.freeze([
   { id:'blast', name:'Bomb', icon:'💣', unlockLevel:2, description:'Drag onto the board to clear a 4 × 4 area.' },
@@ -34,6 +34,7 @@ const DEFAULT_PROFILE = Object.freeze({
   totalLines:0,
   totalPieces:0,
   lastRoundXp:0,
+  lastRunScore:0,
   selectedMode:'classic',
   activeRun:null
 });
@@ -89,6 +90,7 @@ function normaliseProfile(value) {
     totalLines:number(source.totalLines),
     totalPieces:number(source.totalPieces),
     lastRoundXp:number(source.lastRoundXp),
+    lastRunScore:Object.prototype.hasOwnProperty.call(source,'lastRunScore') ? number(source.lastRunScore) : (source.activeRun?.gameOver ? number(source.activeRun.score) : 0),
     selectedMode:mode,
     activeRun:null
   };
@@ -135,6 +137,7 @@ function settleRunXp(active) {
   active.xpSettled=true;
   active.xpEarned=gained;
   profile.lastRoundXp=gained;
+  profile.lastRunScore=number(active.score);
   if(gained > 0) awardXp(profile,gained);
   return gained;
 }
@@ -265,11 +268,11 @@ function statusHtml() {
   const outcome = !active
     ? 'Start a new game to receive your first three pieces.'
     : active.gameOver
-      ? `Run complete — ${active.score} points. No remaining piece fits the board.`
+      ? 'Run complete. No remaining piece fits the board.'
       : (selectedPiece >= 0 ? `Piece ${selectedPiece + 1} selected. ` : '') + (statusMessage || 'Keep space available for the next tray.');
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
-    + '<div class="round-status-previous">Previous round - '+number(profile.lastRoundXp)+' XP</div>'
+    + '<div class="round-status-previous">Previous Run - '+number(profile.lastRunScore)+' points</div>'
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(currentMode().name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
@@ -312,30 +315,29 @@ function renderGame() {
   }
   const occupancy = boardOccupancy(active);
   root.innerHTML = `
-    <div class="block-grid-active-header block-grid-score-window">
-      <div class="stat-pills">
-        <div class="stat-pill">Score <span>${active.score}</span></div>
-        <div class="stat-pill">Lines <span>${active.lines}</span></div>
-        <div class="stat-pill">Combo <span>${active.combo ? `×${active.combo}` : '—'}</span></div>
+    <aside class="block-grid-score-skills-rail" aria-label="Block Grid score and skills">
+      <div class="block-grid-active-header block-grid-score-window">
+        <span class="block-grid-rail-label">Score</span>
+        <strong class="block-grid-live-score">${active.score}</strong>
       </div>
-    </div>
+      <div class="block-grid-skill">
+        <div class="block-grid-skill-head"><strong>Skills</strong><span>${Math.round(active.skillCharge || 0)}%</span></div>
+        <div class="block-grid-skill-meter" role="progressbar" aria-label="Skill charge" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(active.skillCharge || 0)}"><span style="width:${Math.min(100,active.skillCharge || 0)}%"></span></div>
+        <div class="block-grid-skill-actions">
+          ${BLOCK_SKILLS.map(skill => {
+            const unlocked=blockSkillUnlocked(skill.id);
+            const ready=unlocked && (active.skillCharge || 0) >= 100;
+            const label=unlocked ? skill.description : ('Unlocks at Player Rank ' + skill.unlockLevel);
+            return '<button class="action ghost block-grid-skill-button' + (unlocked ? ' is-unlocked' : ' is-locked') + '" data-block-action="' + skill.id + '" type="button" data-tooltip="' + escapeHtml(label) + '" title="' + escapeHtml(label) + '" aria-label="' + escapeHtml(skill.name) + '" ' + (ready ? '' : 'disabled') + '><span class="block-grid-skill-icon" aria-hidden="true">' + (unlocked ? skill.icon : '🔒') + '</span><span class="block-grid-skill-name">' + escapeHtml(skill.name) + '</span></button>';
+          }).join('')}
+        </div>
+      </div>
+    </aside>
     <div class="game-live-xp" data-live-xp="blockgrid"><strong>Player Rank ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
     <div class="summary-box round-status-card" id="blockGridStatus" aria-live="polite">${statusHtml()}</div>
     <div class="block-grid-run-objective">
       <div><strong>${escapeHtml(currentMode().name)} Tier</strong><span>Difficulty tier · random pieces every game</span></div>
       <span>${active.lines} lines cleared</span>
-    </div>
-    <div class="block-grid-skill">
-      <div class="block-grid-skill-head"><strong>Special</strong><span>${Math.round(active.skillCharge || 0)}%</span></div>
-      <div class="block-grid-skill-meter" role="progressbar" aria-label="Special skill charge" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(active.skillCharge || 0)}"><span style="width:${Math.min(100,active.skillCharge || 0)}%"></span></div>
-      <div class="block-grid-skill-actions">
-        ${BLOCK_SKILLS.map(skill => {
-          const unlocked=blockSkillUnlocked(skill.id);
-          const ready=unlocked && (active.skillCharge || 0) >= 100;
-          const label=unlocked ? skill.description : ('Unlocks at Player Rank ' + skill.unlockLevel);
-          return '<button class="action ghost game-control-icon block-grid-skill-button' + (unlocked ? ' is-unlocked' : ' is-locked') + '" data-block-action="' + skill.id + '" type="button" data-tooltip="' + escapeHtml(label) + '" title="' + escapeHtml(label) + '" aria-label="' + escapeHtml(skill.name) + '" ' + (ready ? '' : 'disabled') + '><span aria-hidden="true">' + (unlocked ? skill.icon : '🔒') + '</span><span class="sr-only">' + escapeHtml(skill.name) + '</span></button>';
-        }).join('')}
-      </div>
     </div>
     <div class="block-grid-play-cluster">
       <div class="block-grid-board-stage">
@@ -994,7 +996,7 @@ const shell = createGameExtensionShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=BLOCK_GRID_COHERENT_RAIL_20261025_1',
+  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=BLOCK_GRID_SCORE_SKILLS_RAIL_20261025_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `${currentMode().name} Tier · Best ${profile.bestScore}` : 'Ready',
