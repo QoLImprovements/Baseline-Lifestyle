@@ -770,7 +770,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     qsa('[data-auto-next-toggle]').forEach(function(btn){
       const gameId = btn.getAttribute('data-auto-next-toggle') || '';
       const enabled = autoNextEnabled(gameId);
-      const label='Auto-next: '+(enabled?'On':'Off');
+      const label='Auto New Game: '+(enabled?'On':'Off');
       btn.setAttribute('aria-pressed', String(enabled));
       btn.setAttribute('aria-label',label);
       btn.classList.toggle('is-active', enabled);
