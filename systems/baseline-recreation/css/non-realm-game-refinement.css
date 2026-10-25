@@ -1739,7 +1739,9 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
 
   body[data-app="recreation"] #trackcoinPanel .trackcoin-scene{
     display:grid!important;
-    grid-template-rows:auto auto minmax(280px,1fr)!important;
+    grid-template-rows:none!important;
+    grid-auto-rows:max-content!important;
+    align-content:start!important;
     gap:10px!important;
     overflow:hidden!important;
   }
@@ -1760,8 +1762,9 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
   }
   body[data-app="recreation"] #trackcoinPanel .trackcoin-lane{
     position:relative!important;
-    min-height:300px!important;
-    height:100%!important;
+    min-height:230px!important;
+    height:clamp(230px,42dvh,340px)!important;
+    max-height:340px!important;
     overflow:hidden!important;
     touch-action:manipulation!important;
   }
