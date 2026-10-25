@@ -290,6 +290,8 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
   min-height:0!important;
   max-height:100%!important;
   overflow:auto!important;
+  align-self:start!important;
+  height:auto!important;
   padding:9px!important;
   border:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
   background:rgba(var(--recreation-burgundy-rgb),.34)!important;
@@ -434,7 +436,8 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
     overflow:auto!important;
     margin:0!important;
     padding:10px!important;
-    align-self:stretch!important;
+    align-self:start!important;
+    height:auto!important;
   }
   #blockGridPanel #blockGridGameCard:not(:fullscreen)>.block-grid-run-objective{
     grid-column:2!important;
