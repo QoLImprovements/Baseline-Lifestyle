@@ -19,7 +19,7 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
-const BUILD = 'BLOCK_GRID_AUTONEXT_20261025_1';
+const BUILD = 'BLOCK_GRID_FULLSCREEN_STATUS_20261025_1';
 const APP = 'blockgrid';
 const BLOCK_SKILLS = Object.freeze([
   { id:'blast', name:'Bomb', icon:'💣', unlockLevel:2, description:'Drag onto the board to clear a 4 × 4 area.' },
