@@ -1256,6 +1256,7 @@
     layout=null;
     selectedTile='';
     undoStack=[];
+    autoNextTerminal=false;
     stopTimer();
     renderAll();
     setStatus('');
@@ -1324,6 +1325,7 @@
     layout=null;
     selectedTile='';
     undoStack=[];
+    autoNextTerminal=false;
     renderAll();
     try{document.dispatchEvent(new CustomEvent('baseline:crossnumber-progress',{detail:{profile:clone(profile),contribution:getRealmContribution(profile)}}));}catch(_error){}
     startTimer();
