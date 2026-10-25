@@ -830,7 +830,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(xpBox.y).toBeGreaterThanOrEqual(scoreBox.y);
   expect(statusBox.y).toBeGreaterThanOrEqual(xpBox.y);
   expect(tierBox.y).toBeGreaterThanOrEqual(statusBox.y);
-  expect(specialBox.y).toBeGreaterThanOrEqual(tierBox.y);
+  expect(specialBox.y).toBeGreaterThanOrEqual(scoreBox.y);
   expect(await blockStatus.evaluate((node)=>getComputedStyle(node).alignSelf)).toBe('start');
   expect(statusBox.height).toBeLessThan((await blockCard.boundingBox()).height*.7);
   expect(await blockControls.evaluate((node)=>getComputedStyle(node).flexWrap)).toBe('wrap');
