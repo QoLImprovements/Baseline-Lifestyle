@@ -600,7 +600,7 @@ if($accessUntil <= time()){
   <script defer src="/sitewide/js/baseline-api.js?v=SITEWIDE_API_JS_20261021_1"></script>
   <script defer src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script>
   <script defer src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_JS_20261021_1"></script>
-  <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_SHARED_HISTORY_ROUTE_20261025_1"></script>
+  <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_SHARED_RECIPE_HISTORY_20261025_1"></script>
   <script defer src="/systems/charity-shop/js/charity-float.js?v=CHARITY_FLOAT_20260801_1"></script>
   <script defer src="/systems/charity-shop/js/charity-shop.js?v=CHARITY_FLOAT_COPY_20260801_2"></script>
 </body>
