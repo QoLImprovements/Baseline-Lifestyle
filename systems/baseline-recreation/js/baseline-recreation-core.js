@@ -1005,7 +1005,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     const winningStreak=Math.max(0,Math.round(Number(profile&&profile.currentStreak!==undefined?profile.currentStreak:cleanStreak)));
     const rankUp=rankMatch ? '<div class="round-status-rankup">Ranked Up! Player Rank '+Math.max(1,Math.round(Number(profile&&profile.level||1)))+'</div>' : '';
     const previousXp=Math.max(0,Math.round(Number(profile&&profile.lastRoundXp||0)));
-    const previousResultLabel=String(previousLabel||'Previous Round').trim()||'Previous Round';
+    const previousResultLabel=String(previousLabel||'Previous round').trim()||'Previous Round';
     return '<div class="round-status-heading">'+escapeHtml(label||'Round Status')+'</div>'
       + (cleaned?'<div class="round-status-outcome">'+escapeHtml(cleaned)+'</div>':'')
       + rankUp
