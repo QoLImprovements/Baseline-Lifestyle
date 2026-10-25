@@ -424,6 +424,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(function(letter){ return keypadButton('detectword', letter.toLowerCase(), letter, 'mobile-game-key--letter'); }).join('');
       refs.wordBoard.insertAdjacentHTML('beforeend', '<div class="mobile-game-keypad mobile-word-keypad" data-keypad="detectword" aria-label="Word input keyboard">' + letters + keypadButton('detectword','backspace','⌫','mobile-game-key--utility') + keypadButton('detectword','clear','Clear','mobile-game-key--utility') + keypadButton('detectword','submit','Submit','mobile-game-key--submit') + '</div>');
     }
+    if(gameId === 'make24' && isMobileGameViewport()){
+      const duplicateKeypad = refs.make24Board ? q('.mobile-game-keypad[data-keypad="make24"]', refs.make24Board) : null;
+      if(duplicateKeypad) duplicateKeypad.remove();
+      return;
+    }
     if(gameId === 'make24' && refs.make24Board && document.getElementById('make24ExpressionInput') && !q('.mobile-game-keypad[data-keypad="make24"]', refs.make24Board)){
       const keys = ['7','8','9','(','4','5','6',')','1','2','3','+','0','-','*','/'];
       const symbols = { '*':'×', '/':'÷', '-':'−' };
@@ -2588,18 +2593,19 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
       const profile = profiles.detectword;
       profile.wordsSolved += 1;
       profile.currentStreak += 1;
-      const cleanWin = !wordState.hadFailure;
-      const nextClean = cleanWin ? profile.cleanWinStreak + 1 : 0;
+      // Detect the Word counts consecutive completed wins. Intermediate
+      // guesses do not break the clean streak; only an actual game-over does.
+      const nextClean = profile.cleanWinStreak + 1;
       profile.cleanWinStreak = nextClean;
       profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
-      const rewardMult = computeWordRewardMultiplier(profile) * (1 + ((cleanWin ? cleanWinBonusPct(nextClean) : 0) / 100));
+      const rewardMult = computeWordRewardMultiplier(profile) * (1 + (cleanWinBonusPct(nextClean) / 100));
       const bankGain = Math.round(tier.bankReward * (1 + (profile.skills.banker || 0) * 0.10) * rewardMult);
       const xpGain = Math.round(tier.xpReward * (1 + (profile.skills.flow || 0) * 0.08) * rewardMult);
       profile.bank += bankGain;
       profile.lastRoundXp = xpGain;
       const levels = levelUpFromGain(profile, xpGain);
       wordState.roundBank += bankGain;
-      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + (cleanWin ? cleanBonusRewardText(nextClean) : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
+      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · Player Rank +' + levels : '') + '.';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
       resolveNinjaBonuses();
@@ -2607,9 +2613,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
       completeAutoNext('detectword');
       return;
     }
-    wordState.hadFailure = true;
-    profiles.detectword.cleanWinStreak = 0;
     if(wordState.guesses.length >= wordState.maxGuesses){
+      wordState.hadFailure = true;
       profiles.detectword.currentStreak = 0;
       profiles.detectword.cleanWinStreak = 0;
       profiles.detectword.lastRoundXp = 0;
