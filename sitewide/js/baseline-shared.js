@@ -5718,9 +5718,11 @@ function buildControls(recipeEl){
     })();
 
     function applyNavState(state){
-      if(!state || typeof state !== 'object'){
+      if(!state || typeof state !== 'object' || !String(state.kind || '').trim()){
+        const scrollY = state && typeof state === 'object' && typeof state.scrollY === 'number' ? state.scrollY : null;
         state = cleanRouteStateFromPath();
         if(!state || typeof state !== 'object') return;
+        if(scrollY !== null) state.scrollY = scrollY;
       }
 
       if(state.kind === 'tab'){
