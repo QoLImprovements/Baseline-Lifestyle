@@ -11,6 +11,7 @@ const recreationCss=read('systems/baseline-recreation/css/baseline-recreation.cs
 const nonRealmCss=read('systems/baseline-recreation/css/non-realm-game-refinement.css');
 const music=read('systems/baseline-recreation/js/games-music.js');
 const config=read('systems/baseline-recreation/js/games-core-config.js');
+const profileRules=read('systems/baseline-recreation/js/games-profile-rules.js');
 const blockGrid=read('systems/baseline-recreation/games/block-grid/js/block-grid.js');
 const blockCss=read('systems/baseline-recreation/games/block-grid/css/block-grid.css');
 const colourSort=read('systems/baseline-recreation/games/colour-sort/js/colour-sort.js');
@@ -61,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_MOBILE_FIT_20261025_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_FULLSCREEN_STATUS_20261025_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -130,9 +131,9 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_MOBILE_STREAK_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_AUTONEXT_20261025_1/);
-  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_AUTONEXT_20261025_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_FULLSCREEN_STATUS_20261025_1/);
+  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_FULLSCREEN_STATUS_20261025_1/);
+  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_FULLSCREEN_STATUS_20261025_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -220,12 +221,13 @@ test('Recreation music preferences are server-side and quick controls stay insid
 });
 
 test('Round Status and reward terminology stay coherent across Recreation',()=>{
-  assert.match(core,/function coherentRoundStatusHtml\(label,message,profile,tierName,previousLabel\)/);
+  assert.match(core,/function coherentRoundStatusHtml\(label,message,profile,tierName,_previousLabel,previousRows\)/);
+  assert.match(core,/function previousRoundSectionHtml\(profile,extraRows\)/);
   assert.match(core,/cleanStreak:\{ label:'Clean Streak Bonus', perStepPct:5, maxPct:100 \}/);
   assert.match(core,/Winning Streak[\s\S]*?Clean Streak Bonus/);
   assert.match(core,/Ranked Up! Player Rank/);
-  assert.match(core,/const previousResultLabel=String\(previousLabel\|\|'Previous round'\)/);
-  assert.match(core,/round-status-previous">'\+escapeHtml\(previousResultLabel\)\+' - '\+previousXp\+' XP/);
+  assert.match(core,/round-status-previous-heading">Previous Round/);
+  assert.match(core,/const rows=\[\['Exp',previousXp\+' XP'\]\]/);
   assert.match(core,/profile&&profile\.lastRoundXp/);
   assert.match(core,/pairsBoardState\.hadFailure = true;[\s\S]*?profiles\.pairs\.cleanWinStreak = 0/);
   assert.match(core,/const cleanWin = !make24State\.hadFailure;[\s\S]*?const nextClean = cleanWin \? profiles\.make24\.cleanWinStreak \+ 1 : 0/);
@@ -237,9 +239,13 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(crossnumber,/round\.hadFailure=true;[\s\S]*?profile\.cleanWinStreak=0/);
   assert.match(colourSort,/const cleanWin=!active\.hadFailure/);
   assert.match(colourSort,/active\.hadFailure = true;[\s\S]*?profile\.cleanWinStreak = 0/);
-  assert.match(colourSort,/round-status-previous">Previous round - '\+number\(profile\.lastRoundXp\)\+' XP/);
-  assert.match(blockGrid,/round-status-previous">Previous Run - '\+number\(profile\.lastRunScore\)\+' points/);
-  assert.match(core,/refs\.wordRoundSummary\.innerHTML = coherentRoundStatusHtml\('Round Status',wordState\.lastMessage,profiles\.detectword,currentWordTier\(\)\.name\)/);
+  assert.match(colourSort,/round-status-previous-heading">Previous Round[\s\S]*?<span>Exp<\/span><strong>'\+number\(profile\.lastRoundXp\)\+' XP/);
+  assert.match(blockGrid,/round-status-previous-heading">Previous Round[\s\S]*?<span>Exp<\/span><strong>'\+number\(profile\.lastRoundXp\)\+' XP[\s\S]*?Previous Score/);
+  assert.match(core,/refs\.wordRoundSummary\.innerHTML = coherentRoundStatusHtml\('Round Status',wordState\.lastMessage,profiles\.detectword,currentWordTier\(\)\.name,undefined,\[\['Previous Word',profiles\.detectword\.lastRoundWord\|\|'—'\]\]\)/);
+  assert.match(profileRules,/lastRoundWord:''/);
+  assert.match(profileRules,/merged\.lastRoundWord = String\(merged\.lastRoundWord \|\| ''\)\.toUpperCase\(\)/);
+  assert.match(core,/profile\.lastRoundWord = String\(wordState\.secret \|\| ''\)\.toUpperCase\(\)/);
+  assert.match(core,/profiles\.detectword\.lastRoundWord = String\(wordState\.secret \|\| ''\)\.toUpperCase\(\)/);
   assert.match(core,/Board cleared\. \+' \+ rewards\.bank \+ ' Bank Coins · \+' \+ rewards\.xp \+ ' XP'/);
   assert.match(core,/Clean Streak Bonus \+' \+ rewards\.cleanPct \+ '%'/);
   assert.doesNotMatch(core,/Current streak bonus/);
@@ -254,6 +260,19 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.doesNotMatch(html,/>Clean Bonus</i);
   assert.match(html,/Round Bank Coins <span id="wordRoundBankValue">/);
   assert.match(crossnumber,/Bank Coins · \+'\+rewards\.xp\+' XP'[\s\S]*?Clean Streak Bonus/);
+});
+
+test('immersive Round Status exposes coherent Round, Tier and Skills views',()=>{
+  assert.match(core,/ROUND_STATUS_TAB_SOURCES=Object\.freeze/);
+  assert.match(core,/data-round-status-tab="round">Round<\/button>[\s\S]*?data-round-status-tab="tier">Tier<\/button>[\s\S]*?data-round-status-tab="skills">Skills<\/button>/);
+  assert.match(core,/const active=immersive\?\(roundStatusTabState\[id\]\|\|'round'\):'round'/);
+  assert.match(core,/window\.BaselineRoundStatusTabs=Object\.freeze/);
+  assert.match(nonRealmCss,/immersive Round \/ Tier \/ Skills authority/);
+  assert.match(nonRealmCss,/:fullscreen \.round-status-card\[data-round-status-game\] \.round-status-tabs/);
+  assert.match(nonRealmCss,/\.is-mobile-game-root \.round-status-card\[data-round-status-game\] \.round-status-tabs/);
+  assert.match(blockGrid,/roundTabs\.enhance\(statusCard,APP,[\s\S]*?blockGridModesCard[\s\S]*?blockGridSkillsCard/);
+  assert.match(colourSort,/roundTabs\.enhance\(statusCard,APP,[\s\S]*?colourSortLevelsCard[\s\S]*?currently has no skill tree/);
+  assert.match(crossnumber,/roundTabs\?\.enhance[\s\S]*?tierHtml:refs\.tiers\?\.innerHTML[\s\S]*?skillsHtml:refs\.skills\?\.innerHTML/);
 });
 
 test('fullscreen layouts use bounded side panels except the deliberately independent Jigsaw workspace',()=>{
@@ -451,7 +470,7 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
   assert.match(html,/crossnumber\.css\?v=CROSS_NUMBER_NO_SCROLL_20261025_1/);
-  assert.match(html,/crossnumber\.js\?v=CROSS_NUMBER_NO_SCROLL_20261025_1/);
+  assert.match(html,/crossnumber\.js\?v=CROSS_NUMBER_FULLSCREEN_STATUS_20261025_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);
