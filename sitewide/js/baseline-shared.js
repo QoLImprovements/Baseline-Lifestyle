@@ -313,7 +313,7 @@
       }
       const recipeDetail = path.match(/\/recipes\/([^\/?#]+)$/i);
       if(recipeDetail && recipeDetail[1]){
-        return { kind:'tab', tabId:'recipes', raw:path };
+        return recipePathStateFromLocation() || { kind:'tab', tabId:'recipes', raw:path };
       }
       const skincareIngredientDetail = path.match(/\/baseline-natural-skincare\/ingredient-library\/([^\/?#]+)$/i);
       if(skincareIngredientDetail && skincareIngredientDetail[1]){
