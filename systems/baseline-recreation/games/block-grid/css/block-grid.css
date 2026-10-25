@@ -344,7 +344,7 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
 }
 
 #blockGridPanel #blockGridGameCard:fullscreen > .game-live-xp{
-  grid-row:2!important;
+  grid-row:1!important;
   display:grid!important;
   grid-template-columns:1fr auto!important;
   gap:5px 7px!important;
@@ -356,7 +356,7 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
   grid-column:1/-1!important;
 }
 #blockGridPanel #blockGridGameCard:fullscreen > .round-status-card{
-  grid-row:3!important;
+  grid-row:2!important;
   min-height:0!important;
   max-height:100%!important;
   overflow:auto!important;
@@ -367,7 +367,7 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
   background:rgba(var(--recreation-burgundy-rgb),.34)!important;
 }
 #blockGridPanel #blockGridGameCard:fullscreen > .block-grid-run-objective{
-  grid-row:4!important;
+  grid-row:3!important;
   display:grid!important;
   align-content:start!important;
   gap:4px!important;
@@ -432,9 +432,9 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
 
 
 /* 2026-10-25 canonical Block Grid Recreation layout authority.
-   Wide desktop and fullscreen use the same information hierarchy:
-   playable board/tray LEFT; Score/Lines, Rank/XP, Round Status, Tier,
-   Special and common controls RIGHT. */
+   Windowed desktop keeps the compact auxiliary stack beside play.
+   Fullscreen uses the scoring-game exception: live Score + Skills LEFT,
+   playable board/tray CENTRE, shared Rank/XP + Round Status + Tier + controls RIGHT. */
 @media(min-width:1080px){
   #blockGridPanel #blockGridGameCard:not(:fullscreen){
     display:grid!important;
