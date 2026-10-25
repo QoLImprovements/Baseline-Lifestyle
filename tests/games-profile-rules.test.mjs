@@ -113,6 +113,9 @@ test('Track Coin profile authority preserves speed floor and unlocked-tier repai
   assert.equal(profile.highestUnlockedTier,'tier1');
   assert.equal(profile.selectedTier,'tier1');
   assert.equal(profile.currentTier,'tier1');
+  assert.equal(rules.highestUnlockedTrackCoinTier({level:1}),'tier1');
+  assert.equal(rules.highestUnlockedTrackCoinTier({level:6}),'tier3');
+  assert.equal(rules.highestUnlockedTrackCoinTier({level:15}),'tier5');
 });
 
 test('Recreation core delegates Core Games profile rules and keeps Realm compatibility separate',()=>{
