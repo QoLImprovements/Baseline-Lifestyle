@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_DOCK_20261025_3/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_DOCK_20261025_4/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -99,6 +99,7 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(nonRealmCss,/> \.start-new-game-toggle\{[\s\S]*?grid-column:1!important[\s\S]*?grid-row:1 \/ 3!important/);
   assert.match(nonRealmCss,/> \.auto-next-toggle\{[\s\S]*?grid-column:2!important[\s\S]*?grid-row:1 \/ 3!important/);
   assert.match(nonRealmCss,/> \.games-settings-trigger\{[\s\S]*?grid-column:4 \/ 6!important[\s\S]*?grid-row:1!important[\s\S]*?justify-self:center!important/);
+  assert.match(nonRealmCss,/Exact child-position authority[\s\S]*?game-window-actions\.game-common-actions > \.games-settings-trigger[\s\S]*?grid-column:4 \/ 6!important[\s\S]*?grid-row:1!important/);
   assert.match(nonRealmCss,/> \.games-music-quick-toggle\{[\s\S]*?grid-column:4!important[\s\S]*?grid-row:2!important/);
   assert.match(nonRealmCss,/> \.game-fullscreen-toggle\{[\s\S]*?grid-column:5!important[\s\S]*?grid-row:2!important/);
   assert.match(html,/game-specific-actions" aria-label="Detect The Word game controls"[\s\S]*?data-desktop-keypad-toggle="detectword"[\s\S]*?game-window-actions game-common-actions/);
