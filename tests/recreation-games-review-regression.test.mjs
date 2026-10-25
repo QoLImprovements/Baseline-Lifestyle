@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_STATUS_TABS_20261025_2/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -131,10 +131,10 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_FULLSCREEN_STATUS_20261025_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_TAB_ROUTING_20261025_1/);
-  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_FULLSCREEN_STATUS_20261025_1/);
+  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_FULLSCREEN_WINDOW_TABS_20261025_1/);
+  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_FULLSCREEN_WINDOW_TABS_20261025_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -264,25 +264,32 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(crossnumber,/Bank Coins · \+'\+rewards\.xp\+' XP'[\s\S]*?Clean Streak Bonus/);
 });
 
-test('immersive Round Status exposes coherent Round, Tier and Skills views',()=>{
-  assert.match(core,/ROUND_STATUS_TAB_SOURCES=Object\.freeze/);
-  assert.match(core,/data-round-status-tab="round">Round<\/button>[\s\S]*?data-round-status-tab="tier">Tier<\/button>[\s\S]*?data-round-status-tab="skills">Skills<\/button>/);
-  assert.match(core,/const active=immersive\?\(roundStatusTabState\[id\]\|\|'round'\):'round'/);
-  assert.match(core,/function resetRoundStatusTab\(gameId\)/);
-  assert.match(core,/enteringMobileGame[\s\S]*?BaselineRoundStatusTabs\?\.reset\?\.\(id\)/);
-  assert.match(core,/document\.addEventListener\('fullscreenchange'[\s\S]*?resetRoundStatusTab\(id\|\|''\)/);
-  assert.match(core,/window\.BaselineRoundStatusTabs=Object\.freeze/);
-  assert.match(nonRealmCss,/immersive Round \/ Tier \/ Skills authority/);
-  assert.match(nonRealmCss,/\.round-status-tabs\{\s*display:grid!important/);
-  assert.doesNotMatch(nonRealmCss,/\.round-status-tabs\{\s*display:none!important/);
-  assert.match(nonRealmCss,/:fullscreen \.round-status-card\[data-round-status-game\]/);
-  assert.match(nonRealmCss,/\.is-mobile-game-root \.round-status-card\[data-round-status-game\]/);
-  assert.match(blockGrid,/const cards=\{[\s\S]*?game:'blockGridGameCard'[\s\S]*?skills:'blockGridSkillsCard'[\s\S]*?modes:'blockGridModesCard'[\s\S]*?progress:'blockGridProgressCard'/);
-  assert.match(blockGrid,/setTab\(blockTabFromLocation\(\), 'none'\);/);
-  assert.match(blockGrid,/button\.setAttribute\('aria-pressed', String\(selected\)\)/);
-  assert.match(blockGrid,/roundTabs\.enhance\(statusCard,APP,[\s\S]*?blockGridModesCard[\s\S]*?blockGridSkillsCard/);
-  assert.match(colourSort,/roundTabs\.enhance\(statusCard,APP,[\s\S]*?colourSortLevelsCard[\s\S]*?currently has no skill tree/);
-  assert.match(crossnumber,/roundTabs\?\.enhance[\s\S]*?tierHtml:refs\.tiers\?\.innerHTML[\s\S]*?skillsHtml:refs\.skills\?\.innerHTML/);
+test('fullscreen right rail mirrors each game windowed tabs and defaults to Game',()=>{
+  assert.match(core,/const FULLSCREEN_WINDOW_TABS=Object\.freeze/);
+  assert.match(core,/detectword:\{root:'wordGameCard',tabs:\[\['game','Game'\],\['skills','Skills','wordSkillCard'\],\['tiers','Tiers','wordTierCard'\],\['progress','Progress','wordProgressCard'\]\]\}/);
+  assert.match(core,/blockgrid:\{root:'blockGridGameCard',tabs:\[\['game','Game'\],\['skills','Skills','blockGridSkillsCard'\],\['tiers','Tiers','blockGridModesCard'\],\['progress','Progress','blockGridProgressCard'\]\]\}/);
+  assert.match(core,/crossnumber:\{root:'crossnumberGamePanel',tabs:\[\['game','Game'\],\['skills','Skills','crossnumberSkillPanel'\],\['tiers','Tiers','crossnumberTierPanel'\],\['progress','Progress','crossnumberProgressPanel'\]\]\}/);
+  assert.match(core,/fullscreen\.setAttribute\('data-fullscreen-window-view','game'\)/);
+  assert.match(core,/data-fullscreen-window-tab/);
+  assert.match(core,/cloneFullscreenPanelHtml/);
+  assert.match(core,/window\.BaselineFullscreenTabs=Object\.freeze/);
+  assert.doesNotMatch(core,/data-round-status-tab|roundStatusTabState|resetRoundStatusTab|ROUND_STATUS_TAB_SOURCES/);
+  assert.match(nonRealmCss,/fullscreen window-tab authority/);
+  assert.match(nonRealmCss,/\.game-fullscreen-window-tabbar/);
+  assert.match(nonRealmCss,/grid-template-columns:repeat\(var\(--fullscreen-tab-count,4\),minmax\(0,1fr\)\)/);
+  assert.match(nonRealmCss,/#wordGameCard[\s\S]*?:fullscreen > \.game-fullscreen-window-tabs > \.game-fullscreen-window-tabbar/);
+  assert.match(blockCss,/#blockGridGameCard:fullscreen > \.game-fullscreen-window-tabs > \.game-fullscreen-window-tabbar/);
+  assert.match(colourCss,/#colourSortGameCard:fullscreen > \.game-fullscreen-window-tabs > \.game-fullscreen-window-tabbar/);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen > \.game-fullscreen-window-tabs > \.game-fullscreen-window-tabbar/);
+  assert.match(blockGrid,/BaselineFullscreenTabs\?\.sync\?\.\(APP\)/);
+  assert.match(colourSort,/BaselineFullscreenTabs\?\.sync\?\.\(APP\)/);
+  assert.match(crossnumber,/BaselineFullscreenTabs\?\.sync\?\.\(APP\)/);
+});
+
+test('fullscreen common controls use one centred icon geometry including the keyboard toggle',()=>{
+  assert.match(nonRealmCss,/game-window-actions\.game-common-actions\{[\s\S]*?justify-content:center!important[\s\S]*?align-items:center!important/);
+  assert.match(nonRealmCss,/\.desktop-keypad-toggle[\s\S]*?flex:0 0 44px!important[\s\S]*?width:44px!important[\s\S]*?height:44px!important[\s\S]*?place-items:center!important/);
+  assert.match(nonRealmCss,/\.desktop-keypad-toggle \.game-shell-action__svg\{[\s\S]*?width:20px!important[\s\S]*?height:20px!important[\s\S]*?margin:0!important[\s\S]*?transform:none!important/);
 });
 
 test('fullscreen layouts use bounded side panels except the deliberately independent Jigsaw workspace',()=>{
@@ -479,8 +486,8 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/Cross Number touch-drag authority/);
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
-  assert.match(html,/crossnumber\.css\?v=CROSS_NUMBER_NO_SCROLL_20261025_1/);
-  assert.match(html,/crossnumber\.js\?v=CROSS_NUMBER_FULLSCREEN_STATUS_20261025_1/);
+  assert.match(html,/crossnumber\.css\?v=CROSS_NUMBER_FULLSCREEN_WINDOW_TABS_20261025_1/);
+  assert.match(html,/crossnumber\.js\?v=CROSS_NUMBER_FULLSCREEN_WINDOW_TABS_20261025_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);
