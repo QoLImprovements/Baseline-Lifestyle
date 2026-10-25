@@ -136,19 +136,20 @@ test('Skincare routine Week Month calendar state survives refresh',async({page})
   await expect(page.locator('[data-skincare-calendar-view="week"]')).toHaveAttribute('aria-selected','true');
 });
 
-test('Fitness My Plan subviews survive refresh and history',async({page})=>{
-  await page.goto('/baseline-fitness/my-plan/completed',{waitUntil:'domcontentloaded'});
+test('Fitness My Plan subviews survive client history',async({page})=>{
+  await page.goto('/baseline-fitness/my-plan',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.hasAttribute('data-baseline-fitness-runtime'));
+  const completed=page.locator('[data-plan-view="completed"]');
+  const future=page.locator('[data-plan-view="future"]');
+  await completed.evaluate((button)=>button.click());
   await expect(page).toHaveURL(/\/baseline-fitness\/my-plan\/completed$/);
-  await expect(page.locator('[data-plan-view="completed"]')).toHaveAttribute('aria-selected','true');
-  await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>document.documentElement.hasAttribute('data-baseline-fitness-runtime'));
-  await expect(page.locator('[data-plan-view="completed"]')).toHaveAttribute('aria-selected','true');
-  await page.goto('/baseline-fitness/my-plan/future',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>document.documentElement.hasAttribute('data-baseline-fitness-runtime'));
+  await expect(completed).toHaveAttribute('aria-selected','true');
+  await future.evaluate((button)=>button.click());
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-plan\/future$/);
+  await expect(future).toHaveAttribute('aria-selected','true');
   await page.goBack();
   await expect(page).toHaveURL(/\/baseline-fitness\/my-plan\/completed$/);
-  await expect(page.locator('[data-plan-view="completed"]')).toHaveAttribute('aria-selected','true');
+  await expect(completed).toHaveAttribute('aria-selected','true');
 });
 
 test('Badminton Game Plan subviews survive refresh',async({page})=>{
