@@ -864,10 +864,32 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   const wordAuto=page.locator('#wordGameCard .game-window-actions [data-auto-next-toggle="detectword"]');
   const wordKeyboardIcon=wordKeyboard.locator('.game-shell-action__svg');
   for(const locator of [wordKeyboard,wordStart,wordAuto,wordKeyboardIcon]) await expect(locator).toBeVisible();
-  const [wordKeyboardBox,wordStartBox,wordAutoBox,wordIconBox]=await Promise.all([
-    wordKeyboard.boundingBox(),wordStart.boundingBox(),wordAuto.boundingBox(),wordKeyboardIcon.boundingBox()
-  ]);
-  for(const box of [wordKeyboardBox,wordStartBox,wordAutoBox,wordIconBox]) expect(box).not.toBeNull();
+  const wordGeometry=await page.evaluate(()=>{
+    const rect=(selector)=>{
+      const node=document.querySelector(selector);
+      if(!node) return null;
+      const r=node.getBoundingClientRect();
+      const style=getComputedStyle(node);
+      return {x:r.x,y:r.y,width:r.width,height:r.height,display:style.display,visibility:style.visibility};
+    };
+    return {
+      keyboard:rect('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"]'),
+      start:rect('#wordGameCard .game-window-actions #newWordRoundBtn'),
+      auto:rect('#wordGameCard .game-window-actions [data-auto-next-toggle="detectword"]'),
+      icon:rect('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"] .game-shell-action__svg')
+    };
+  });
+  for(const [name,box] of Object.entries(wordGeometry)){
+    expect(box,name+' geometry').not.toBeNull();
+    expect(box.width,name+' width').toBeGreaterThan(0);
+    expect(box.height,name+' height').toBeGreaterThan(0);
+    expect(box.display,name+' display').not.toBe('none');
+    expect(box.visibility,name+' visibility').not.toBe('hidden');
+  }
+  const wordKeyboardBox=wordGeometry.keyboard;
+  const wordStartBox=wordGeometry.start;
+  const wordAutoBox=wordGeometry.auto;
+  const wordIconBox=wordGeometry.icon;
   expect(Math.abs(wordKeyboardBox.width-44)).toBeLessThanOrEqual(1);
   expect(Math.abs(wordKeyboardBox.height-44)).toBeLessThanOrEqual(1);
   const wordKeyboardCx=wordKeyboardBox.x+wordKeyboardBox.width/2;
