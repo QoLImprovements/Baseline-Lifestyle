@@ -3232,9 +3232,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     }
     const trackCoinResultClass = trackCoinState && trackCoinState.resolved && !trackCoinState.reviewActive ? (' trackcoin-status-result--' + (trackCoinState.lastResult || 'resolved')) : '';
     const trackCoinStatusMessage = trackCoinState ? trackCoinState.message : 'No round active yet. Press New Game when you are ready.';
-    const roundStatusHtml = '<div class="summary-box round-status-card trackcoin-game-status' + trackCoinResultClass + '" id="trackCoinSummary">'
-      + coherentRoundStatusHtml('Round Status',trackCoinStatusMessage,profile,currentTrackCoinTier().name)
-      + '</div>';
+    const trackCoinSummary = document.getElementById('trackCoinSummary');
+    if(trackCoinSummary){
+      trackCoinSummary.className = 'summary-box round-status-card trackcoin-game-status' + trackCoinResultClass;
+      trackCoinSummary.innerHTML = coherentRoundStatusHtml('Round Status',trackCoinStatusMessage,profile,currentTrackCoinTier().name);
+    }
 
     if(!trackCoinState){
       refs.trackCoinBoard.innerHTML = '<div class="empty-box trackcoin-idle-card"><strong>Track the Coin is idle.</strong><span class="inline-note">Choose a tier and press New Game when you are ready.</span><span class="inline-note">The coin will be shown first, then covered, then shuffled. ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '.</span><span class="inline-note">Use the New Game control at the bottom-right of the game window.</span></div>';
@@ -3257,7 +3259,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       ? '<div class="trackcoin-resume-card"><strong>Saved round ready</strong><span class="inline-note">The same coin and exact saved shuffle are waiting.</span><button class="action primary" data-action="resume-trackcoin" type="button">Resume Shuffle</button></div>'
       : '';
     const pickPrompt=trackCoinState.phase==='pick'&&!trackCoinState.resolved ? '<div class="trackcoin-pick-prompt">Choose the cup</div>' : '';
-    refs.trackCoinBoard.innerHTML = '<div id="trackCoinScene" class="trackcoin-scene' + phaseClass + (trackCoinState.phase === 'hide' ? ' is-busy' : '') + (trackCoinState.resolved ? ' is-resolved' : '') + '">' + roundStatusHtml + '<div class="trackcoin-status"><strong>' + escapeHtml(tier.name) + '</strong><span class="inline-note">Containers ' + tier.containers + ' · ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '</span></div>' + resumeHtml + '<div class="trackcoin-lane" data-cups="' + tier.containers + '">' + pickPrompt + coinHtml + positions + '</div></div>';
+    refs.trackCoinBoard.innerHTML = '<div id="trackCoinScene" class="trackcoin-scene' + phaseClass + (trackCoinState.phase === 'hide' ? ' is-busy' : '') + (trackCoinState.resolved ? ' is-resolved' : '') + '"><div class="trackcoin-status"><strong>' + escapeHtml(tier.name) + '</strong><span class="inline-note">Containers ' + tier.containers + ' · ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '</span></div>' + resumeHtml + '<div class="trackcoin-lane" data-cups="' + tier.containers + '">' + pickPrompt + coinHtml + positions + '</div></div>';
     bindTrackCoinCupChoices();
     ensureGamePlayContract();
   }
