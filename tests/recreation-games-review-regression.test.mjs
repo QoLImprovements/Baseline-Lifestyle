@@ -268,6 +268,9 @@ test('immersive Round Status exposes coherent Round, Tier and Skills views',()=>
   assert.match(core,/ROUND_STATUS_TAB_SOURCES=Object\.freeze/);
   assert.match(core,/data-round-status-tab="round">Round<\/button>[\s\S]*?data-round-status-tab="tier">Tier<\/button>[\s\S]*?data-round-status-tab="skills">Skills<\/button>/);
   assert.match(core,/const active=immersive\?\(roundStatusTabState\[id\]\|\|'round'\):'round'/);
+  assert.match(core,/function resetRoundStatusTab\(gameId\)/);
+  assert.match(core,/enteringMobileGame[\s\S]*?BaselineRoundStatusTabs\?\.reset\?\.\(id\)/);
+  assert.match(core,/document\.addEventListener\('fullscreenchange'[\s\S]*?resetRoundStatusTab\(id\|\|''\)/);
   assert.match(core,/window\.BaselineRoundStatusTabs=Object\.freeze/);
   assert.match(nonRealmCss,/immersive Round \/ Tier \/ Skills authority/);
   assert.match(nonRealmCss,/:fullscreen \.round-status-card\[data-round-status-game\] \.round-status-tabs/);
