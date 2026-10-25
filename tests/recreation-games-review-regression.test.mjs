@@ -108,6 +108,12 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(nonRealmCss,/\.round-status-card\{[\s\S]*?align-content:start!important/);
 });
 
+test('extension game routes remain owned by their extension shells during core startup',()=>{
+  assert.match(core,/EXTERNAL_GAME_ROUTE_SLUGS = new Set\(\['block-grid','colour-sort','darts-focused','badminton-focused'\]\)/);
+  assert.match(core,/if\(EXTERNAL_GAME_ROUTE_SLUGS\.has\(routeSlug\)\) return \{ tab:'games', game:'', panel:'', externalGame:routeSlug \}/);
+  assert.match(core,/const restoredState=applyHashState\(\)[\s\S]*?if\(!restoredState\?\.externalGame\) selectGame\(routedGame\)/);
+});
+
 test('Auto-next has one registered terminal-state authority across all supported Recreation games and puzzles',()=>{
   assert.match(core,/AUTO_NEXT_GAMES = \['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'blockgrid', 'coloursort', 'crossnumber'\]/);
   assert.match(core,/trackcoin:1500/);
