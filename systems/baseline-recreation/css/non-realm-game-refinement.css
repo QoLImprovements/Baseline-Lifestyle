@@ -2707,3 +2707,22 @@ body[data-app="recreation"] :is(
     justify-content:stretch!important;
   }
 }
+
+@media(min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions > .action{
+    box-sizing:border-box!important;
+    flex:0 0 44px!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    margin:0!important;
+    padding:0!important;
+    display:inline-grid!important;
+    place-items:center!important;
+  }
+}
