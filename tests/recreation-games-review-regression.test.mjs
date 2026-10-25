@@ -7,6 +7,7 @@ import { LEVELS, hintMove } from '../systems/baseline-recreation/games/colour-so
 const read=relative=>fs.readFileSync(new URL('../'+relative,import.meta.url),'utf8');
 const html=read('systems/baseline-recreation/baseline-recreation.html');
 const core=read('systems/baseline-recreation/js/baseline-recreation-core.js');
+const recreationCss=read('systems/baseline-recreation/css/baseline-recreation.css');
 const nonRealmCss=read('systems/baseline-recreation/css/non-realm-game-refinement.css');
 const music=read('systems/baseline-recreation/js/games-music.js');
 const config=read('systems/baseline-recreation/js/games-core-config.js');
