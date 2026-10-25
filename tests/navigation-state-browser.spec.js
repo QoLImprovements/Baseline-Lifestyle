@@ -74,7 +74,7 @@ test('Puzzles exact non-default jigsaw survives refresh Back and Forward',async(
   expect(new URL(page.url()).pathname).toBe('/baseline-recreation/puzzles/jigsaws/'+id);
   await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',id);
   await expect(page.locator('#weightCoherenceTitle')).toHaveText('Tears Without Witness');
-  await page.reload({waitUntil:'domcontentloaded'});
+  await page.reload({waitUntil:'commit'});
   await page.waitForFunction(()=>document.documentElement.hasAttribute('data-weight-of-coherence-jigsaw'));
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('player');
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getJigsaw())).toBe(id);
@@ -216,10 +216,10 @@ test('Block Grid and Colour Sort nested tabs survive refresh',async({page})=>{
   await page.goto('/baseline-recreation/games/colour-sort',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselineColourSort) && globalThis.BASELINE_RECREATION_CORE_READY===true);
   await expect(page.locator('#colourSortPanel')).toHaveClass(/is-active/);
-  const colourTiers=page.locator('[data-colour-tab="levels"]');
+  const colourTiers=page.locator('[data-colour-tab="tiers"]');
   await expect(colourTiers).toBeVisible();
   await colourTiers.click();
-  await expect(page).toHaveURL(/[?&]view=levels/);
+  await expect(page).toHaveURL(/[?&]view=tiers/);
   await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('#colourSortLevelsCard')).toBeVisible();
 });
