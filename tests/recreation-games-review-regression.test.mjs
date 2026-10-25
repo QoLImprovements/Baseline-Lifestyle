@@ -288,6 +288,7 @@ test('fullscreen right rail mirrors each game windowed tabs and defaults to Game
 test('fullscreen controls preserve the two-sided shared dock and local keypad geometry',()=>{
   assert.match(nonRealmCss,/Fullscreen uses the same positions[\s\S]*?grid-template-columns:44px 44px minmax\(16px,1fr\) 44px 44px!important[\s\S]*?grid-template-rows:44px 44px!important/);
   assert.match(nonRealmCss,/:fullscreen \.game-specific-actions > \.action\{[\s\S]*?flex:0 0 44px!important[\s\S]*?width:44px!important[\s\S]*?height:44px!important/);
+  assert.match(nonRealmCss,/:fullscreen > \.game-play-window > \.game-specific-actions\{[\s\S]*?grid-column:1!important[\s\S]*?grid-row:6!important[\s\S]*?justify-self:end!important/);
   assert.match(nonRealmCss,/\.game-specific-actions \.desktop-keypad-toggle \.game-shell-action__svg\{[\s\S]*?position:absolute!important[\s\S]*?left:50%!important[\s\S]*?top:50%!important[\s\S]*?width:20px!important[\s\S]*?height:20px!important[\s\S]*?margin:0!important[\s\S]*?transform:translate\(-50%,-50%\)!important/);
 });
 
