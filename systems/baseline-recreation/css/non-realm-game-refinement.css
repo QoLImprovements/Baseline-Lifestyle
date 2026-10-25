@@ -1586,6 +1586,7 @@ body[data-app="recreation"] .round-status-card .round-status-metrics strong{
 /* Keypad icon stays optically and geometrically centred in the 42px control. */
 body[data-app="recreation"] .game-shell-action--keyboard,
 body[data-app="recreation"] .desktop-keypad-toggle.game-control-icon{
+  position:relative!important;
   display:grid!important;
   place-items:center!important;
   width:42px!important;
@@ -1596,11 +1597,14 @@ body[data-app="recreation"] .desktop-keypad-toggle.game-control-icon{
   line-height:0!important;
 }
 body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
   display:block!important;
   width:22px!important;
   height:22px!important;
-  margin:auto!important;
-  transform:none!important;
+  margin:0!important;
+  transform:translate(-50%,-50%)!important;
 }
 
 /* The 80% play column is a play field, not unused dark background. */
@@ -2433,11 +2437,14 @@ body[data-app="recreation"] .fullscreen-window-empty{
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen .desktop-keypad-toggle .game-shell-action__svg{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
     display:block!important;
     width:20px!important;
     height:20px!important;
     margin:0!important;
-    transform:none!important;
+    transform:translate(-50%,-50%)!important;
   }
 }
 
