@@ -875,6 +875,15 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   function currentPanelIdForGame(gameId){ const config = getGamePanelConfig(gameId); return config ? normalisePanelId(gameId, config.get()) : ''; }
 
   function recreationBaseRoute(){ return '/baseline-recreation'; }
+  function externalGameRouteSlugFromLocation(){
+    try{
+      const path=String(window.location.pathname||'').toLowerCase().replace(/\/+$/,'');
+      const prefix='/baseline-recreation/games/';
+      if(path.indexOf(prefix)!==0) return '';
+      const routeSlug=String(path.slice(prefix.length).split('/')[0]||'').trim();
+      return EXTERNAL_GAME_ROUTE_SLUGS.has(routeSlug) ? routeSlug : '';
+    }catch(_error){ return ''; }
+  }
   function recreationCleanRouteForState(){
     const base = recreationBaseRoute();
     let route = base + '/system';
@@ -882,7 +891,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     let currentParams = null;
     try{ currentParams = new URLSearchParams(window.location.search || ''); }catch(_error){ currentParams = new URLSearchParams(); }
 
-    const externalGameExtension = String(document.documentElement.getAttribute('data-game-extension-open') || '').trim();
+    const externalGameExtension = String(document.documentElement.getAttribute('data-game-extension-open') || '').trim() || externalGameRouteSlugFromLocation();
     const dartsFocusedOpen = document.documentElement.hasAttribute('data-darts-focused-open');
     const badmintonFocusedOpen = document.documentElement.hasAttribute('data-badminton-focused-open');
 
