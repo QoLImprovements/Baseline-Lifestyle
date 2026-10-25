@@ -1097,3 +1097,54 @@ html.is-dragging-crossnumber-tile body{
     opacity:.18!important;
   }
 }
+
+
+/* 2026-10-25 Cross Number adopts the shared two-sided common-control dock. */
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-actions.game-common-actions{
+  display:grid!important;
+  grid-template-columns:42px 42px minmax(16px,1fr) 42px 42px!important;
+  grid-template-rows:42px 42px!important;
+  align-items:center!important;
+  justify-content:stretch!important;
+  column-gap:8px!important;
+  row-gap:8px!important;
+  width:100%!important;
+  min-height:92px!important;
+  height:auto!important;
+  margin:0!important;
+  overflow:visible!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-actions.game-common-actions > .start-new-game-toggle{
+  grid-column:1!important;grid-row:1 / 3!important;align-self:center!important;justify-self:start!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-actions.game-common-actions > .auto-next-toggle{
+  grid-column:2!important;grid-row:1 / 3!important;align-self:center!important;justify-self:start!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-actions.game-common-actions > .games-settings-trigger{
+  grid-column:4 / 6!important;grid-row:1!important;align-self:center!important;justify-self:center!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-actions.game-common-actions > .games-music-quick-toggle{
+  grid-column:4!important;grid-row:2!important;align-self:center!important;justify-self:end!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-actions.game-common-actions > .game-fullscreen-toggle{
+  grid-column:5!important;grid-row:2!important;align-self:center!important;justify-self:end!important;
+}
+body[data-app="recreation"] #crossnumberGamePanel .crossnumber-actions.game-common-actions > .action{
+  box-sizing:border-box!important;
+  flex:none!important;
+  width:42px!important;min-width:42px!important;max-width:42px!important;
+  height:42px!important;min-height:42px!important;max-height:42px!important;
+  margin:0!important;padding:0!important;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-actions.game-common-actions{
+    display:grid!important;
+    grid-template-columns:44px 44px minmax(16px,1fr) 44px 44px!important;
+    grid-template-rows:44px 44px!important;
+    justify-content:stretch!important;
+  }
+  body[data-app="recreation"] #crossnumberGamePanel:fullscreen > .crossnumber-actions.game-common-actions > .action{
+    width:44px!important;min-width:44px!important;max-width:44px!important;
+    height:44px!important;min-height:44px!important;max-height:44px!important;
+  }
+}
