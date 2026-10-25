@@ -157,6 +157,7 @@ test('Stage 1 navigation, artwork, SVG controls, cooldown and seeded progress re
   await page.locator('#realmExplorationScreen [data-jrpg-action="return-basecamp"]').click();
   await expect(page.locator('#realmBasecampScreen')).toBeVisible();
   await page.locator('#realmCampNinjaBtn').click();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost?.sceneRouter?.getCurrentSceneId?.())).toBe('ninja-training');
 
   const shuriken = page.locator('#ninjaShurikenBtn');
   await expect(shuriken).toBeEnabled();
