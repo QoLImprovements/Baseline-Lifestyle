@@ -205,7 +205,7 @@ html.is-dragging-colour-sort-bottle,html.is-dragging-colour-sort-bottle body{ove
     position:relative!important;
     display:grid!important;
     grid-template-columns:minmax(0,4fr) var(--colour-fs-side)!important;
-    grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto auto!important;
+    grid-template-rows:auto auto auto auto auto auto minmax(0,1fr) auto auto!important;
     gap:7px 12px!important;
     width:100vw!important;
     height:100dvh!important;
@@ -247,7 +247,7 @@ html.is-dragging-colour-sort-bottle,html.is-dragging-colour-sort-bottle body{ove
     margin-right:8px!important;
     box-sizing:border-box!important;
   }
-  #colourSortPanel #colourSortGameCard:fullscreen > .colour-sort-active-header{grid-row:1!important;padding-top:6px!important}
+  #colourSortPanel #colourSortGameCard:fullscreen > .colour-sort-active-header{grid-row:2!important;padding-top:6px!important}
   #colourSortPanel #colourSortGameCard:fullscreen > .colour-sort-active-header .stat-pills{
     display:grid!important;
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
@@ -258,7 +258,7 @@ html.is-dragging-colour-sort-bottle,html.is-dragging-colour-sort-bottle body{ove
     min-width:0!important;padding:6px 7px!important
   }
   #colourSortPanel #colourSortGameCard:fullscreen > .game-live-xp{
-    grid-row:2!important;
+    grid-row:3!important;
     display:grid!important;
     grid-template-columns:1fr auto!important;
     gap:5px 7px!important;
@@ -268,32 +268,69 @@ html.is-dragging-colour-sort-bottle,html.is-dragging-colour-sort-bottle body{ove
   }
   #colourSortPanel #colourSortGameCard:fullscreen > .game-live-xp .game-live-xp__bar{grid-column:1/-1!important}
   #colourSortPanel #colourSortGameCard:fullscreen > .round-status-card{
-    grid-row:3!important;
+    grid-row:4!important;
     min-height:0!important;
     max-height:100%!important;
     overflow:auto!important;
     padding:9px!important;
     background:rgba(var(--recreation-burgundy-rgb),.34)!important;
   }
-  #colourSortPanel #colourSortGameCard:fullscreen > .colour-sort-progress-head{grid-row:4!important;padding:6px 0 0!important}
-  #colourSortPanel #colourSortGameCard:fullscreen > .colour-sort-progress-meter{grid-row:5!important;margin-top:-4px!important}
+  #colourSortPanel #colourSortGameCard:fullscreen > .colour-sort-progress-head{grid-row:5!important;padding:6px 0 0!important}
+  #colourSortPanel #colourSortGameCard:fullscreen > .colour-sort-progress-meter{grid-row:6!important;margin-top:-4px!important}
   #colourSortPanel #colourSortGameCard:fullscreen > .colour-sort-mechanic-note{
-    grid-row:6!important;
+    grid-row:7!important;
     padding:7px!important;
     overflow:auto!important;
   }
   #colourSortPanel #colourSortGameCard:fullscreen > .game-specific-actions{
-    grid-row:7!important;
+    grid-row:8!important;
     justify-content:flex-start!important;
     padding-top:5px!important;
     align-self:end!important;
   }
   #colourSortPanel #colourSortGameCard:fullscreen > .game-window-actions{
-    grid-row:8!important;
-    justify-content:flex-start!important;
+    grid-row:9!important;
+    justify-content:center!important;
     padding:8px 0 2px!important;
     border-top:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
     align-self:end!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen > .game-fullscreen-window-tabs > .game-fullscreen-window-tabbar{
+    grid-column:2!important;
+    grid-row:1!important;
+    z-index:3!important;
+    margin:0 8px!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen > .game-fullscreen-window-tabs > .game-fullscreen-window-pane{
+    grid-column:2!important;
+    grid-row:2 / 9!important;
+    z-index:3!important;
+    margin:0 8px!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen:not([data-fullscreen-window-view="game"]) > :is(
+    .colour-sort-active-header,.game-live-xp,.round-status-card,
+    .colour-sort-progress-head,.colour-sort-progress-meter,.colour-sort-mechanic-note,
+    .game-specific-actions
+  ){
+    display:none!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen > .game-window-actions{
+    align-items:center!important;
+    gap:10px!important;
+  }
+  #colourSortPanel #colourSortGameCard:fullscreen .game-window-actions > :is(.game-control-icon,.game-shell-action--icon){
+    box-sizing:border-box!important;
+    flex:0 0 44px!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    margin:0!important;
+    padding:0!important;
+    display:inline-grid!important;
+    place-items:center!important;
   }
   #colourSortPanel #colourSortGameCard:fullscreen > .colour-sort-board{
     grid-column:1!important;
