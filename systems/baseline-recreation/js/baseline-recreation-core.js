@@ -561,6 +561,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
     ensureGamePlayContract();
     const root = mobileGameRootElement(id);
     if(!root) return;
+    const enteringMobileGame=!root.classList.contains('is-mobile-game-root');
     qsa('.is-mobile-game-root').forEach(function(el){
       if(el !== root){
         el.classList.remove('is-mobile-game-root');
@@ -571,6 +572,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
     document.body.setAttribute('data-mobile-game', id);
     root.classList.add('is-mobile-game-root');
     root.setAttribute('data-mobile-game-root', id);
+    if(enteringMobileGame) window.BaselineRoundStatusTabs?.reset?.(id);
     if(id !== 'ninja' && !q(':scope > .mobile-game-exit', root)){
       root.insertAdjacentHTML('afterbegin', '<button class="mobile-game-exit" data-exit-mobile-game-mode type="button" aria-label="Back to Games Overview">Back To Games Overview</button>');
     }
@@ -1133,9 +1135,17 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
   function enhanceCoreRoundStatusCard(gameId,statusEl){
     enhanceRoundStatusCard(gameId,statusEl);
   }
+  function resetRoundStatusTab(gameId){
+    const id=normaliseGameId(gameId)||String(gameId||'');
+    if(id) roundStatusTabState[id]='round';
+    qsa('.round-status-card[data-round-status-game]').forEach(function(card){
+      if(!id||card.getAttribute('data-round-status-game')===id) syncRoundStatusTabs(card,'round');
+    });
+  }
   window.BaselineRoundStatusTabs=Object.freeze({
     enhance:enhanceRoundStatusCard,
-    previousRoundHtml:previousRoundSectionHtml
+    previousRoundHtml:previousRoundSectionHtml,
+    reset:resetRoundStatusTab
   });
   function shuffle(list){
     const copy = list.slice();
@@ -4153,6 +4163,10 @@ function toggleGameFullscreen(gameId){
       const button=event.target instanceof Element ? event.target.closest('[data-tooltip]') : null;
       if(button) alignGameTooltip(button);
     },true);
+    document.addEventListener('fullscreenchange',function(){
+      const id=activeGameIdForHotkeys();
+      resetRoundStatusTab(id||'');
+    });
     // Pointer activation owns New Game so an already-focused game surface can
     // never consume the first press. The following click is suppressed; a
     // keyboard-generated click still works normally.
