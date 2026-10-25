@@ -922,6 +922,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(Math.abs(cx(wordSettingsBox)-((cx(wordMusicBox)+cx(wordFullBox))/2))).toBeLessThanOrEqual(2);
   expect(cx(wordStartBox)).toBeLessThan(wordDockBox.x+wordDockBox.width/2);
   expect(cx(wordMusicBox)).toBeGreaterThan(wordDockBox.x+wordDockBox.width/2);
+  expect(wordKeyboardBox.x+wordKeyboardBox.width).toBeLessThan(wordDockBox.x);
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
 
