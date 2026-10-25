@@ -272,7 +272,10 @@ function statusHtml() {
       : (selectedPiece >= 0 ? `Piece ${selectedPiece + 1} selected. ` : '') + (statusMessage || 'Keep space available for the next tray.');
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
-    + '<div class="round-status-previous">Previous Run - '+number(profile.lastRunScore)+' points</div>'
+    + '<section class="round-status-previous" aria-label="Previous Round"><div class="round-status-previous-heading">Previous Round</div><div class="round-status-previous-grid">'
+    + '<div><span>Exp</span><strong>'+number(profile.lastRoundXp)+' XP</strong></div>'
+    + '<div><span>Previous Score</span><strong>'+number(profile.lastRunScore)+' points</strong></div>'
+    + '</div></section>'
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(currentMode().name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
@@ -356,6 +359,14 @@ function renderGame() {
     </div>`;
   resetBoardMotion();
   syncAutoNextControl();
+  const statusCard=root.querySelector('.round-status-card');
+  const roundTabs=globalThis.BaselineRoundStatusTabs;
+  if(statusCard&&roundTabs?.enhance){
+    roundTabs.enhance(statusCard,APP,{
+      tierHtml:document.getElementById('blockGridModesCard')?.innerHTML||'',
+      skillsHtml:document.getElementById('blockGridSkillsCard')?.innerHTML||''
+    });
+  }
 }
 
 function renderModes() {
