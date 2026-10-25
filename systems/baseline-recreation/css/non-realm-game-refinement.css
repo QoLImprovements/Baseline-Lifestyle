@@ -1326,7 +1326,7 @@ body[data-app="recreation"] :is(
     box-sizing:border-box!important;
     display:grid!important;
     grid-template-columns:minmax(0,4fr) var(--recreation-fs-side)!important;
-    grid-template-rows:auto auto minmax(0,1fr) auto auto!important;
+    grid-template-rows:auto auto auto minmax(0,1fr) auto auto!important;
     gap:8px 12px!important;
     width:100vw!important;
     height:100dvh!important;
@@ -1383,7 +1383,7 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-toolbar{
-    grid-row:1!important;
+    grid-row:2!important;
     padding:10px!important;
     border:0!important;
     background:transparent!important;
@@ -1407,7 +1407,7 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-live-xp{
-    grid-row:2!important;
+    grid-row:3!important;
     display:grid!important;
     grid-template-columns:1fr auto!important;
     gap:5px 7px!important;
@@ -1425,7 +1425,7 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > .round-status-card{
-    grid-row:3!important;
+    grid-row:4!important;
     min-height:0!important;
     max-height:100%!important;
     overflow:auto!important;
@@ -1438,7 +1438,7 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > .game-specific-actions{
-    grid-row:4!important;
+    grid-row:5!important;
     justify-content:flex-start!important;
     padding:0 2px!important;
     align-self:end!important;
@@ -1446,8 +1446,8 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > .game-window-actions{
-    grid-row:5!important;
-    justify-content:flex-start!important;
+    grid-row:6!important;
+    justify-content:center!important;
     padding:8px 0 2px!important;
     margin:0 8px!important;
     border-top:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
@@ -2309,89 +2309,135 @@ body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trac
 }
 
 
-/* 2026-10-25 Round / Tier / Skills authority.
-   The Round Status card remains the single in-game information owner. Its
-   Round / Tier / Skills tabs are visible in windowed, fullscreen and mobile
-   play so the same information architecture is available everywhere. */
-body[data-app="recreation"] .round-status-tabs{
-  display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:6px!important;
-  width:100%!important;
-  margin:0 0 10px!important;
+/* 2026-10-25 fullscreen window-tab authority.
+   Fullscreen mirrors the same windowed sections instead of inventing a second
+   navigation model. Game is the default; Skills, Tiers and Progress occupy the
+   existing right-hand information rail while the game surface stays visible. */
+body[data-app="recreation"] .game-fullscreen-window-tabs{
+  display:contents!important;
 }
-body[data-app="recreation"] .round-status-tabs>button{
+body[data-app="recreation"] .game-fullscreen-window-tabbar{
+  display:grid!important;
+  grid-template-columns:repeat(var(--fullscreen-tab-count,4),minmax(0,1fr))!important;
+  gap:5px!important;
   min-width:0!important;
-  min-height:38px!important;
-  padding:7px 8px!important;
-  border:1px solid rgba(var(--recreation-copper-light-rgb),.22)!important;
+}
+body[data-app="recreation"] .game-fullscreen-window-tabbar>button{
+  appearance:none!important;
+  min-width:0!important;
+  min-height:36px!important;
+  padding:6px 5px!important;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.24)!important;
   border-radius:10px!important;
-  background:rgba(var(--recreation-copper-deep-rgb),.12)!important;
+  background:rgba(var(--recreation-copper-deep-rgb),.14)!important;
   color:var(--games-muted)!important;
   font-family:inherit!important;
-  font-size:13px!important;
+  font-size:12px!important;
   font-weight:900!important;
   line-height:1.1!important;
   cursor:pointer!important;
 }
-body[data-app="recreation"] .round-status-tabs>button.is-active{
-  background:var(--games-accent)!important;
+body[data-app="recreation"] .game-fullscreen-window-tabbar>button.is-active{
+  border-color:rgba(var(--recreation-copper-light-rgb),.58)!important;
+  background:linear-gradient(180deg,rgba(var(--recreation-copper-light-rgb),.28),rgba(var(--recreation-rose-rgb),.42))!important;
   color:var(--games-ink)!important;
-  border-color:rgba(var(--recreation-copper-light-rgb),.52)!important;
 }
-body[data-app="recreation"] .round-status-pane{
+body[data-app="recreation"] .game-fullscreen-window-pane[hidden]{
+  display:none!important;
+}
+body[data-app="recreation"] .game-fullscreen-window-pane{
   min-width:0!important;
-  width:100%!important;
+  min-height:0!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  scrollbar-width:thin!important;
+  padding:4px 2px 8px!important;
+  align-self:stretch!important;
 }
-body[data-app="recreation"] .round-status-pane[hidden]{
-  display:none!important;
-}
-body[data-app="recreation"] .round-status-pane--tier,
-body[data-app="recreation"] .round-status-pane--skills{
-  display:grid!important;
-  align-content:start!important;
-  gap:8px!important;
-}
-body[data-app="recreation"] .round-status-pane--tier[hidden],
-body[data-app="recreation"] .round-status-pane--skills[hidden]{
-  display:none!important;
-}
-body[data-app="recreation"] .round-status-pane :is(
-  .board-tier-list,.tier-list,.block-grid-mode-list,.colour-sort-tier-list,
-  [data-crossnumber-tiers],.grid-two,.block-grid-skill-unlock-list,
-  [data-crossnumber-skills]
+body[data-app="recreation"] .game-fullscreen-window-pane :is(
+  .board-tier-list,.tier-list,.grid-two,.trackcoin-stats,.game-progress-stats,
+  .block-grid-mode-list,.block-grid-skill-unlock-list,.colour-sort-tier-list,
+  .crossnumber-tier-list,.crossnumber-skill-grid,.crossnumber-progress-stats
 ){
   min-width:0!important;
   max-width:100%!important;
 }
-body[data-app="recreation"] .round-status-pane :is(
+body[data-app="recreation"] .game-fullscreen-window-pane :is(
   .tier-btn,.block-grid-mode,.colour-sort-tier-choice,.crossnumber-tier-button
 ){
   width:100%!important;
   max-width:100%!important;
   box-sizing:border-box!important;
 }
-body[data-app="recreation"] .round-status-empty-pane{
+body[data-app="recreation"] .fullscreen-window-empty{
   padding:12px!important;
   border:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
   border-radius:10px!important;
   color:var(--games-muted)!important;
-  font-size:13px!important;
-  line-height:1.45!important;
 }
-body[data-app="recreation"] :fullscreen .round-status-card[data-round-status-game],
-body[data-app="recreation"] .is-mobile-game-root .round-status-card[data-round-status-game]{
-  overflow:hidden!important;
+@media(min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-fullscreen-window-tabs > .game-fullscreen-window-tabbar{
+    grid-column:2!important;
+    grid-row:1!important;
+    z-index:3!important;
+    margin:0 8px!important;
+    align-self:start!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-fullscreen-window-tabs > .game-fullscreen-window-pane{
+    grid-column:2!important;
+    grid-row:2 / 6!important;
+    z-index:3!important;
+    margin:0 8px!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen:not([data-fullscreen-window-view="game"]) > :is(.game-toolbar,.game-live-xp){
+    display:none!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen:not([data-fullscreen-window-view="game"]) > .game-play-window > :is(.round-status-card,.game-specific-actions){
+    display:none!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-window-actions.game-common-actions{
+    display:flex!important;
+    justify-content:center!important;
+    align-items:center!important;
+    gap:10px!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen .game-window-actions.game-common-actions > :is(
+    .game-control-icon,.game-shell-action--icon,.desktop-keypad-toggle
+  ){
+    box-sizing:border-box!important;
+    flex:0 0 44px!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    margin:0!important;
+    padding:0!important;
+    display:inline-grid!important;
+    place-items:center!important;
+    line-height:1!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen .desktop-keypad-toggle .game-shell-action__svg{
+    display:block!important;
+    width:20px!important;
+    height:20px!important;
+    margin:0!important;
+    transform:none!important;
+  }
 }
-body[data-app="recreation"] :fullscreen .round-status-card[data-round-status-game] .round-status-pane,
-body[data-app="recreation"] .is-mobile-game-root .round-status-card[data-round-status-game] .round-status-pane{
-  max-height:min(54dvh,520px)!important;
-  overflow:auto!important;
-  overscroll-behavior:contain!important;
-  scrollbar-width:thin!important;
-}
-body[data-app="recreation"] :fullscreen .round-status-card[data-round-status-game] .round-status-pane[data-round-status-pane="round"],
-body[data-app="recreation"] .is-mobile-game-root .round-status-card[data-round-status-game] .round-status-pane[data-round-status-pane="round"]{
-  overflow:visible!important;
-  max-height:none!important;
-}
+
