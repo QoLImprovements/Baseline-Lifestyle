@@ -20,7 +20,7 @@ import {
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
+} from '../../../js/game-extension-support.mjs?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1';
 
 const BUILD = 'COLOUR_SORT_FULLSCREEN_WINDOW_TABS_20261025_1';
 const APP = 'coloursort';
