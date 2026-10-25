@@ -1124,6 +1124,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
     const available=config.tabs.map(function(tab){return tab[0];});
     const next=available.includes(view)?view:'game';
     root.setAttribute('data-fullscreen-window-view',next);
+    root.style.setProperty('--fullscreen-tab-count',String(Math.max(1,config.tabs.length)));
     root.querySelectorAll(':scope > .game-fullscreen-window-tabs [data-fullscreen-window-tab]').forEach(function(button){
       const selected=button.getAttribute('data-fullscreen-window-tab')===next;
       button.classList.toggle('is-active',selected);
