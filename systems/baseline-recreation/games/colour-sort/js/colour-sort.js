@@ -285,11 +285,11 @@ function statusHtml() {
       : (mechanics.coverBuried?'Covered layers reveal only when they reach the top.':'Only the contiguous exposed colour can pour.');
     outcome=(statusMessage||'Select a bottle, then a destination.')+' '+mechanicText;
   }
+  const previous=globalThis.BaselineRoundStatusTabs?.previousRoundHtml?.(profile)
+    || '<section class="round-status-previous"><div class="round-status-previous-heading">Previous Round</div><div class="round-status-previous-grid"><div><span>Exp</span><strong>'+number(profile.lastRoundXp)+' XP</strong></div></div></section>';
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
-    + '<section class="round-status-previous" aria-label="Previous Round"><div class="round-status-previous-heading">Previous Round</div><div class="round-status-previous-grid">'
-    + '<div><span>Exp</span><strong>'+number(profile.lastRoundXp)+' XP</strong></div>'
-    + '</div></section>'
+    + previous
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+number(profile.cleanWinStreak)+'</strong></div>'
