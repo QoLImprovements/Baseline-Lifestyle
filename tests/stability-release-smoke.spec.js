@@ -743,7 +743,9 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   }
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-resolved/);
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-phase-review/);
-  await expect(trackStatus).toContainText('Previous round -');
+  await expect(trackStatus.locator('.round-status-previous-heading')).toHaveText('Previous Round');
+  await expect(trackStatus.locator('.round-status-previous-grid')).toContainText('Exp');
+  await expect(trackStatus.locator('.round-status-previous-grid')).toContainText(/\d+ XP/);
   expect(recreationPageErrors).toEqual([]);
 
   // Fullscreen geometry: the cup arena must remain the dominant LEFT surface
@@ -753,6 +755,21 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await expect(trackFullscreen).toBeVisible();
   await trackFullscreen.click();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='trackCoinGamePanel');
+
+  // Fullscreen must expose the same information architecture as windowed mode.
+  const trackFsTabs=page.locator('#trackCoinGamePanel > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
+  await expect(trackFsTabs).toBeVisible();
+  await expect(trackFsTabs.getByRole('tab')).toHaveCount(4);
+  await expect(trackFsTabs.getByRole('tab').allTextContents()).resolves.toEqual(['Game','Skills','Tiers','Progress']);
+  await expect(trackFsTabs.getByRole('tab',{name:'Game',exact:true})).toHaveClass(/is-active/);
+  await trackFsTabs.getByRole('tab',{name:'Skills',exact:true}).click();
+  await expect(page.locator('#trackCoinGamePanel > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Track the Coin Skill Tree');
+  await trackFsTabs.getByRole('tab',{name:'Tiers',exact:true}).click();
+  await expect(page.locator('#trackCoinGamePanel > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Tiers');
+  await trackFsTabs.getByRole('tab',{name:'Progress',exact:true}).click();
+  await expect(page.locator('#trackCoinGamePanel > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Progress');
+  await trackFsTabs.getByRole('tab',{name:'Game',exact:true}).click();
+  await expect(trackStatus).toBeVisible();
   const [trackBoardBox,trackStatusBox,trackCardBox]=await Promise.all([
     page.locator('#trackCoinBoard').boundingBox(),
     trackStatus.boundingBox(),
@@ -869,6 +886,49 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
   expect(recreationPageErrors).toEqual([]);
+});
+
+test('Detect The Word fullscreen common controls keep the keypad icon geometrically centred', async ({ page }) => {
+  const errors=[];
+  page.on('pageerror',(error)=>errors.push(String(error&&error.stack||error&&error.message||error)));
+  await page.goto('/baseline-recreation/games/detect-the-word', { waitUntil:'domcontentloaded' });
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
+  await page.setViewportSize({width:1280,height:760});
+
+  const full=page.locator('#wordGameCard [data-game-fullscreen="detectword"]');
+  await expect(full).toBeVisible();
+  await full.click();
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='wordGameCard');
+
+  const tabs=page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
+  await expect(tabs).toBeVisible();
+  await expect(tabs.getByRole('tab').allTextContents()).resolves.toEqual(['Game','Skills','Tiers','Progress']);
+  await expect(tabs.getByRole('tab',{name:'Game',exact:true})).toHaveClass(/is-active/);
+
+  const keyboard=page.locator('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"]');
+  const start=page.locator('#wordGameCard .game-window-actions #newWordRoundBtn');
+  const autoNext=page.locator('#wordGameCard .game-window-actions [data-auto-next-toggle="detectword"]');
+  const keyboardIcon=keyboard.locator('.game-shell-action__svg');
+  await expect(keyboard).toBeVisible();
+  await expect(start).toBeVisible();
+  await expect(autoNext).toBeVisible();
+
+  const [keyboardBox,startBox,autoBox,iconBox]=await Promise.all([
+    keyboard.boundingBox(),start.boundingBox(),autoNext.boundingBox(),keyboardIcon.boundingBox()
+  ]);
+  for(const box of [keyboardBox,startBox,autoBox,iconBox]) expect(box).not.toBeNull();
+  expect(Math.abs(keyboardBox.width-44)).toBeLessThanOrEqual(1);
+  expect(Math.abs(keyboardBox.height-44)).toBeLessThanOrEqual(1);
+  const keyboardCx=keyboardBox.x+keyboardBox.width/2;
+  const keyboardCy=keyboardBox.y+keyboardBox.height/2;
+  expect(Math.abs(keyboardCy-(startBox.y+startBox.height/2))).toBeLessThanOrEqual(1);
+  expect(Math.abs(keyboardCy-(autoBox.y+autoBox.height/2))).toBeLessThanOrEqual(1);
+  expect(Math.abs(keyboardCx-(iconBox.x+iconBox.width/2))).toBeLessThanOrEqual(1);
+  expect(Math.abs(keyboardCy-(iconBox.y+iconBox.height/2))).toBeLessThanOrEqual(1);
+
+  await page.evaluate(()=>document.exitFullscreen());
+  await page.waitForFunction(()=>document.fullscreenElement===null);
+  expect(errors).toEqual([]);
 });
 
 test('Badminton loads shared server state into the normal session interface', async ({ page }) => {
