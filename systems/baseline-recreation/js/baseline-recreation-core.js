@@ -1043,14 +1043,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
     const pct = cleanWinBonusPct(streak);
     return pct ? ' · Clean Streak Bonus +' + pct + '%' : '';
   }
-  const roundStatusTabState=Object.create(null);
-  const ROUND_STATUS_TAB_SOURCES=Object.freeze({
-    pairs:{tier:'#pairsTierSelectList',skills:'#pairsSkillTreeGrid',skillSummary:'#pairsSkillSummary'},
-    detectword:{tier:'#wordTierSelectList',skills:'#wordSkillTreeGrid',skillSummary:'#wordSkillSummary'},
-    make24:{tier:'#make24TierSelectList',skills:'#make24SkillTreeGrid',skillSummary:'#make24SkillSummary'},
-    trackcoin:{tier:'#trackCoinTierSelectList',skills:'#trackCoinSkillTreeGrid',skillSummary:'#trackCoinSkillSummary'},
-    ruleshift:{tier:'#ruleShiftTierSelectList',skills:'#ruleShiftSkillTreeGrid',skillSummary:'#ruleShiftSkillSummary'}
-  });
   function previousRoundSectionHtml(profile,extraRows){
     const previousXp=Math.max(0,Math.round(Number(profile&&profile.lastRoundXp||0)));
     const rows=[['Exp',previousXp+' XP']].concat(Array.isArray(extraRows)?extraRows:[]);
@@ -1087,65 +1079,99 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
       + '<div><span>Clean Streak Bonus</span><strong>'+cleanWinBonusPct(cleanStreak)+'%</strong></div>'
       + '</div>';
   }
-  function roundStatusSourceHtml(selector){
-    const node=selector?q(selector):null;
-    return node ? node.innerHTML : '';
+
+  const FULLSCREEN_WINDOW_TABS=Object.freeze({
+    pairs:{root:'pairsGameCard',tabs:[['game','Game'],['skills','Skills','pairsSkillCard'],['tiers','Tiers','pairsTierCard'],['progress','Progress','pairsProgressCard']]},
+    detectword:{root:'wordGameCard',tabs:[['game','Game'],['skills','Skills','wordSkillCard'],['tiers','Tiers','wordTierCard'],['progress','Progress','wordProgressCard']]},
+    make24:{root:'make24GameCard',tabs:[['game','Game'],['skills','Skills','make24SkillCard'],['tiers','Tiers','make24TierCard'],['progress','Progress','make24ProgressCard']]},
+    trackcoin:{root:'trackCoinGamePanel',tabs:[['game','Game'],['skills','Skills','trackCoinSkillPanel'],['tiers','Tiers','trackCoinTierPanel'],['progress','Progress','trackCoinProgressPanel']]},
+    ruleshift:{root:'ruleShiftGameCard',tabs:[['game','Game'],['skills','Skills','ruleShiftSkillCard'],['tiers','Tiers','ruleShiftTierCard'],['progress','Progress','ruleShiftProgressCard']]},
+    blockgrid:{root:'blockGridGameCard',tabs:[['game','Game'],['skills','Skills','blockGridSkillsCard'],['tiers','Tiers','blockGridModesCard'],['progress','Progress','blockGridProgressCard']]},
+    coloursort:{root:'colourSortGameCard',tabs:[['game','Game'],['tiers','Tiers','colourSortLevelsCard'],['progress','Progress','colourSortProgressCard']]},
+    crossnumber:{root:'crossnumberGamePanel',tabs:[['game','Game'],['skills','Skills','crossnumberSkillPanel'],['tiers','Tiers','crossnumberTierPanel'],['progress','Progress','crossnumberProgressPanel']]}
+  });
+  function fullscreenWindowConfig(gameId){
+    const id=normaliseGameId(gameId)||String(gameId||'').trim().toLowerCase();
+    return {id:id,config:FULLSCREEN_WINDOW_TABS[id]||null};
   }
-  function syncRoundStatusTabs(card,activeTab){
-    if(!card) return;
-    const active=['round','tier','skills'].includes(activeTab)?activeTab:'round';
-    card.querySelectorAll('[data-round-status-tab]').forEach(function(button){
-      const selected=button.getAttribute('data-round-status-tab')===active;
+  function cloneFullscreenPanelHtml(sourceId){
+    const source=document.getElementById(sourceId);
+    if(!source) return '<div class="fullscreen-window-empty">This section is not available.</div>';
+    const clone=source.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.removeAttribute('hidden');
+    clone.querySelectorAll('[id]').forEach(function(node){node.removeAttribute('id');});
+    clone.querySelectorAll('[aria-controls],[aria-labelledby],[for]').forEach(function(node){
+      node.removeAttribute('aria-controls');
+      node.removeAttribute('aria-labelledby');
+      node.removeAttribute('for');
+    });
+    return clone.innerHTML;
+  }
+  function fullscreenGameIdFromElement(element){
+    if(!element) return '';
+    const found=Object.entries(FULLSCREEN_WINDOW_TABS).find(function(entry){
+      return entry[1].root===element.id;
+    });
+    return found?found[0]:'';
+  }
+  function setFullscreenWindowView(gameId,view){
+    const pair=fullscreenWindowConfig(gameId);
+    const id=pair.id,config=pair.config;
+    if(!config) return;
+    const root=document.getElementById(config.root);
+    if(!root||document.fullscreenElement!==root) return;
+    const available=config.tabs.map(function(tab){return tab[0];});
+    const next=available.includes(view)?view:'game';
+    root.setAttribute('data-fullscreen-window-view',next);
+    root.querySelectorAll(':scope > .game-fullscreen-window-tabs [data-fullscreen-window-tab]').forEach(function(button){
+      const selected=button.getAttribute('data-fullscreen-window-tab')===next;
       button.classList.toggle('is-active',selected);
       button.setAttribute('aria-selected',String(selected));
       button.tabIndex=selected?0:-1;
     });
-    card.querySelectorAll('[data-round-status-pane]').forEach(function(pane){
-      const selected=pane.getAttribute('data-round-status-pane')===active;
-      pane.hidden=!selected;
-      pane.classList.toggle('is-active',selected);
+    const pane=root.querySelector(':scope > .game-fullscreen-window-tabs > .game-fullscreen-window-pane');
+    if(!pane) return;
+    if(next==='game'){
+      pane.hidden=true;
+      pane.innerHTML='';
+      return;
+    }
+    const entry=config.tabs.find(function(tab){return tab[0]===next;});
+    pane.hidden=false;
+    pane.innerHTML=entry&&entry[2]?cloneFullscreenPanelHtml(entry[2]):'<div class="fullscreen-window-empty">This section is not available.</div>';
+  }
+  function syncFullscreenWindowTabs(preferredGameId){
+    const fullscreen=document.fullscreenElement;
+    qsa('.game-fullscreen-window-tabs').forEach(function(shell){
+      if(!fullscreen||!fullscreen.contains(shell)) shell.remove();
     });
-  }
-  function enhanceRoundStatusCard(gameId,statusEl,options){
-    if(!statusEl) return;
-    const id=normaliseGameId(gameId)||String(gameId||'');
-    if(!id) return;
-    const source=ROUND_STATUS_TAB_SOURCES[id]||{};
-    const opts=options||{};
-    const currentRound=statusEl.querySelector(':scope > [data-round-status-pane="round"]');
-    const roundHtml=currentRound?currentRound.innerHTML:statusEl.innerHTML;
-    const tierHtml=Object.prototype.hasOwnProperty.call(opts,'tierHtml')?String(opts.tierHtml||''):roundStatusSourceHtml(source.tier);
-    const skillCore=Object.prototype.hasOwnProperty.call(opts,'skillsHtml')?String(opts.skillsHtml||''):roundStatusSourceHtml(source.skills);
-    const skillSummary=Object.prototype.hasOwnProperty.call(opts,'skillSummaryHtml')?String(opts.skillSummaryHtml||''):roundStatusSourceHtml(source.skillSummary);
-    const skillsHtml=(skillCore||skillSummary)?(skillCore+skillSummary):'<div class="round-status-empty-pane">No skill tree is attached to this game.</div>';
-    const safeTier=tierHtml||'<div class="round-status-empty-pane">No tier controls are available for this game.</div>';
-    const immersive=!!(document.fullscreenElement&&document.fullscreenElement.contains(statusEl))||!!statusEl.closest('.is-mobile-game-root');
-    const active=immersive?(roundStatusTabState[id]||'round'):'round';
-    statusEl.setAttribute('data-round-status-game',id);
-    statusEl.innerHTML='<div class="round-status-tabs" role="tablist" aria-label="Game status views">'
-      + '<button type="button" role="tab" data-round-status-tab="round">Round</button>'
-      + '<button type="button" role="tab" data-round-status-tab="tier">Tier</button>'
-      + '<button type="button" role="tab" data-round-status-tab="skills">Skills</button>'
-      + '</div>'
-      + '<div class="round-status-pane" data-round-status-pane="round">'+roundHtml+'</div>'
-      + '<div class="round-status-pane round-status-pane--tier" data-round-status-pane="tier">'+safeTier+'</div>'
-      + '<div class="round-status-pane round-status-pane--skills" data-round-status-pane="skills">'+skillsHtml+'</div>';
-    syncRoundStatusTabs(statusEl,active);
-  }
-  function enhanceCoreRoundStatusCard(gameId,statusEl){
-    enhanceRoundStatusCard(gameId,statusEl);
-  }
-  function resetRoundStatusTab(gameId){
-    const id=normaliseGameId(gameId)||String(gameId||'');
-    if(id) roundStatusTabState[id]='round';
-    qsa('.round-status-card[data-round-status-game]').forEach(function(card){
-      if(!id||card.getAttribute('data-round-status-game')===id) syncRoundStatusTabs(card,'round');
-    });
+    if(!fullscreen) return;
+    const inferred=fullscreenGameIdFromElement(fullscreen);
+    const pair=fullscreenWindowConfig(preferredGameId||inferred);
+    const id=pair.id,config=pair.config;
+    if(!config||fullscreen.id!==config.root) return;
+    let shell=fullscreen.querySelector(':scope > .game-fullscreen-window-tabs');
+    const current=fullscreen.getAttribute('data-fullscreen-window-view')||'game';
+    if(!shell){
+      shell=document.createElement('div');
+      shell.className='game-fullscreen-window-tabs';
+      shell.setAttribute('data-fullscreen-window-tabs',id);
+      fullscreen.appendChild(shell);
+    }
+    shell.innerHTML='<div class="game-fullscreen-window-tabbar" role="tablist" aria-label="Game sections">'
+      + config.tabs.map(function(tab){
+          return '<button type="button" role="tab" data-fullscreen-window-tab="'+tab[0]+'">'+tab[1]+'</button>';
+        }).join('')
+      + '</div><section class="game-fullscreen-window-pane" aria-live="polite"></section>';
+    setFullscreenWindowView(id,current);
   }
   window.BaselineRoundStatusTabs=Object.freeze({
-    enhance:enhanceRoundStatusCard,
-    previousRoundHtml:previousRoundSectionHtml,
-    reset:resetRoundStatusTab
+    previousRoundHtml:previousRoundSectionHtml
+  });
+  window.BaselineFullscreenTabs=Object.freeze({
+    sync:syncFullscreenWindowTabs,
+    setView:setFullscreenWindowView
   });
   function shuffle(list){
     const copy = list.slice();
@@ -1867,8 +1893,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
       persistPairsRound();
       renderPairsBoard();
       refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs,currentPairsTier().name);
-      enhanceCoreRoundStatusCard('pairs',refs.pairsRoundSummary);
-    }, 860 + ((profiles.pairs.skills.insight || 0) * 120));
+}, 860 + ((profiles.pairs.skills.insight || 0) * 120));
   }
   function spendPairsSkill(skillId){
     const profile = profiles.pairs;
@@ -1954,8 +1979,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
       applyPairsBoardLayout(tier);
       refs.pairsBoard.innerHTML = '<div class="empty-box"><strong>Pairs is ready.</strong><span class="inline-note">' + escapeHtml(pairsIdleMessage) + '</span></div>';
       refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No board is active yet.',profiles.pairs,currentPairsTier().name);
-      enhanceCoreRoundStatusCard('pairs',refs.pairsRoundSummary);
-      return;
+return;
     }
     refs.pairsMovesValue.textContent = String(pairsBoardState.moves);
     refs.pairsMatchedValue.textContent = String(pairsBoardState.matchedPairs) + ' / ' + tier.pairs;
@@ -1969,8 +1993,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
       : '';
     refs.pairsBoard.innerHTML = cardsHtml + resultHtml;
     refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs,currentPairsTier().name);
-    enhanceCoreRoundStatusCard('pairs',refs.pairsRoundSummary);
-  }
+}
   function renderPairsSummary(){
     const profile = profiles.pairs;
     const needed = xpNeededForLevel(profile.level);
@@ -2310,8 +2333,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
       if(refs.make24RerollBtn) refs.make24RerollBtn.disabled = true;
       refs.make24Board.innerHTML = '<div class="empty-box"><strong>Make The Number is ready.</strong><span class="inline-note">' + escapeHtml(make24IdleMessage) + '</span></div>';
       refs.make24RoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No puzzle is active yet.',profiles.make24,currentMake24Tier().name);
-      enhanceCoreRoundStatusCard('make24',refs.make24RoundSummary);
-      return;
+return;
     }
     refs.make24MistakesValue.textContent = String(make24State.mistakes);
     refs.make24RoundBankValue.textContent = String(make24State.roundBank);
@@ -2342,8 +2364,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
     refs.make24Board.innerHTML = '<div class="formula-box"><div class="make-number-target"><span>Target</span><strong>' + escapeHtml(String(make24State.target||24)) + '</strong></div><div class="numbers-strip">' + numberButtons + '</div>' + builder + (make24State.revealSolution?'<div class="solution-box">' + escapeHtml(make24State.revealSolution) + '</div>':'') + '</div>';
     refs.make24ExpressionInput=document.getElementById('make24ExpressionInput');
     refs.make24RoundSummary.innerHTML=coherentRoundStatusHtml('Round Status',make24State.lastMessage,profiles.make24,currentMake24Tier().name);
-    enhanceCoreRoundStatusCard('make24',refs.make24RoundSummary);
-    injectMobileGameControls('make24');
+injectMobileGameControls('make24');
     syncMobileInputMode('make24');
     syncDesktopKeypadState();
   }
@@ -2791,8 +2812,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
       refs.wordRoundBankValue.textContent = '0';
       refs.wordBoard.innerHTML = '<div class="empty-box"><strong>Detect The Word is idle.</strong><span class="inline-note">' + escapeHtml(wordIdleMessage) + '</span></div>';
       refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No word round is active yet.',profiles.detectword,currentWordTier().name,undefined,[['Previous Word',profiles.detectword.lastRoundWord||'—']]);
-      enhanceCoreRoundStatusCard('detectword',refs.wordRoundSummary);
-      return;
+return;
     }
     refs.wordGuessesValue.textContent = wordState.guesses.length + ' / ' + wordState.maxGuesses;
     refs.wordRoundBankValue.textContent = String(wordState.roundBank);
@@ -2819,8 +2839,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
     syncWordKeypadKnowledge();
     syncDesktopKeypadState();
     refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',wordState.lastMessage,profiles.detectword,currentWordTier().name,undefined,[['Previous Word',profiles.detectword.lastRoundWord||'—']]);
-    enhanceCoreRoundStatusCard('detectword',refs.wordRoundSummary);
-    if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
+if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
   }
 
   function renderDetectWordSummary(){
@@ -3376,8 +3395,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
     if(trackCoinSummary){
       trackCoinSummary.className = 'summary-box round-status-card trackcoin-game-status' + trackCoinResultClass;
       trackCoinSummary.innerHTML = coherentRoundStatusHtml('Round Status',trackCoinStatusMessage,profile,currentTrackCoinTier().name);
-      enhanceCoreRoundStatusCard('trackcoin',trackCoinSummary);
-    }
+}
 
     if(!trackCoinState){
       refs.trackCoinBoard.innerHTML = '<div class="empty-box trackcoin-idle-card"><strong>Track the Coin is idle.</strong><span class="inline-note">Choose a tier and press New Game when you are ready.</span><span class="inline-note">The coin will be shown first, then covered, then shuffled. ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '.</span><span class="inline-note">Use the New Game control at the bottom-right of the game window.</span></div>';
@@ -3807,12 +3825,10 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
     if(!ruleShiftState){
       refs.ruleShiftBoard.innerHTML = '<div class="empty-box ruleshift-idle-card"><strong>Rule Shift is idle.</strong><span class="inline-note">' + escapeHtml(ruleShiftIdleMessage) + '</span><span class="inline-note">The target shape is always present. Start when ready.</span></div>';
       refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No Rule Shift run is active yet.',profiles.ruleshift,currentRuleShiftTier().name);
-      enhanceCoreRoundStatusCard('ruleshift',refs.ruleShiftRoundSummary);
-      return;
+return;
     }
     refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',ruleShiftState.lastMessage,profiles.ruleshift,currentRuleShiftTier().name);
-    enhanceCoreRoundStatusCard('ruleshift',refs.ruleShiftRoundSummary);
-    if(ruleShiftState.finished){
+if(ruleShiftState.finished){
       const finishedTitle = ruleShiftState.failed ? 'Run failed.' : 'Run complete.';
       const finishedPrompt = ruleShiftState.failed ? 'Incorrect answers end the run. Press New Game to try again.' : 'Press New Game to begin another switching run.';
       refs.ruleShiftBoard.innerHTML = '<div class="ruleshift-complete-card' + (ruleShiftState.failed ? ' ruleshift-failed-card' : '') + '"><strong>' + finishedTitle + '</strong><span class="inline-note">' + finishedPrompt + '</span></div>';
@@ -3901,6 +3917,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
     renderSystemSummary();
     syncGameButtonLabels();
     renderAutoNextControls();
+    syncFullscreenWindowTabs();
   }
 
   function activateTab(target, options){
@@ -4203,15 +4220,11 @@ function toggleGameFullscreen(gameId){
       if(openDartsFocused){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } requestDartsFocusedOpen(); return; }
       const openBadmintonFocused = event.target.closest('[data-open-badminton-focused]');
       if(openBadmintonFocused){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } requestBadmintonFocusedOpen(); return; }
-      const roundStatusTab = event.target.closest('[data-round-status-tab]');
-      if(roundStatusTab){
-        const card=roundStatusTab.closest('[data-round-status-game]');
-        const gameId=card&&card.getAttribute('data-round-status-game')||'';
-        const tab=roundStatusTab.getAttribute('data-round-status-tab')||'round';
-        if(gameId){
-          roundStatusTabState[gameId]=['round','tier','skills'].includes(tab)?tab:'round';
-          syncRoundStatusTabs(card,roundStatusTabState[gameId]);
-        }
+      const fullscreenWindowTab=event.target.closest('[data-fullscreen-window-tab]');
+      if(fullscreenWindowTab){
+        const fullscreen=document.fullscreenElement;
+        const gameId=fullscreenGameIdFromElement(fullscreen);
+        if(gameId) setFullscreenWindowView(gameId,fullscreenWindowTab.getAttribute('data-fullscreen-window-tab')||'game');
         return;
       }
       const autoNextToggle = event.target.closest('[data-auto-next-toggle]');
@@ -4469,7 +4482,15 @@ function toggleGameFullscreen(gameId){
     if(typeof window !== 'undefined'){
       window.addEventListener('hashchange', function(){ restoreFromHashState({ useStored:false }); });
       window.addEventListener('popstate', function(){ restoreFromHashState({ useStored:false }); });
-      document.addEventListener('fullscreenchange', function(){ syncDesktopKeypadState(); syncGameButtonLabels(); renderAutoNextControls(); });
+      document.addEventListener('fullscreenchange', function(){
+        const fullscreen=document.fullscreenElement;
+        const gameId=fullscreenGameIdFromElement(fullscreen);
+        if(fullscreen&&gameId) fullscreen.setAttribute('data-fullscreen-window-view','game');
+        syncFullscreenWindowTabs(gameId);
+        syncDesktopKeypadState();
+        syncGameButtonLabels();
+        renderAutoNextControls();
+      });
       document.addEventListener('keydown', function(event){ if(event && event.key === 'Escape') GAMES_HELP_MODAL.close(); });
       window.addEventListener('resize', function(){ ensureGameFullscreenButtons(); syncGameButtonLabels(); renderAutoNextControls(); if(wordState) renderWordBoard(); if(make24State) renderMake24Board(); }, { passive:true });
       window.addEventListener('resize', function(){ syncAllMobileInputModes(); if(selectedGame) ensureGamePlayContract(); syncDesktopKeypadState(); });
