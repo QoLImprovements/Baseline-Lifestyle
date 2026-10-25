@@ -1150,7 +1150,11 @@
       let recipeVariant = '';
       try{
         const params = new URLSearchParams(location.search || '');
-        recipeView = normalizeRecipeSubView(params.get('view'));
+        const requestedView = String(params.get('view') || '').trim();
+        const firstPaintView = document.documentElement
+          ? String(document.documentElement.getAttribute('data-initial-recipe-view') || '').trim()
+          : '';
+        recipeView = normalizeRecipeSubView(requestedView || firstPaintView);
         recipeVariant = String(params.get('variant') || '').trim();
       }catch(_e){}
       return { kind:'recipe', recipeId:id, recipeView:recipeView, recipeVariant:recipeVariant, raw:path };
