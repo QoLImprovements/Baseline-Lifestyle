@@ -130,7 +130,7 @@ test('Stage 1 navigation, artwork, SVG controls, cooldown and seeded progress re
   await expect(page.locator('#ninjaPanel .realm-page-header')).toHaveCount(0);
   await expect(page.locator('#ninjaLevelValue')).toHaveText('12');
   await expect(page.locator('#ninjaStageValue')).toHaveText('37');
-  await expect(page.locator('#ninjaCoinsValue')).toHaveText('678');
+  await expect(page.locator('#realmCoinsValue')).toHaveText('678');
   await expect(page.locator('#ninjaSpiritValue')).toHaveText('9');
 
   const dashHref = await page.locator('#ninjaManualStrikeBtn use').getAttribute('href');
@@ -148,7 +148,7 @@ test('Stage 1 navigation, artwork, SVG controls, cooldown and seeded progress re
 
   await expect(page.locator('#realmBasecampScreen')).toBeVisible();
   const backgroundSize = await page.locator('#realmBasecampScreen').evaluate(node => getComputedStyle(node).backgroundSize);
-  expect(backgroundSize).toContain('100% 100%');
+  expect(backgroundSize).toContain('94% 94%');
   await expect(page.locator('#realmCampExplorationBtn')).toBeVisible();
   await page.locator('#realmCampExplorationBtn').click();
   await expect(page.locator('#realmExplorationScreen .jrpg-game[data-zone="meridian-grove"]')).toBeVisible();
