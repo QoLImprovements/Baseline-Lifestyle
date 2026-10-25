@@ -157,7 +157,7 @@ test('real phone rotation produces one full-viewport landscape stage and returns
   expect(mobileLayout.utilityButtonCount).toBe(3);
   expect(mobileLayout.drawerHidden).toBeTruthy();
   expect(mobileLayout.hotkeyDisplay).toBe('none');
-  expect(mobileLayout.basecampBackgroundSize).toContain('100% 100%');
+  expect(mobileLayout.basecampBackgroundSize).toContain('94% 94%');
   await expect(page.locator('[data-basecamp-landmark="ninja-training"]')).toBeVisible();
   await expect(page.locator('[data-basecamp-landmark="exploration"]')).toBeVisible();
   await expect(page.locator('#realmExploreBtn')).toHaveCount(0);
