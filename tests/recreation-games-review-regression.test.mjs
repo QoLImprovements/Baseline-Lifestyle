@@ -112,6 +112,8 @@ test('extension game routes remain owned by their extension shells during core s
   assert.match(core,/EXTERNAL_GAME_ROUTE_SLUGS = new Set\(\['block-grid','colour-sort','darts-focused','badminton-focused'\]\)/);
   assert.match(core,/if\(EXTERNAL_GAME_ROUTE_SLUGS\.has\(routeSlug\)\) return \{ tab:'games', game:'', panel:'', externalGame:routeSlug \}/);
   assert.match(core,/const restoredState=applyHashState\(\)[\s\S]*?if\(!restoredState\?\.externalGame\) selectGame\(routedGame\)/);
+  assert.match(core,/function externalGameRouteSlugFromLocation\(\)[\s\S]*?return EXTERNAL_GAME_ROUTE_SLUGS\.has\(routeSlug\) \? routeSlug : ''/);
+  assert.match(core,/const externalGameExtension = String\(document\.documentElement\.getAttribute\('data-game-extension-open'\) \|\| ''\)\.trim\(\) \|\| externalGameRouteSlugFromLocation\(\)/);
 });
 
 test('Auto-next has one registered terminal-state authority across all supported Recreation games and puzzles',()=>{
@@ -134,7 +136,7 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_EXTENSION_ROUTE_OWNERSHIP_20261025_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_EXTENSION_ROUTE_OWNERSHIP_20261025_2/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
   assert.match(html,/block-grid\.js\?v=BLOCK_GRID_CONTROL_DOCK_20261025_1/);
   assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_CONTROL_DOCK_20261025_1/);
