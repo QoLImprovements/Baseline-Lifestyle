@@ -223,7 +223,8 @@
       normaliseMake24Profile:normaliseMake24Profile,
       normaliseWordProfile:normaliseWordProfile,
       normaliseRuleShiftProfile:normaliseRuleShiftProfile,
-      normaliseTrackCoinProfile:normaliseTrackCoinProfile
+      normaliseTrackCoinProfile:normaliseTrackCoinProfile,
+      highestUnlockedTrackCoinTier:highestUnlockedTrackCoinTier
     });
   }
 
