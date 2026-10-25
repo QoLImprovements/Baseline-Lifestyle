@@ -411,8 +411,13 @@ test('Food and Skincare primary cards and tabs have one sitewide visual owner', 
 test('Food and Skincare single-authority assets use refreshed cache keys', () => {
   assert.match(foodHtml, /baseline-food-approach\.css\?v=FOOD_SINGLE_VISUAL_AUTHORITY_20261022_1/);
   assert.match(skincareHtml, /baseline-natural-skincare\.css\?v=SKINCARE_SINGLE_VISUAL_AUTHORITY_20261016_1/);
-  assert.match(foodHtml, /baseline-shared\.js\?v=SITEWIDE_SHARED_RECIPE_HISTORY_20261025_1/);
-  assert.match(skincareHtml, /baseline-shared\.js\?v=SITEWIDE_SHARED_RECIPE_HISTORY_20261025_1/);
+  assert.match(foodHtml, /baseline-shared\.js\?v=SITEWIDE_SHARED_RECIPE_ROUTE_STABILITY_20261025_1/);
+  assert.match(skincareHtml, /baseline-shared\.js\?v=SITEWIDE_SHARED_RECIPE_ROUTE_STABILITY_20261025_1/);
+});
+
+test('recipe subview bootstrap and favourite caption remain route/layout stable', () => {
+  assert.match(shared, /const firstPaintView = document\.documentElement[\s\S]*?getAttribute\('data-initial-recipe-view'\)[\s\S]*?normalizeRecipeSubView\(requestedView \|\| firstPaintView\)/);
+  assert.match(css, /\.fav-btn\[data-tip\]::after\{[\s\S]*?content:attr\(data-tip\);[\s\S]*?position:absolute;[\s\S]*?z-index:30;/);
 });
 
 test('recipe back navigation is shared, in-shell and authored consistently', () => {
