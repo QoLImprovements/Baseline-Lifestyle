@@ -772,6 +772,21 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
 
+  // Auto-next must also work when it is enabled after a resolved result is
+  // already on screen. Track the Coin starts the next round promptly, then
+  // deliberately leaves the coin visible for its 3-second tracking window.
+  const trackAutoNext=page.locator('#trackCoinGamePanel [data-auto-next-toggle="trackcoin"]');
+  await expect(trackAutoNext).toBeVisible();
+  await trackAutoNext.click();
+  await expect(trackAutoNext).toHaveAttribute('aria-pressed','true');
+  await page.waitForFunction(()=>{
+    const scene=document.querySelector('#trackCoinScene');
+    return !!scene && scene.classList.contains('is-phase-show') && !scene.classList.contains('is-resolved');
+  },null,{timeout:4500});
+  await expect(page.locator('#trackCoinScene')).not.toHaveClass(/is-resolved/);
+  await trackAutoNext.click();
+  await expect(trackAutoNext).toHaveAttribute('aria-pressed','false');
+
   // Regression: Rule Shift Round Status must render the shared status contract,
   // not merely contain source CSS that loses in the cascade.
   await page.goto('/baseline-recreation/games/rule-shift', { waitUntil: 'domcontentloaded' });
