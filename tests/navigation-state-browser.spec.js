@@ -74,7 +74,7 @@ test('Puzzles exact non-default jigsaw survives refresh Back and Forward',async(
   expect(new URL(page.url()).pathname).toBe('/baseline-recreation/puzzles/jigsaws/'+id);
   await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',id);
   await expect(page.locator('#weightCoherenceTitle')).toHaveText('Tears Without Witness');
-  await page.reload({waitUntil:'commit'});
+  await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.hasAttribute('data-weight-of-coherence-jigsaw'));
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('player');
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getJigsaw())).toBe(id);
