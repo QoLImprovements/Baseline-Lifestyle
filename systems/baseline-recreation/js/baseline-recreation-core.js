@@ -4180,10 +4180,6 @@ function toggleGameFullscreen(gameId){
       const button=event.target instanceof Element ? event.target.closest('[data-tooltip]') : null;
       if(button) alignGameTooltip(button);
     },true);
-    document.addEventListener('fullscreenchange',function(){
-      const id=activeGameIdForHotkeys();
-      resetRoundStatusTab(id||'');
-    });
     // Pointer activation owns New Game so an already-focused game surface can
     // never consume the first press. The following click is suppressed; a
     // keyboard-generated click still works normally.
