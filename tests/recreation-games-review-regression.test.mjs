@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_DOCK_20261025_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_DOCK_20261025_2/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -95,6 +95,7 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(nonRealmCss,/#wordGameCard:fullscreen #wordBoard[\s\S]*?linear-gradient\(160deg,rgba\(var\(--recreation-rose-rgb\),\.24\)/);
   assert.match(nonRealmCss,/#wordGameCard:fullscreen \.word-entry-stack\{[\s\S]*?margin-top:10px!important/);
   assert.match(nonRealmCss,/coherent two-sided Recreation control dock[\s\S]*?grid-template-columns:42px 42px minmax\(16px,1fr\) 42px 42px!important[\s\S]*?grid-template-rows:42px 42px!important/);
+  assert.match(nonRealmCss,/Exact root-level authority: older fullscreen\/windowed rules[\s\S]*?#trackCoinGamePanel[\s\S]*?game-window-actions\.game-common-actions[\s\S]*?display:grid!important/);
   assert.match(nonRealmCss,/> \.start-new-game-toggle\{[\s\S]*?grid-column:1!important[\s\S]*?grid-row:1 \/ 3!important/);
   assert.match(nonRealmCss,/> \.auto-next-toggle\{[\s\S]*?grid-column:2!important[\s\S]*?grid-row:1 \/ 3!important/);
   assert.match(nonRealmCss,/> \.games-settings-trigger\{[\s\S]*?grid-column:4 \/ 6!important[\s\S]*?grid-row:1!important[\s\S]*?justify-self:center!important/);
