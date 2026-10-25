@@ -959,7 +959,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(specialBox.y).toBeGreaterThanOrEqual(scoreBox.y);
   expect(await blockStatus.evaluate((node)=>getComputedStyle(node).alignSelf)).toBe('start');
   expect(statusBox.height).toBeLessThan((await blockCard.boundingBox()).height*.7);
-  expect(await blockControls.evaluate((node)=>getComputedStyle(node).flexWrap)).toBe('wrap');
+  expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
 
   // Block Grid fullscreen keeps the same left/right relationship and never
   // falls back to the retired seven-column common-control dock.
@@ -972,8 +972,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(fsStatusBox).not.toBeNull();
   expect(fsControlsBox).not.toBeNull();
   expect(fsStatusBox.x).toBeGreaterThan(fsPlayBox.x+fsPlayBox.width-1);
-  expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('flex');
-  expect(await blockControls.evaluate((node)=>getComputedStyle(node).flexWrap)).toBe('wrap');
+  expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
   expect(recreationPageErrors).toEqual([]);
