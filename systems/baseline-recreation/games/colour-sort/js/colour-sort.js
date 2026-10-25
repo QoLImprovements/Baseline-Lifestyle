@@ -22,7 +22,7 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
-const BUILD = 'COLOUR_SORT_RECREATION_COHERENCE_20261024_2';
+const BUILD = 'COLOUR_SORT_AUTONEXT_20261025_1';
 const APP = 'coloursort';
 const COLOUR_SORT_TIERS = Object.freeze([
   { id:'starter', name:'Starter', from:1, to:12 },
@@ -885,7 +885,7 @@ function settleSolvedPuzzle() {
   statusMessage='Game complete.'+(cleanBonus?' Clean Streak Bonus +'+cleanBonus+'%.':'');
   undoStack = [];
   const completedTier=tierForLevel(active.level).id;
-  try { autoNextApi()?.schedule?.(APP, () => startTierGame(completedTier)); } catch (_) {}
+  try { autoNextApi()?.complete?.(APP); } catch (_) {}
 }
 
 function selectBottle(index) {
@@ -1063,6 +1063,13 @@ const shell = createGameExtensionShell({
 function init() {
   profile = loadStoredProfile(APP, DEFAULT_PROFILE, normaliseProfile);
   storageAuth = Boolean(globalThis.BaselineGameStorage?.isAuthenticated?.());
+  try {
+    autoNextApi()?.register?.(
+      APP,
+      () => startTierGame(profile.selectedTier),
+      () => Boolean(puzzle()?.settled && isSolved(puzzle().bottles))
+    );
+  } catch (_) {}
   shell.init();
   document.addEventListener('click', handleClick);
   document.addEventListener('pointerdown', handleBottlePointerDown);

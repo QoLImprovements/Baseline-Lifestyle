@@ -19,7 +19,7 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
 
-const BUILD = 'BLOCK_GRID_SCORE_SKILLS_RAIL_20261025_1';
+const BUILD = 'BLOCK_GRID_AUTONEXT_20261025_1';
 const APP = 'blockgrid';
 const BLOCK_SKILLS = Object.freeze([
   { id:'blast', name:'Bomb', icon:'💣', unlockLevel:2, description:'Drag onto the board to clear a 4 × 4 area.' },
@@ -714,7 +714,7 @@ function placeSelected(row, col) {
   persist();
   render();
   if (active.gameOver) {
-    try { autoNextApi()?.schedule?.(APP, startNewGame); } catch (_) {}
+    try { autoNextApi()?.complete?.(APP); } catch (_) {}
   }
   return true;
 }
@@ -1008,6 +1008,7 @@ const shell = createGameExtensionShell({
 function init() {
   profile = loadStoredProfile(APP, DEFAULT_PROFILE, normaliseProfile);
   storageAuth = Boolean(globalThis.BaselineGameStorage?.isAuthenticated?.());
+  try { autoNextApi()?.register?.(APP, startNewGame, () => Boolean(run()?.gameOver)); } catch (_) {}
   shell.init();
   document.addEventListener('click', handleClick);
   document.addEventListener('pointerdown', handlePointerDown);

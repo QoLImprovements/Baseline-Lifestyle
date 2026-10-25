@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
+const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
   try{
     window.BASELINE_RECREATION_BUILD = BASELINE_RECREATION_BUILD;
     document.documentElement.setAttribute('data-baseline-recreation-js', BASELINE_RECREATION_BUILD);
@@ -22,7 +22,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   const reconcileSkillPoints = PROGRESSION_RULES.reconcileSkillPoints;
   const GAME_APPS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.profileApp; }).filter(Boolean) : ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
   const AUTO_NEXT_GAMES = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'blockgrid', 'coloursort', 'crossnumber'];
-  const AUTO_NEXT_DELAYS = Object.freeze({ pairs:900, detectword:900, make24:900, trackcoin:6500, ruleshift:900, blockgrid:1200, coloursort:1200, crossnumber:1200 });
+  const AUTO_NEXT_DELAYS = Object.freeze({ pairs:900, detectword:900, make24:900, trackcoin:1500, ruleshift:900, blockgrid:1200, coloursort:1200, crossnumber:1200 });
   const SITEWIDE_START_HOTKEY_LABEL = 'Alt+N';
   const SITEWIDE_AUTONEXT_HOTKEY_LABEL = 'Alt+A';
   const SITEWIDE_KEYBOARD_HOTKEY_LABEL = 'Alt+K';
@@ -105,6 +105,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   let suspendHashSync = false;
   let autoNextSettings = readAutoNextSettings();
   const autoNextTimers = Object.create(null);
+  const autoNextRegistrations = Object.create(null);
   let desktopKeypadOpenGame = '';
   let coreNewGamePointerId = '';
   let coreNewGamePointerAt = 0;
@@ -683,10 +684,37 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       clearSavedRound();
     }
   }
+  function autoNextTerminalReady(gameId){
+    const registration=autoNextRegistrations[gameId];
+    if(!registration || typeof registration.isTerminal!=='function') return false;
+    try{return !!registration.isTerminal();}catch(_error){return false;}
+  }
+  function registerAutoNextGame(gameId,starter,isTerminal,delayMs){
+    const id=String(gameId||'').trim().toLowerCase();
+    if(!AUTO_NEXT_GAMES.includes(id) || typeof starter!=='function') return false;
+    autoNextRegistrations[id]={
+      starter:starter,
+      isTerminal:typeof isTerminal==='function'?isTerminal:null,
+      delayMs:Number(delayMs||AUTO_NEXT_DELAYS[id]||900)
+    };
+    if(autoNextEnabled(id) && autoNextTerminalReady(id)) scheduleRegisteredAutoNext(id);
+    return true;
+  }
+  function scheduleRegisteredAutoNext(gameId,delayMs){
+    const registration=autoNextRegistrations[gameId];
+    if(!registration) return false;
+    scheduleAutoNext(gameId,registration.starter,delayMs||registration.delayMs);
+    return true;
+  }
+  function completeAutoNext(gameId,delayMs){
+    if(!autoNextEnabled(gameId)) return false;
+    return scheduleRegisteredAutoNext(gameId,delayMs);
+  }
   function toggleAutoNext(gameId){
     if(!AUTO_NEXT_GAMES.includes(gameId)) return;
     autoNextSettings[gameId] = !autoNextSettings[gameId];
     if(!autoNextSettings[gameId]) clearAutoNextTimer(gameId);
+    else if(autoNextTerminalReady(gameId)) scheduleRegisteredAutoNext(gameId);
     writeAutoNextSettings();
     renderAutoNextControls();
   }
@@ -748,25 +776,42 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     });
   }
   function scheduleAutoNext(gameId, starter, delayMs){
-    if(!autoNextEnabled(gameId) || typeof starter !== 'function') return;
+    if(!autoNextEnabled(gameId) || typeof starter !== 'function') return false;
     clearAutoNextTimer(gameId);
     const wait = Number(delayMs || AUTO_NEXT_DELAYS[gameId] || 900);
     autoNextTimers[gameId] = window.setTimeout(function(){
       autoNextTimers[gameId] = 0;
+      if(!autoNextEnabled(gameId)) return;
+      const active=activeGameIdForHotkeys();
+      if(active && active!==gameId) return;
+      if(autoNextRegistrations[gameId]?.isTerminal && !autoNextTerminalReady(gameId)) return;
       focusGamePlaySurface(gameId, { scroll:false, mobileMode:true });
       window.setTimeout(function(){
+        if(!autoNextEnabled(gameId)) return;
         starter();
         focusGamePlaySurface(gameId, { scroll:false, mobileMode:true });
       }, 80);
     }, wait);
+    return true;
   }
   function publishAutoNextApi(){
+    registerAutoNextGame('pairs',startPairsBoard,function(){return !!(pairsBoardState&&pairsBoardState.completed);});
+    registerAutoNextGame('detectword',startWordRound,function(){
+      if(!wordState) return false;
+      const guesses=Array.isArray(wordState.guesses)?wordState.guesses:[];
+      return guesses.some(function(entry){return entry&&entry.word===wordState.secret;}) || guesses.length>=Number(wordState.maxGuesses||0);
+    });
+    registerAutoNextGame('make24',startMake24Puzzle,function(){return !!(make24State&&make24State.completed);});
+    registerAutoNextGame('trackcoin',function(){startTrackCoinRound({startWindowMs:3000});},function(){return !!(trackCoinState&&trackCoinState.resolved&&!trackCoinState.reviewActive);},AUTO_NEXT_DELAYS.trackcoin);
+    registerAutoNextGame('ruleshift',startRuleShiftRound,function(){return !!(ruleShiftState&&ruleShiftState.finished);});
     window.BaselineGamesAutoNext = Object.freeze({
       games:AUTO_NEXT_GAMES.slice(),
       enabled:autoNextEnabled,
       toggle:toggleAutoNext,
       clear:clearAutoNextTimer,
       schedule:scheduleAutoNext,
+      register:registerAutoNextGame,
+      complete:completeAutoNext,
       sync:renderAutoNextControls,
       label:autoNextButtonLabel
     });
@@ -1659,7 +1704,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     pairsBoardState.completed = true;
     persistPairsRound();
     renderAll();
-    scheduleAutoNext('pairs', startPairsBoard);
+    completeAutoNext('pairs');
   }
   function handlePairsMismatch(selectedCards){
     const roundToken = pairsBoardState && pairsBoardState.roundToken;
@@ -1964,7 +2009,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       persistMake24Round();
       resolveNinjaBonuses();
       renderAll();
-      scheduleAutoNext('make24', startMake24Puzzle);
+      completeAutoNext('make24');
       return;
     }
     make24State.mistakes += 1;
@@ -2559,7 +2604,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       scheduleSave('detectword');
       resolveNinjaBonuses();
       renderAll();
-      scheduleAutoNext('detectword', startWordRound);
+      completeAutoNext('detectword');
       return;
     }
     wordState.hadFailure = true;
@@ -2572,7 +2617,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
       renderAll();
-      scheduleAutoNext('detectword', startWordRound);
+      completeAutoNext('detectword');
       return;
     }
     wordState.lastMessage = 'Guess logged. Keep reading the pattern.';
@@ -3070,7 +3115,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     persistTrackCoinRound();
     resolveNinjaBonuses();
     renderAll();
-    scheduleAutoNext('trackcoin', function(){ startTrackCoinRound({ startWindowMs:3000 }); }, AUTO_NEXT_DELAYS.trackcoin);
+    completeAutoNext('trackcoin');
     return true;
   }
   function resumeRestoredTrackCoinRound(){
@@ -3132,7 +3177,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
           trackCoinState.revealAll = true;
           trackCoinState.message = 'Review complete. The same correct cup and your original selection are shown again. No reward was awarded.';
           renderTrackCoin();
-          scheduleAutoNext('trackcoin', function(){ startTrackCoinRound({ startWindowMs:3000 }); }, AUTO_NEXT_DELAYS.trackcoin);
+          completeAutoNext('trackcoin');
         });
       }, 700);
     }, 1100);
@@ -3527,6 +3572,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     ruleShiftState.lastMessage = message || 'Run failed — no reward awarded.';
     persistRuleShiftRound();
     renderAll();
+    completeAutoNext('ruleshift');
   }
 
   function completeRuleShiftRun(){
@@ -3549,7 +3595,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     persistRuleShiftRound();
     resolveNinjaBonuses();
     renderAll();
-    scheduleAutoNext('ruleshift', startRuleShiftRound, AUTO_NEXT_DELAYS.ruleshift);
+    completeAutoNext('ruleshift');
   }
   function useRuleShiftHint(){
     if(!ruleShiftState || ruleShiftState.finished || !ruleShiftState.currentRule) return;

@@ -109,6 +109,31 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(nonRealmCss,/:fullscreen > \.game-play-window > :is\(\.game-specific-actions,\.game-window-actions\)>\.action\{[\s\S]*?grid-column:auto!important[\s\S]*?flex:0 0 38px!important/);
 });
 
+test('Auto-next has one registered terminal-state authority across all supported Recreation games and puzzles',()=>{
+  assert.match(core,/AUTO_NEXT_GAMES = \['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'blockgrid', 'coloursort', 'crossnumber'\]/);
+  assert.match(core,/trackcoin:1500/);
+  assert.doesNotMatch(core,/trackcoin:6500/);
+  assert.match(core,/function registerAutoNextGame\(gameId,starter,isTerminal,delayMs\)/);
+  assert.match(core,/function completeAutoNext\(gameId,delayMs\)/);
+  assert.match(core,/else if\(autoNextTerminalReady\(gameId\)\) scheduleRegisteredAutoNext\(gameId\)/);
+  assert.match(core,/registerAutoNextGame\('pairs',startPairsBoard/);
+  assert.match(core,/registerAutoNextGame\('detectword',startWordRound/);
+  assert.match(core,/registerAutoNextGame\('make24',startMake24Puzzle/);
+  assert.match(core,/registerAutoNextGame\('trackcoin',[\s\S]*?startTrackCoinRound\(\{startWindowMs:3000\}\)/);
+  assert.match(core,/registerAutoNextGame\('ruleshift',startRuleShiftRound/);
+  assert.match(core,/failRuleShiftRun\([\s\S]*?renderAll\(\);[\s\S]*?completeAutoNext\('ruleshift'\)/);
+  assert.match(core,/chooseTrackCoinCup\([\s\S]*?completeAutoNext\('trackcoin'\)/);
+  assert.match(blockGrid,/autoNextApi\(\)\?\.register\?\.\(APP, startNewGame, \(\) => Boolean\(run\(\)\?\.gameOver\)\)/);
+  assert.match(blockGrid,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
+  assert.match(colourSort,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?isSolved\(puzzle\(\)\.bottles\)/);
+  assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
+  assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
+  assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
+  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_AUTONEXT_AUTHORITY_20261025_1/);
+  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_AUTONEXT_20261025_1/);
+  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_AUTONEXT_20261025_1/);
+});
+
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
   assert.match(config,/\{ id:'oval', name:'Oval' \}/);
   assert.match(config,/\{ id:'white', name:'White' \}/);
@@ -422,7 +447,7 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
   assert.match(html,/crossnumber\.css\?v=RECREATION_FLEX_CONTROLS_20261025_1/);
-  assert.match(html,/crossnumber\.js\?v=CROSSNUMBER_TOUCH_DRAG_CLEAN_XP_20261024_1/);
+  assert.match(html,/crossnumber\.js\?v=CROSS_NUMBER_AUTONEXT_20261025_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);
