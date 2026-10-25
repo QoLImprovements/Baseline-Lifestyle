@@ -42,7 +42,7 @@
 
   function defaultWordProfile(){
     return {
-      app:'detectword', bank:0, xp:0, level:1, skillPoints:1, wordsSolved:0, gamesPlayed:0, currentStreak:0, bestStreak:0, cleanWinStreak:0, lastRoundXp:0, activeRound:null,
+      app:'detectword', bank:0, xp:0, level:1, skillPoints:1, wordsSolved:0, gamesPlayed:0, currentStreak:0, bestStreak:0, cleanWinStreak:0, lastRoundXp:0, lastRoundWord:'', activeRound:null,
       skills:{ flow:0, banker:0, reserve:0, focus:0 }, selectedTier:'tier3'
     };
   }
@@ -122,6 +122,7 @@
     merged.gamesPlayed = Math.max(0, Math.round(Number(merged.gamesPlayed || 0)));
     merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
     merged.lastRoundXp = Math.max(0, Math.round(Number(merged.lastRoundXp || 0)));
+    merged.lastRoundWord = String(merged.lastRoundWord || '').toUpperCase().replace(/[^A-Z]/g,'').slice(0,12);
     merged.currentStreak = Math.max(0, Math.round(Number(merged.currentStreak || 0)));
     merged.bestStreak = Math.max(0, Math.round(Number(merged.bestStreak || 0)));
     if(merged.activeRound && typeof merged.activeRound === 'object'){
