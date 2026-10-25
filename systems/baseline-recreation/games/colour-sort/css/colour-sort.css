@@ -319,40 +319,6 @@ html.is-dragging-colour-sort-bottle,html.is-dragging-colour-sort-bottle body{ove
 }
 
 
-/* 2026-10-24 requested two-row fullscreen control dock. */
-@media(min-width:821px){
-  #colourSortPanel #colourSortGameCard:fullscreen > :is(.game-specific-actions,.game-window-actions){
-    grid-column:2!important;
-    grid-row:7/9!important;
-    display:grid!important;
-    grid-template-columns:repeat(7,38px)!important;
-    grid-template-rows:38px 38px!important;
-    gap:6px!important;
-    width:max-content!important;
-    height:82px!important;
-    margin:0 8px!important;
-    padding:0!important;
-    border:0!important;
-    justify-content:start!important;
-    align-content:end!important;
-    align-self:end!important;
-    pointer-events:none;
-  }
-  #colourSortPanel #colourSortGameCard:fullscreen > :is(.game-specific-actions,.game-window-actions)>.action{
-    pointer-events:auto;
-    width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;padding:0!important;margin:0!important;
-  }
-  #colourSortPanel #colourSortGameCard:fullscreen > .game-specific-actions>.action:nth-child(1){grid-column:2;grid-row:1}
-  #colourSortPanel #colourSortGameCard:fullscreen > .game-specific-actions>.action:nth-child(2){grid-column:2;grid-row:2}
-  #colourSortPanel #colourSortGameCard:fullscreen > .game-specific-actions>.action:nth-child(3){grid-column:3;grid-row:1}
-  #colourSortPanel #colourSortGameCard:fullscreen > .game-window-actions>.start-new-game-toggle{grid-column:1;grid-row:1}
-  #colourSortPanel #colourSortGameCard:fullscreen > .game-window-actions>.auto-next-toggle{grid-column:1;grid-row:2}
-  #colourSortPanel #colourSortGameCard:fullscreen > .game-window-actions>.games-music-quick-toggle{grid-column:6;grid-row:1}
-  #colourSortPanel #colourSortGameCard:fullscreen > .game-window-actions>.game-fullscreen-toggle{grid-column:7;grid-row:1}
-  #colourSortPanel #colourSortGameCard:fullscreen > .game-window-actions>.games-settings-trigger{grid-column:7;grid-row:2}
-}
-
-
 /* 2026-10-24 mobile fullscreen flow.
    A phone cannot use the desktop information rail without overlapping the
    puzzle. Keep every card in normal document flow inside the fullscreen

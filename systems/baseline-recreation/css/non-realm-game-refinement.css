@@ -167,14 +167,9 @@
   border:3px solid rgba(96,60,5,.56)!important;
   box-shadow:0 4px 0 rgba(95,61,8,.34),0 0 24px rgba(244,197,108,.62)!important;
 }
-#trackcoinPanel .trackcoin-scene.is-phase-hide .trackcoin-game-status,
 #trackcoinPanel .trackcoin-scene.is-phase-hide .trackcoin-status{
   opacity:.16;
   transition:opacity .25s ease;
-}
-#trackcoinPanel .trackcoin-scene.is-phase-pick .trackcoin-game-status{
-  border-color:rgba(244,197,108,.62)!important;
-  box-shadow:0 0 0 3px rgba(244,197,108,.12);
 }
 #trackcoinPanel .trackcoin-pick-prompt{
   position:absolute;
@@ -922,7 +917,6 @@ body[data-app="recreation"] #trackcoinPanel .trackcoin-item-token::before{
   border:2px solid rgba(105,65,5,.45)!important;
   background:radial-gradient(circle,rgba(255,249,197,.36),rgba(196,129,12,.10))!important;
 }
-body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-show .trackcoin-game-status,
 body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-show .trackcoin-status{
   opacity:1!important;
 }
@@ -1435,7 +1429,8 @@ body[data-app="recreation"] :is(
     min-height:0!important;
     max-height:100%!important;
     overflow:auto!important;
-    align-self:stretch!important;
+    align-self:start!important;
+    height:auto!important;
     padding:10px!important;
     border:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
     background:rgba(var(--recreation-burgundy-rgb),.34)!important;
@@ -1733,11 +1728,6 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
     grid-template-rows:auto auto minmax(280px,1fr)!important;
     gap:10px!important;
     overflow:hidden!important;
-  }
-  body[data-app="recreation"] #trackcoinPanel .trackcoin-game-status{
-    position:relative!important;
-    z-index:2!important;
-    margin:0!important;
   }
   body[data-app="recreation"] #trackcoinPanel .trackcoin-status{
     position:relative!important;
@@ -2103,6 +2093,8 @@ body[data-app="recreation"] :is(
   grid-auto-rows:max-content!important;
   align-content:start!important;
   justify-content:stretch!important;
+  align-self:start!important;
+  height:auto!important;
   text-align:left!important;
 }
 body[data-app="recreation"] .round-status-card .round-status-heading{
@@ -2115,10 +2107,12 @@ body[data-app="recreation"] .round-status-card .round-status-previous{
   box-sizing:border-box!important;
 }
 body[data-app="recreation"] :is(
-  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
 ) .game-specific-actions,
 body[data-app="recreation"] :is(
-  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
 ) .game-window-actions.game-common-actions{
   box-sizing:border-box!important;
   display:flex!important;
@@ -2131,10 +2125,12 @@ body[data-app="recreation"] :is(
   gap:7px!important;
 }
 body[data-app="recreation"] :is(
-  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
 ) .game-specific-actions>.action,
 body[data-app="recreation"] :is(
-  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
 ) .game-window-actions.game-common-actions>.action{
   flex:0 0 42px!important;
   width:42px!important;
@@ -2144,6 +2140,44 @@ body[data-app="recreation"] :is(
   min-height:42px!important;
   padding:0!important;
 }
+@media(min-width:821px){
+  /* Extension/puzzle games keep their own information-row positions, but
+     common and game-specific controls share the same flexible control owner. */
+  body[data-app="recreation"] :is(
+    #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ):fullscreen > :is(.game-specific-actions,.game-window-actions,.crossnumber-actions){
+    display:flex!important;
+    flex-wrap:wrap!important;
+    grid-template-columns:none!important;
+    grid-template-rows:none!important;
+    width:calc(100% - 16px)!important;
+    max-width:calc(100% - 16px)!important;
+    min-width:0!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+    margin-inline:8px!important;
+    gap:6px!important;
+    justify-content:flex-start!important;
+    align-content:flex-end!important;
+    pointer-events:auto!important;
+  }
+  body[data-app="recreation"] :is(
+    #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ):fullscreen > :is(.game-specific-actions,.game-window-actions,.crossnumber-actions)>.action{
+    grid-column:auto!important;
+    grid-row:auto!important;
+    flex:0 0 38px!important;
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    padding:0!important;
+    pointer-events:auto!important;
+  }
+}
+
 @media(min-width:821px){
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard

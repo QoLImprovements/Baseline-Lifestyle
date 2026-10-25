@@ -716,6 +716,11 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await expect(page.locator('#trackcoinPanel')).toHaveClass(/is-active/);
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-phase-pick/);
   await expect(page.locator('.trackcoin-pick-prompt')).toHaveText('Choose the cup');
+  const trackStatus=page.locator('#trackCoinSummary');
+  await expect(trackStatus).toBeVisible();
+  await expect(trackStatus.locator('.round-status-heading')).toHaveText('Round Status');
+  expect(await page.locator('#trackCoinScene #trackCoinSummary').count()).toBe(0);
+  expect(await trackStatus.locator('.round-status-heading').evaluate((node)=>getComputedStyle(node).textAlign)).toBe('center');
   const selectableCup=page.locator('#trackCoinScene .trackcoin-cup.is-selectable').first();
   await expect(selectableCup).toBeVisible();
   await page.evaluate(()=>{
@@ -738,7 +743,31 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   }
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-resolved/);
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-phase-review/);
+  await expect(trackStatus).toContainText('Previous round -');
   expect(recreationPageErrors).toEqual([]);
+
+  // Fullscreen geometry: the cup arena must remain the dominant LEFT surface
+  // while the live Round Status occupies the shared RIGHT information rail.
+  await page.setViewportSize({ width:1280, height:760 });
+  const trackFullscreen=page.locator('#trackCoinGamePanel [data-game-fullscreen="trackcoin"]');
+  await expect(trackFullscreen).toBeVisible();
+  await trackFullscreen.click();
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='trackCoinGamePanel');
+  const [trackBoardBox,trackStatusBox,trackCardBox]=await Promise.all([
+    page.locator('#trackCoinBoard').boundingBox(),
+    trackStatus.boundingBox(),
+    page.locator('#trackCoinGamePanel').boundingBox()
+  ]);
+  expect(trackBoardBox).not.toBeNull();
+  expect(trackStatusBox).not.toBeNull();
+  expect(trackCardBox).not.toBeNull();
+  expect(trackStatusBox.x).toBeGreaterThan(trackBoardBox.x+trackBoardBox.width-1);
+  expect(trackStatusBox.x+trackStatusBox.width).toBeLessThanOrEqual(trackCardBox.x+trackCardBox.width+1);
+  expect(await trackStatus.evaluate((node)=>getComputedStyle(node).alignSelf)).toBe('start');
+  expect(trackStatusBox.height).toBeLessThan(trackCardBox.height*.7);
+  expect(await page.locator('#trackCoinGamePanel .game-window-actions').evaluate((node)=>getComputedStyle(node).flexWrap)).toBe('wrap');
+  await page.evaluate(()=>document.exitFullscreen());
+  await page.waitForFunction(()=>document.fullscreenElement===null);
 
   // Regression: Rule Shift Round Status must render the shared status contract,
   // not merely contain source CSS that loses in the cascade.
@@ -770,6 +799,58 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(fullscreenBox.x).toBeGreaterThanOrEqual(cardBox.x-1);
   expect(settingsBox.x+settingsBox.width).toBeLessThanOrEqual(cardBox.x+cardBox.width+1);
   expect(fullscreenBox.x+fullscreenBox.width).toBeLessThanOrEqual(cardBox.x+cardBox.width+1);
+
+  // Block Grid uses the same conceptual composition rather than a bespoke
+  // sidebar: play LEFT and the ordered information/control hierarchy RIGHT.
+  await page.setViewportSize({ width:1440, height:900 });
+  await page.goto('/baseline-recreation/system', { waitUntil:'domcontentloaded' });
+  await page.waitForFunction(()=>Boolean(document.documentElement.dataset.blockGridRuntime));
+  await page.getByRole('button', { name:'Games', exact:true }).click();
+  const blockGridOpen=page.locator('[data-open-game-extension="block-grid"]');
+  await expect(blockGridOpen).toBeVisible();
+  await blockGridOpen.click();
+  await expect(page.locator('#blockGridPanel')).toHaveClass(/is-active/);
+  await page.locator('#blockGridGameCard [data-block-action="new"]').click();
+  const blockCard=page.locator('#blockGridGameCard');
+  const blockPlay=blockCard.locator('.block-grid-play-cluster');
+  const blockScore=blockCard.locator('.block-grid-score-window');
+  const blockXp=blockCard.locator('.game-live-xp');
+  const blockStatus=blockCard.locator('.round-status-card');
+  const blockTier=blockCard.locator('.block-grid-run-objective');
+  const blockSpecial=blockCard.locator('.block-grid-skill');
+  const blockControls=blockCard.locator('.game-window-actions');
+  for(const locator of [blockPlay,blockScore,blockXp,blockStatus,blockTier,blockSpecial,blockControls]) await expect(locator).toBeVisible();
+  await expect(blockStatus.locator('.round-status-heading')).toHaveText('Round Status');
+  expect(await blockStatus.locator('.round-status-heading').evaluate((node)=>getComputedStyle(node).textAlign)).toBe('center');
+  const [playBox,scoreBox,xpBox,statusBox,tierBox,specialBox,controlsBox]=await Promise.all([
+    blockPlay.boundingBox(),blockScore.boundingBox(),blockXp.boundingBox(),blockStatus.boundingBox(),blockTier.boundingBox(),blockSpecial.boundingBox(),blockControls.boundingBox()
+  ]);
+  for(const box of [playBox,scoreBox,xpBox,statusBox,tierBox,specialBox,controlsBox]) expect(box).not.toBeNull();
+  for(const box of [scoreBox,xpBox,statusBox,tierBox,specialBox,controlsBox]) expect(box.x).toBeGreaterThan(playBox.x+playBox.width-1);
+  expect(xpBox.y).toBeGreaterThanOrEqual(scoreBox.y);
+  expect(statusBox.y).toBeGreaterThanOrEqual(xpBox.y);
+  expect(tierBox.y).toBeGreaterThanOrEqual(statusBox.y);
+  expect(specialBox.y).toBeGreaterThanOrEqual(tierBox.y);
+  expect(await blockStatus.evaluate((node)=>getComputedStyle(node).alignSelf)).toBe('start');
+  expect(statusBox.height).toBeLessThan((await blockCard.boundingBox()).height*.7);
+  expect(await blockControls.evaluate((node)=>getComputedStyle(node).flexWrap)).toBe('wrap');
+
+  // Block Grid fullscreen keeps the same left/right relationship and never
+  // falls back to the retired seven-column common-control dock.
+  await blockCard.locator('[data-block-action="fullscreen"]').click();
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='blockGridGameCard');
+  const [fsPlayBox,fsStatusBox,fsControlsBox]=await Promise.all([
+    blockPlay.boundingBox(),blockStatus.boundingBox(),blockControls.boundingBox()
+  ]);
+  expect(fsPlayBox).not.toBeNull();
+  expect(fsStatusBox).not.toBeNull();
+  expect(fsControlsBox).not.toBeNull();
+  expect(fsStatusBox.x).toBeGreaterThan(fsPlayBox.x+fsPlayBox.width-1);
+  expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('flex');
+  expect(await blockControls.evaluate((node)=>getComputedStyle(node).flexWrap)).toBe('wrap');
+  await page.evaluate(()=>document.exitFullscreen());
+  await page.waitForFunction(()=>document.fullscreenElement===null);
+  expect(recreationPageErrors).toEqual([]);
 });
 
 test('Badminton loads shared server state into the normal session interface', async ({ page }) => {

@@ -38,7 +38,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-ui-fixes.css?v=SITEWIDE_UI_FIXES_20261021_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
 <link href="/systems/baseline-recreation/css/recreation-theme.css?v=RECREATION_ACCOUNT_COHERENCE_20261024_1" rel="stylesheet" data-recreation-theme="true"/>
 <link href="/systems/baseline-recreation/puzzles/shared/css/puzzles-library.css?v=RECREATION_PALETTE_20261022_2" rel="stylesheet"/>
-<link href="/systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css?v=CROSSNUMBER_TOUCH_DRAG_CLEAN_XP_20261024_1" rel="stylesheet"/>
+<link href="/systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css?v=RECREATION_FLEX_CONTROLS_20261025_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=JIGSAW_MOBILE_PLAYABILITY_20261024_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/concepts/shared/css/concepts.css?v=CONCEPTS_TEMPLATE_20261022_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/concepts/stroop-effect/css/stroop-effect.css?v=STROOP_COMPARISON_20261022_1" rel="stylesheet"/>
@@ -50,7 +50,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/systems/baseline-recreation/games/baseline-realm/exploration/css/exploration-jrpg.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-style="exploration"/>
 <link href="/systems/baseline-recreation/games/baseline-realm/ninja-training/css/ninja-training.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-style="ninja-training"/>
 <link href="/systems/baseline-recreation/games/baseline-realm/shared/css/realm-mobile.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-mobile="true"/>
-<link href="/systems/baseline-recreation/css/non-realm-game-refinement.css?v=RECREATION_CONTROL_STATUS_AUTHORITY_20261024_6" rel="stylesheet" data-nonrealm-game-refinement="true"/>
+<link href="/systems/baseline-recreation/css/non-realm-game-refinement.css?v=RECREATION_COHERENT_RAIL_20261025_1" rel="stylesheet" data-nonrealm-game-refinement="true"/>
 <link href="/systems/baseline-recreation/css/games-music.css?v=RECREATION_MUSIC_PALETTE_20261022_2" rel="stylesheet" data-games-music-style="true"/>
 </head>
 <body data-app="recreation" data-page="baseline-recreation">
@@ -870,6 +870,7 @@ These Markdown rules are a human reference point, not live runtime config.
                 <div class="game-toolbar-spacer" aria-hidden="true"></div>
               </div>
               <div class="game-play-window" data-game-play-window="trackcoin">
+                <div class="summary-box round-status-card trackcoin-game-status" id="trackCoinSummary" aria-live="polite"></div>
                 <div class="trackcoin-board game-play-surface" id="trackCoinBoard" data-game-play-surface="trackcoin"></div>
                 <div class="game-specific-actions"><button class="action ghost game-control-icon" id="replayTrackCoinShuffleBtn" data-action="replay-trackcoin" type="button" hidden data-tooltip="Replay last shuffle" title="Replay last shuffle" aria-label="Replay last shuffle"><span aria-hidden="true">↻</span><span class="sr-only">Replay last shuffle</span></button></div><div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" id="newTrackCoinRoundBtn" data-action="start-trackcoin" type="button" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="trackcoin" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button></div>
               </div>
@@ -1020,7 +1021,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-recreation/js/recreation-legacy-state-migration.js?v=RECREATION_LEGACY_STATE_MIGRATION_20261022_1"></script>
 <script src="/systems/baseline-recreation/js/baseline-recreation-guard.js?v=RECREATION_COHERENCE_20261023_2"></script>
 <script src="/systems/baseline-recreation/js/games-help-modal.js?v=GAMES_HELP_MODAL_AUTHORITY_20261022_1"></script>
-<script src="/systems/baseline-recreation/js/baseline-recreation-core.js?v=RECREATION_TRACKCOIN_RULESHIFT_STATUS_20261025_5"></script>
+<script src="/systems/baseline-recreation/js/baseline-recreation-core.js?v=RECREATION_COHERENT_RAIL_20261025_1"></script>
 <script src="/systems/baseline-recreation/js/games-music.js?v=RECREATION_AUDIO_STABILITY_20261024_1"></script>
 <script src="/systems/baseline-recreation/concepts/shared/js/concepts.js?v=CONCEPTS_TEMPLATE_20261022_2"></script>
 <script src="/systems/baseline-recreation/concepts/stroop-effect/js/stroop-effect.js?v=STROOP_COMPARISON_20261022_1"></script>
@@ -1029,8 +1030,8 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js?v=CROSSNUMBER_TOUCH_DRAG_CLEAN_XP_20261024_1"></script>
 <script src="/systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=JIGSAW_DUAL_ZOOM_20261024_1"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Recreation shell or another game. -->
-<script type="module" src="/systems/baseline-recreation/games/block-grid/js/block-grid.js?v=BLOCK_GRID_PREVIOUS_XP_20261024_1"></script>
-<script type="module" src="/systems/baseline-recreation/games/colour-sort/js/colour-sort.js?v=COLOUR_SORT_CLEAN_STREAK_XP_20261024_1"></script>
+<script type="module" src="/systems/baseline-recreation/games/block-grid/js/block-grid.js?v=BLOCK_GRID_COHERENT_RAIL_20261025_1"></script>
+<script type="module" src="/systems/baseline-recreation/games/colour-sort/js/colour-sort.js?v=RECREATION_FLEX_CONTROLS_20261025_1"></script>
 <script type="module" src="/systems/baseline-recreation/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4"></script>
 <script type="module" src="/systems/baseline-recreation/games/badminton-focused/js/badminton-focused.js?v=BADMINTON_FOCUSED_REFINED_20260707_2"></script>
 <script type="module" src="/systems/baseline-recreation/games/baseline-realm/shared/js/realm-entry.js?v=REALM_RECREATION_ROUTE_20261022_1"></script>
