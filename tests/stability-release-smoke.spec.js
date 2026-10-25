@@ -731,6 +731,25 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await expect(ruleStatus).toContainText('Previous Run - 0 XP');
   expect(await ruleHeading.evaluate((node) => getComputedStyle(node).textAlign)).toBe('center');
   expect(await ruleStatus.evaluate((node) => getComputedStyle(node).alignContent)).toBe('start');
+
+  // Browser zoom reduces the effective CSS viewport. At a constrained desktop
+  // width the shared control rail must wrap rather than eject Settings/Fullscreen.
+  await page.setViewportSize({ width:900, height:700 });
+  const ruleCard=page.locator('#ruleShiftGameCard');
+  const settingsControl=ruleCard.locator('[data-games-settings]');
+  const fullscreenControl=ruleCard.locator('[data-game-fullscreen="ruleshift"]');
+  await expect(settingsControl).toBeVisible();
+  await expect(fullscreenControl).toBeVisible();
+  const [cardBox,settingsBox,fullscreenBox]=await Promise.all([
+    ruleCard.boundingBox(),settingsControl.boundingBox(),fullscreenControl.boundingBox()
+  ]);
+  expect(cardBox).not.toBeNull();
+  expect(settingsBox).not.toBeNull();
+  expect(fullscreenBox).not.toBeNull();
+  expect(settingsBox.x).toBeGreaterThanOrEqual(cardBox.x-1);
+  expect(fullscreenBox.x).toBeGreaterThanOrEqual(cardBox.x-1);
+  expect(settingsBox.x+settingsBox.width).toBeLessThanOrEqual(cardBox.x+cardBox.width+1);
+  expect(fullscreenBox.x+fullscreenBox.width).toBeLessThanOrEqual(cardBox.x+cardBox.width+1);
 });
 
 test('Badminton loads shared server state into the normal session interface', async ({ page }) => {
