@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_FULLSCREEN_WINDOW_TABS_20261025_2/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_DOCK_20261025_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -94,21 +94,16 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(nonRealmCss,/Detect The Word fullscreen refinement/);
   assert.match(nonRealmCss,/#wordGameCard:fullscreen #wordBoard[\s\S]*?linear-gradient\(160deg,rgba\(var\(--recreation-rose-rgb\),\.24\)/);
   assert.match(nonRealmCss,/#wordGameCard:fullscreen \.word-entry-stack\{[\s\S]*?margin-top:10px!important/);
-  assert.match(nonRealmCss,/final non-Realm coherence authority[\s\S]*?\.game-window-actions\.game-common-actions[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
-  assert.doesNotMatch(nonRealmCss,/2026-10-24 fullscreen control dock/);
-  assert.doesNotMatch(nonRealmCss,/repeat\(7,38px\)/);
-  assert.doesNotMatch(blockCss,/repeat\(7,38px\)/);
-  assert.doesNotMatch(colourCss,/repeat\(7,38px\)/);
-  assert.doesNotMatch(crossnumberCss,/repeat\(7,38px\)/);
-  assert.doesNotMatch(nonRealmCss,/games-settings-trigger\{grid-column:7/);
-  for(const stylesheet of [blockCss,colourCss,crossnumberCss]){
-    assert.doesNotMatch(stylesheet,/games-settings-trigger[^}]*grid-column:7/);
-    assert.doesNotMatch(stylesheet,/game-fullscreen-toggle[^}]*grid-column:7/);
-    assert.doesNotMatch(stylesheet,/games-music-quick-toggle[^}]*grid-column:6/);
-  }
-  assert.match(nonRealmCss,/Extension\/puzzle games keep their own information-row positions[\s\S]*?#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
+  assert.match(nonRealmCss,/coherent two-sided Recreation control dock[\s\S]*?grid-template-columns:42px 42px minmax\(16px,1fr\) 42px 42px!important[\s\S]*?grid-template-rows:42px 42px!important/);
+  assert.match(nonRealmCss,/> \.start-new-game-toggle\{[\s\S]*?grid-column:1!important[\s\S]*?grid-row:1 \/ 3!important/);
+  assert.match(nonRealmCss,/> \.auto-next-toggle\{[\s\S]*?grid-column:2!important[\s\S]*?grid-row:1 \/ 3!important/);
+  assert.match(nonRealmCss,/> \.games-settings-trigger\{[\s\S]*?grid-column:4 \/ 6!important[\s\S]*?grid-row:1!important[\s\S]*?justify-self:center!important/);
+  assert.match(nonRealmCss,/> \.games-music-quick-toggle\{[\s\S]*?grid-column:4!important[\s\S]*?grid-row:2!important/);
+  assert.match(nonRealmCss,/> \.game-fullscreen-toggle\{[\s\S]*?grid-column:5!important[\s\S]*?grid-row:2!important/);
+  assert.match(html,/game-specific-actions" aria-label="Detect The Word game controls"[\s\S]*?data-desktop-keypad-toggle="detectword"[\s\S]*?game-window-actions game-common-actions/);
+  assert.match(html,/game-specific-actions" aria-label="Make The Number game controls"[\s\S]*?data-desktop-keypad-toggle="make24"[\s\S]*?game-window-actions game-common-actions/);
+  assert.match(core,/let keypadHost = specificActions[\s\S]*?if\(keyboardBtn\.parentElement!==keypadHost\) keypadHost\.appendChild\(keyboardBtn\)/);
   assert.match(nonRealmCss,/\.round-status-card\{[\s\S]*?align-content:start!important/);
-  assert.match(nonRealmCss,/:fullscreen > \.game-play-window > :is\(\.game-specific-actions,\.game-window-actions\)>\.action\{[\s\S]*?grid-column:auto!important[\s\S]*?flex:0 0 38px!important/);
 });
 
 test('Auto-next has one registered terminal-state authority across all supported Recreation games and puzzles',()=>{
@@ -290,10 +285,10 @@ test('fullscreen right rail mirrors each game windowed tabs and defaults to Game
   assert.doesNotMatch(colourSort,/document\.addEventListener\('fullscreenchange', renderGame\);/);
 });
 
-test('fullscreen common controls use one centred icon geometry including the keyboard toggle',()=>{
-  assert.match(nonRealmCss,/game-window-actions\.game-common-actions\{[\s\S]*?justify-content:center!important[\s\S]*?align-items:center!important/);
-  assert.match(nonRealmCss,/\.desktop-keypad-toggle[\s\S]*?flex:0 0 44px!important[\s\S]*?width:44px!important[\s\S]*?height:44px!important[\s\S]*?place-items:center!important/);
-  assert.match(nonRealmCss,/\.desktop-keypad-toggle \.game-shell-action__svg\{[\s\S]*?position:absolute!important[\s\S]*?left:50%!important[\s\S]*?top:50%!important[\s\S]*?width:20px!important[\s\S]*?height:20px!important[\s\S]*?margin:0!important[\s\S]*?transform:translate\(-50%,-50%\)!important/);
+test('fullscreen controls preserve the two-sided shared dock and local keypad geometry',()=>{
+  assert.match(nonRealmCss,/Fullscreen uses the same positions[\s\S]*?grid-template-columns:44px 44px minmax\(16px,1fr\) 44px 44px!important[\s\S]*?grid-template-rows:44px 44px!important/);
+  assert.match(nonRealmCss,/:fullscreen \.game-specific-actions > \.action\{[\s\S]*?flex:0 0 44px!important[\s\S]*?width:44px!important[\s\S]*?height:44px!important/);
+  assert.match(nonRealmCss,/\.game-specific-actions \.desktop-keypad-toggle \.game-shell-action__svg\{[\s\S]*?position:absolute!important[\s\S]*?left:50%!important[\s\S]*?top:50%!important[\s\S]*?width:20px!important[\s\S]*?height:20px!important[\s\S]*?margin:0!important[\s\S]*?transform:translate\(-50%,-50%\)!important/);
 });
 
 test('fullscreen layouts use bounded side panels except the deliberately independent Jigsaw workspace',()=>{
@@ -354,7 +349,7 @@ test('reported Recreation interaction repairs remain wired',()=>{
   assert.match(nonRealmCss,/#pairsPanel #pairsBoard:not\(\.is-pairs-idle\)\{[\s\S]*?height:min\(var\(--pairs-fit-height,520px\),calc\(100dvh - 250px\)\)!important[\s\S]*?grid-template-rows:repeat\(var\(--pairs-rows-desktop,3\)/);
   assert.match(nonRealmCss,/@media\(min-width:900px\) and \(pointer:fine\)[\s\S]*?#pairsPanel #pairsGameCard:not\(:fullscreen\)[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(230px,280px\)!important/);
   assert.match(nonRealmCss,/#pairsPanel #pairsGameCard:not\(:fullscreen\) #pairsBoard\{[\s\S]*?grid-column:1!important[\s\S]*?grid-row:1\/6!important/);
-  assert.match(nonRealmCss,/zoom-safe common controls[\s\S]*?game-window-actions\.game-common-actions\{[\s\S]*?flex-wrap:wrap!important[\s\S]*?overflow:visible!important/);
+  assert.match(nonRealmCss,/coherent two-sided Recreation control dock[\s\S]*?game-window-actions\.game-common-actions[\s\S]*?display:grid!important[\s\S]*?overflow:visible!important/);
   assert.match(music,/roots = \['pairsGameCard'[\s\S]*?'blockGridGameCard'/);
   assert.match(music,/btn\.className = 'action ghost games-settings-trigger/);
 
