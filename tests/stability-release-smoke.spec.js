@@ -760,7 +760,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   const trackFsTabs=page.locator('#trackCoinGamePanel > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
   await expect(trackFsTabs).toBeVisible();
   await expect(trackFsTabs.getByRole('tab')).toHaveCount(4);
-  await expect(trackFsTabs.getByRole('tab').allTextContents()).resolves.toEqual(['Game','Skills','Tiers','Progress']);
+  expect(await trackFsTabs.getByRole('tab').allTextContents()).toEqual(['Game','Skills','Tiers','Progress']);
   await expect(trackFsTabs.getByRole('tab',{name:'Game',exact:true})).toHaveClass(/is-active/);
   await trackFsTabs.getByRole('tab',{name:'Skills',exact:true}).click();
   await expect(page.locator('#trackCoinGamePanel > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Track the Coin Skill Tree');
@@ -902,7 +902,7 @@ test('Detect The Word fullscreen common controls keep the keypad icon geometrica
 
   const tabs=page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
   await expect(tabs).toBeVisible();
-  await expect(tabs.getByRole('tab').allTextContents()).resolves.toEqual(['Game','Skills','Tiers','Progress']);
+  expect(await tabs.getByRole('tab').allTextContents()).toEqual(['Game','Skills','Tiers','Progress']);
   await expect(tabs.getByRole('tab',{name:'Game',exact:true})).toHaveClass(/is-active/);
 
   const keyboard=page.locator('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"]');
