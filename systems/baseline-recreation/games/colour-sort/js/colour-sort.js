@@ -1081,7 +1081,7 @@ function init() {
   document.addEventListener('pointerup', handleBottlePointerUp);
   document.addEventListener('pointercancel', handleBottlePointerCancel);
   document.addEventListener('keydown', handleKeydown);
-  document.addEventListener('fullscreenchange', renderGame);
+  document.addEventListener('fullscreenchange', render);
   document.addEventListener('baseline:game-storage', event => {
     const authenticated = Boolean(event.detail?.authenticated);
     if (authenticated === storageAuth) return;
