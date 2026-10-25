@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-const BASELINE_RECREATION_BUILD = 'RECREATION_MOBILE_STREAK_20261025_1';
+const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_STATUS_20261025_1';
   try{
     window.BASELINE_RECREATION_BUILD = BASELINE_RECREATION_BUILD;
     document.documentElement.setAttribute('data-baseline-recreation-js', BASELINE_RECREATION_BUILD);
