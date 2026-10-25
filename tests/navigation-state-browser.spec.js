@@ -204,7 +204,7 @@ test('Concept detail route survives refresh without Puzzles taking URL ownership
 test('Block Grid and Colour Sort nested tabs survive refresh',async({page})=>{
   await stubGames(page);
   await page.goto('/baseline-recreation/games/block-grid',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>Boolean(globalThis.BaselineBlockGrid));
+  await page.waitForFunction(()=>Boolean(globalThis.BaselineBlockGrid) && globalThis.BASELINE_RECREATION_CORE_READY===true);
   await expect(page.locator('#blockGridPanel')).toHaveClass(/is-active/);
   const blockTiers=page.locator('[data-block-tab="modes"]');
   await expect(blockTiers).toBeVisible();
@@ -214,7 +214,7 @@ test('Block Grid and Colour Sort nested tabs survive refresh',async({page})=>{
   await expect(page.locator('#blockGridModesCard')).toBeVisible();
 
   await page.goto('/baseline-recreation/games/colour-sort',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>Boolean(globalThis.BaselineColourSort));
+  await page.waitForFunction(()=>Boolean(globalThis.BaselineColourSort) && globalThis.BASELINE_RECREATION_CORE_READY===true);
   await expect(page.locator('#colourSortPanel')).toHaveClass(/is-active/);
   const colourTiers=page.locator('[data-colour-tab="levels"]');
   await expect(colourTiers).toBeVisible();
