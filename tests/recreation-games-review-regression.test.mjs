@@ -229,8 +229,9 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(core,/pairsBoardState\.hadFailure = true;[\s\S]*?profiles\.pairs\.cleanWinStreak = 0/);
   assert.match(core,/const cleanWin = !make24State\.hadFailure;[\s\S]*?const nextClean = cleanWin \? profiles\.make24\.cleanWinStreak \+ 1 : 0/);
   assert.match(core,/make24State\.hadFailure = true;[\s\S]*?profiles\.make24\.cleanWinStreak = 0/);
-  assert.match(core,/const cleanWin = !wordState\.hadFailure;[\s\S]*?const nextClean = cleanWin \? profile\.cleanWinStreak \+ 1 : 0/);
-  assert.match(core,/wordState\.hadFailure = true;[\s\S]*?profiles\.detectword\.cleanWinStreak = 0/);
+  assert.match(core,/Detect the Word counts consecutive completed wins[\s\S]*?const nextClean = profile\.cleanWinStreak \+ 1/);
+  assert.doesNotMatch(core,/wordState\.hadFailure = true;\s*profiles\.detectword\.cleanWinStreak = 0;\s*if\(wordState\.guesses\.length >= wordState\.maxGuesses\)/);
+  assert.match(core,/if\(wordState\.guesses\.length >= wordState\.maxGuesses\)\{[\s\S]*?wordState\.hadFailure = true;[\s\S]*?profiles\.detectword\.cleanWinStreak = 0/);
   assert.match(crossnumber,/const cleanWin=Boolean\(round && !round\.hadFailure\)/);
   assert.match(crossnumber,/round\.hadFailure=true;[\s\S]*?profile\.cleanWinStreak=0/);
   assert.match(colourSort,/const cleanWin=!active\.hadFailure/);
@@ -436,8 +437,10 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/id:'masterwork'[\s\S]*?nodes:17[\s\S]*?fixed:1/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-bank\{[\s\S]*?grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
   assert.match(crossnumber,/const mobile=window\.matchMedia\?\.\('\(max-width:820px\)'\)\.matches[\s\S]*?if\(mobile\)[\s\S]*?removeProperty\('width'\)/);
-  assert.match(crossnumberCss,/mobile Cross Number playability authority[\s\S]*?#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)!important/);
-  assert.match(crossnumberCss,/grid-template-columns:repeat\(var\(--crossnumber-cols,13\),34px\)!important/);
+  assert.match(crossnumberCss,/mobile Cross Number fit authority[\s\S]*?#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)!important/);
+  assert.match(crossnumberCss,/grid-template-columns:repeat\(var\(--crossnumber-cols,13\),minmax\(0,1fr\)\)!important/);
+  assert.match(crossnumberCss,/\.crossnumber-board-scroll,[\s\S]*?overflow:hidden!important/);
+  assert.doesNotMatch(crossnumberCss,/grid-template-columns:repeat\(var\(--crossnumber-cols,13\),(?:32|34)px\)!important/);
   assert.match(crossnumber,/refs\.bank\.addEventListener\('pointerdown'[\s\S]*?createTouchDragGhost/);
   assert.match(crossnumber,/document\.elementFromPoint\(clientX,clientY\)[\s\S]*?is-touch-drop-target/);
   assert.match(crossnumber,/function finishTouchDrag\(event,cancelled\)[\s\S]*?placeTile\(dropCell\.dataset\.node,state\.tileId\)/);
@@ -506,6 +509,14 @@ test('common Recreation actions use compact icons with hover/focus hotkey toolti
 test('Recreation tab rows leave room for selected outlines instead of clipping them',()=>{
   assert.match(nonRealmCss,/\.game-toggle-row[\s\S]*?overflow:visible!important/);
   assert.match(nonRealmCss,/Recreation tab-outline clipping authority[\s\S]*?:is\(\.tabs,\.game-toggle-row,\.trackcoin-tab-row,\.crossnumber-tab-row,\.weight-coherence-tab-row\)/);
+});
+
+test('mobile Recreation roots keep controls in flow and avoid duplicate Make The Number inputs',()=>{
+  assert.match(core,/if\(gameId === 'make24' && isMobileGameViewport\(\)\)\{[\s\S]*?duplicateKeypad[\s\S]*?\.remove\(\);[\s\S]*?return;/);
+  assert.match(recreationCss,/\.is-mobile-game-root\{[\s\S]*?box-sizing:border-box!important[\s\S]*?height:100dvh!important[\s\S]*?overflow-y:auto!important[\s\S]*?overflow-x:hidden!important/);
+  assert.match(recreationCss,/\.is-mobile-game-root \.game-window-actions\{[\s\S]*?position:static!important[\s\S]*?background:transparent!important/);
+  assert.match(recreationCss,/\.trackcoin-scene\{[\s\S]*?grid-template-rows:none!important[\s\S]*?grid-auto-rows:max-content!important/);
+  assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-scene\{[\s\S]*?grid-template-rows:none!important[\s\S]*?align-content:start!important/);
 });
 
 test('mobile fullscreen cards stay in normal flow instead of overlapping the play surface',()=>{
