@@ -579,5 +579,6 @@ test('canonical and legacy recreation routes preserve direct game destinations o
   assert.match(htaccess,/baseline-recreation\/games\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|block-grid\|colour-sort/);
   assert.match(core,/function recreationStateFromCleanPath\(\)/);
   assert.match(core,/base \+ '\/games\/'/);
-  assert.match(core,/normaliseGameId\(rest\.split\('\/'\)\[0\]\)/);
+  assert.match(core,/const routeSlug = String\(rest\.split\('\/'\)\[0\] \|\| ''\)\.toLowerCase\(\)/);
+  assert.match(core,/if\(EXTERNAL_GAME_ROUTE_SLUGS\.has\(routeSlug\)\)[\s\S]*?const game = normaliseGameId\(routeSlug\)/);
 });
