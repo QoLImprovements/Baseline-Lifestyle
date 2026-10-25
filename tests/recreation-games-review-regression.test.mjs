@@ -367,8 +367,10 @@ test('extension-game routes clear stale core selection without surrendering exte
   assert.match(extensionSupport,/document\.dispatchEvent\(new CustomEvent\('baseline:game-extension-open'/);
   assert.match(extensionSupport,/detail:\{ id:config\.id, panelId:config\.panelId \}/);
   assert.match(core,/document\.addEventListener\('baseline:game-extension-open'[\s\S]*?selectedGame='';[\s\S]*?renderGamesList\(\)/);
-  assert.match(blockGrid,/game-extension-support\.mjs\?v=RECREATION_COHERENCE_20261023_2/);
-  assert.match(colourSort,/game-extension-support\.mjs\?v=RECREATION_COHERENCE_20261023_2/);
+  assert.match(blockGrid,/game-extension-support\.mjs\?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1/);
+  assert.match(colourSort,/game-extension-support\.mjs\?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1/);
+  assert.match(extensionSupport,/baseline:recreation:core-ready/);
+  assert.match(extensionSupport,/BASELINE_RECREATION_CORE_READY === true/);
 });
 
 test('Block Grid lands from the exact grabbed piece cell and exposes charged specials',()=>{
