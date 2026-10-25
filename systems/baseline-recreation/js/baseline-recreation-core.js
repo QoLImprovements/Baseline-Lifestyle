@@ -1104,6 +1104,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
   const normaliseWordProfile = CORE_PROFILE_RULES.normaliseWordProfile;
   const normaliseRuleShiftProfile = CORE_PROFILE_RULES.normaliseRuleShiftProfile;
   const normaliseTrackCoinProfile = CORE_PROFILE_RULES.normaliseTrackCoinProfile;
+  const highestUnlockedTrackCoinTier = CORE_PROFILE_RULES.highestUnlockedTrackCoinTier;
+  if(typeof highestUnlockedTrackCoinTier !== 'function') throw new Error('games_profile_trackcoin_unlock_authority_missing');
 
 
 
