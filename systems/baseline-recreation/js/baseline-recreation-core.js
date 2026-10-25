@@ -196,7 +196,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   }
   function startButtonLabel(_gameId){ return 'New Game'; }
   function autoNextButtonLabel(gameId){
-    return 'Auto-Next: ' + (autoNextEnabled(gameId) ? 'On' : 'Off');
+    return 'Auto New Game: ' + (autoNextEnabled(gameId) ? 'On' : 'Off');
   }
   function keypadButtonLabel(open){ return open ? 'Close keypad' : 'Open keypad'; }
   function hotkeyActionLabel(label, _hotkey){ return label; }
@@ -4027,6 +4027,7 @@ function toggleGameFullscreen(gameId){
 
       const gameRoot = gameCardElement(id) || panel.querySelector('[data-game-play-root="' + id + '"]');
       const windowActions = gameRoot ? gameRoot.querySelector('.game-window-actions') : null;
+      const specificActions = gameRoot ? gameRoot.querySelector('.game-specific-actions') : null;
       qsa('[data-game-fullscreen="' + id + '"]', panel).forEach(function(existingBtn){
         if(id === 'ninja' || isTouchOnlyGameDevice()) existingBtn.remove();
       });
@@ -4077,19 +4078,29 @@ function toggleGameFullscreen(gameId){
       if(backBtn) backBtn.style.order = '5';
 
       if(fullBtn && windowActions && fullBtn.parentElement!==windowActions) windowActions.appendChild(fullBtn);
-      if(isDesktopKeypadGame(id) && windowActions && !windowActions.querySelector('[data-desktop-keypad-toggle="' + id + '"]')){
-        const keyboardBtn = document.createElement('button');
-        keyboardBtn.className = 'action ghost desktop-keypad-toggle';
-        keyboardBtn.type = 'button';
-        keyboardBtn.setAttribute('data-desktop-keypad-toggle', id);
-        keyboardBtn.setAttribute('aria-pressed', 'false');
-        keyboardBtn.setAttribute('aria-label', keypadButtonLabel(false));
-        keyboardBtn.title=keypadButtonLabel(false)+' — '+SITEWIDE_KEYBOARD_HOTKEY_LABEL;
-        keyboardBtn.classList.add('game-shell-action','game-shell-action--icon','game-shell-action--keyboard');
-        keyboardBtn.innerHTML = keyboardIconMarkup(false);
-        setHotkeyCaption(keyboardBtn,SITEWIDE_KEYBOARD_HOTKEY_LABEL);
-        const autoNextBtn = windowActions.querySelector('[data-auto-next-toggle]');
-        windowActions.insertBefore(keyboardBtn, autoNextBtn || null);
+      if(isDesktopKeypadGame(id) && gameRoot){
+        let keyboardBtn = gameRoot.querySelector('[data-desktop-keypad-toggle="' + id + '"]');
+        let keypadHost = specificActions;
+        if(!keypadHost){
+          keypadHost = document.createElement('div');
+          keypadHost.className = 'game-specific-actions';
+          keypadHost.setAttribute('aria-label', id === 'detectword' ? 'Detect The Word game controls' : 'Make The Number game controls');
+          if(windowActions) windowActions.before(keypadHost);
+          else gameRoot.appendChild(keypadHost);
+        }
+        if(!keyboardBtn){
+          keyboardBtn = document.createElement('button');
+          keyboardBtn.className = 'action ghost desktop-keypad-toggle';
+          keyboardBtn.type = 'button';
+          keyboardBtn.setAttribute('data-desktop-keypad-toggle', id);
+          keyboardBtn.setAttribute('aria-pressed', 'false');
+          keyboardBtn.setAttribute('aria-label', keypadButtonLabel(false));
+          keyboardBtn.title=keypadButtonLabel(false)+' — '+SITEWIDE_KEYBOARD_HOTKEY_LABEL;
+          keyboardBtn.classList.add('game-shell-action','game-shell-action--icon','game-shell-action--keyboard');
+          keyboardBtn.innerHTML = keyboardIconMarkup(false);
+          setHotkeyCaption(keyboardBtn,SITEWIDE_KEYBOARD_HOTKEY_LABEL);
+        }
+        if(keyboardBtn.parentElement!==keypadHost) keypadHost.appendChild(keyboardBtn);
       }
     });
     syncDesktopKeypadState();
