@@ -41,15 +41,15 @@ test('Diet Log exact inner view and date survive refresh and history',async({pag
 
 test('Massage Library category survives refresh Back and Forward',async({page})=>{
   await page.goto('/baseline-massage/library',{waitUntil:'domcontentloaded'});
-  await page.locator('[data-library-category="Body Areas"]').click();
+  await page.locator('#massageLibraryTabs [data-library-category="Body Areas"]').click();
   await expect(page).toHaveURL(/library-category=body-areas/);
   await page.reload({waitUntil:'domcontentloaded'});
-  await expect(page.locator('[data-library-category="Body Areas"]')).toHaveAttribute('aria-selected','true');
-  await page.locator('[data-library-category="Massage Feelings / Themes"]').click();
+  await expect(page.locator('#massageLibraryTabs [data-library-category="Body Areas"]')).toHaveAttribute('aria-selected','true');
+  await page.locator('#massageLibraryTabs [data-library-category="Massage Feelings / Themes"]').click();
   await page.goBack();
-  await expect(page.locator('[data-library-category="Body Areas"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#massageLibraryTabs [data-library-category="Body Areas"]')).toHaveAttribute('aria-selected','true');
   await page.goForward();
-  await expect(page.locator('[data-library-category="Massage Feelings / Themes"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#massageLibraryTabs [data-library-category="Massage Feelings / Themes"]')).toHaveAttribute('aria-selected','true');
 });
 
 test('Massage planner mode survives refresh and history',async({page})=>{
@@ -68,10 +68,10 @@ test('Puzzles exact non-default jigsaw survives refresh Back and Forward',async(
   await page.goto('/baseline-recreation/puzzles',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
   await page.locator('[data-puzzle-type="jigsaws"]').click();
-  await expect(page).toHaveURL(/[?&]puzzle=jigsaws/);
+  await expect(page).toHaveURL(/\/baseline-recreation\/puzzles\/jigsaws$/);
   const id='tears-without-witness';
   await page.locator('[data-jigsaw-id="'+id+'"]').click();
-  expect(new URL(page.url()).searchParams.get('jigsaw')).toBe(id);
+  expect(new URL(page.url()).pathname).toBe('/baseline-recreation/puzzles/jigsaws/'+id);
   await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',id);
   await expect(page.locator('#weightCoherenceTitle')).toHaveText('Tears Without Witness');
   await page.reload({waitUntil:'domcontentloaded'});
@@ -93,7 +93,7 @@ test('every registered jigsaw restores its rendered selection after a real refre
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesRegistry?.jigsaws?.length));
   const jigsaws=await page.evaluate(()=>globalThis.BaselinePuzzlesRegistry.jigsaws.map(item=>({id:item.id,title:item.title})));
   for(const item of jigsaws){
-    await page.goto('/baseline-recreation/puzzles?puzzle=jigsaws&jigsaw='+encodeURIComponent(item.id),{waitUntil:'domcontentloaded'});
+    await page.goto('/baseline-recreation/puzzles/jigsaws/'+encodeURIComponent(item.id),{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>document.documentElement.hasAttribute('data-weight-of-coherence-jigsaw'));
     await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',item.id);
     await expect(page.locator('#weightCoherenceTitle')).toHaveText(item.title);
@@ -106,13 +106,13 @@ test('every registered jigsaw restores its rendered selection after a real refre
 
 test('Puzzles Jigsaws and Crossnumber views survive refresh',async({page})=>{
   await stubGames(page);
-  await page.goto('/baseline-recreation/puzzles?puzzle=jigsaws',{waitUntil:'domcontentloaded'});
+  await page.goto('/baseline-recreation/puzzles/jigsaws',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary.getView())).toBe('jigsaws');
   await page.reload({waitUntil:'domcontentloaded'});
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('jigsaws');
 
-  await page.goto('/baseline-recreation/puzzles?puzzle=crossnumber',{waitUntil:'domcontentloaded'});
+  await page.goto('/baseline-recreation/puzzles/crossnumber',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary.getView())).toBe('crossnumber');
   await page.reload({waitUntil:'domcontentloaded'});
@@ -137,10 +137,17 @@ test('Skincare routine Week Month calendar state survives refresh',async({page})
 });
 
 test('Fitness My Plan subviews survive refresh and history',async({page})=>{
-  await page.goto('/baseline-fitness/my-plan',{waitUntil:'domcontentloaded'});
-  await page.locator('[data-plan-view="completed"]').click({force:true});
+  await page.goto('/baseline-fitness/my-plan/completed',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.documentElement.hasAttribute('data-baseline-fitness-runtime'));
   await expect(page).toHaveURL(/\/baseline-fitness\/my-plan\/completed$/);
+  await expect(page.locator('[data-plan-view="completed"]')).toHaveAttribute('aria-selected','true');
   await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.documentElement.hasAttribute('data-baseline-fitness-runtime'));
+  await expect(page.locator('[data-plan-view="completed"]')).toHaveAttribute('aria-selected','true');
+  await page.goto('/baseline-fitness/my-plan/future',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.documentElement.hasAttribute('data-baseline-fitness-runtime'));
+  await page.goBack();
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-plan\/completed$/);
   await expect(page.locator('[data-plan-view="completed"]')).toHaveAttribute('aria-selected','true');
 });
 
@@ -197,13 +204,21 @@ test('Block Grid and Colour Sort nested tabs survive refresh',async({page})=>{
   await stubGames(page);
   await page.goto('/baseline-recreation/games/block-grid',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselineBlockGrid));
-  await page.locator('[data-block-tab="modes"]').click();
+  await expect(page.locator('#blockGridPanel')).toHaveClass(/is-active/);
+  const blockTiers=page.locator('[data-block-tab="modes"]');
+  await expect(blockTiers).toBeVisible();
+  await blockTiers.click();
+  await expect(page).toHaveURL(/[?&]view=modes/);
   await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('#blockGridModesCard')).toBeVisible();
 
   await page.goto('/baseline-recreation/games/colour-sort',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselineColourSort));
-  await page.locator('[data-colour-tab="levels"]').click();
+  await expect(page.locator('#colourSortPanel')).toHaveClass(/is-active/);
+  const colourTiers=page.locator('[data-colour-tab="levels"]');
+  await expect(colourTiers).toBeVisible();
+  await colourTiers.click();
+  await expect(page).toHaveURL(/[?&]view=levels/);
   await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('#colourSortLevelsCard')).toBeVisible();
 });
