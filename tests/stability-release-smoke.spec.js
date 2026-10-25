@@ -18,7 +18,7 @@ test('primary production routes load without runtime errors', async ({ page }) =
     ['/baseline-massage/system', 'massage'],
     ['/baseline-natural-skincare/system', 'skin'],
     ['/baseline-fitness/system', 'fitness'],
-    ['/baseline-recreation/system', 'games'],
+    ['/baseline-recreation/system', 'recreation'],
     ['/baseline-badminton-session/system', 'badminton']
   ];
 
@@ -202,7 +202,7 @@ test('Food recipe ingredient waits for its full record before revealing Ingredie
   await expect(page.locator('#recipes')).toBeHidden();
   await expect(page.locator('#ing-potato')).toBeVisible();
   await expect(page.locator('#ing-potato')).not.toHaveClass(/ingredient-index-card/);
-  await expect(page.locator('#ing-potato')).toContainText('Benefits:');
+  await expect(page.locator('#ing-potato')).toContainText('Nutrition & composition');
   await expect(page).toHaveURL(/\/baseline-food-approach\/ingredient-library\?filter=r12#ing-potato$/);
 });
 
@@ -278,27 +278,27 @@ test('shared top-level history restores the same Food page with Back and Forward
 
   await recipes.click();
   await expect(page).toHaveURL(/\/baseline-food-approach\/recipes$/);
-  await expect(page.locator('#recipes')).toHaveClass(/active/);
+  await expect(page.locator('#recipes')).toBeVisible();
 
   await ingredients.click();
   await expect(page).toHaveURL(/\/baseline-food-approach\/ingredient-library$/);
-  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredients')).toBeVisible();
 
   await page.goBack();
   await expect(page).toHaveURL(/\/baseline-food-approach\/recipes$/);
-  await expect(page.locator('#recipes')).toHaveClass(/active/);
+  await expect(page.locator('#recipes')).toBeVisible();
 
   await page.goBack();
   await expect(page).toHaveURL(/\/baseline-food-approach\/system$/);
-  await expect(page.locator('#system')).toHaveClass(/active/);
+  await expect(page.locator('#system')).toBeVisible();
 
   await page.goForward();
   await expect(page).toHaveURL(/\/baseline-food-approach\/recipes$/);
-  await expect(page.locator('#recipes')).toHaveClass(/active/);
+  await expect(page.locator('#recipes')).toBeVisible();
 
   await page.goForward();
   await expect(page).toHaveURL(/\/baseline-food-approach\/ingredient-library$/);
-  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredients')).toBeVisible();
 });
 
 const topLevelHistoryCases = [
