@@ -662,6 +662,8 @@ test('Fitness saves a generated plan and reloads it through the account API', as
 });
 
 test('Recreation restores account progress and keeps a game playable', async ({ page }) => {
+  const recreationPageErrors=[];
+  page.on('pageerror',(error)=>recreationPageErrors.push(String(error&&error.stack||error&&error.message||error)));
   const profiles = {
     pairs: { app: 'pairs', level: 4, xp: 0, bank: 25, boardsCleared: 7, gamesPlayed: 7, currentStreak: 0, bestStreak: 2, cleanWinStreak: 0, skillPoints: 0, skills: {} },
     make24: { app: 'make24', level: 1, xp: 0, bank: 0, puzzlesSolved: 0, gamesPlayed: 0, currentStreak: 0, bestStreak: 0, cleanWinStreak: 0, skillPoints: 0, skills: {} },
@@ -716,9 +718,27 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await expect(page.locator('.trackcoin-pick-prompt')).toHaveText('Choose the cup');
   const selectableCup=page.locator('#trackCoinScene .trackcoin-cup.is-selectable').first();
   await expect(selectableCup).toBeVisible();
+  await page.evaluate(()=>{
+    window.__trackCoinPointerTrace=[];
+    const record=(event)=>{
+      const target=event.target instanceof Element ? event.target.closest('.trackcoin-cup[data-trackcoin-pick]') : null;
+      if(target) window.__trackCoinPointerTrace.push({type:event.type,cup:target.getAttribute('data-trackcoin-pick')||'',phase:document.querySelector('#trackCoinScene')?.className||''});
+    };
+    document.addEventListener('pointerdown',record,true);
+    document.addEventListener('click',record,true);
+  });
   await selectableCup.click();
+  await page.waitForTimeout(200);
+  const trackCoinDiagnostic=await page.evaluate(()=>({
+    sceneClass:document.querySelector('#trackCoinScene')?.className||'',
+    trace:Array.isArray(window.__trackCoinPointerTrace)?window.__trackCoinPointerTrace:[]
+  }));
+  if(!trackCoinDiagnostic.sceneClass.includes('is-resolved')){
+    throw new Error('Track Coin click did not resolve. Diagnostic='+JSON.stringify(trackCoinDiagnostic)+' pageErrors='+JSON.stringify(recreationPageErrors));
+  }
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-resolved/);
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-phase-review/);
+  expect(recreationPageErrors).toEqual([]);
 
   // Regression: Rule Shift Round Status must render the shared status contract,
   // not merely contain source CSS that loses in the cascade.
