@@ -3041,17 +3041,20 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     return { xpGain, coinGain, levelUps, cleanPct, previousSpeed, roundSpeed, nextSpeed:trackCoinCurrentSpeedPercent(profile) };
   }
   function chooseTrackCoinCup(choiceRaw){
-    if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
+    // Pick phase is the single interaction authority. A separate pickLocked
+    // guard could become stale while the rendered cup was visibly selectable,
+    // causing taps/clicks to flash but be ignored.
+    if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.resolved) return false;
+    trackCoinState.pickLocked = true;
     cancelTrackCoinAnimation();
     const choice=String(choiceRaw==null?'':choiceRaw);
     let pickedCup=trackCoinState.cups.find(function(cup){ return cup.id===choice; });
     if(!pickedCup){
       const choiceIndex=Number(choiceRaw);
-      if(Number.isNaN(choiceIndex)) return;
+      if(Number.isNaN(choiceIndex)){ trackCoinState.pickLocked=false; return false; }
       pickedCup=trackCoinState.cups[choiceIndex];
     }
-    if(!pickedCup) return;
-    trackCoinState.pickLocked = true;
+    if(!pickedCup){ trackCoinState.pickLocked=false; return false; }
     trackCoinState.resolved = true;
     trackCoinState.phase = 'review';
     trackCoinState.revealAll = true;
@@ -3066,6 +3069,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     resolveNinjaBonuses();
     renderAll();
     scheduleAutoNext('trackcoin', function(){ startTrackCoinRound({ startWindowMs:3000 }); }, AUTO_NEXT_DELAYS.trackcoin);
+    return true;
   }
   function resumeRestoredTrackCoinRound(){
     if(!trackCoinState||!trackCoinState.restoredWaiting||trackCoinState.resolved) return;
@@ -3136,7 +3140,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_COHERENCE_20261023_2';
     qsa('.trackcoin-cup[data-trackcoin-pick]',refs.trackCoinBoard).forEach(function(cup){
       const commitChoice=function(event){
         if(!cup.classList.contains('is-selectable')) return;
-        if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.pickLocked || trackCoinState.resolved) return;
+        if(!trackCoinState || trackCoinState.phase!=='pick' || trackCoinState.resolved) return;
         if(event){ event.preventDefault(); event.stopPropagation(); }
         chooseTrackCoinCup(cup.getAttribute('data-trackcoin-pick'));
       };
