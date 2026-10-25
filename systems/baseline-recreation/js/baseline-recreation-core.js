@@ -919,6 +919,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     const query = params.toString();
     return query ? (route + '?' + query) : route;
   }
+  const EXTERNAL_GAME_ROUTE_SLUGS = new Set(['block-grid','colour-sort','darts-focused','badminton-focused']);
   function recreationStateFromCleanPath(){
     try{
       const path = String(window.location.pathname || '').toLowerCase().replace(/\/+$/,'');
@@ -929,7 +930,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       if(path === base + '/games') return { tab:'games', game:'', panel:'' };
       if(path.indexOf(base + '/games/') !== 0) return null;
       const rest = path.slice((base + '/games/').length).replace(/^\/+/, '');
-      const game = normaliseGameId(rest.split('/')[0]);
+      const routeSlug = String(rest.split('/')[0] || '').toLowerCase();
+      if(EXTERNAL_GAME_ROUTE_SLUGS.has(routeSlug)) return { tab:'games', game:'', panel:'', externalGame:routeSlug };
+      const game = normaliseGameId(routeSlug);
       let requestedPanel = '';
       try{ requestedPanel = new URLSearchParams(window.location.search || '').get('panel') || ''; }catch(_error){}
       return game ? { tab:'games', game:game, panel:normalisePanelId(game, requestedPanel) } : { tab:'games', game:'', panel:'' };
@@ -979,22 +982,23 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
         const config = getGamePanelConfig(selectedGame);
         if(config) config.set(legacyState.panel || normalisePanelId(selectedGame, ''));
       }
-      return;
+      return legacyState;
     }
     currentTab = 'system';
     selectedGame = '';
+    return { tab:'system', game:'', panel:'' };
   }
   function restoreFromHashState(options){
     const opts=options||{};
     suspendHashSync = true;
-    applyHashState();
+    const restoredState=applyHashState();
     activateTab(currentTab);
     const routedGame=selectedGame;
     if(opts.useStored===true && routedGame==='pairs'){
       pairsBoardState=null;
       pairsIdleMessage='Choose a board tier and press New Game when you are ready.';
     }
-    selectGame(routedGame);
+    if(!restoredState?.externalGame) selectGame(routedGame);
     suspendHashSync = false;
     if(window.location.hash) syncHashState('replace');
     safeRenderAll();
