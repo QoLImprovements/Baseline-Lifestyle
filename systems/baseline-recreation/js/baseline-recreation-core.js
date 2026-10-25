@@ -1858,7 +1858,6 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_MOBILE_STREAK_20261025_1';
       renderPairsBoard();
       refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs,currentPairsTier().name);
       enhanceCoreRoundStatusCard('pairs',refs.pairsRoundSummary);
-      enhanceCoreRoundStatusCard('pairs',refs.pairsRoundSummary);
     }, 860 + ((profiles.pairs.skills.insight || 0) * 120));
   }
   function spendPairsSkill(skillId){
@@ -1960,6 +1959,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_MOBILE_STREAK_20261025_1';
       : '';
     refs.pairsBoard.innerHTML = cardsHtml + resultHtml;
     refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs,currentPairsTier().name);
+    enhanceCoreRoundStatusCard('pairs',refs.pairsRoundSummary);
   }
   function renderPairsSummary(){
     const profile = profiles.pairs;
