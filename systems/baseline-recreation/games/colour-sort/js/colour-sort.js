@@ -287,7 +287,9 @@ function statusHtml() {
   }
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
-    + '<div class="round-status-previous">Previous round - '+number(profile.lastRoundXp)+' XP</div>'
+    + '<section class="round-status-previous" aria-label="Previous Round"><div class="round-status-previous-heading">Previous Round</div><div class="round-status-previous-grid">'
+    + '<div><span>Exp</span><strong>'+number(profile.lastRoundXp)+' XP</strong></div>'
+    + '</div></section>'
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+number(profile.cleanWinStreak)+'</strong></div>'
@@ -363,6 +365,14 @@ function renderGame() {
     </div>`;
   levelEntranceMotion = false;
   syncAutoNextControl();
+  const statusCard=root.querySelector('.round-status-card');
+  const roundTabs=globalThis.BaselineRoundStatusTabs;
+  if(statusCard&&roundTabs?.enhance){
+    roundTabs.enhance(statusCard,APP,{
+      tierHtml:document.getElementById('colourSortLevelsCard')?.innerHTML||'',
+      skillsHtml:'<div class="round-status-empty-pane">Colour Sort currently has no skill tree.</div>'
+    });
+  }
 }
 
 function tierDescription(tier){
