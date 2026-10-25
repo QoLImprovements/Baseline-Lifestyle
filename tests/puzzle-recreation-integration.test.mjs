@@ -178,15 +178,19 @@ test('Block Grid and Colour Sort use the shared Recreation Auto-Next authority',
 
   assert.match(core, /AUTO_NEXT_GAMES = \[[^\]]*'blockgrid'[^\]]*'coloursort'[^\]]*'crossnumber'/);
   assert.match(core, /window\.BaselineGamesAutoNext/);
+  assert.match(core, /register:registerAutoNextGame/);
+  assert.match(core, /complete:completeAutoNext/);
   assert.match(core, /blockGridPanel' \? 'blockgrid'/);
   assert.match(core, /colourSortPanel' \? 'coloursort'/);
 
   assert.match(block, /data-auto-next-toggle="\$\{APP\}"/);
-  assert.match(block, /autoNextApi\(\)\?\.schedule\?\.\(APP, startNewGame\)/);
+  assert.match(block, /autoNextApi\(\)\?\.register\?\.\(APP, startNewGame/);
+  assert.match(block, /autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(block, /autoNextApi\(\)\?\.clear\?\.\(APP\)/);
 
   assert.match(colour, /data-auto-next-toggle="\$\{APP\}"/);
-  assert.match(colour, /autoNextApi\(\)\?\.schedule\?\.\(APP, \(\) => startTierGame\(completedTier\)\)/);
+  assert.match(colour, /autoNextApi\(\)\?\.register\?\.\([\s\S]*?startTierGame\(profile\.selectedTier\)/);
+  assert.match(colour, /autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(colour, /autoNextApi\(\)\?\.clear\?\.\(APP\)/);
 });
 
