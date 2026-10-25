@@ -555,10 +555,8 @@ html.is-dragging-block-grid-special body{
 }
 
 
-/* 2026-10-24 Block Grid windowed composition + score progression.
-   Windowed play uses a compact left-of-board control cluster, never a tall
-   information rail. Round Status remains a normal Recreation card below the
-   play row. */
+/* Block Grid skill/progression presentation.
+   Layout ownership lives in the canonical Recreation composition above. */
 #blockGridPanel .block-grid-skill-unlock-list{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
