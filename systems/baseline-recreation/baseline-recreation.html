@@ -50,7 +50,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/systems/baseline-recreation/games/baseline-realm/exploration/css/exploration-jrpg.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-style="exploration"/>
 <link href="/systems/baseline-recreation/games/baseline-realm/ninja-training/css/ninja-training.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-style="ninja-training"/>
 <link href="/systems/baseline-recreation/games/baseline-realm/shared/css/realm-mobile.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-mobile="true"/>
-<link href="/systems/baseline-recreation/css/non-realm-game-refinement.css?v=RECREATION_FULLSCREEN_WINDOW_TABS_20261025_2" rel="stylesheet" data-nonrealm-game-refinement="true"/>
+<link href="/systems/baseline-recreation/css/non-realm-game-refinement.css?v=RECREATION_CONTROL_DOCK_20261025_1" rel="stylesheet" data-nonrealm-game-refinement="true"/>
 <link href="/systems/baseline-recreation/css/games-music.css?v=RECREATION_MUSIC_PALETTE_20261022_2" rel="stylesheet" data-games-music-style="true"/>
 </head>
 <body data-app="recreation" data-page="baseline-recreation">
@@ -736,7 +736,8 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="board-wrap game-play-window" data-game-play-window="detectword">
                 <div class="summary-box round-status-card" id="wordRoundSummary"></div>
                 <div class="stack game-play-surface" id="wordBoard" data-game-play-surface="detectword"></div>
-                <div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" id="newWordRoundBtn" data-action="start-word" type="button" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost desktop-keypad-toggle game-control-icon" data-desktop-keypad-toggle="detectword" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="detectword" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button></div>
+                <div class="game-specific-actions" aria-label="Detect The Word game controls"><button class="action ghost desktop-keypad-toggle game-control-icon" data-desktop-keypad-toggle="detectword" type="button" aria-pressed="false">Open Keypad</button></div>
+                <div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" id="newWordRoundBtn" data-action="start-word" type="button" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="detectword" type="button" aria-pressed="false" aria-label="Auto New Game off"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button></div>
               </div>
             </section>
             <section class="card game-card" id="wordSkillCard" hidden>
@@ -806,7 +807,8 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="board-wrap game-play-window" data-game-play-window="make24">
                 <div class="summary-box round-status-card" id="make24RoundSummary"></div>
                 <div class="stack game-play-surface" id="make24Board" data-game-play-surface="make24"></div>
-                <div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" id="newMake24Btn" data-action="start-make24" type="button" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost desktop-keypad-toggle game-control-icon" data-desktop-keypad-toggle="make24" type="button" aria-pressed="false">Open Keypad</button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="make24" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button></div>
+                <div class="game-specific-actions" aria-label="Make The Number game controls"><button class="action ghost desktop-keypad-toggle game-control-icon" data-desktop-keypad-toggle="make24" type="button" aria-pressed="false">Open Keypad</button></div>
+                <div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" id="newMake24Btn" data-action="start-make24" type="button" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="make24" type="button" aria-pressed="false" aria-label="Auto New Game off"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button></div>
               </div>
             </section>
             <section class="card game-card" id="make24SkillCard" hidden>
