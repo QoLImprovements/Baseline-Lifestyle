@@ -968,11 +968,9 @@
     const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
     const mobile=window.matchMedia?.('(max-width:820px)').matches;
 
-    // On phones, preserving a readable cell size is more important than
-    // shrinking the whole equation network until every cell technically fits.
-    // Mobile CSS owns a scrollable board viewport; remove any desktop fitter
-    // dimensions immediately so fullscreen/windowed transitions cannot leave a
-    // microscopic inline size behind.
+    // On phones, CSS fits the entire equation network to the available
+    // width. Remove desktop fitter dimensions so the board can use its
+    // responsive tracks without inheriting a stale inline size.
     if(mobile){
       panel.style.removeProperty('--crossnumber-play-height');
       ['width','height','max-width','max-height'].forEach(function(prop){refs.board.style.removeProperty(prop);});
