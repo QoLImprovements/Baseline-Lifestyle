@@ -319,19 +319,8 @@ html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscr
 }
 #blockGridPanel #blockGridGameCard:fullscreen > .game-window-actions{
   grid-row:6!important;
-  display:flex!important;
-  flex-wrap:wrap!important;
-  align-items:center!important;
-  justify-content:flex-start!important;
-  gap:6px!important;
-  width:calc(100% - 16px)!important;
-  max-width:calc(100% - 16px)!important;
-  min-width:0!important;
-  height:auto!important;
-  margin:0 8px!important;
   padding:8px 0 2px!important;
   border-top:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
-  overflow:visible!important;
   align-self:end!important;
 }
 #blockGridPanel #blockGridGameCard:fullscreen > .block-grid-play-cluster{
