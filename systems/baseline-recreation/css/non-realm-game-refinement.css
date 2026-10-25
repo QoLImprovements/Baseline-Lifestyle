@@ -2314,7 +2314,7 @@ body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trac
    play shows Round as before; fullscreen and mobile game mode expose Tier and
    Skills without leaving the play surface. */
 body[data-app="recreation"] .round-status-tabs{
-  display:none!important;
+  display:grid!important;
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:6px!important;
   width:100%!important;
@@ -2378,10 +2378,6 @@ body[data-app="recreation"] .round-status-empty-pane{
   color:var(--games-muted)!important;
   font-size:13px!important;
   line-height:1.45!important;
-}
-body[data-app="recreation"] :fullscreen .round-status-card[data-round-status-game] .round-status-tabs,
-body[data-app="recreation"] .is-mobile-game-root .round-status-card[data-round-status-game] .round-status-tabs{
-  display:grid!important;
 }
 body[data-app="recreation"] :fullscreen .round-status-card[data-round-status-game],
 body[data-app="recreation"] .is-mobile-game-root .round-status-card[data-round-status-game]{
