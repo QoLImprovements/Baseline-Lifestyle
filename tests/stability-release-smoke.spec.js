@@ -785,7 +785,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(Math.abs((trackSceneBox.y+(trackSceneBox.height/2))-(trackBoardBox.y+(trackBoardBox.height/2)))).toBeLessThanOrEqual(8);
   expect(await trackStatus.evaluate((node)=>getComputedStyle(node).alignSelf)).toBe('start');
   expect(trackStatusBox.height).toBeLessThan(trackCardBox.height*.7);
-  expect(await page.locator('#trackCoinGamePanel .game-window-actions').evaluate((node)=>getComputedStyle(node).flexWrap)).toBe('wrap');
+  expect(await page.locator('#trackCoinGamePanel .game-window-actions').evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
 
@@ -859,11 +859,18 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await expect(page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Progress');
   await wordTabs.getByRole('tab',{name:'Game',exact:true}).click();
 
-  const wordKeyboard=page.locator('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"]');
-  const wordStart=page.locator('#wordGameCard .game-window-actions #newWordRoundBtn');
-  const wordAuto=page.locator('#wordGameCard .game-window-actions [data-auto-next-toggle="detectword"]');
+  const wordKeyboard=page.locator('#wordGameCard .game-specific-actions [data-desktop-keypad-toggle="detectword"]');
+  const wordDock=page.locator('#wordGameCard .game-window-actions.game-common-actions');
+  const wordStart=wordDock.locator('#newWordRoundBtn');
+  const wordAuto=wordDock.locator('[data-auto-next-toggle="detectword"]');
+  const wordSettings=wordDock.locator('[data-games-settings]');
+  const wordMusic=wordDock.locator('[data-games-music-quick]');
+  const wordFull=wordDock.locator('[data-game-fullscreen="detectword"]');
   const wordKeyboardIcon=wordKeyboard.locator('.game-shell-action__svg');
-  for(const locator of [wordKeyboard,wordStart,wordAuto,wordKeyboardIcon]) await expect(locator).toBeVisible();
+  for(const locator of [wordKeyboard,wordStart,wordAuto,wordSettings,wordMusic,wordFull,wordKeyboardIcon]) await expect(locator).toBeVisible();
+  await expect(wordAuto).toHaveAttribute('aria-label',/Auto New Game/);
+  expect(await wordDock.evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
+
   const wordGeometry=await page.evaluate(()=>{
     const rect=(selector)=>{
       const node=document.querySelector(selector);
@@ -873,10 +880,14 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
       return {x:r.x,y:r.y,width:r.width,height:r.height,display:style.display,visibility:style.visibility};
     };
     return {
-      keyboard:rect('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"]'),
+      dock:rect('#wordGameCard .game-window-actions.game-common-actions'),
+      keyboard:rect('#wordGameCard .game-specific-actions [data-desktop-keypad-toggle="detectword"]'),
       start:rect('#wordGameCard .game-window-actions #newWordRoundBtn'),
       auto:rect('#wordGameCard .game-window-actions [data-auto-next-toggle="detectword"]'),
-      icon:rect('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"] .game-shell-action__svg')
+      settings:rect('#wordGameCard .game-window-actions [data-games-settings]'),
+      music:rect('#wordGameCard .game-window-actions [data-games-music-quick]'),
+      fullscreen:rect('#wordGameCard .game-window-actions [data-game-fullscreen="detectword"]'),
+      icon:rect('#wordGameCard .game-specific-actions [data-desktop-keypad-toggle="detectword"] .game-shell-action__svg')
     };
   });
   for(const [name,box] of Object.entries(wordGeometry)){
@@ -889,15 +900,28 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   const wordKeyboardBox=wordGeometry.keyboard;
   const wordStartBox=wordGeometry.start;
   const wordAutoBox=wordGeometry.auto;
+  const wordSettingsBox=wordGeometry.settings;
+  const wordMusicBox=wordGeometry.music;
+  const wordFullBox=wordGeometry.fullscreen;
+  const wordDockBox=wordGeometry.dock;
   const wordIconBox=wordGeometry.icon;
   expect(Math.abs(wordKeyboardBox.width-44)).toBeLessThanOrEqual(1);
   expect(Math.abs(wordKeyboardBox.height-44)).toBeLessThanOrEqual(1);
   const wordKeyboardCx=wordKeyboardBox.x+wordKeyboardBox.width/2;
   const wordKeyboardCy=wordKeyboardBox.y+wordKeyboardBox.height/2;
-  expect(Math.abs(wordKeyboardCy-(wordStartBox.y+wordStartBox.height/2))).toBeLessThanOrEqual(1);
-  expect(Math.abs(wordKeyboardCy-(wordAutoBox.y+wordAutoBox.height/2))).toBeLessThanOrEqual(1);
   expect(Math.abs(wordKeyboardCx-(wordIconBox.x+wordIconBox.width/2))).toBeLessThanOrEqual(1);
   expect(Math.abs(wordKeyboardCy-(wordIconBox.y+wordIconBox.height/2))).toBeLessThanOrEqual(1);
+
+  const cy=(box)=>box.y+box.height/2;
+  const cx=(box)=>box.x+box.width/2;
+  expect(wordStartBox.x).toBeLessThan(wordAutoBox.x);
+  expect(Math.abs(cy(wordStartBox)-cy(wordAutoBox))).toBeLessThanOrEqual(1);
+  expect(wordMusicBox.x).toBeLessThan(wordFullBox.x);
+  expect(Math.abs(cy(wordMusicBox)-cy(wordFullBox))).toBeLessThanOrEqual(1);
+  expect(cy(wordSettingsBox)).toBeLessThan(cy(wordMusicBox));
+  expect(Math.abs(cx(wordSettingsBox)-((cx(wordMusicBox)+cx(wordFullBox))/2))).toBeLessThanOrEqual(2);
+  expect(cx(wordStartBox)).toBeLessThan(wordDockBox.x+wordDockBox.width/2);
+  expect(cx(wordMusicBox)).toBeGreaterThan(wordDockBox.x+wordDockBox.width/2);
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
 
