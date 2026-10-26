@@ -22,7 +22,7 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1';
 
-const BUILD = 'COLOUR_SORT_CONTROL_DOCK_20261025_1';
+const BUILD = 'COLOUR_SORT_MOBILE_COHERENCE_20261026_1';
 const APP = 'coloursort';
 const COLOUR_SORT_TIERS = Object.freeze([
   { id:'starter', name:'Starter', from:1, to:12 },
