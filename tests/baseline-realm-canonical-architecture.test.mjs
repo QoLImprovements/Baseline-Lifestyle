@@ -75,6 +75,8 @@ test('optional Realm scenes remain lazy and isolated',()=>{
 test('Realm controls retain their own native input owner',()=>{
   assert.match(inputs,/pointerEventName = 'click'/);
   assert.match(inputs,/pointerEventCapture = true/);
+  assert.match(inputs,/resolvePointerElement\(event, selector\)/);
+  assert.match(inputs,/event\?\.composedPath[\s\S]*?node\?\.matches\?\.\(selector\)[\s\S]*?event\?\.target\?\.closest\?\.\(selector\)/);
 });
 
 test('canonical Ninja presentation exposes actors and keeps controls interactive',()=>{
