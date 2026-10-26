@@ -662,7 +662,7 @@ test('Fitness saves a generated plan and reloads it through the account API', as
 });
 
 test('Recreation restores account progress and keeps a game playable', async ({ page }) => {
-  test.setTimeout(90000);
+  test.setTimeout(150000);
   const recreationPageErrors=[];
   page.on('pageerror',(error)=>recreationPageErrors.push(String(error&&error.stack||error&&error.message||error)));
   const profiles = {
@@ -976,6 +976,147 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
+
+  // Phone regression: windowed and native fullscreen Recreation must be
+  // game-first, single-column and horizontally contained. Desktop side rails
+  // must never be squeezed into a portrait phone.
+  await page.setViewportSize({width:390,height:844});
+
+  const assertNoHorizontalOverflow=async()=>{
+    const overflow=await page.evaluate(()=>({
+      innerWidth:window.innerWidth,
+      doc:document.documentElement.scrollWidth,
+      body:document.body.scrollWidth
+    }));
+    expect(overflow.doc).toBeLessThanOrEqual(overflow.innerWidth+2);
+    expect(overflow.body).toBeLessThanOrEqual(overflow.innerWidth+2);
+  };
+
+  const coreMobileGames=[
+    {path:'/baseline-recreation/games/pairs',panel:'#pairsPanel',root:'#pairsGameCard',surface:'#pairsBoard',status:'#pairsRoundSummary',game:'pairs'},
+    {path:'/baseline-recreation/games/detect-the-word',panel:'#detectwordPanel',root:'#wordGameCard',surface:'#wordBoard',status:'#wordRoundSummary',game:'detectword'},
+    {path:'/baseline-recreation/games/make-the-number',panel:'#make24Panel',root:'#make24GameCard',surface:'#make24Board',status:'#make24RoundSummary',game:'make24'},
+    {path:'/baseline-recreation/games/track-the-coin',panel:'#trackcoinPanel',root:'#trackCoinGamePanel',surface:'#trackCoinBoard',status:'#trackCoinSummary',game:'trackcoin'},
+    {path:'/baseline-recreation/games/rule-shift',panel:'#ruleshiftPanel',root:'#ruleShiftGameCard',surface:'#ruleShiftBoard',status:'#ruleShiftRoundSummary',game:'ruleshift'}
+  ];
+
+  for(const entry of coreMobileGames){
+    await page.goto(entry.path,{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
+    await expect(page.locator(entry.panel)).toHaveClass(/is-active/);
+    await assertNoHorizontalOverflow();
+
+    const surface=page.locator(entry.surface);
+    const status=page.locator(entry.status);
+    await expect(surface).toBeVisible();
+    await expect(status).toBeVisible();
+    const [surfaceBox,statusBox]=await Promise.all([surface.boundingBox(),status.boundingBox()]);
+    expect(surfaceBox,entry.game+' mobile play surface').not.toBeNull();
+    expect(statusBox,entry.game+' mobile Round Status').not.toBeNull();
+    expect(surfaceBox.y,entry.game+' surface should precede Round Status').toBeLessThanOrEqual(statusBox.y+1);
+
+    const dock=page.locator(entry.root+' .game-window-actions.game-common-actions');
+    await expect(dock).toBeVisible();
+    expect(await dock.evaluate(node=>getComputedStyle(node).display),entry.game+' mobile common dock').toBe('grid');
+
+    const fsButton=page.locator(entry.root+' [data-game-fullscreen="'+entry.game+'"]');
+    await expect(fsButton).toBeVisible();
+    await fsButton.click();
+    await page.waitForFunction((rootId)=>document.fullscreenElement?.id===rootId,entry.root.slice(1));
+    const fsStyle=await page.locator(entry.root).evaluate(node=>({
+      display:getComputedStyle(node).display,
+      direction:getComputedStyle(node).flexDirection,
+      width:node.getBoundingClientRect().width
+    }));
+    expect(fsStyle.display,entry.game+' fullscreen display').toBe('flex');
+    expect(fsStyle.direction,entry.game+' fullscreen direction').toBe('column');
+    expect(fsStyle.width,entry.game+' fullscreen width').toBeLessThanOrEqual(392);
+    const fsTabs=page.locator(entry.root+' > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
+    await expect(fsTabs).toBeVisible();
+    const fsTabsBox=await fsTabs.boundingBox();
+    expect(fsTabsBox).not.toBeNull();
+    expect(fsTabsBox.width).toBeLessThanOrEqual(390);
+    await assertNoHorizontalOverflow();
+    await page.evaluate(()=>document.exitFullscreen());
+    await page.waitForFunction(()=>document.fullscreenElement===null);
+  }
+
+  // Block Grid: Score/Skills are a compact gameplay rail immediately followed
+  // by the board/tray, so specials remain reachable without scrolling past
+  // XP, Round Status and tier information.
+  await page.goto('/baseline-recreation/games/block-grid',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(globalThis.BaselineBlockGrid) && globalThis.BASELINE_RECREATION_CORE_READY===true);
+  await expect(page.locator('#blockGridPanel')).toHaveClass(/is-active/);
+  await page.locator('#blockGridGameCard [data-block-action="new"]').click();
+  const mobileBlockCard=page.locator('#blockGridGameCard');
+  const mobileBlockRail=mobileBlockCard.locator('.block-grid-score-skills-rail');
+  const mobileBlockPlay=mobileBlockCard.locator('.block-grid-play-cluster');
+  const mobileBlockBoard=mobileBlockCard.locator('.block-grid-board');
+  const mobileBlockStatus=mobileBlockCard.locator('.round-status-card');
+  const mobileBlockDock=mobileBlockCard.locator('.game-window-actions.game-common-actions');
+  for(const locator of [mobileBlockRail,mobileBlockPlay,mobileBlockBoard,mobileBlockStatus,mobileBlockDock]) await expect(locator).toBeVisible();
+  const [mobileRailBox,mobilePlayBox,mobileBoardBox,mobileStatusBox]=await Promise.all([
+    mobileBlockRail.boundingBox(),mobileBlockPlay.boundingBox(),mobileBlockBoard.boundingBox(),mobileBlockStatus.boundingBox()
+  ]);
+  for(const box of [mobileRailBox,mobilePlayBox,mobileBoardBox,mobileStatusBox]) expect(box).not.toBeNull();
+  expect(mobilePlayBox.y).toBeGreaterThanOrEqual(mobileRailBox.y+mobileRailBox.height-2);
+  expect(mobilePlayBox.y-(mobileRailBox.y+mobileRailBox.height)).toBeLessThanOrEqual(18);
+  expect(mobileStatusBox.y).toBeGreaterThanOrEqual(mobilePlayBox.y+mobilePlayBox.height-2);
+  expect(mobileBoardBox.width).toBeLessThanOrEqual(390);
+  expect(await mobileBlockDock.evaluate(node=>getComputedStyle(node).display)).toBe('grid');
+  await assertNoHorizontalOverflow();
+
+  await mobileBlockCard.locator('[data-block-action="fullscreen"]').click();
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='blockGridGameCard');
+  const blockFsStyle=await mobileBlockCard.evaluate(node=>({display:getComputedStyle(node).display,direction:getComputedStyle(node).flexDirection}));
+  expect(blockFsStyle).toEqual({display:'flex',direction:'column'});
+  const [blockFsRail,blockFsPlay]=await Promise.all([mobileBlockRail.boundingBox(),mobileBlockPlay.boundingBox()]);
+  expect(blockFsRail).not.toBeNull();
+  expect(blockFsPlay).not.toBeNull();
+  expect(Math.abs(blockFsRail.x-blockFsPlay.x)).toBeLessThanOrEqual(2);
+  expect(blockFsPlay.y).toBeGreaterThanOrEqual(blockFsRail.y+blockFsRail.height-2);
+  await assertNoHorizontalOverflow();
+  await page.evaluate(()=>document.exitFullscreen());
+  await page.waitForFunction(()=>document.fullscreenElement===null);
+
+  // Colour Sort keeps the bottles and local Undo/Hint/Restart controls ahead of
+  // status/progression on phone.
+  await page.goto('/baseline-recreation/games/colour-sort',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(globalThis.BaselineColourSort) && globalThis.BASELINE_RECREATION_CORE_READY===true);
+  await expect(page.locator('#colourSortPanel')).toHaveClass(/is-active/);
+  await page.locator('#colourSortGameCard [data-colour-action="new"]').click();
+  const colourBoard=page.locator('#colourSortGameCard .colour-sort-board');
+  const colourStatus=page.locator('#colourSortGameCard .round-status-card');
+  const [colourBoardBox,colourStatusBox]=await Promise.all([colourBoard.boundingBox(),colourStatus.boundingBox()]);
+  expect(colourBoardBox).not.toBeNull();
+  expect(colourStatusBox).not.toBeNull();
+  expect(colourBoardBox.y).toBeLessThan(colourStatusBox.y);
+  await assertNoHorizontalOverflow();
+  await page.locator('#colourSortGameCard [data-colour-action="fullscreen"]').click();
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='colourSortGameCard');
+  expect(await page.locator('#colourSortGameCard').evaluate(node=>getComputedStyle(node).flexDirection)).toBe('column');
+  await assertNoHorizontalOverflow();
+  await page.evaluate(()=>document.exitFullscreen());
+  await page.waitForFunction(()=>document.fullscreenElement===null);
+
+  // Cross Number preserves its board + number bank as one phone-width play
+  // unit and uses the same top fullscreen tabs rather than a desktop side rail.
+  await page.goto('/baseline-recreation/puzzles/crossnumber',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true && globalThis.BaselinePuzzlesLibrary?.getView?.()==='crossnumber');
+  await expect(page.locator('#crossnumberPanel')).toBeVisible();
+  const crossRoot=page.locator('#crossnumberGamePanel');
+  await page.locator('#crossnumberGamePanel [data-crossnumber-action="new"]').click();
+  await expect(crossRoot.locator('.crossnumber-play-layout')).toBeVisible();
+  await assertNoHorizontalOverflow();
+  await page.locator('#crossnumberGamePanel [data-crossnumber-action="fullscreen"]').click();
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='crossnumberGamePanel');
+  expect(await crossRoot.evaluate(node=>getComputedStyle(node).flexDirection)).toBe('column');
+  const crossTabs=page.locator('#crossnumberGamePanel > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
+  await expect(crossTabs).toBeVisible();
+  await assertNoHorizontalOverflow();
+  await page.evaluate(()=>document.exitFullscreen());
+  await page.waitForFunction(()=>document.fullscreenElement===null);
+
   expect(recreationPageErrors).toEqual([]);
 });
 
