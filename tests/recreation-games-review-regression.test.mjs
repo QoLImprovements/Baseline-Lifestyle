@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_DOCK_20261025_4/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_MOBILE_COHERENCE_20261026_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -138,8 +138,8 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
   assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_EXTENSION_ROUTE_OWNERSHIP_20261025_2/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_CONTROL_DOCK_20261025_1/);
-  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_CONTROL_DOCK_20261025_1/);
+  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_MOBILE_COHERENCE_20261026_1/);
+  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_MOBILE_COHERENCE_20261026_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -499,7 +499,7 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/Cross Number touch-drag authority/);
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
-  assert.match(html,/crossnumber\.css\?v=CROSS_NUMBER_CONTROL_DOCK_20261025_1/);
+  assert.match(html,/crossnumber\.css\?v=CROSS_NUMBER_MOBILE_COHERENCE_20261026_1/);
   assert.match(html,/crossnumber\.js\?v=CROSS_NUMBER_FULLSCREEN_WINDOW_TABS_20261025_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
@@ -569,11 +569,28 @@ test('mobile Recreation roots keep controls in flow and avoid duplicate Make The
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-scene\{[\s\S]*?grid-template-rows:none!important[\s\S]*?align-content:start!important/);
 });
 
-test('mobile fullscreen cards stay in normal flow instead of overlapping the play surface',()=>{
+test('mobile Recreation uses a game-first single-column authority in windowed and fullscreen',()=>{
   const colourCss=read('systems/baseline-recreation/games/colour-sort/css/colour-sort.css');
-  assert.match(nonRealmCss,/mobile playability authority[\s\S]*?\.round-status-card[\s\S]*?max-width:100%!important/);
-  assert.match(nonRealmCss,/\.game-common-actions\{[\s\S]*?grid-template-columns:repeat\(4,42px\)!important/);
-  assert.match(colourCss,/mobile fullscreen flow[\s\S]*?#colourSortGameCard:fullscreen\{[\s\S]*?display:flex!important[\s\S]*?flex-direction:column!important/);
+  assert.match(nonRealmCss,/FINAL MOBILE RECREATION AUTHORITY/);
+  assert.match(nonRealmCss,/#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard[\s\S]*?> \.game-play-window[\s\S]*?display:flex!important[\s\S]*?flex-direction:column!important/);
+  assert.match(nonRealmCss,/> \.game-play-window > \.game-play-surface\{[\s\S]*?order:1!important/);
+  assert.match(nonRealmCss,/> \.game-play-window > \.game-specific-actions\{[\s\S]*?order:2!important/);
+  assert.match(nonRealmCss,/> \.game-play-window > \.game-window-actions\.game-common-actions\{[\s\S]*?order:3!important/);
+  assert.match(nonRealmCss,/> \.game-play-window > \.round-status-card\{[\s\S]*?order:4!important/);
+  assert.match(nonRealmCss,/grid-template-columns:42px 42px minmax\(8px,1fr\) 42px 42px!important/);
+  assert.match(nonRealmCss,/:fullscreen\{[\s\S]*?display:flex!important[\s\S]*?flex-direction:column!important[\s\S]*?overflow-y:auto!important/);
+  assert.match(nonRealmCss,/\.game-fullscreen-window-tabbar\{[\s\S]*?width:100%!important/);
+
+  assert.match(blockCss,/FINAL BLOCK GRID MOBILE AUTHORITY/);
+  assert.match(blockCss,/\.block-grid-score-skills-rail\{[\s\S]*?order:2!important[\s\S]*?grid-template-columns:minmax\(72px,88px\) minmax\(0,1fr\)!important/);
+  assert.match(blockCss,/\.block-grid-play-cluster\{[\s\S]*?order:3!important/);
+  assert.match(blockCss,/> \.game-live-xp\{[\s\S]*?order:5!important/);
+  assert.match(blockCss,/> \.round-status-card\{[\s\S]*?order:6!important/);
+
+  assert.match(colourCss,/FINAL COLOUR SORT MOBILE AUTHORITY/);
+  assert.match(colourCss,/> \.colour-sort-board\{[\s\S]*?order:3!important/);
+  assert.match(crossnumberCss,/FINAL CROSS NUMBER MOBILE AUTHORITY/);
+  assert.match(crossnumberCss,/> \.crossnumber-play-layout\{[\s\S]*?order:2!important/);
 });
 
 test('canonical and legacy recreation routes preserve direct game destinations on refresh',()=>{
