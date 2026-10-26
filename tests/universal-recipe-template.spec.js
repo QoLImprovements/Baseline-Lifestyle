@@ -300,7 +300,8 @@ test('Food recipe subtab route state also survives refresh without exposing anot
   await expect(card).toBeVisible();
   await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
   await expect(card.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
-  expect(new URL(page.url()).searchParams.get('view')).toBe('details');
+  expect(new URL(page.url()).pathname).toBe('/baseline-food-approach/recipes/tomato-and-red-pepper-sauce');
+  expect(new URL(page.url()).searchParams.get('view')).toBeNull();
 
   await page.goto('/baseline-food-approach/recipes/creamy-mushroom-sauce');
   const next = page.locator('#r5');

@@ -20,9 +20,9 @@ import {
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
+} from '../../../js/game-extension-support.mjs?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1';
 
-const BUILD = 'COLOUR_SORT_AUTONEXT_20261025_1';
+const BUILD = 'COLOUR_SORT_CONTROL_DOCK_20261025_1';
 const APP = 'coloursort';
 const COLOUR_SORT_TIERS = Object.freeze([
   { id:'starter', name:'Starter', from:1, to:12 },
@@ -285,9 +285,11 @@ function statusHtml() {
       : (mechanics.coverBuried?'Covered layers reveal only when they reach the top.':'Only the contiguous exposed colour can pour.');
     outcome=(statusMessage||'Select a bottle, then a destination.')+' '+mechanicText;
   }
+  const previous=globalThis.BaselineRoundStatusTabs?.previousRoundHtml?.(profile)
+    || '<section class="round-status-previous"><div class="round-status-previous-heading">Previous Round</div><div class="round-status-previous-grid"><div><span>Exp</span><strong>'+number(profile.lastRoundXp)+' XP</strong></div></div></section>';
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
-    + '<div class="round-status-previous">Previous round - '+number(profile.lastRoundXp)+' XP</div>'
+    + previous
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(tier.name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+number(profile.cleanWinStreak)+'</strong></div>'
@@ -323,7 +325,7 @@ function renderGame() {
   if (!root) return;
   const active = puzzle();
   if (!active) {
-    root.innerHTML = `<div class="colour-sort-empty"><p>${escapeHtml(tierById(profile.selectedTier).name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-colour-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-colour-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
+    root.innerHTML = `<div class="colour-sort-empty"><div class="summary-box round-status-card" aria-live="polite">${statusHtml()}</div><p>${escapeHtml(tierById(profile.selectedTier).name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-colour-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto New Game off"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-colour-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
     syncAutoNextControl();
     return;
   }
@@ -358,7 +360,7 @@ function renderGame() {
     </div>
     <div class="game-window-actions game-common-actions">
       <button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-colour-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button>
-      <button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button>
+      <button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto New Game off"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button>
       <button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-colour-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button>
     </div>`;
   levelEntranceMotion = false;
@@ -448,9 +450,11 @@ function setTab(name, historyMode = 'none') {
 
 function render() {
   renderGameInfo();
-  renderGame();
   renderLevels();
   renderProgress();
+  renderGame();
+  setTab(colourTabFromLocation(), 'none');
+  globalThis.BaselineFullscreenTabs?.sync?.(APP);
   shell.refreshOverview();
 }
 
@@ -1051,7 +1055,7 @@ const shell = createGameExtensionShell({
   name:'Colour Sort',
   order:20,
   art:'/systems/baseline-recreation/games/colour-sort/art/colour-sort-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=RECREATION_FLEX_CONTROLS_20261025_1',
+  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=COLOUR_SORT_CONTROL_DOCK_20261025_1',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `${tierById(profile.selectedTier).name} Tier · ${profile.gamesPlayed} games` : 'Ready',
@@ -1077,7 +1081,7 @@ function init() {
   document.addEventListener('pointerup', handleBottlePointerUp);
   document.addEventListener('pointercancel', handleBottlePointerCancel);
   document.addEventListener('keydown', handleKeydown);
-  document.addEventListener('fullscreenchange', renderGame);
+  document.addEventListener('fullscreenchange', render);
   document.addEventListener('baseline:game-storage', event => {
     const authenticated = Boolean(event.detail?.authenticated);
     if (authenticated === storageAuth) return;

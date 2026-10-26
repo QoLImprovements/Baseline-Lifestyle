@@ -255,6 +255,11 @@ export function createGameExtensionShell(config) {
     document.addEventListener('click', handleClick, true);
     window.addEventListener('popstate', syncFromBrowserHistory);
     requestAnimationFrame(initialRouteOpen);
+    if (globalThis.BASELINE_RECREATION_CORE_READY === true) {
+      requestAnimationFrame(initialRouteOpen);
+    } else {
+      window.addEventListener('baseline:recreation:core-ready', initialRouteOpen, { once:true });
+    }
   }
 
   return Object.freeze({ init, open, close, ensurePanel, ensureOverviewEntry, refreshOverview });

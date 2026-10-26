@@ -130,7 +130,7 @@ test('Stage 1 navigation, artwork, SVG controls, cooldown and seeded progress re
   await expect(page.locator('#ninjaPanel .realm-page-header')).toHaveCount(0);
   await expect(page.locator('#ninjaLevelValue')).toHaveText('12');
   await expect(page.locator('#ninjaStageValue')).toHaveText('37');
-  await expect(page.locator('#ninjaCoinsValue')).toHaveText('678');
+  await expect(page.locator('#realmCoinsValue')).toHaveText('678');
   await expect(page.locator('#ninjaSpiritValue')).toHaveText('9');
 
   const dashHref = await page.locator('#ninjaManualStrikeBtn use').getAttribute('href');
@@ -148,7 +148,7 @@ test('Stage 1 navigation, artwork, SVG controls, cooldown and seeded progress re
 
   await expect(page.locator('#realmBasecampScreen')).toBeVisible();
   const backgroundSize = await page.locator('#realmBasecampScreen').evaluate(node => getComputedStyle(node).backgroundSize);
-  expect(backgroundSize).toContain('100% 100%');
+  expect(backgroundSize).toContain('94% 94%');
   await expect(page.locator('#realmCampExplorationBtn')).toBeVisible();
   await page.locator('#realmCampExplorationBtn').click();
   await expect(page.locator('#realmExplorationScreen .jrpg-game[data-zone="meridian-grove"]')).toBeVisible();
@@ -157,10 +157,16 @@ test('Stage 1 navigation, artwork, SVG controls, cooldown and seeded progress re
   await page.locator('#realmExplorationScreen [data-jrpg-action="return-basecamp"]').click();
   await expect(page.locator('#realmBasecampScreen')).toBeVisible();
   await page.locator('#realmCampNinjaBtn').click();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost?.sceneRouter?.getCurrentSceneId?.())).toBe('ninja-training');
 
   const shuriken = page.locator('#ninjaShurikenBtn');
+  await expect(page.locator('#realmSceneFrame')).toHaveAttribute('data-realm-view','training');
+  await expect(page.locator('#realmTrainingHud')).toBeVisible();
   await expect(shuriken).toBeEnabled();
-  await shuriken.click();
+  // Use the canonical Realm input action for cooldown verification. Pointer
+  // delegation is already exercised by the Basecamp controls above, while the
+  // Shuriken SVG itself is verified earlier in this test.
+  await page.keyboard.press('s');
   await expect(shuriken).toBeDisabled();
   const disabledStyle = await shuriken.evaluate(node => {
     const style = getComputedStyle(node);

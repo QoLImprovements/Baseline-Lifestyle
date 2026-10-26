@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
+const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1';
   try{
     window.BASELINE_RECREATION_BUILD = BASELINE_RECREATION_BUILD;
     document.documentElement.setAttribute('data-baseline-recreation-js', BASELINE_RECREATION_BUILD);
@@ -196,7 +196,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
   }
   function startButtonLabel(_gameId){ return 'New Game'; }
   function autoNextButtonLabel(gameId){
-    return 'Auto-Next: ' + (autoNextEnabled(gameId) ? 'On' : 'Off');
+    return 'Auto New Game: ' + (autoNextEnabled(gameId) ? 'On' : 'Off');
   }
   function keypadButtonLabel(open){ return open ? 'Close keypad' : 'Open keypad'; }
   function hotkeyActionLabel(label, _hotkey){ return label; }
@@ -423,6 +423,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
     if(gameId === 'detectword' && refs.wordBoard && document.getElementById('wordGuessInput') && !q('.mobile-game-keypad[data-keypad="detectword"]', refs.wordBoard)){
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(function(letter){ return keypadButton('detectword', letter.toLowerCase(), letter, 'mobile-game-key--letter'); }).join('');
       refs.wordBoard.insertAdjacentHTML('beforeend', '<div class="mobile-game-keypad mobile-word-keypad" data-keypad="detectword" aria-label="Word input keyboard">' + letters + keypadButton('detectword','backspace','⌫','mobile-game-key--utility') + keypadButton('detectword','clear','Clear','mobile-game-key--utility') + keypadButton('detectword','submit','Submit','mobile-game-key--submit') + '</div>');
+    }
+    if(gameId === 'make24' && isMobileGameViewport()){
+      const duplicateKeypad = refs.make24Board ? q('.mobile-game-keypad[data-keypad="make24"]', refs.make24Board) : null;
+      if(duplicateKeypad) duplicateKeypad.remove();
+      return;
     }
     if(gameId === 'make24' && refs.make24Board && document.getElementById('make24ExpressionInput') && !q('.mobile-game-keypad[data-keypad="make24"]', refs.make24Board)){
       const keys = ['7','8','9','(','4','5','6',')','1','2','3','+','0','-','*','/'];
@@ -765,7 +770,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
     qsa('[data-auto-next-toggle]').forEach(function(btn){
       const gameId = btn.getAttribute('data-auto-next-toggle') || '';
       const enabled = autoNextEnabled(gameId);
-      const label='Auto-next: '+(enabled?'On':'Off');
+      const label='Auto New Game: '+(enabled?'On':'Off');
       btn.setAttribute('aria-pressed', String(enabled));
       btn.setAttribute('aria-label',label);
       btn.classList.toggle('is-active', enabled);
@@ -870,6 +875,15 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
   function currentPanelIdForGame(gameId){ const config = getGamePanelConfig(gameId); return config ? normalisePanelId(gameId, config.get()) : ''; }
 
   function recreationBaseRoute(){ return '/baseline-recreation'; }
+  function externalGameRouteSlugFromLocation(){
+    try{
+      const path=String(window.location.pathname||'').toLowerCase().replace(/\/+$/,'');
+      const prefix='/baseline-recreation/games/';
+      if(path.indexOf(prefix)!==0) return '';
+      const routeSlug=String(path.slice(prefix.length).split('/')[0]||'').trim();
+      return EXTERNAL_GAME_ROUTE_SLUGS.has(routeSlug) ? routeSlug : '';
+    }catch(_error){ return ''; }
+  }
   function recreationCleanRouteForState(){
     const base = recreationBaseRoute();
     let route = base + '/system';
@@ -877,7 +891,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
     let currentParams = null;
     try{ currentParams = new URLSearchParams(window.location.search || ''); }catch(_error){ currentParams = new URLSearchParams(); }
 
-    const externalGameExtension = String(document.documentElement.getAttribute('data-game-extension-open') || '').trim();
+    const externalGameExtension = String(document.documentElement.getAttribute('data-game-extension-open') || '').trim() || externalGameRouteSlugFromLocation();
     const dartsFocusedOpen = document.documentElement.hasAttribute('data-darts-focused-open');
     const badmintonFocusedOpen = document.documentElement.hasAttribute('data-badminton-focused-open');
 
@@ -914,6 +928,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
     const query = params.toString();
     return query ? (route + '?' + query) : route;
   }
+  const EXTERNAL_GAME_ROUTE_SLUGS = new Set(['block-grid','colour-sort','darts-focused','badminton-focused']);
   function recreationStateFromCleanPath(){
     try{
       const path = String(window.location.pathname || '').toLowerCase().replace(/\/+$/,'');
@@ -924,7 +939,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
       if(path === base + '/games') return { tab:'games', game:'', panel:'' };
       if(path.indexOf(base + '/games/') !== 0) return null;
       const rest = path.slice((base + '/games/').length).replace(/^\/+/, '');
-      const game = normaliseGameId(rest.split('/')[0]);
+      const routeSlug = String(rest.split('/')[0] || '').toLowerCase();
+      if(EXTERNAL_GAME_ROUTE_SLUGS.has(routeSlug)) return { tab:'games', game:'', panel:'', externalGame:routeSlug };
+      const game = normaliseGameId(routeSlug);
       let requestedPanel = '';
       try{ requestedPanel = new URLSearchParams(window.location.search || '').get('panel') || ''; }catch(_error){}
       return game ? { tab:'games', game:game, panel:normalisePanelId(game, requestedPanel) } : { tab:'games', game:'', panel:'' };
@@ -974,22 +991,23 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
         const config = getGamePanelConfig(selectedGame);
         if(config) config.set(legacyState.panel || normalisePanelId(selectedGame, ''));
       }
-      return;
+      return legacyState;
     }
     currentTab = 'system';
     selectedGame = '';
+    return { tab:'system', game:'', panel:'' };
   }
   function restoreFromHashState(options){
     const opts=options||{};
     suspendHashSync = true;
-    applyHashState();
+    const restoredState=applyHashState();
     activateTab(currentTab);
     const routedGame=selectedGame;
     if(opts.useStored===true && routedGame==='pairs'){
       pairsBoardState=null;
       pairsIdleMessage='Choose a board tier and press New Game when you are ready.';
     }
-    selectGame(routedGame);
+    if(!restoredState?.externalGame) selectGame(routedGame);
     suspendHashSync = false;
     if(window.location.hash) syncHashState('replace');
     safeRenderAll();
@@ -1036,7 +1054,20 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
     const pct = cleanWinBonusPct(streak);
     return pct ? ' · Clean Streak Bonus +' + pct + '%' : '';
   }
-  function coherentRoundStatusHtml(label,message,profile,tierName,previousLabel){
+  function previousRoundSectionHtml(profile,extraRows){
+    const previousXp=Math.max(0,Math.round(Number(profile&&profile.lastRoundXp||0)));
+    const rows=[['Exp',previousXp+' XP']].concat(Array.isArray(extraRows)?extraRows:[]);
+    return '<section class="round-status-previous" aria-label="Previous Round">'
+      + '<div class="round-status-previous-heading">Previous Round</div>'
+      + '<div class="round-status-previous-grid">'
+      + rows.map(function(row){
+          const label=Array.isArray(row)?row[0]:'';
+          const value=Array.isArray(row)?row[1]:'';
+          return '<div><span>'+escapeHtml(label||'')+'</span><strong>'+escapeHtml(value==null?'—':String(value))+'</strong></div>';
+        }).join('')
+      + '</div></section>';
+  }
+  function coherentRoundStatusHtml(label,message,profile,tierName,_previousLabel,previousRows){
     const source=String(message||'').trim();
     const rankMatch=source.match(/(?:Player Rank(?: up)?|Rank)\s*\+(\d+)/i);
     const cleaned=source
@@ -1049,18 +1080,111 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
     const cleanStreak=Math.max(0,Math.round(Number(profile&&profile.cleanWinStreak||0)));
     const winningStreak=Math.max(0,Math.round(Number(profile&&profile.currentStreak!==undefined?profile.currentStreak:cleanStreak)));
     const rankUp=rankMatch ? '<div class="round-status-rankup">Ranked Up! Player Rank '+Math.max(1,Math.round(Number(profile&&profile.level||1)))+'</div>' : '';
-    const previousXp=Math.max(0,Math.round(Number(profile&&profile.lastRoundXp||0)));
-    const previousResultLabel=String(previousLabel||'Previous round').trim()||'Previous Round';
     return '<div class="round-status-heading">'+escapeHtml(label||'Round Status')+'</div>'
       + (cleaned?'<div class="round-status-outcome">'+escapeHtml(cleaned)+'</div>':'')
       + rankUp
-      + '<div class="round-status-previous">'+escapeHtml(previousResultLabel)+' - '+previousXp+' XP</div>'
+      + previousRoundSectionHtml(profile,previousRows)
       + '<div class="round-status-metrics">'
       + '<div><span>Current Tier</span><strong>'+escapeHtml(tierName||'—')+'</strong></div>'
       + '<div><span>Winning Streak</span><strong>'+winningStreak+'</strong></div>'
       + '<div><span>Clean Streak Bonus</span><strong>'+cleanWinBonusPct(cleanStreak)+'%</strong></div>'
       + '</div>';
   }
+
+  const FULLSCREEN_WINDOW_TABS=Object.freeze({
+    pairs:{root:'pairsGameCard',tabs:[['game','Game'],['skills','Skills','pairsSkillCard'],['tiers','Tiers','pairsTierCard'],['progress','Progress','pairsProgressCard']]},
+    detectword:{root:'wordGameCard',tabs:[['game','Game'],['skills','Skills','wordSkillCard'],['tiers','Tiers','wordTierCard'],['progress','Progress','wordProgressCard']]},
+    make24:{root:'make24GameCard',tabs:[['game','Game'],['skills','Skills','make24SkillCard'],['tiers','Tiers','make24TierCard'],['progress','Progress','make24ProgressCard']]},
+    trackcoin:{root:'trackCoinGamePanel',tabs:[['game','Game'],['skills','Skills','trackCoinSkillPanel'],['tiers','Tiers','trackCoinTierPanel'],['progress','Progress','trackCoinProgressPanel']]},
+    ruleshift:{root:'ruleShiftGameCard',tabs:[['game','Game'],['skills','Skills','ruleShiftSkillCard'],['tiers','Tiers','ruleShiftTierCard'],['progress','Progress','ruleShiftProgressCard']]},
+    blockgrid:{root:'blockGridGameCard',tabs:[['game','Game'],['skills','Skills','blockGridSkillsCard'],['tiers','Tiers','blockGridModesCard'],['progress','Progress','blockGridProgressCard']]},
+    coloursort:{root:'colourSortGameCard',tabs:[['game','Game'],['tiers','Tiers','colourSortLevelsCard'],['progress','Progress','colourSortProgressCard']]},
+    crossnumber:{root:'crossnumberGamePanel',tabs:[['game','Game'],['skills','Skills','crossnumberSkillPanel'],['tiers','Tiers','crossnumberTierPanel'],['progress','Progress','crossnumberProgressPanel']]}
+  });
+  function fullscreenWindowConfig(gameId){
+    const id=normaliseGameId(gameId)||String(gameId||'').trim().toLowerCase();
+    return {id:id,config:FULLSCREEN_WINDOW_TABS[id]||null};
+  }
+  function cloneFullscreenPanelHtml(sourceId){
+    const source=document.getElementById(sourceId);
+    if(!source) return '<div class="fullscreen-window-empty">This section is not available.</div>';
+    const clone=source.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.removeAttribute('hidden');
+    clone.querySelectorAll('[id]').forEach(function(node){node.removeAttribute('id');});
+    clone.querySelectorAll('[aria-controls],[aria-labelledby],[for]').forEach(function(node){
+      node.removeAttribute('aria-controls');
+      node.removeAttribute('aria-labelledby');
+      node.removeAttribute('for');
+    });
+    return clone.innerHTML;
+  }
+  function fullscreenGameIdFromElement(element){
+    if(!element) return '';
+    const found=Object.entries(FULLSCREEN_WINDOW_TABS).find(function(entry){
+      return entry[1].root===element.id;
+    });
+    return found?found[0]:'';
+  }
+  function setFullscreenWindowView(gameId,view){
+    const pair=fullscreenWindowConfig(gameId);
+    const id=pair.id,config=pair.config;
+    if(!config) return;
+    const root=document.getElementById(config.root);
+    if(!root||document.fullscreenElement!==root) return;
+    const available=config.tabs.map(function(tab){return tab[0];});
+    const next=available.includes(view)?view:'game';
+    root.setAttribute('data-fullscreen-window-view',next);
+    root.style.setProperty('--fullscreen-tab-count',String(Math.max(1,config.tabs.length)));
+    root.querySelectorAll(':scope > .game-fullscreen-window-tabs [data-fullscreen-window-tab]').forEach(function(button){
+      const selected=button.getAttribute('data-fullscreen-window-tab')===next;
+      button.classList.toggle('is-active',selected);
+      button.setAttribute('aria-selected',String(selected));
+      button.tabIndex=selected?0:-1;
+    });
+    const pane=root.querySelector(':scope > .game-fullscreen-window-tabs > .game-fullscreen-window-pane');
+    if(!pane) return;
+    if(next==='game'){
+      pane.hidden=true;
+      pane.innerHTML='';
+      return;
+    }
+    const entry=config.tabs.find(function(tab){return tab[0]===next;});
+    pane.hidden=false;
+    pane.innerHTML=entry&&entry[2]?cloneFullscreenPanelHtml(entry[2]):'<div class="fullscreen-window-empty">This section is not available.</div>';
+  }
+  function syncFullscreenWindowTabs(preferredGameId){
+    const fullscreen=document.fullscreenElement;
+    qsa('.game-fullscreen-window-tabs').forEach(function(shell){
+      if(!fullscreen||!fullscreen.contains(shell)) shell.remove();
+    });
+    if(!fullscreen) return;
+    const inferred=fullscreenGameIdFromElement(fullscreen);
+    const pair=fullscreenWindowConfig(preferredGameId||inferred);
+    const id=pair.id,config=pair.config;
+    if(!config||fullscreen.id!==config.root) return;
+    let shell=fullscreen.querySelector(':scope > .game-fullscreen-window-tabs');
+    const current=fullscreen.getAttribute('data-fullscreen-window-view')||'game';
+    if(!shell){
+      shell=document.createElement('div');
+      shell.className='game-fullscreen-window-tabs';
+      shell.setAttribute('data-fullscreen-window-tabs',id);
+      fullscreen.appendChild(shell);
+    }
+    shell.innerHTML='<div class="game-fullscreen-window-tabbar" role="tablist" aria-label="Game sections">'
+      + config.tabs.map(function(tab){
+          return '<button type="button" role="tab" data-fullscreen-window-tab="'+tab[0]+'">'+tab[1]+'</button>';
+        }).join('')
+      + '</div><section class="game-fullscreen-window-pane" aria-live="polite"></section>';
+    setFullscreenWindowView(id,current);
+  }
+  window.BaselineRoundStatusTabs=Object.freeze({
+    previousRoundHtml:previousRoundSectionHtml
+  });
+  window.BaselineFullscreenTabs=Object.freeze({
+    sync:syncFullscreenWindowTabs,
+    setView:setFullscreenWindowView
+  });
   function shuffle(list){
     const copy = list.slice();
     for(let i = copy.length - 1; i > 0; i -= 1){
@@ -1781,7 +1905,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
       persistPairsRound();
       renderPairsBoard();
       refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs,currentPairsTier().name);
-    }, 860 + ((profiles.pairs.skills.insight || 0) * 120));
+}, 860 + ((profiles.pairs.skills.insight || 0) * 120));
   }
   function spendPairsSkill(skillId){
     const profile = profiles.pairs;
@@ -1867,7 +1991,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
       applyPairsBoardLayout(tier);
       refs.pairsBoard.innerHTML = '<div class="empty-box"><strong>Pairs is ready.</strong><span class="inline-note">' + escapeHtml(pairsIdleMessage) + '</span></div>';
       refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No board is active yet.',profiles.pairs,currentPairsTier().name);
-      return;
+return;
     }
     refs.pairsMovesValue.textContent = String(pairsBoardState.moves);
     refs.pairsMatchedValue.textContent = String(pairsBoardState.matchedPairs) + ' / ' + tier.pairs;
@@ -1881,7 +2005,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
       : '';
     refs.pairsBoard.innerHTML = cardsHtml + resultHtml;
     refs.pairsRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',pairsBoardState.lastMessage,profiles.pairs,currentPairsTier().name);
-  }
+}
   function renderPairsSummary(){
     const profile = profiles.pairs;
     const needed = xpNeededForLevel(profile.level);
@@ -2221,7 +2345,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
       if(refs.make24RerollBtn) refs.make24RerollBtn.disabled = true;
       refs.make24Board.innerHTML = '<div class="empty-box"><strong>Make The Number is ready.</strong><span class="inline-note">' + escapeHtml(make24IdleMessage) + '</span></div>';
       refs.make24RoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No puzzle is active yet.',profiles.make24,currentMake24Tier().name);
-      return;
+return;
     }
     refs.make24MistakesValue.textContent = String(make24State.mistakes);
     refs.make24RoundBankValue.textContent = String(make24State.roundBank);
@@ -2252,7 +2376,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
     refs.make24Board.innerHTML = '<div class="formula-box"><div class="make-number-target"><span>Target</span><strong>' + escapeHtml(String(make24State.target||24)) + '</strong></div><div class="numbers-strip">' + numberButtons + '</div>' + builder + (make24State.revealSolution?'<div class="solution-box">' + escapeHtml(make24State.revealSolution) + '</div>':'') + '</div>';
     refs.make24ExpressionInput=document.getElementById('make24ExpressionInput');
     refs.make24RoundSummary.innerHTML=coherentRoundStatusHtml('Round Status',make24State.lastMessage,profiles.make24,currentMake24Tier().name);
-    injectMobileGameControls('make24');
+injectMobileGameControls('make24');
     syncMobileInputMode('make24');
     syncDesktopKeypadState();
   }
@@ -2588,18 +2712,20 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
       const profile = profiles.detectword;
       profile.wordsSolved += 1;
       profile.currentStreak += 1;
-      const cleanWin = !wordState.hadFailure;
-      const nextClean = cleanWin ? profile.cleanWinStreak + 1 : 0;
+      // Detect the Word counts consecutive completed wins. Intermediate
+      // guesses do not break the clean streak; only an actual game-over does.
+      const nextClean = profile.cleanWinStreak + 1;
       profile.cleanWinStreak = nextClean;
       profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
-      const rewardMult = computeWordRewardMultiplier(profile) * (1 + ((cleanWin ? cleanWinBonusPct(nextClean) : 0) / 100));
+      const rewardMult = computeWordRewardMultiplier(profile) * (1 + (cleanWinBonusPct(nextClean) / 100));
       const bankGain = Math.round(tier.bankReward * (1 + (profile.skills.banker || 0) * 0.10) * rewardMult);
       const xpGain = Math.round(tier.xpReward * (1 + (profile.skills.flow || 0) * 0.08) * rewardMult);
       profile.bank += bankGain;
       profile.lastRoundXp = xpGain;
+      profile.lastRoundWord = String(wordState.secret || '').toUpperCase();
       const levels = levelUpFromGain(profile, xpGain);
       wordState.roundBank += bankGain;
-      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + (cleanWin ? cleanBonusRewardText(nextClean) : '') + (levels ? ' · Player Rank +' + levels : '') + '.';
+      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank Coins · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · Player Rank +' + levels : '') + '.';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
       resolveNinjaBonuses();
@@ -2607,12 +2733,12 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
       completeAutoNext('detectword');
       return;
     }
-    wordState.hadFailure = true;
-    profiles.detectword.cleanWinStreak = 0;
     if(wordState.guesses.length >= wordState.maxGuesses){
+      wordState.hadFailure = true;
       profiles.detectword.currentStreak = 0;
       profiles.detectword.cleanWinStreak = 0;
       profiles.detectword.lastRoundXp = 0;
+      profiles.detectword.lastRoundWord = String(wordState.secret || '').toUpperCase();
       wordState.lastMessage = 'Round ended. Word was ' + wordState.secret.toUpperCase() + '.';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
@@ -2697,8 +2823,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
       refs.wordGuessesValue.textContent = '0 / 6';
       refs.wordRoundBankValue.textContent = '0';
       refs.wordBoard.innerHTML = '<div class="empty-box"><strong>Detect The Word is idle.</strong><span class="inline-note">' + escapeHtml(wordIdleMessage) + '</span></div>';
-      refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No word round is active yet.',profiles.detectword,currentWordTier().name);
-      return;
+      refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No word round is active yet.',profiles.detectword,currentWordTier().name,undefined,[['Previous Word',profiles.detectword.lastRoundWord||'—']]);
+return;
     }
     refs.wordGuessesValue.textContent = wordState.guesses.length + ' / ' + wordState.maxGuesses;
     refs.wordRoundBankValue.textContent = String(wordState.roundBank);
@@ -2724,8 +2850,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
     injectMobileGameControls('detectword');
     syncWordKeypadKnowledge();
     syncDesktopKeypadState();
-    refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',wordState.lastMessage,profiles.detectword,currentWordTier().name);
-    if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
+    refs.wordRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',wordState.lastMessage,profiles.detectword,currentWordTier().name,undefined,[['Previous Word',profiles.detectword.lastRoundWord||'—']]);
+if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
   }
 
   function renderDetectWordSummary(){
@@ -3281,7 +3407,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
     if(trackCoinSummary){
       trackCoinSummary.className = 'summary-box round-status-card trackcoin-game-status' + trackCoinResultClass;
       trackCoinSummary.innerHTML = coherentRoundStatusHtml('Round Status',trackCoinStatusMessage,profile,currentTrackCoinTier().name);
-    }
+}
 
     if(!trackCoinState){
       refs.trackCoinBoard.innerHTML = '<div class="empty-box trackcoin-idle-card"><strong>Track the Coin is idle.</strong><span class="inline-note">Choose a tier and press New Game when you are ready.</span><span class="inline-note">The coin will be shown first, then covered, then shuffled. ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '.</span><span class="inline-note">Use the New Game control at the bottom-right of the game window.</span></div>';
@@ -3710,11 +3836,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
     if(refs.ruleShiftRoundBankValue) refs.ruleShiftRoundBankValue.textContent = ruleShiftState ? ruleShiftState.roundBank : 0;
     if(!ruleShiftState){
       refs.ruleShiftBoard.innerHTML = '<div class="empty-box ruleshift-idle-card"><strong>Rule Shift is idle.</strong><span class="inline-note">' + escapeHtml(ruleShiftIdleMessage) + '</span><span class="inline-note">The target shape is always present. Start when ready.</span></div>';
-      refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No Rule Shift run is active yet.',profiles.ruleshift,currentRuleShiftTier().name,'Previous Run');
-      return;
+      refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status','No Rule Shift run is active yet.',profiles.ruleshift,currentRuleShiftTier().name);
+return;
     }
-    refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',ruleShiftState.lastMessage,profiles.ruleshift,currentRuleShiftTier().name,'Previous Run');
-    if(ruleShiftState.finished){
+    refs.ruleShiftRoundSummary.innerHTML = coherentRoundStatusHtml('Round Status',ruleShiftState.lastMessage,profiles.ruleshift,currentRuleShiftTier().name);
+if(ruleShiftState.finished){
       const finishedTitle = ruleShiftState.failed ? 'Run failed.' : 'Run complete.';
       const finishedPrompt = ruleShiftState.failed ? 'Incorrect answers end the run. Press New Game to try again.' : 'Press New Game to begin another switching run.';
       refs.ruleShiftBoard.innerHTML = '<div class="ruleshift-complete-card' + (ruleShiftState.failed ? ' ruleshift-failed-card' : '') + '"><strong>' + finishedTitle + '</strong><span class="inline-note">' + finishedPrompt + '</span></div>';
@@ -3803,6 +3929,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_AUTONEXT_AUTHORITY_20261025_1';
     renderSystemSummary();
     syncGameButtonLabels();
     renderAutoNextControls();
+    syncFullscreenWindowTabs();
   }
 
   function activateTab(target, options){
@@ -3913,6 +4040,7 @@ function toggleGameFullscreen(gameId){
 
       const gameRoot = gameCardElement(id) || panel.querySelector('[data-game-play-root="' + id + '"]');
       const windowActions = gameRoot ? gameRoot.querySelector('.game-window-actions') : null;
+      const specificActions = gameRoot ? gameRoot.querySelector('.game-specific-actions') : null;
       qsa('[data-game-fullscreen="' + id + '"]', panel).forEach(function(existingBtn){
         if(id === 'ninja' || isTouchOnlyGameDevice()) existingBtn.remove();
       });
@@ -3963,19 +4091,29 @@ function toggleGameFullscreen(gameId){
       if(backBtn) backBtn.style.order = '5';
 
       if(fullBtn && windowActions && fullBtn.parentElement!==windowActions) windowActions.appendChild(fullBtn);
-      if(isDesktopKeypadGame(id) && windowActions && !windowActions.querySelector('[data-desktop-keypad-toggle="' + id + '"]')){
-        const keyboardBtn = document.createElement('button');
-        keyboardBtn.className = 'action ghost desktop-keypad-toggle';
-        keyboardBtn.type = 'button';
-        keyboardBtn.setAttribute('data-desktop-keypad-toggle', id);
-        keyboardBtn.setAttribute('aria-pressed', 'false');
-        keyboardBtn.setAttribute('aria-label', keypadButtonLabel(false));
-        keyboardBtn.title=keypadButtonLabel(false)+' — '+SITEWIDE_KEYBOARD_HOTKEY_LABEL;
-        keyboardBtn.classList.add('game-shell-action','game-shell-action--icon','game-shell-action--keyboard');
-        keyboardBtn.innerHTML = keyboardIconMarkup(false);
-        setHotkeyCaption(keyboardBtn,SITEWIDE_KEYBOARD_HOTKEY_LABEL);
-        const autoNextBtn = windowActions.querySelector('[data-auto-next-toggle]');
-        windowActions.insertBefore(keyboardBtn, autoNextBtn || null);
+      if(isDesktopKeypadGame(id) && gameRoot){
+        let keyboardBtn = gameRoot.querySelector('[data-desktop-keypad-toggle="' + id + '"]');
+        let keypadHost = specificActions;
+        if(!keypadHost){
+          keypadHost = document.createElement('div');
+          keypadHost.className = 'game-specific-actions';
+          keypadHost.setAttribute('aria-label', id === 'detectword' ? 'Detect The Word game controls' : 'Make The Number game controls');
+          if(windowActions) windowActions.before(keypadHost);
+          else gameRoot.appendChild(keypadHost);
+        }
+        if(!keyboardBtn){
+          keyboardBtn = document.createElement('button');
+          keyboardBtn.className = 'action ghost desktop-keypad-toggle';
+          keyboardBtn.type = 'button';
+          keyboardBtn.setAttribute('data-desktop-keypad-toggle', id);
+          keyboardBtn.setAttribute('aria-pressed', 'false');
+          keyboardBtn.setAttribute('aria-label', keypadButtonLabel(false));
+          keyboardBtn.title=keypadButtonLabel(false)+' — '+SITEWIDE_KEYBOARD_HOTKEY_LABEL;
+          keyboardBtn.classList.add('game-shell-action','game-shell-action--icon','game-shell-action--keyboard');
+          keyboardBtn.innerHTML = keyboardIconMarkup(false);
+          setHotkeyCaption(keyboardBtn,SITEWIDE_KEYBOARD_HOTKEY_LABEL);
+        }
+        if(keyboardBtn.parentElement!==keypadHost) keypadHost.appendChild(keyboardBtn);
       }
     });
     syncDesktopKeypadState();
@@ -4101,6 +4239,13 @@ function toggleGameFullscreen(gameId){
       if(openDartsFocused){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } requestDartsFocusedOpen(); return; }
       const openBadmintonFocused = event.target.closest('[data-open-badminton-focused]');
       if(openBadmintonFocused){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } requestBadmintonFocusedOpen(); return; }
+      const fullscreenWindowTab=event.target.closest('[data-fullscreen-window-tab]');
+      if(fullscreenWindowTab){
+        const fullscreen=document.fullscreenElement;
+        const gameId=fullscreenGameIdFromElement(fullscreen);
+        if(gameId) setFullscreenWindowView(gameId,fullscreenWindowTab.getAttribute('data-fullscreen-window-tab')||'game');
+        return;
+      }
       const autoNextToggle = event.target.closest('[data-auto-next-toggle]');
       if(autoNextToggle){ toggleAutoNext(autoNextToggle.getAttribute('data-auto-next-toggle') || ''); return; }
       const gameFullscreen = event.target.closest('[data-game-fullscreen]'); if(gameFullscreen){ toggleGameFullscreen(gameFullscreen.getAttribute('data-game-fullscreen') || ''); return; }
@@ -4356,7 +4501,15 @@ function toggleGameFullscreen(gameId){
     if(typeof window !== 'undefined'){
       window.addEventListener('hashchange', function(){ restoreFromHashState({ useStored:false }); });
       window.addEventListener('popstate', function(){ restoreFromHashState({ useStored:false }); });
-      document.addEventListener('fullscreenchange', function(){ syncDesktopKeypadState(); syncGameButtonLabels(); renderAutoNextControls(); });
+      document.addEventListener('fullscreenchange', function(){
+        const fullscreen=document.fullscreenElement;
+        const gameId=fullscreenGameIdFromElement(fullscreen);
+        if(fullscreen&&gameId) fullscreen.setAttribute('data-fullscreen-window-view','game');
+        syncFullscreenWindowTabs(gameId);
+        syncDesktopKeypadState();
+        syncGameButtonLabels();
+        renderAutoNextControls();
+      });
       document.addEventListener('keydown', function(event){ if(event && event.key === 'Escape') GAMES_HELP_MODAL.close(); });
       window.addEventListener('resize', function(){ ensureGameFullscreenButtons(); syncGameButtonLabels(); renderAutoNextControls(); if(wordState) renderWordBoard(); if(make24State) renderMake24Board(); }, { passive:true });
       window.addEventListener('resize', function(){ syncAllMobileInputModes(); if(selectedGame) ensureGamePlayContract(); syncDesktopKeypadState(); });

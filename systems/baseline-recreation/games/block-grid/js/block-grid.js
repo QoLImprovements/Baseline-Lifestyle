@@ -17,9 +17,9 @@ import {
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/game-extension-support.mjs?v=RECREATION_COHERENCE_20261023_2';
+} from '../../../js/game-extension-support.mjs?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1';
 
-const BUILD = 'BLOCK_GRID_AUTONEXT_20261025_1';
+const BUILD = 'BLOCK_GRID_CONTROL_DOCK_20261025_1';
 const APP = 'blockgrid';
 const BLOCK_SKILLS = Object.freeze([
   { id:'blast', name:'Bomb', icon:'💣', unlockLevel:2, description:'Drag onto the board to clear a 4 × 4 area.' },
@@ -270,9 +270,11 @@ function statusHtml() {
     : active.gameOver
       ? 'Run complete. No remaining piece fits the board.'
       : (selectedPiece >= 0 ? `Piece ${selectedPiece + 1} selected. ` : '') + (statusMessage || 'Keep space available for the next tray.');
+  const previous=globalThis.BaselineRoundStatusTabs?.previousRoundHtml?.(profile,[['Previous Score',number(profile.lastRunScore)+' points']])
+    || '<section class="round-status-previous"><div class="round-status-previous-heading">Previous Round</div><div class="round-status-previous-grid"><div><span>Exp</span><strong>'+number(profile.lastRoundXp)+' XP</strong></div></div></section>';
   return '<div class="round-status-heading">Round Status</div>'
     + '<div class="round-status-outcome">'+escapeHtml(outcome)+'</div>'
-    + '<div class="round-status-previous">Previous Run - '+number(profile.lastRunScore)+' points</div>'
+    + previous
     + '<div class="round-status-metrics">'
     + '<div><span>Current Tier</span><strong>'+escapeHtml(currentMode().name)+'</strong></div>'
     + '<div><span>Winning Streak</span><strong>'+streak+'</strong></div>'
@@ -309,7 +311,7 @@ function renderGame() {
   if (!root) return;
   const active = run();
   if (!active) {
-    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
+    root.innerHTML = `<div class="block-grid-empty"><div class="summary-box round-status-card" id="blockGridStatus" aria-live="polite">${statusHtml()}</div><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto New Game off"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
     syncAutoNextControl();
     return;
   }
@@ -351,7 +353,7 @@ function renderGame() {
     </div>
     <div class="game-window-actions game-common-actions">
       <button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button>
-        <button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto-next off"><span aria-hidden="true">A</span><span class="sr-only">Auto-next</span></button>
+        <button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto New Game off"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button>
         <button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button>
     </div>`;
   resetBoardMotion();
@@ -421,11 +423,21 @@ function blockTabUrl(name) {
 
 function setTab(name, historyMode = 'none') {
   const next = BLOCK_TABS.includes(name) ? name : 'game';
-  document.querySelectorAll('[data-block-tab]').forEach(button => button.classList.toggle('is-active', button.dataset.blockTab === next));
-  for (const id of ['Game','Skills','Modes','Progress']) {
-    const card = document.getElementById(`blockGrid${id}Card`);
-    if (card) card.hidden = id.toLowerCase() !== next;
-  }
+  const cards={
+    game:'blockGridGameCard',
+    skills:'blockGridSkillsCard',
+    modes:'blockGridModesCard',
+    progress:'blockGridProgressCard'
+  };
+  document.querySelectorAll('[data-block-tab]').forEach(button => {
+    const selected=button.dataset.blockTab === next;
+    button.classList.toggle('is-active', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  });
+  Object.entries(cards).forEach(([key,id])=>{
+    const card=document.getElementById(id);
+    if(card) card.hidden=key!==next;
+  });
   if (historyMode !== 'none' && /^\/baseline-recreation\/games\/block-grid\/?$/i.test(String(location.pathname || ''))) {
     try {
       const nextUrl = blockTabUrl(next);
@@ -440,10 +452,12 @@ function setTab(name, historyMode = 'none') {
 
 function render() {
   renderGameInfo();
-  renderGame();
   renderModes();
   renderSkills();
   renderProgress();
+  renderGame();
+  setTab(blockTabFromLocation(), 'none');
+  globalThis.BaselineFullscreenTabs?.sync?.(APP);
   shell.refreshOverview();
 }
 
@@ -996,7 +1010,7 @@ const shell = createGameExtensionShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=BLOCK_GRID_SCORE_SKILLS_RAIL_20261025_1',
+  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=BLOCK_GRID_CONTROL_DOCK_20261025_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `${currentMode().name} Tier · Best ${profile.bestScore}` : 'Ready',
@@ -1017,7 +1031,7 @@ function init() {
   document.addEventListener('dragstart', event => { if(event.target instanceof Element && event.target.closest('#blockGridPanel')) event.preventDefault(); });
   document.addEventListener('pointercancel', () => { destroyDragGhost(); dragState = null; destroySpecialDrag(); previewAnchor = null; paintPreview(); });
   document.addEventListener('keydown', handleKeydown);
-  document.addEventListener('fullscreenchange', renderGame);
+  document.addEventListener('fullscreenchange', render);
   document.addEventListener('baseline:game-storage', event => {
     const authenticated = Boolean(event.detail?.authenticated);
     if (authenticated === storageAuth) return;

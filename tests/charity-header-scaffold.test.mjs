@@ -22,5 +22,5 @@ test('Charity uses canonical header styling and cache-busts shared runtime', () 
   assert.doesNotMatch(html, /baseline-live-stability\.css/);
   assert.match(html, /baseline-header-canonical\.css/);
   assert.match(html, /baseline-protected-access\.js\?v=SAVED_DATA_REVISION_CLIENT_20260823_1/);
-  assert.match(html, /baseline-shared\.js\?v=SITEWIDE_SHARED_JS_20261021_1/);
+  assert.match(html, /baseline-shared\.js\?v=SITEWIDE_SHARED_RECIPE_ROUTE_STABILITY_20261025_1/);
 });

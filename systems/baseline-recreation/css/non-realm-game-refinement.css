@@ -1326,7 +1326,7 @@ body[data-app="recreation"] :is(
     box-sizing:border-box!important;
     display:grid!important;
     grid-template-columns:minmax(0,4fr) var(--recreation-fs-side)!important;
-    grid-template-rows:auto auto minmax(0,1fr) auto auto!important;
+    grid-template-rows:auto auto auto minmax(0,1fr) auto auto!important;
     gap:8px 12px!important;
     width:100vw!important;
     height:100dvh!important;
@@ -1383,7 +1383,7 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-toolbar{
-    grid-row:1!important;
+    grid-row:2!important;
     padding:10px!important;
     border:0!important;
     background:transparent!important;
@@ -1407,7 +1407,7 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-live-xp{
-    grid-row:2!important;
+    grid-row:3!important;
     display:grid!important;
     grid-template-columns:1fr auto!important;
     gap:5px 7px!important;
@@ -1425,7 +1425,7 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > .round-status-card{
-    grid-row:3!important;
+    grid-row:4!important;
     min-height:0!important;
     max-height:100%!important;
     overflow:auto!important;
@@ -1438,7 +1438,7 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > .game-specific-actions{
-    grid-row:4!important;
+    grid-row:5!important;
     justify-content:flex-start!important;
     padding:0 2px!important;
     align-self:end!important;
@@ -1446,8 +1446,8 @@ body[data-app="recreation"] :is(
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
   ):fullscreen > .game-play-window > .game-window-actions{
-    grid-row:5!important;
-    justify-content:flex-start!important;
+    grid-row:6!important;
+    justify-content:center!important;
     padding:8px 0 2px!important;
     margin:0 8px!important;
     border-top:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
@@ -1586,6 +1586,7 @@ body[data-app="recreation"] .round-status-card .round-status-metrics strong{
 /* Keypad icon stays optically and geometrically centred in the 42px control. */
 body[data-app="recreation"] .game-shell-action--keyboard,
 body[data-app="recreation"] .desktop-keypad-toggle.game-control-icon{
+  position:relative!important;
   display:grid!important;
   place-items:center!important;
   width:42px!important;
@@ -1596,11 +1597,14 @@ body[data-app="recreation"] .desktop-keypad-toggle.game-control-icon{
   line-height:0!important;
 }
 body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
   display:block!important;
   width:22px!important;
   height:22px!important;
-  margin:auto!important;
-  transform:none!important;
+  margin:0!important;
+  transform:translate(-50%,-50%)!important;
 }
 
 /* The 80% play column is a play field, not unused dark background. */
@@ -1739,7 +1743,9 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
 
   body[data-app="recreation"] #trackcoinPanel .trackcoin-scene{
     display:grid!important;
-    grid-template-rows:auto auto minmax(280px,1fr)!important;
+    grid-template-rows:none!important;
+    grid-auto-rows:max-content!important;
+    align-content:start!important;
     gap:10px!important;
     overflow:hidden!important;
   }
@@ -1760,8 +1766,9 @@ body[data-app="recreation"] .game-shell-action--keyboard .game-shell-action__svg
   }
   body[data-app="recreation"] #trackcoinPanel .trackcoin-lane{
     position:relative!important;
-    min-height:300px!important;
-    height:100%!important;
+    min-height:230px!important;
+    height:clamp(230px,42dvh,340px)!important;
+    max-height:340px!important;
     overflow:hidden!important;
     touch-action:manipulation!important;
   }
@@ -2009,15 +2016,46 @@ body[data-app="recreation"] #pairsPanel #pairsBoard:not(.is-pairs-idle) .memory-
 body[data-app="recreation"] .round-status-card .round-status-previous,
 body[data-app="recreation"] #crossnumberGame .round-status-previous,
 body[data-app="recreation"] :is(#blockGridGameCard,#colourSortGameCard) .round-status-previous{
+  display:grid!important;
+  gap:7px!important;
   margin:8px 0 10px!important;
-  padding:7px 9px!important;
+  padding:9px 10px!important;
   border:1px solid rgba(var(--recreation-copper-light-rgb),.18)!important;
   border-radius:10px!important;
   background:rgba(var(--recreation-copper-deep-rgb),.10)!important;
   color:var(--games-muted)!important;
-  font-size:12px!important;
-  font-weight:800!important;
   letter-spacing:.015em!important;
+}
+body[data-app="recreation"] .round-status-previous-heading{
+  color:var(--games-ink)!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  letter-spacing:.045em!important;
+  text-transform:uppercase!important;
+}
+body[data-app="recreation"] .round-status-previous-grid{
+  display:grid!important;
+  gap:5px!important;
+}
+body[data-app="recreation"] .round-status-previous-grid>div{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:baseline!important;
+  gap:10px!important;
+  min-width:0!important;
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+body[data-app="recreation"] .round-status-previous-grid span{
+  min-width:0!important;
+  font-weight:700!important;
+}
+body[data-app="recreation"] .round-status-previous-grid strong{
+  min-width:0!important;
+  color:var(--games-ink)!important;
+  font-weight:900!important;
+  text-align:right!important;
+  overflow-wrap:anywhere!important;
 }
 
 /* The fullscreen word workspace should read as the normal Recreation play
@@ -2272,4 +2310,479 @@ body[data-app="recreation"] #trackcoinPanel .trackcoin-scene.is-phase-pick .trac
   cursor:pointer!important;
   touch-action:manipulation!important;
   user-select:none!important;
+}
+
+
+/* 2026-10-25 fullscreen window-tab authority.
+   Fullscreen mirrors the same windowed sections instead of inventing a second
+   navigation model. Game is the default; Skills, Tiers and Progress occupy the
+   existing right-hand information rail while the game surface stays visible. */
+body[data-app="recreation"] .game-fullscreen-window-tabs{
+  display:contents!important;
+}
+body[data-app="recreation"] .game-fullscreen-window-tabbar{
+  display:grid!important;
+  grid-template-columns:repeat(var(--fullscreen-tab-count,4),minmax(0,1fr))!important;
+  gap:5px!important;
+  min-width:0!important;
+}
+body[data-app="recreation"] .game-fullscreen-window-tabbar>button{
+  appearance:none!important;
+  min-width:0!important;
+  min-height:36px!important;
+  padding:6px 5px!important;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.24)!important;
+  border-radius:10px!important;
+  background:rgba(var(--recreation-copper-deep-rgb),.14)!important;
+  color:var(--games-muted)!important;
+  font-family:inherit!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  line-height:1.1!important;
+  cursor:pointer!important;
+}
+body[data-app="recreation"] .game-fullscreen-window-tabbar>button.is-active{
+  border-color:rgba(var(--recreation-copper-light-rgb),.58)!important;
+  background:linear-gradient(180deg,rgba(var(--recreation-copper-light-rgb),.28),rgba(var(--recreation-rose-rgb),.42))!important;
+  color:var(--games-ink)!important;
+}
+body[data-app="recreation"] .game-fullscreen-window-pane[hidden]{
+  display:none!important;
+}
+body[data-app="recreation"] .game-fullscreen-window-pane{
+  min-width:0!important;
+  min-height:0!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  scrollbar-width:thin!important;
+  padding:4px 2px 8px!important;
+  align-self:stretch!important;
+}
+body[data-app="recreation"] .game-fullscreen-window-pane :is(
+  .board-tier-list,.tier-list,.grid-two,.trackcoin-stats,.game-progress-stats,
+  .block-grid-mode-list,.block-grid-skill-unlock-list,.colour-sort-tier-list,
+  .crossnumber-tier-list,.crossnumber-skill-grid,.crossnumber-progress-stats
+){
+  min-width:0!important;
+  max-width:100%!important;
+}
+body[data-app="recreation"] .game-fullscreen-window-pane :is(
+  .tier-btn,.block-grid-mode,.colour-sort-tier-choice,.crossnumber-tier-button
+){
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+body[data-app="recreation"] .fullscreen-window-empty{
+  padding:12px!important;
+  border:1px solid rgba(var(--recreation-copper-light-rgb),.16)!important;
+  border-radius:10px!important;
+  color:var(--games-muted)!important;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-fullscreen-window-tabs > .game-fullscreen-window-tabbar{
+    grid-column:2!important;
+    grid-row:1!important;
+    z-index:3!important;
+    margin:0 8px!important;
+    align-self:start!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-fullscreen-window-tabs > .game-fullscreen-window-pane{
+    grid-column:2!important;
+    grid-row:2 / 6!important;
+    z-index:3!important;
+    margin:0 8px!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen:not([data-fullscreen-window-view="game"]) > :is(.game-toolbar,.game-live-xp){
+    display:none!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen:not([data-fullscreen-window-view="game"]) > .game-play-window > :is(.round-status-card,.game-specific-actions){
+    display:none!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-window-actions.game-common-actions{
+    display:flex!important;
+    justify-content:center!important;
+    align-items:center!important;
+    gap:10px!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen .game-window-actions.game-common-actions > :is(
+    .game-control-icon,.game-shell-action--icon,.desktop-keypad-toggle
+  ){
+    box-sizing:border-box!important;
+    flex:0 0 44px!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    margin:0!important;
+    padding:0!important;
+    display:inline-grid!important;
+    place-items:center!important;
+    line-height:1!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen .desktop-keypad-toggle .game-shell-action__svg{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    display:block!important;
+    width:20px!important;
+    height:20px!important;
+    margin:0!important;
+    transform:translate(-50%,-50%)!important;
+  }
+}
+
+
+
+/* 2026-10-25 coherent two-sided Recreation control dock.
+   Shared controls keep one conceptual position in windowed and fullscreen:
+   New Game + Auto New Game on the left; Settings above Music + Fullscreen
+   on the right. Game-specific controls remain inside the playable window. */
+body[data-app="recreation"] :is(
+  .game-window-actions.game-common-actions,
+  .crossnumber-actions.game-common-actions
+){
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:42px 42px minmax(16px,1fr) 42px 42px!important;
+  grid-template-rows:42px 42px!important;
+  align-items:center!important;
+  justify-content:stretch!important;
+  column-gap:8px!important;
+  row-gap:8px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:92px!important;
+  height:auto!important;
+  margin-top:8px!important;
+  overflow:visible!important;
+}
+body[data-app="recreation"] :is(
+  .game-window-actions.game-common-actions,
+  .crossnumber-actions.game-common-actions
+) > .action{
+  box-sizing:border-box!important;
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+  margin:0!important;
+  padding:0!important;
+  display:inline-grid!important;
+  place-items:center!important;
+}
+body[data-app="recreation"] :is(
+  .game-window-actions.game-common-actions,
+  .crossnumber-actions.game-common-actions
+) > .start-new-game-toggle{
+  grid-column:1!important;
+  grid-row:1 / 3!important;
+  align-self:center!important;
+  justify-self:start!important;
+}
+body[data-app="recreation"] :is(
+  .game-window-actions.game-common-actions,
+  .crossnumber-actions.game-common-actions
+) > .auto-next-toggle{
+  grid-column:2!important;
+  grid-row:1 / 3!important;
+  align-self:center!important;
+  justify-self:start!important;
+}
+body[data-app="recreation"] :is(
+  .game-window-actions.game-common-actions,
+  .crossnumber-actions.game-common-actions
+) > .games-settings-trigger{
+  grid-column:4 / 6!important;
+  grid-row:1!important;
+  align-self:center!important;
+  justify-self:center!important;
+}
+body[data-app="recreation"] :is(
+  .game-window-actions.game-common-actions,
+  .crossnumber-actions.game-common-actions
+) > .games-music-quick-toggle{
+  grid-column:4!important;
+  grid-row:2!important;
+  align-self:center!important;
+  justify-self:end!important;
+}
+body[data-app="recreation"] :is(
+  .game-window-actions.game-common-actions,
+  .crossnumber-actions.game-common-actions
+) > .game-fullscreen-toggle{
+  grid-column:5!important;
+  grid-row:2!important;
+  align-self:center!important;
+  justify-self:end!important;
+}
+
+/* The two games with an optional hardware keyboard keep that toggle local to
+   the game rather than consuming a shared-system control position. */
+body[data-app="recreation"] :is(#wordGameCard,#make24GameCard) .game-specific-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin-top:7px!important;
+}
+body[data-app="recreation"] :is(#wordGameCard,#make24GameCard) .game-specific-actions .desktop-keypad-toggle{
+  position:relative!important;
+  flex:0 0 42px!important;
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+  margin:0!important;
+  padding:0!important;
+  display:inline-grid!important;
+  place-items:center!important;
+}
+
+/* Dynamic extension games have an older idle-state centring rule. The shared
+   dock still owns the full game width so its left/right control groups do not
+   collapse together when no run is active. */
+body[data-app="recreation"] :is(
+  #blockGridGameCard > .block-grid-empty,
+  #colourSortGameCard > .colour-sort-empty
+) > .game-window-actions.game-common-actions{
+  width:100%!important;
+  max-width:100%!important;
+  margin:8px 0 0!important;
+  justify-self:stretch!important;
+}
+
+/* Fullscreen uses the same positions, with the established 44 px icon geometry.
+   Local controls remain local and do not join the shared dock. */
+@media(min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+    #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ):fullscreen :is(.game-window-actions.game-common-actions,.crossnumber-actions.game-common-actions){
+    display:grid!important;
+    grid-template-columns:44px 44px minmax(16px,1fr) 44px 44px!important;
+    grid-template-rows:44px 44px!important;
+    align-items:center!important;
+    justify-content:stretch!important;
+    column-gap:10px!important;
+    row-gap:8px!important;
+    width:calc(100% - 16px)!important;
+    max-width:calc(100% - 16px)!important;
+    min-height:96px!important;
+    margin-inline:8px!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+    #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ):fullscreen :is(.game-window-actions.game-common-actions,.crossnumber-actions.game-common-actions) > .action{
+    flex:none!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+    #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ):fullscreen .game-specific-actions{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:8px!important;
+    max-width:calc(100% - 16px)!important;
+    margin-inline:8px!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions{
+    grid-column:1!important;
+    grid-row:6!important;
+    z-index:5!important;
+    justify-self:end!important;
+    align-self:center!important;
+    width:max-content!important;
+    min-width:0!important;
+    max-width:calc(100% - 24px)!important;
+    margin:0 12px 0 0!important;
+    padding:0!important;
+    pointer-events:auto!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+    #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ):fullscreen .game-specific-actions > .action{
+    flex:0 0 44px!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  body[data-app="recreation"] :is(#wordGameCard,#make24GameCard):fullscreen .game-specific-actions .desktop-keypad-toggle{
+    position:relative!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+  }
+  body[data-app="recreation"] :is(#wordGameCard,#make24GameCard):fullscreen .game-specific-actions .desktop-keypad-toggle .game-shell-action__svg{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    width:20px!important;
+    height:20px!important;
+    margin:0!important;
+    transform:translate(-50%,-50%)!important;
+  }
+}
+
+@media(max-width:820px){
+  body[data-app="recreation"] :is(
+    .game-window-actions.game-common-actions,
+    .crossnumber-actions.game-common-actions
+  ){
+    grid-template-columns:42px 42px minmax(8px,1fr) 42px 42px!important;
+    grid-template-rows:42px 42px!important;
+    column-gap:7px!important;
+    row-gap:7px!important;
+    min-height:91px!important;
+  }
+}
+
+
+/* Exact root-level authority: older fullscreen/windowed rules use ID-scoped
+   !important flex declarations, so the final coherent dock must match that
+   specificity rather than relying on source order alone. */
+body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+):not(:fullscreen) > .game-play-window > .game-window-actions.game-common-actions,
+body[data-app="recreation"] :is(
+  #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+):not(:fullscreen) .game-window-actions.game-common-actions{
+  display:grid!important;
+  grid-template-columns:42px 42px minmax(16px,1fr) 42px 42px!important;
+  grid-template-rows:42px 42px!important;
+  justify-content:stretch!important;
+}
+@media(min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-window-actions.game-common-actions,
+  body[data-app="recreation"] :is(
+    #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ):fullscreen > .game-window-actions.game-common-actions{
+    display:grid!important;
+    grid-template-columns:44px 44px minmax(16px,1fr) 44px 44px!important;
+    grid-template-rows:44px 44px!important;
+    justify-content:stretch!important;
+  }
+}
+
+@media(min-width:821px){
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window > .game-specific-actions > .action{
+    box-sizing:border-box!important;
+    flex:0 0 44px!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    margin:0!important;
+    padding:0!important;
+    display:inline-grid!important;
+    place-items:center!important;
+  }
+}
+
+
+/* Exact child-position authority. Legacy fullscreen compact-control rules set
+   grid-row/grid-column:auto!important on every action; these selectors are
+   deliberately more specific so the coherent two-sided hierarchy survives. */
+body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+) > .game-play-window > .game-window-actions.game-common-actions > .start-new-game-toggle,
+body[data-app="recreation"] :is(
+  #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions > .start-new-game-toggle{
+  grid-column:1!important;
+  grid-row:1 / 3!important;
+  align-self:center!important;
+  justify-self:start!important;
+}
+body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+) > .game-play-window > .game-window-actions.game-common-actions > .auto-next-toggle,
+body[data-app="recreation"] :is(
+  #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions > .auto-next-toggle{
+  grid-column:2!important;
+  grid-row:1 / 3!important;
+  align-self:center!important;
+  justify-self:start!important;
+}
+body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+) > .game-play-window > .game-window-actions.game-common-actions > .games-settings-trigger,
+body[data-app="recreation"] :is(
+  #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions > .games-settings-trigger{
+  grid-column:4 / 6!important;
+  grid-row:1!important;
+  align-self:center!important;
+  justify-self:center!important;
+}
+body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+) > .game-play-window > .game-window-actions.game-common-actions > .games-music-quick-toggle,
+body[data-app="recreation"] :is(
+  #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions > .games-music-quick-toggle{
+  grid-column:4!important;
+  grid-row:2!important;
+  align-self:center!important;
+  justify-self:end!important;
+}
+body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+) > .game-play-window > .game-window-actions.game-common-actions > .game-fullscreen-toggle,
+body[data-app="recreation"] :is(
+  #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions > .game-fullscreen-toggle{
+  grid-column:5!important;
+  grid-row:2!important;
+  align-self:center!important;
+  justify-self:end!important;
 }

@@ -294,9 +294,16 @@ html[data-initial-recipe-route="1"] #recipes .recipe-main{
   position:relative;
 }
 #recipes .recipe-universal-template > .recipe-title-row > .fav-btn[data-tip]::after{
+  content:attr(data-tip);
+  position:absolute;
+  z-index:30;
+  display:block;
+  box-sizing:border-box;
   left:auto;
   right:0;
   top:100%;
+  width:max-content;
+  max-width:min(280px,80vw);
   text-align:left;
 }
 #recipes .recipe-universal-template > .recipe-title-row > .fav-btn.tip-show[data-tip]::after{

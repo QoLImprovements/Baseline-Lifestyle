@@ -7,9 +7,11 @@ import { LEVELS, hintMove } from '../systems/baseline-recreation/games/colour-so
 const read=relative=>fs.readFileSync(new URL('../'+relative,import.meta.url),'utf8');
 const html=read('systems/baseline-recreation/baseline-recreation.html');
 const core=read('systems/baseline-recreation/js/baseline-recreation-core.js');
+const recreationCss=read('systems/baseline-recreation/css/baseline-recreation.css');
 const nonRealmCss=read('systems/baseline-recreation/css/non-realm-game-refinement.css');
 const music=read('systems/baseline-recreation/js/games-music.js');
 const config=read('systems/baseline-recreation/js/games-core-config.js');
+const profileRules=read('systems/baseline-recreation/js/games-profile-rules.js');
 const blockGrid=read('systems/baseline-recreation/games/block-grid/js/block-grid.js');
 const blockCss=read('systems/baseline-recreation/games/block-grid/css/block-grid.css');
 const colourSort=read('systems/baseline-recreation/games/colour-sort/js/colour-sort.js');
@@ -60,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_VERTICAL_PLAY_20261025_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_CONTROL_DOCK_20261025_4/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -92,21 +94,26 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(nonRealmCss,/Detect The Word fullscreen refinement/);
   assert.match(nonRealmCss,/#wordGameCard:fullscreen #wordBoard[\s\S]*?linear-gradient\(160deg,rgba\(var\(--recreation-rose-rgb\),\.24\)/);
   assert.match(nonRealmCss,/#wordGameCard:fullscreen \.word-entry-stack\{[\s\S]*?margin-top:10px!important/);
-  assert.match(nonRealmCss,/final non-Realm coherence authority[\s\S]*?\.game-window-actions\.game-common-actions[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
-  assert.doesNotMatch(nonRealmCss,/2026-10-24 fullscreen control dock/);
-  assert.doesNotMatch(nonRealmCss,/repeat\(7,38px\)/);
-  assert.doesNotMatch(blockCss,/repeat\(7,38px\)/);
-  assert.doesNotMatch(colourCss,/repeat\(7,38px\)/);
-  assert.doesNotMatch(crossnumberCss,/repeat\(7,38px\)/);
-  assert.doesNotMatch(nonRealmCss,/games-settings-trigger\{grid-column:7/);
-  for(const stylesheet of [blockCss,colourCss,crossnumberCss]){
-    assert.doesNotMatch(stylesheet,/games-settings-trigger[^}]*grid-column:7/);
-    assert.doesNotMatch(stylesheet,/game-fullscreen-toggle[^}]*grid-column:7/);
-    assert.doesNotMatch(stylesheet,/games-music-quick-toggle[^}]*grid-column:6/);
-  }
-  assert.match(nonRealmCss,/Extension\/puzzle games keep their own information-row positions[\s\S]*?#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
+  assert.match(nonRealmCss,/coherent two-sided Recreation control dock[\s\S]*?grid-template-columns:42px 42px minmax\(16px,1fr\) 42px 42px!important[\s\S]*?grid-template-rows:42px 42px!important/);
+  assert.match(nonRealmCss,/Exact root-level authority: older fullscreen\/windowed rules[\s\S]*?#trackCoinGamePanel[\s\S]*?game-window-actions\.game-common-actions[\s\S]*?display:grid!important/);
+  assert.match(nonRealmCss,/> \.start-new-game-toggle\{[\s\S]*?grid-column:1!important[\s\S]*?grid-row:1 \/ 3!important/);
+  assert.match(nonRealmCss,/> \.auto-next-toggle\{[\s\S]*?grid-column:2!important[\s\S]*?grid-row:1 \/ 3!important/);
+  assert.match(nonRealmCss,/> \.games-settings-trigger\{[\s\S]*?grid-column:4 \/ 6!important[\s\S]*?grid-row:1!important[\s\S]*?justify-self:center!important/);
+  assert.match(nonRealmCss,/Exact child-position authority[\s\S]*?game-window-actions\.game-common-actions > \.games-settings-trigger[\s\S]*?grid-column:4 \/ 6!important[\s\S]*?grid-row:1!important/);
+  assert.match(nonRealmCss,/> \.games-music-quick-toggle\{[\s\S]*?grid-column:4!important[\s\S]*?grid-row:2!important/);
+  assert.match(nonRealmCss,/> \.game-fullscreen-toggle\{[\s\S]*?grid-column:5!important[\s\S]*?grid-row:2!important/);
+  assert.match(html,/game-specific-actions" aria-label="Detect The Word game controls"[\s\S]*?data-desktop-keypad-toggle="detectword"[\s\S]*?game-window-actions game-common-actions/);
+  assert.match(html,/game-specific-actions" aria-label="Make The Number game controls"[\s\S]*?data-desktop-keypad-toggle="make24"[\s\S]*?game-window-actions game-common-actions/);
+  assert.match(core,/let keypadHost = specificActions[\s\S]*?if\(keyboardBtn\.parentElement!==keypadHost\) keypadHost\.appendChild\(keyboardBtn\)/);
   assert.match(nonRealmCss,/\.round-status-card\{[\s\S]*?align-content:start!important/);
-  assert.match(nonRealmCss,/:fullscreen > \.game-play-window > :is\(\.game-specific-actions,\.game-window-actions\)>\.action\{[\s\S]*?grid-column:auto!important[\s\S]*?flex:0 0 38px!important/);
+});
+
+test('extension game routes remain owned by their extension shells during core startup',()=>{
+  assert.match(core,/EXTERNAL_GAME_ROUTE_SLUGS = new Set\(\['block-grid','colour-sort','darts-focused','badminton-focused'\]\)/);
+  assert.match(core,/if\(EXTERNAL_GAME_ROUTE_SLUGS\.has\(routeSlug\)\) return \{ tab:'games', game:'', panel:'', externalGame:routeSlug \}/);
+  assert.match(core,/const restoredState=applyHashState\(\)[\s\S]*?if\(!restoredState\?\.externalGame\) selectGame\(routedGame\)/);
+  assert.match(core,/function externalGameRouteSlugFromLocation\(\)[\s\S]*?return EXTERNAL_GAME_ROUTE_SLUGS\.has\(routeSlug\) \? routeSlug : ''/);
+  assert.match(core,/const externalGameExtension = String\(document\.documentElement\.getAttribute\('data-game-extension-open'\) \|\| ''\)\.trim\(\) \|\| externalGameRouteSlugFromLocation\(\)/);
 });
 
 test('Auto-next has one registered terminal-state authority across all supported Recreation games and puzzles',()=>{
@@ -129,9 +136,10 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_AUTONEXT_AUTHORITY_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_AUTONEXT_20261025_1/);
-  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_AUTONEXT_20261025_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_EXTENSION_ROUTE_OWNERSHIP_20261025_2/);
+  assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
+  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_CONTROL_DOCK_20261025_1/);
+  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_CONTROL_DOCK_20261025_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -219,25 +227,32 @@ test('Recreation music preferences are server-side and quick controls stay insid
 });
 
 test('Round Status and reward terminology stay coherent across Recreation',()=>{
-  assert.match(core,/function coherentRoundStatusHtml\(label,message,profile,tierName,previousLabel\)/);
+  assert.match(core,/function coherentRoundStatusHtml\(label,message,profile,tierName,_previousLabel,previousRows\)/);
+  assert.match(core,/function previousRoundSectionHtml\(profile,extraRows\)/);
   assert.match(core,/cleanStreak:\{ label:'Clean Streak Bonus', perStepPct:5, maxPct:100 \}/);
   assert.match(core,/Winning Streak[\s\S]*?Clean Streak Bonus/);
   assert.match(core,/Ranked Up! Player Rank/);
-  assert.match(core,/const previousResultLabel=String\(previousLabel\|\|'Previous round'\)/);
-  assert.match(core,/round-status-previous">'\+escapeHtml\(previousResultLabel\)\+' - '\+previousXp\+' XP/);
+  assert.match(core,/round-status-previous-heading">Previous Round/);
+  assert.match(core,/const rows=\[\['Exp',previousXp\+' XP'\]\]/);
   assert.match(core,/profile&&profile\.lastRoundXp/);
   assert.match(core,/pairsBoardState\.hadFailure = true;[\s\S]*?profiles\.pairs\.cleanWinStreak = 0/);
   assert.match(core,/const cleanWin = !make24State\.hadFailure;[\s\S]*?const nextClean = cleanWin \? profiles\.make24\.cleanWinStreak \+ 1 : 0/);
   assert.match(core,/make24State\.hadFailure = true;[\s\S]*?profiles\.make24\.cleanWinStreak = 0/);
-  assert.match(core,/const cleanWin = !wordState\.hadFailure;[\s\S]*?const nextClean = cleanWin \? profile\.cleanWinStreak \+ 1 : 0/);
-  assert.match(core,/wordState\.hadFailure = true;[\s\S]*?profiles\.detectword\.cleanWinStreak = 0/);
+  assert.match(core,/Detect the Word counts consecutive completed wins[\s\S]*?const nextClean = profile\.cleanWinStreak \+ 1/);
+  assert.doesNotMatch(core,/wordState\.hadFailure = true;\s*profiles\.detectword\.cleanWinStreak = 0;\s*if\(wordState\.guesses\.length >= wordState\.maxGuesses\)/);
+  assert.match(core,/if\(wordState\.guesses\.length >= wordState\.maxGuesses\)\{[\s\S]*?wordState\.hadFailure = true;[\s\S]*?profiles\.detectword\.cleanWinStreak = 0/);
+  assert.match(crossnumber,/BaselineRoundStatusTabs\?\.previousRoundHtml\?\.\(profile\)/);
   assert.match(crossnumber,/const cleanWin=Boolean\(round && !round\.hadFailure\)/);
   assert.match(crossnumber,/round\.hadFailure=true;[\s\S]*?profile\.cleanWinStreak=0/);
   assert.match(colourSort,/const cleanWin=!active\.hadFailure/);
   assert.match(colourSort,/active\.hadFailure = true;[\s\S]*?profile\.cleanWinStreak = 0/);
-  assert.match(colourSort,/round-status-previous">Previous round - '\+number\(profile\.lastRoundXp\)\+' XP/);
-  assert.match(blockGrid,/round-status-previous">Previous Run - '\+number\(profile\.lastRunScore\)\+' points/);
-  assert.match(core,/refs\.wordRoundSummary\.innerHTML = coherentRoundStatusHtml\('Round Status',wordState\.lastMessage,profiles\.detectword,currentWordTier\(\)\.name\)/);
+  assert.match(colourSort,/BaselineRoundStatusTabs\?\.previousRoundHtml\?\.\(profile\)/);
+  assert.match(blockGrid,/BaselineRoundStatusTabs\?\.previousRoundHtml\?\.\(profile,\[\['Previous Score',number\(profile\.lastRunScore\)\+' points'\]\]\)/);
+  assert.match(core,/refs\.wordRoundSummary\.innerHTML = coherentRoundStatusHtml\('Round Status',wordState\.lastMessage,profiles\.detectword,currentWordTier\(\)\.name,undefined,\[\['Previous Word',profiles\.detectword\.lastRoundWord\|\|'—'\]\]\)/);
+  assert.match(profileRules,/lastRoundWord:''/);
+  assert.match(profileRules,/merged\.lastRoundWord = String\(merged\.lastRoundWord \|\| ''\)\.toUpperCase\(\)/);
+  assert.match(core,/profile\.lastRoundWord = String\(wordState\.secret \|\| ''\)\.toUpperCase\(\)/);
+  assert.match(core,/profiles\.detectword\.lastRoundWord = String\(wordState\.secret \|\| ''\)\.toUpperCase\(\)/);
   assert.match(core,/Board cleared\. \+' \+ rewards\.bank \+ ' Bank Coins · \+' \+ rewards\.xp \+ ' XP'/);
   assert.match(core,/Clean Streak Bonus \+' \+ rewards\.cleanPct \+ '%'/);
   assert.doesNotMatch(core,/Current streak bonus/);
@@ -252,6 +267,40 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.doesNotMatch(html,/>Clean Bonus</i);
   assert.match(html,/Round Bank Coins <span id="wordRoundBankValue">/);
   assert.match(crossnumber,/Bank Coins · \+'\+rewards\.xp\+' XP'[\s\S]*?Clean Streak Bonus/);
+});
+
+test('fullscreen right rail mirrors each game windowed tabs and defaults to Game',()=>{
+  assert.match(core,/const FULLSCREEN_WINDOW_TABS=Object\.freeze/);
+  assert.match(core,/detectword:\{root:'wordGameCard',tabs:\[\['game','Game'\],\['skills','Skills','wordSkillCard'\],\['tiers','Tiers','wordTierCard'\],\['progress','Progress','wordProgressCard'\]\]\}/);
+  assert.match(core,/blockgrid:\{root:'blockGridGameCard',tabs:\[\['game','Game'\],\['skills','Skills','blockGridSkillsCard'\],\['tiers','Tiers','blockGridModesCard'\],\['progress','Progress','blockGridProgressCard'\]\]\}/);
+  assert.match(core,/crossnumber:\{root:'crossnumberGamePanel',tabs:\[\['game','Game'\],\['skills','Skills','crossnumberSkillPanel'\],\['tiers','Tiers','crossnumberTierPanel'\],\['progress','Progress','crossnumberProgressPanel'\]\]\}/);
+  assert.match(core,/fullscreen\.setAttribute\('data-fullscreen-window-view','game'\)/);
+  assert.match(core,/data-fullscreen-window-tab/);
+  assert.match(core,/cloneFullscreenPanelHtml/);
+  assert.match(core,/window\.BaselineFullscreenTabs=Object\.freeze/);
+  assert.doesNotMatch(core,/data-round-status-tab|roundStatusTabState|resetRoundStatusTab|ROUND_STATUS_TAB_SOURCES/);
+  assert.match(nonRealmCss,/fullscreen window-tab authority/);
+  assert.match(nonRealmCss,/\.game-fullscreen-window-tabbar/);
+  assert.match(nonRealmCss,/grid-template-columns:repeat\(var\(--fullscreen-tab-count,4\),minmax\(0,1fr\)\)/);
+  assert.match(nonRealmCss,/#wordGameCard[\s\S]*?:fullscreen > \.game-fullscreen-window-tabs > \.game-fullscreen-window-tabbar/);
+  assert.match(blockCss,/#blockGridGameCard:fullscreen > \.game-fullscreen-window-tabs > \.game-fullscreen-window-tabbar/);
+  assert.match(colourCss,/#colourSortGameCard:fullscreen > \.game-fullscreen-window-tabs > \.game-fullscreen-window-tabbar/);
+  assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen > \.game-fullscreen-window-tabs > \.game-fullscreen-window-tabbar/);
+  assert.match(blockGrid,/BaselineFullscreenTabs\?\.sync\?\.\(APP\)/);
+  assert.match(colourSort,/BaselineFullscreenTabs\?\.sync\?\.\(APP\)/);
+  assert.match(crossnumber,/BaselineFullscreenTabs\?\.sync\?\.\(APP\)/);
+  assert.match(blockGrid,/document\.addEventListener\('fullscreenchange', render\);/);
+  assert.doesNotMatch(blockGrid,/document\.addEventListener\('fullscreenchange', renderGame\);/);
+  assert.match(colourSort,/document\.addEventListener\('fullscreenchange', render\);/);
+  assert.doesNotMatch(colourSort,/document\.addEventListener\('fullscreenchange', renderGame\);/);
+});
+
+test('fullscreen controls preserve the two-sided shared dock and local keypad geometry',()=>{
+  assert.match(nonRealmCss,/Fullscreen uses the same positions[\s\S]*?grid-template-columns:44px 44px minmax\(16px,1fr\) 44px 44px!important[\s\S]*?grid-template-rows:44px 44px!important/);
+  assert.match(nonRealmCss,/:fullscreen \.game-specific-actions > \.action\{[\s\S]*?flex:0 0 44px!important[\s\S]*?width:44px!important[\s\S]*?height:44px!important/);
+  assert.match(nonRealmCss,/:fullscreen > \.game-play-window > \.game-specific-actions\{[\s\S]*?grid-column:1!important[\s\S]*?grid-row:6!important[\s\S]*?justify-self:end!important/);
+  assert.match(nonRealmCss,/:fullscreen > \.game-play-window > \.game-specific-actions > \.action\{[\s\S]*?flex:0 0 44px!important[\s\S]*?width:44px!important[\s\S]*?height:44px!important/);
+  assert.match(nonRealmCss,/\.game-specific-actions \.desktop-keypad-toggle \.game-shell-action__svg\{[\s\S]*?position:absolute!important[\s\S]*?left:50%!important[\s\S]*?top:50%!important[\s\S]*?width:20px!important[\s\S]*?height:20px!important[\s\S]*?margin:0!important[\s\S]*?transform:translate\(-50%,-50%\)!important/);
 });
 
 test('fullscreen layouts use bounded side panels except the deliberately independent Jigsaw workspace',()=>{
@@ -312,7 +361,7 @@ test('reported Recreation interaction repairs remain wired',()=>{
   assert.match(nonRealmCss,/#pairsPanel #pairsBoard:not\(\.is-pairs-idle\)\{[\s\S]*?height:min\(var\(--pairs-fit-height,520px\),calc\(100dvh - 250px\)\)!important[\s\S]*?grid-template-rows:repeat\(var\(--pairs-rows-desktop,3\)/);
   assert.match(nonRealmCss,/@media\(min-width:900px\) and \(pointer:fine\)[\s\S]*?#pairsPanel #pairsGameCard:not\(:fullscreen\)[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(230px,280px\)!important/);
   assert.match(nonRealmCss,/#pairsPanel #pairsGameCard:not\(:fullscreen\) #pairsBoard\{[\s\S]*?grid-column:1!important[\s\S]*?grid-row:1\/6!important/);
-  assert.match(nonRealmCss,/zoom-safe common controls[\s\S]*?game-window-actions\.game-common-actions\{[\s\S]*?flex-wrap:wrap!important[\s\S]*?overflow:visible!important/);
+  assert.match(nonRealmCss,/coherent two-sided Recreation control dock[\s\S]*?game-window-actions\.game-common-actions[\s\S]*?display:grid!important[\s\S]*?overflow:visible!important/);
   assert.match(music,/roots = \['pairsGameCard'[\s\S]*?'blockGridGameCard'/);
   assert.match(music,/btn\.className = 'action ghost games-settings-trigger/);
 
@@ -325,8 +374,10 @@ test('extension-game routes clear stale core selection without surrendering exte
   assert.match(extensionSupport,/document\.dispatchEvent\(new CustomEvent\('baseline:game-extension-open'/);
   assert.match(extensionSupport,/detail:\{ id:config\.id, panelId:config\.panelId \}/);
   assert.match(core,/document\.addEventListener\('baseline:game-extension-open'[\s\S]*?selectedGame='';[\s\S]*?renderGamesList\(\)/);
-  assert.match(blockGrid,/game-extension-support\.mjs\?v=RECREATION_COHERENCE_20261023_2/);
-  assert.match(colourSort,/game-extension-support\.mjs\?v=RECREATION_COHERENCE_20261023_2/);
+  assert.match(blockGrid,/game-extension-support\.mjs\?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1/);
+  assert.match(colourSort,/game-extension-support\.mjs\?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1/);
+  assert.match(extensionSupport,/baseline:recreation:core-ready/);
+  assert.match(extensionSupport,/BASELINE_RECREATION_CORE_READY === true/);
 });
 
 test('Block Grid lands from the exact grabbed piece cell and exposes charged specials',()=>{
@@ -436,8 +487,10 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/id:'masterwork'[\s\S]*?nodes:17[\s\S]*?fixed:1/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-bank\{[\s\S]*?grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
   assert.match(crossnumber,/const mobile=window\.matchMedia\?\.\('\(max-width:820px\)'\)\.matches[\s\S]*?if\(mobile\)[\s\S]*?removeProperty\('width'\)/);
-  assert.match(crossnumberCss,/mobile Cross Number playability authority[\s\S]*?#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)!important/);
-  assert.match(crossnumberCss,/grid-template-columns:repeat\(var\(--crossnumber-cols,13\),34px\)!important/);
+  assert.match(crossnumberCss,/mobile Cross Number fit authority[\s\S]*?#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)!important/);
+  assert.match(crossnumberCss,/grid-template-columns:repeat\(var\(--crossnumber-cols,13\),minmax\(0,1fr\)\)!important/);
+  assert.match(crossnumberCss,/\.crossnumber-board-scroll,[\s\S]*?overflow:hidden!important/);
+  assert.doesNotMatch(crossnumberCss,/grid-template-columns:repeat\(var\(--crossnumber-cols,13\),(?:32|34)px\)!important/);
   assert.match(crossnumber,/refs\.bank\.addEventListener\('pointerdown'[\s\S]*?createTouchDragGhost/);
   assert.match(crossnumber,/document\.elementFromPoint\(clientX,clientY\)[\s\S]*?is-touch-drop-target/);
   assert.match(crossnumber,/function finishTouchDrag\(event,cancelled\)[\s\S]*?placeTile\(dropCell\.dataset\.node,state\.tileId\)/);
@@ -446,8 +499,8 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/Cross Number touch-drag authority/);
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
-  assert.match(html,/crossnumber\.css\?v=RECREATION_FLEX_CONTROLS_20261025_1/);
-  assert.match(html,/crossnumber\.js\?v=CROSS_NUMBER_AUTONEXT_20261025_1/);
+  assert.match(html,/crossnumber\.css\?v=CROSS_NUMBER_CONTROL_DOCK_20261025_1/);
+  assert.match(html,/crossnumber\.js\?v=CROSS_NUMBER_FULLSCREEN_WINDOW_TABS_20261025_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);
@@ -508,6 +561,14 @@ test('Recreation tab rows leave room for selected outlines instead of clipping t
   assert.match(nonRealmCss,/Recreation tab-outline clipping authority[\s\S]*?:is\(\.tabs,\.game-toggle-row,\.trackcoin-tab-row,\.crossnumber-tab-row,\.weight-coherence-tab-row\)/);
 });
 
+test('mobile Recreation roots keep controls in flow and avoid duplicate Make The Number inputs',()=>{
+  assert.match(core,/if\(gameId === 'make24' && isMobileGameViewport\(\)\)\{[\s\S]*?duplicateKeypad[\s\S]*?\.remove\(\);[\s\S]*?return;/);
+  assert.match(recreationCss,/\.is-mobile-game-root\{[\s\S]*?box-sizing:border-box!important[\s\S]*?height:100dvh!important[\s\S]*?overflow-y:auto!important[\s\S]*?overflow-x:hidden!important/);
+  assert.match(recreationCss,/\.is-mobile-game-root \.game-window-actions\{[\s\S]*?position:static!important[\s\S]*?background:transparent!important/);
+  assert.match(recreationCss,/\.trackcoin-scene\{[\s\S]*?grid-template-rows:none!important[\s\S]*?grid-auto-rows:max-content!important/);
+  assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-scene\{[\s\S]*?grid-template-rows:none!important[\s\S]*?align-content:start!important/);
+});
+
 test('mobile fullscreen cards stay in normal flow instead of overlapping the play surface',()=>{
   const colourCss=read('systems/baseline-recreation/games/colour-sort/css/colour-sort.css');
   assert.match(nonRealmCss,/mobile playability authority[\s\S]*?\.round-status-card[\s\S]*?max-width:100%!important/);
@@ -520,5 +581,6 @@ test('canonical and legacy recreation routes preserve direct game destinations o
   assert.match(htaccess,/baseline-recreation\/games\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|block-grid\|colour-sort/);
   assert.match(core,/function recreationStateFromCleanPath\(\)/);
   assert.match(core,/base \+ '\/games\/'/);
-  assert.match(core,/normaliseGameId\(rest\.split\('\/'\)\[0\]\)/);
+  assert.match(core,/const routeSlug = String\(rest\.split\('\/'\)\[0\] \|\| ''\)\.toLowerCase\(\)/);
+  assert.match(core,/if\(EXTERNAL_GAME_ROUTE_SLUGS\.has\(routeSlug\)\)[\s\S]*?const game = normaliseGameId\(routeSlug\)/);
 });

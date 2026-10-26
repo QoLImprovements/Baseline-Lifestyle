@@ -142,7 +142,7 @@ test('Core Games profile authority is loaded before core and stays pure',()=>{
   assert.doesNotMatch(source,/addEventListener|createElement|innerHTML|classList|history\./);
 
   const configIndex=html.indexOf('/systems/baseline-recreation/js/games-core-config.js');
-  const rulesIndex=html.indexOf('/systems/baseline-recreation/js/games-profile-rules.js?v=GAMES_PROFILE_TRACKCOIN_UNLOCK_20261025_1');
+  const rulesIndex=html.indexOf('/systems/baseline-recreation/js/games-profile-rules.js?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1');
   const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js');
   assert.ok(configIndex>=0 && rulesIndex>configIndex && coreIndex>rulesIndex);
 });
