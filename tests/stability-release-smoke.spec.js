@@ -976,6 +976,94 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
+
+  // Phone-sized Block Grid must be game-first rather than a compressed desktop
+  // side-rail composition. Score/Specials remain immediately with the board.
+  await page.setViewportSize({width:390,height:844});
+  await expect(blockCard).toBeVisible();
+  const mobileWindowed=await page.evaluate(()=>{
+    const rect=(selector)=>{
+      const node=document.querySelector(selector);
+      if(!node) return null;
+      const r=node.getBoundingClientRect();
+      return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom,right:r.right};
+    };
+    const style=(selector,prop)=>{
+      const node=document.querySelector(selector);
+      return node?getComputedStyle(node)[prop]:null;
+    };
+    return {
+      viewport:document.documentElement.clientWidth,
+      pageScrollWidth:document.documentElement.scrollWidth,
+      card:rect('#blockGridGameCard'),
+      rail:rect('#blockGridGameCard > .block-grid-score-skills-rail'),
+      play:rect('#blockGridGameCard > .block-grid-play-cluster'),
+      xp:rect('#blockGridGameCard > .game-live-xp'),
+      status:rect('#blockGridGameCard > .round-status-card'),
+      dock:rect('#blockGridGameCard > .game-window-actions'),
+      display:style('#blockGridGameCard','display'),
+      dockDisplay:style('#blockGridGameCard > .game-window-actions','display')
+    };
+  });
+  expect(mobileWindowed.pageScrollWidth).toBeLessThanOrEqual(mobileWindowed.viewport+1);
+  for(const box of [mobileWindowed.card,mobileWindowed.rail,mobileWindowed.play,mobileWindowed.xp,mobileWindowed.status,mobileWindowed.dock]) expect(box).not.toBeNull();
+  expect(mobileWindowed.display).toBe('flex');
+  expect(mobileWindowed.dockDisplay).toBe('grid');
+  expect(mobileWindowed.rail.bottom).toBeLessThanOrEqual(mobileWindowed.play.y+12);
+  expect(mobileWindowed.xp.y).toBeGreaterThanOrEqual(mobileWindowed.play.bottom-1);
+  expect(mobileWindowed.status.y).toBeGreaterThanOrEqual(mobileWindowed.xp.y);
+
+  const mobileDock=await page.evaluate(()=>{
+    const rect=(selector)=>{
+      const node=document.querySelector(selector);
+      if(!node) return null;
+      const r=node.getBoundingClientRect();
+      return {x:r.x,y:r.y,width:r.width,height:r.height};
+    };
+    return {
+      start:rect('#blockGridGameCard .game-window-actions .start-new-game-toggle'),
+      auto:rect('#blockGridGameCard .game-window-actions .auto-next-toggle'),
+      settings:rect('#blockGridGameCard .game-window-actions [data-games-settings]'),
+      music:rect('#blockGridGameCard .game-window-actions [data-games-music-quick]'),
+      fullscreen:rect('#blockGridGameCard .game-window-actions .game-fullscreen-toggle')
+    };
+  });
+  for(const box of Object.values(mobileDock)) expect(box).not.toBeNull();
+  const center=(box)=>({x:box.x+box.width/2,y:box.y+box.height/2});
+  expect(center(mobileDock.start).x).toBeLessThan(center(mobileDock.auto).x);
+  expect(Math.abs(center(mobileDock.start).y-center(mobileDock.auto).y)).toBeLessThanOrEqual(1);
+  expect(center(mobileDock.music).x).toBeLessThan(center(mobileDock.fullscreen).x);
+  expect(Math.abs(center(mobileDock.music).y-center(mobileDock.fullscreen).y)).toBeLessThanOrEqual(1);
+  expect(center(mobileDock.settings).y).toBeLessThan(center(mobileDock.music).y);
+  expect(Math.abs(center(mobileDock.settings).x-((center(mobileDock.music).x+center(mobileDock.fullscreen).x)/2))).toBeLessThanOrEqual(2);
+
+  await blockCard.locator('[data-block-action="fullscreen"]').click();
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='blockGridGameCard');
+  const mobileFullscreen=await page.evaluate(()=>{
+    const root=document.querySelector('#blockGridGameCard');
+    const rail=root?.querySelector(':scope > .block-grid-score-skills-rail');
+    const play=root?.querySelector(':scope > .block-grid-play-cluster');
+    const tabs=root?.querySelector(':scope > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
+    const rr=(node)=>{if(!node)return null;const r=node.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom,right:r.right};};
+    const s=root?getComputedStyle(root):null;
+    return {
+      viewport:document.documentElement.clientWidth,
+      root:rr(root),rail:rr(rail),play:rr(play),tabs:rr(tabs),
+      display:s?.display,flexDirection:s?.flexDirection,
+      rootScrollWidth:root?.scrollWidth,rootClientWidth:root?.clientWidth
+    };
+  });
+  expect(mobileFullscreen.display).toBe('flex');
+  expect(mobileFullscreen.flexDirection).toBe('column');
+  expect(mobileFullscreen.rootScrollWidth).toBeLessThanOrEqual(mobileFullscreen.rootClientWidth+1);
+  for(const box of [mobileFullscreen.root,mobileFullscreen.rail,mobileFullscreen.play,mobileFullscreen.tabs]) expect(box).not.toBeNull();
+  expect(mobileFullscreen.tabs.width).toBeGreaterThan(mobileFullscreen.root.width*.9);
+  expect(mobileFullscreen.rail.x).toBeGreaterThanOrEqual(mobileFullscreen.root.x-1);
+  expect(mobileFullscreen.play.x).toBeGreaterThanOrEqual(mobileFullscreen.root.x-1);
+  expect(mobileFullscreen.rail.bottom).toBeLessThanOrEqual(mobileFullscreen.play.y+12);
+  await page.evaluate(()=>document.exitFullscreen());
+  await page.waitForFunction(()=>document.fullscreenElement===null);
+
   expect(recreationPageErrors).toEqual([]);
 });
 
