@@ -347,8 +347,8 @@
   z-index:61!important;
 }
 #ninjaPanel #ninjaShurikenBtn:disabled{
-  opacity:1!important;
-  filter:none!important;
+  opacity:.28!important;
+  filter:grayscale(1) saturate(.35) brightness(.82)!important;
   color:#d7cec0!important;
   cursor:not-allowed!important;
   overflow:hidden!important;
