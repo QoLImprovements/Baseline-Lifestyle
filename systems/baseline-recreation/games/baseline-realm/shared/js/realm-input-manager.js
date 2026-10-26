@@ -74,9 +74,17 @@ export class RealmInputManager {
     }
   }
 
+  resolvePointerElement(event, selector) {
+    const path = typeof event?.composedPath === 'function' ? event.composedPath() : [];
+    for (const node of path) {
+      if (node?.matches?.(selector)) return node;
+    }
+    return event?.target?.closest?.(selector) || null;
+  }
+
   handlePointer(event) {
     for (const definition of this.pointerBindings) {
-      const element = event.target?.closest?.(definition.selector);
+      const element = this.resolvePointerElement(event, definition.selector);
       if (!element || element.disabled || !definition.when(event, element)) continue;
       const source = event.detail === 0
         ? 'keyboard'
