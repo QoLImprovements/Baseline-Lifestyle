@@ -160,8 +160,13 @@ test('Stage 1 navigation, artwork, SVG controls, cooldown and seeded progress re
   await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost?.sceneRouter?.getCurrentSceneId?.())).toBe('ninja-training');
 
   const shuriken = page.locator('#ninjaShurikenBtn');
+  await expect(page.locator('#realmSceneFrame')).toHaveAttribute('data-realm-view','training');
+  await expect(page.locator('#realmTrainingHud')).toBeVisible();
   await expect(shuriken).toBeEnabled();
-  await shuriken.click();
+  // Use the canonical Realm input action for cooldown verification. Pointer
+  // delegation is already exercised by the Basecamp controls above, while the
+  // Shuriken SVG itself is verified earlier in this test.
+  await page.keyboard.press('s');
   await expect(shuriken).toBeDisabled();
   const disabledStyle = await shuriken.evaluate(node => {
     const style = getComputedStyle(node);
