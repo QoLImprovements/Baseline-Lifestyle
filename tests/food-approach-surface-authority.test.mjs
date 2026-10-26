@@ -13,6 +13,7 @@ const recipeCss = read('sitewide/css/baseline-recipes.css');
 const sitewideCss = read('sitewide/css/baseline-sitewide.css');
 const shared = read('sitewide/js/baseline-shared.js');
 const foodHtml = read('systems/baseline-food-approach/baseline-food-approach.html');
+const recipeIndex = read('systems/baseline-food-approach/js/baseline-food-recipe-index.js');
 const dietJs = read('systems/baseline-food-approach/js/baseline-diet-log.js');
 const foodDataService = read('systems/baseline-food-approach/js/food-data-service.js');
 const htaccess = read('.htaccess');
@@ -39,6 +40,16 @@ test('Recipes overview contains no historical visible recipe-card grid', () => {
   assert.doesNotMatch(recipeCss, /recipe-top-bar/);
   assert.doesNotMatch(foodHtml, /class="card recipe-landing"/);
   assert.match(foodHtml, /class="recipe-landing" id="recipes-landing"/);
+});
+
+test('Food Recipes overview exposes every canonical registered recipe', () => {
+  const entries = Array.from(recipeIndex.matchAll(/\{\s*"id":\s*"([^"]+)",\s*"slug":\s*"([^"]+)",\s*"title":\s*"([^"]+)",\s*"category":\s*"([^"]+)",\s*"href":\s*"([^"]+)"/g));
+  assert.equal(entries.length, 12, 'canonical Food recipe registry count changed unexpectedly');
+
+  for (const [, id, slug, title, category, href] of entries) {
+    assert.ok(foodHtml.includes(`data-recipe-id="${id}"`), `Recipes overview is missing ${title} (${id})`);
+    assert.ok(foodHtml.includes(`href="${href}"`), `Recipes overview has no canonical link for ${title} (${slug}, ${category})`);
+  }
 });
 
 test('Food recipe sources are content fragments only', () => {
