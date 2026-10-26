@@ -2907,10 +2907,27 @@ body[data-app="recreation"] :is(
   }
   body[data-app="recreation"] :is(
     #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
-  ):fullscreen > :is(.game-toolbar,.game-live-xp,.game-play-window){
+  ):fullscreen > :is(.game-toolbar,.game-live-xp){
     position:relative!important;
     inset:auto!important;
     display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    margin:0!important;
+  }
+  body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ):fullscreen > .game-play-window{
+    position:relative!important;
+    inset:auto!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:8px!important;
     width:100%!important;
     max-width:100%!important;
     min-width:0!important;
