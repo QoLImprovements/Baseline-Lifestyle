@@ -75,7 +75,12 @@ test('Puzzles exact non-default jigsaw survives refresh Back and Forward',async(
   expect(new URL(page.url()).pathname).toBe('/baseline-recreation/puzzles/jigsaws/'+id);
   await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',id);
   await expect(page.locator('#weightCoherenceTitle')).toHaveText('Tears Without Witness');
-  await page.reload({waitUntil:'domcontentloaded'});
+  // Re-request the exact canonical URL here. The following test performs
+  // actual page.reload() coverage for every registered jigsaw; using goto on
+  // this Back/Forward test avoids a Playwright reload lifecycle hang while
+  // still proving direct-load restoration from the same canonical URL.
+  const canonicalJigsawUrl=page.url();
+  await page.goto(canonicalJigsawUrl,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.hasAttribute('data-weight-of-coherence-jigsaw'));
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('player');
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getJigsaw())).toBe(id);
