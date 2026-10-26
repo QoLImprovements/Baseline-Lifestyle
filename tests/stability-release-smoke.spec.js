@@ -1102,8 +1102,8 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   // Cross Number preserves its board + number bank as one phone-width play
   // unit and uses the same top fullscreen tabs rather than a desktop side rail.
   await page.goto('/baseline-recreation/puzzles/crossnumber',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
-  await expect(page.locator('#crossnumberPanel')).toHaveClass(/is-active/);
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true && globalThis.BaselinePuzzlesLibrary?.getView?.()==='crossnumber');
+  await expect(page.locator('#crossnumberPanel')).toBeVisible();
   const crossRoot=page.locator('#crossnumberGamePanel');
   await page.locator('#crossnumberGamePanel [data-crossnumber-action="new"]').click();
   await expect(crossRoot.locator('.crossnumber-play-layout')).toBeVisible();
