@@ -772,11 +772,16 @@
       var panel = root.closest('.game-panel') || root.closest('.puzzle-library-card') || root.parentElement;
       var host = controlHost(root);
       if(!host) return;
-      // Keep Detect The Word's keypad action alongside the other dock controls.
-      if(id === 'wordGameCard'){
-        var keypad = root.querySelector('[data-desktop-keypad-toggle="detectword"]');
-        if(keypad && keypad.parentElement !== host) host.appendChild(keypad);
+      // One coherent dock within the play window, in both windowed and fullscreen views.
+      var playWindow = root.querySelector('.game-play-window') || root;
+      if(host.parentElement !== playWindow) playWindow.appendChild(host);
+      var specifics = root.querySelector('.game-specific-actions');
+      if(specifics){
+        Array.prototype.slice.call(specifics.children).forEach(function(control){
+          if(control.matches('button.action') && control.parentElement !== host) host.appendChild(control);
+        });
       }
+      host.classList.add('recreation-unified-controls');
       var existingQuick=(panel||root).querySelector('[data-games-music-quick]');
       if(!existingQuick){ existingQuick=quickMusicButton(); host.appendChild(existingQuick); }
       else if(existingQuick.parentElement!==host) host.appendChild(existingQuick);
