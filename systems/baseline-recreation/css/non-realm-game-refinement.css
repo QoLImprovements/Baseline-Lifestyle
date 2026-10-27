@@ -3093,3 +3093,69 @@ body[data-app="recreation"] :is(
   height:42px!important;min-height:42px!important;max-height:42px!important;
  }
 }
+
+/* Final specificity authority over the legacy five-column fullscreen rules. */
+html body[data-app="recreation"] :is(
+ #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+ #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-play-window > .game-window-actions.game-common-actions.recreation-unified-controls,
+html body[data-app="recreation"] :is(
+ #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions.recreation-unified-controls {
+ display:grid!important;
+ grid-template-columns:44px 44px minmax(12px,1fr) 44px 44px!important;
+ grid-template-rows:44px 44px!important;
+ position:relative!important;inset:auto!important;
+ width:100%!important;margin:0!important;justify-content:stretch!important;
+}
+html body[data-app="recreation"] :is(
+ #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+ #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions.recreation-unified-controls > .start-new-game-toggle {
+ grid-column:1!important;grid-row:1!important;justify-self:start!important;
+}
+html body[data-app="recreation"] :is(
+ #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+ #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions.recreation-unified-controls > .auto-next-toggle {
+ grid-column:1!important;grid-row:2!important;justify-self:start!important;
+}
+html body[data-app="recreation"] :is(
+ #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+ #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions.recreation-unified-controls > :is(.desktop-keypad-toggle,#pairsHintBtn,#make24HintBtn,#replayTrackCoinShuffleBtn) {
+ grid-column:4!important;grid-row:1!important;justify-self:end!important;
+}
+html body[data-app="recreation"] :is(
+ #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+ #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions.recreation-unified-controls > #make24RerollBtn {
+ grid-column:2!important;grid-row:1!important;justify-self:start!important;
+}
+html body[data-app="recreation"] :is(
+ #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+ #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions.recreation-unified-controls > .games-settings-trigger {
+ grid-column:5!important;grid-row:1!important;justify-self:end!important;
+}
+html body[data-app="recreation"] :is(
+ #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+ #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions.recreation-unified-controls > .games-music-quick-toggle {
+ grid-column:4!important;grid-row:2!important;justify-self:end!important;
+}
+html body[data-app="recreation"] :is(
+ #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+ #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+) .game-window-actions.game-common-actions.recreation-unified-controls > .game-fullscreen-toggle {
+ grid-column:5!important;grid-row:2!important;justify-self:end!important;
+}
+@media(max-width:820px),(hover:none) and (pointer:coarse){
+ html body[data-app="recreation"] :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,
+  #blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+ ) .game-window-actions.game-common-actions.recreation-unified-controls{
+  grid-template-columns:42px 42px minmax(8px,1fr) 42px 42px!important;
+  grid-template-rows:42px 42px!important;
+ }
+}
