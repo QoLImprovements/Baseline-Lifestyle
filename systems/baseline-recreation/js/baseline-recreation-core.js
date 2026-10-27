@@ -4410,9 +4410,6 @@ function toggleGameFullscreen(gameId){
         if(!typing && key === 'h'){ event.preventDefault(); useMake24Hint(); return; }
         if(!typing && key === 'j'){ event.preventDefault(); rerollMake24Puzzle(); return; }
       }
-      if(hotkeyGame === 'ruleshift' && !typing){
-        if(key === 'h'){ event.preventDefault(); useRuleShiftHint(); return; }
-      }
     });
     document.addEventListener('submit', function(event){
       const make24Form = event.target.closest('#make24ExpressionForm');
@@ -4435,8 +4432,6 @@ function toggleGameFullscreen(gameId){
     if(refs.newWordRoundBtn) setCompactActionButton(refs.newWordRoundBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     if(refs.newTrackCoinRoundBtn) setCompactActionButton(refs.newTrackCoinRoundBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     if(refs.newRuleShiftBtn) setCompactActionButton(refs.newRuleShiftBtn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
-    const ruleShiftHintBtn=document.getElementById('ruleShiftHintBtn');
-    if(ruleShiftHintBtn){ setCompactActionButton(ruleShiftHintBtn,'?','Hint','H'); ruleShiftHintBtn.addEventListener('click',useRuleShiftHint); }
     if(refs.wordSkillAlertBtn) refs.wordSkillAlertBtn.addEventListener('click', function(){ if(profiles.detectword.skillPoints > 0) setWordPanel('wordSkillCard', 'push'); });
     if(refs.newMake24Btn) setCompactActionButton(refs.newMake24Btn,'＋','New Game',SITEWIDE_START_HOTKEY_LABEL);
     if(refs.make24HintBtn){ setCompactActionButton(refs.make24HintBtn,'?','Guide','H'); refs.make24HintBtn.addEventListener('click', useMake24Hint); }
