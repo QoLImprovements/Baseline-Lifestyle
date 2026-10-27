@@ -2972,3 +2972,56 @@ body[data-app="recreation"] :is(
     display:none!important;
   }
 }
+
+/* 2026-10-27 Detect The Word: readable desktop side panels and 2-row dock. */
+@media (min-width:821px) and (hover:hover) and (pointer:fine){
+  body[data-app="recreation"] #wordGameCard:fullscreen .game-fullscreen-window-pane,
+  body[data-app="recreation"] #wordGameCard:fullscreen .game-fullscreen-window-tabbar{
+    box-sizing:border-box!important; min-width:0!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .game-fullscreen-window-tabbar{
+    display:grid!important; grid-template-columns:repeat(4,minmax(0,1fr))!important; gap:5px!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .game-fullscreen-window-tabbar > button{
+    box-sizing:border-box!important; min-width:0!important; width:100%!important;
+    padding:7px 3px!important; font-size:clamp(10px,.83vw,13px)!important;
+    white-space:nowrap!important; overflow:visible!important; letter-spacing:0!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .game-fullscreen-window-pane :is(.grid-two,.board-tier-list,.tier-list,.trackcoin-stats,.game-progress-stats){
+    display:grid!important; grid-template-columns:minmax(0,1fr)!important;
+    min-width:0!important; gap:10px!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .game-fullscreen-window-pane :is(.skill-card,.board-tier,.tier-card,.stat-pill,.trackcoin-stat,.progress-stat){
+    box-sizing:border-box!important; min-width:0!important; max-width:100%!important;
+    overflow-wrap:break-word!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen .game-fullscreen-window-pane :is(h2,h3,p,.note){
+    max-width:100%!important; overflow-wrap:normal!important; word-break:normal!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen > .game-play-window > .game-window-actions.game-common-actions{
+    grid-template-columns:44px 44px minmax(16px,1fr) 44px 44px!important;
+    grid-template-rows:44px 44px!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen > .game-play-window > .game-window-actions.game-common-actions > .start-new-game-toggle{
+    grid-column:1!important; grid-row:1!important; justify-self:start!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen > .game-play-window > .game-window-actions.game-common-actions > .auto-next-toggle{
+    grid-column:1!important; grid-row:2!important; justify-self:start!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen > .game-play-window > .game-window-actions.game-common-actions > .desktop-keypad-toggle{
+    grid-column:4!important; grid-row:1!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen > .game-play-window > .game-window-actions.game-common-actions > .games-settings-trigger{
+    grid-column:5!important; grid-row:1!important; justify-self:end!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen > .game-play-window > .game-window-actions.game-common-actions > .games-music-quick-toggle{
+    grid-column:4!important; grid-row:2!important; justify-self:end!important;
+  }
+  body[data-app="recreation"] #wordGameCard:fullscreen > .game-play-window > .game-window-actions.game-common-actions > .game-fullscreen-toggle{
+    grid-column:5!important; grid-row:2!important; justify-self:end!important;
+  }
+}
+/* The settings overlay is moved inside the active fullscreen game by games-music.js. */
+#wordGameCard:fullscreen > #gamesMusicSettingsPanel{
+  position:fixed!important; inset:0!important; z-index:2147483647!important;
+}
