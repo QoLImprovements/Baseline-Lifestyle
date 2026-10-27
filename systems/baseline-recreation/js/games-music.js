@@ -799,6 +799,11 @@
     ensureSettingsPanel();
     var panel = document.getElementById('gamesMusicSettingsPanel');
     if(!panel) return;
+    // Browser fullscreen hides document.body overlays behind the fullscreen element.
+    // Place the actual settings overlay inside that element until it closes.
+    var fullscreenHost = document.fullscreenElement;
+    if(fullscreenHost && panel.parentElement !== fullscreenHost) fullscreenHost.appendChild(panel);
+    else if(!fullscreenHost && panel.parentElement !== document.body) document.body.appendChild(panel);
     panel.hidden = false;
     panel._gamesSettingsTrigger = trigger || null;
     syncUi();
@@ -809,9 +814,18 @@
     var panel = document.getElementById('gamesMusicSettingsPanel');
     if(!panel) return;
     panel.hidden = true;
+    if(panel.parentElement !== document.body) document.body.appendChild(panel);
     panel._gamesSettingsTrigger?.focus?.();
     panel._gamesSettingsTrigger = null;
   }
+
+  document.addEventListener('fullscreenchange', function(){
+    var panel=document.getElementById('gamesMusicSettingsPanel');
+    if(!panel) return;
+    var host=document.fullscreenElement;
+    if(!panel.hidden && host && panel.parentElement!==host) host.appendChild(panel);
+    else if(!host && panel.parentElement!==document.body) document.body.appendChild(panel);
+  });
 
   function unlock(){
     if(!activeGame || !settings.enabled) return;
