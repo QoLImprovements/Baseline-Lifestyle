@@ -456,6 +456,8 @@ function render() {
   renderSkills();
   renderProgress();
   renderGame();
+  // Rendering replaces game buttons; restore shared Settings and Music immediately.
+  globalThis.BaselineGamesMusic?.refreshControls?.();
   setTab(blockTabFromLocation(), 'none');
   globalThis.BaselineFullscreenTabs?.sync?.(APP);
   shell.refreshOverview();
