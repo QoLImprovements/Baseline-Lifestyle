@@ -472,11 +472,11 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="weight-coherence-actions" aria-label="Puzzle controls">
                 <div class="weight-coherence-zoom-actions" role="group" aria-label="Inspection zoom">
                   <button class="action ghost weight-coherence-zoom-step" id="weightCoherenceZoomOutBtn" type="button" aria-label="Decrease inspection zoom" title="Decrease inspection zoom">−</button>
-                  <span class="action ghost weight-coherence-icon-action weight-coherence-zoom-indicator" id="weightCoherenceZoomBtn" role="img" aria-keyshortcuts="Z" aria-label="Zoom hotkey Z. Current magnification 200 percent." title="Z zoom">
+                  <button type="button" class="action ghost weight-coherence-icon-action weight-coherence-zoom-indicator" id="weightCoherenceZoomBtn" aria-pressed="false" aria-keyshortcuts="Z" aria-label="Open board magnifier" title="Open board magnifier">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m14.5 14.5 5 5"/></svg>
                     <span class="weight-coherence-zoom-value" id="weightCoherenceZoomValue">200%</span>
                     <kbd class="weight-coherence-hotkey">Z</kbd>
-                  </span>
+                  </button>
                   <button class="action ghost weight-coherence-zoom-step" id="weightCoherenceZoomInBtn" type="button" aria-label="Increase inspection zoom" title="Increase inspection zoom">+</button>
                 </div>
                 <button class="action ghost weight-coherence-icon-action" id="weightCoherencePreviewBtn" type="button" aria-pressed="false" aria-keyshortcuts="G" aria-label="Show guide (G)" title="Show guide · G">
@@ -1030,7 +1030,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-registry.js?v=RECREATION_COHERENCE_20261023_2"></script>
 <script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-library.js?v=RECREATION_ROUTE_OWNERSHIP_20261022_1"></script>
 <script src="/systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js?v=CROSS_NUMBER_FULLSCREEN_WINDOW_TABS_20261025_1"></script>
-<script src="/systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=JIGSAW_DUAL_ZOOM_20261024_1"></script>
+<script src="/systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=JIGSAW_TOUCH_MAGNIFIER_20261028_1"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Recreation shell or another game. -->
 <script type="module" src="/systems/baseline-recreation/games/block-grid/js/block-grid.js?v=BLOCK_GRID_CONTROLS_RESTORE_20261028_2"></script>
 <script type="module" src="/systems/baseline-recreation/games/colour-sort/js/colour-sort.js?v=COLOUR_SORT_SHARED_CONTROLS_20261028_1"></script>
