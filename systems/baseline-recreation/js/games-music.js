@@ -928,6 +928,7 @@
     setEnabled:setEnabled,
     setVolume:setVolume,
     openSettings:openSettings,
+    refreshControls:function(){ injectSettingsButtons(); syncUi(); },
     settings:function(){ return {enabled:settings.enabled,volume:settings.volume,textScale:{detectword:textScaleFor('detectword'),make24:textScaleFor('make24')}}; }
   });
 
