@@ -1289,7 +1289,11 @@
     const g=pieceGeometry(id,config);
     const centerX=g.x+g.w/2, centerY=g.y+g.h/2;
     const dx=Math.abs(point.x-centerX), dy=Math.abs(point.y-centerY);
-    const snapX=Math.max(g.w*0.62,18), snapY=Math.max(g.h*0.62,18);
+    // Touch targets need finger-sized tolerance, limited to roughly one piece.
+    const bounds=refs.board.getBoundingClientRect();
+    const fingerX=mobileLike()?Math.min(g.w*1.1,24*BOARD_WIDTH/Math.max(1,bounds.width)):0;
+    const fingerY=mobileLike()?Math.min(g.h*1.1,24*BOARD_HEIGHT/Math.max(1,bounds.height)):0;
+    const snapX=Math.max(g.w*0.62,18,fingerX), snapY=Math.max(g.h*0.62,18,fingerY);
     if(dx<=snapX && dy<=snapY){
       placePiece(id);
       restorePageScroll(scrollSnapshot);
@@ -1343,8 +1347,19 @@
       stabilisePieceFocus();
       if(event && event.cancelable) event.preventDefault();
     }
-    if(!event || !drag.moved) return;
-
+    if(!event) return;
+    if(!drag.moved){
+      // iOS and other touch browsers do not always emit a reliable click
+      // after touch-action:none; select directly on pointer release.
+      if(event.pointerType==='touch'){
+        selectedPieceId=selectedPieceId===drag.id?null:drag.id;
+        suppressTrayClickUntil=Date.now()+500;
+        setStatus(selectedPieceId===null?'Piece selection cleared.':'Piece ' + (drag.id+1) + ' selected. Tap its location on the board.','');
+        syncSelectedPieceClasses();
+      }
+      return;
+    }
+    suppressBoardClickUntil=Date.now()+400;
     const target=document.elementFromPoint(event.clientX,event.clientY);
     const sortTarget=target?.closest?.('[data-jigsaw-sort-tray]');
     if(sortTarget && root.contains(sortTarget)){
@@ -1372,7 +1387,7 @@
   function onDragMove(event){
     if(!dragState) return;
     const dx=event.clientX-dragState.startX, dy=event.clientY-dragState.startY;
-    if(!dragState.moved && Math.hypot(dx,dy)>5){
+    if(!dragState.moved && Math.hypot(dx,dy)>(dragState.pointerType==='touch'?16:5)){
       dragState.moved=true;
       interactionScrollSnapshot=null;
       dragState.ghost=makeDragGhost(dragState.button,event);
@@ -2100,7 +2115,7 @@
       returnHighlightPieceId=null;
       syncSelectedPieceClasses();
     }
-    dragState={ id:id, button:button, startX:event.clientX, startY:event.clientY, moved:false, ghost:null };
+    dragState={ id:id, button:button, pointerType:event.pointerType||'mouse', startX:event.clientX, startY:event.clientY, moved:false, ghost:null };
     window.addEventListener('pointermove',onDragMove,true);
     window.addEventListener('pointerup',endDrag,true);
     window.addEventListener('pointercancel',cancelDrag,true);
@@ -2120,6 +2135,12 @@
     syncSelectedPieceClasses();
   });
 
+  refs.board.addEventListener('pointerup',function(event){
+    if(event.pointerType!=='touch' || Date.now()<suppressBoardClickUntil || pinchState || viewOn) return;
+    if(selectedPieceId===null || !state || state.completed) return;
+    suppressBoardClickUntil=Date.now()+450;
+    attemptPlacement(selectedPieceId,event.clientX,event.clientY);
+  });
   refs.board.addEventListener('click',function(event){
     if(Date.now()<suppressBoardClickUntil || pinchState || viewOn) return;
     if(selectedPieceId===null || !state || state.completed) return;
