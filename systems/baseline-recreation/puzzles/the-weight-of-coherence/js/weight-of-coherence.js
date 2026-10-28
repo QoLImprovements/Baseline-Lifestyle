@@ -1710,8 +1710,9 @@
     const percent=Math.round(zoomLevel*100);
     if(refs.zoomToggle){
       refs.zoomToggle.dataset.active=String(active);
-      refs.zoomToggle.setAttribute('aria-label','Zoom hotkey Z. Current magnification ' + percent + ' percent.');
-      refs.zoomToggle.title='Z zoom';
+      refs.zoomToggle.setAttribute('aria-pressed',String(boardLensActive));
+      refs.zoomToggle.setAttribute('aria-label',(boardLensActive?'Close':'Open') + ' board magnifier. ' + percent + ' percent.');
+      refs.zoomToggle.title=boardLensActive?'Close board magnifier':'Open board magnifier';
       if(refs.zoomValue) refs.zoomValue.textContent=percent + '%';
     }
     if(refs.zoomOut){
@@ -1742,7 +1743,7 @@
     if(boardLensActive){
       const point=boardLensPoint();
       updateBoardLens(point.x,point.y);
-      setStatus('Magnifier ' + Math.round(zoomLevel*100) + '%. Keep Z held to inspect.','');
+      setStatus('Magnifier ' + Math.round(zoomLevel*100) + '%. Move over the board to inspect.','');
     }else if(zoomTarget && zoomTarget.isConnected){
       applyPieceZoom(zoomTarget,zoomLevel);
       setStatus('Whole-piece zoom ' + Math.round(zoomLevel*100) + '%. The tray card remains fixed.','');
@@ -2031,6 +2032,10 @@
   if(refs.view) refs.view.addEventListener('click',toggleFullView);
   if(refs.zoomOut) refs.zoomOut.addEventListener('click',function(){ adjustZoom(-1); });
   if(refs.zoomIn) refs.zoomIn.addEventListener('click',function(){ adjustZoom(1); });
+  if(refs.zoomToggle) refs.zoomToggle.addEventListener('click',function(){
+    if(boardLensActive) endBoardLens();
+    else beginBoardLens();
+  });
   if(refs.help) refs.help.addEventListener('click',openHelp);
   refs.shuffle.addEventListener('click',shuffleTray);
   if(refs.fullscreen) refs.fullscreen.addEventListener('click',toggleFullscreen);
