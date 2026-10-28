@@ -1057,7 +1057,7 @@ const shell = createGameExtensionShell({
   name:'Colour Sort',
   order:20,
   art:'/systems/baseline-recreation/games/colour-sort/art/colour-sort-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=COLOUR_SORT_MOBILE_COHERENCE_20261026_1',
+  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=COLOUR_SORT_UNIFIED_DOCK_20261028_1',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `${tierById(profile.selectedTier).name} Tier · ${profile.gamesPlayed} games` : 'Ready',
