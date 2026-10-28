@@ -513,6 +513,12 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     if(typeof document === 'undefined' || !document.body) return;
     function finishMobileExit(){
       try{
+        document.querySelectorAll('.recreation-mobile-pseudo-fullscreen').forEach(function(el){
+          el.classList.remove('recreation-mobile-pseudo-fullscreen');
+          el.removeAttribute('data-fullscreen-window-view');
+        });
+        document.body.classList.remove('recreation-mobile-pseudo-fullscreen-active');
+        syncFullscreenWindowTabs();
         document.body.classList.remove('bl-mobile-game-mode');
         document.body.removeAttribute('data-mobile-game');
         qsa('.is-mobile-game-root').forEach(function(el){
@@ -757,7 +763,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       const id=btn.getAttribute('data-game-fullscreen')||'';
       if(id==='ninja') return;
       const root=gamePlayRootElement(id);
-      const active=!!(root && document.fullscreenElement===root);
+      const active=!!(root && (document.fullscreenElement===root || root.classList.contains('recreation-mobile-pseudo-fullscreen')));
       const label=active?'Exit full screen':'Full screen';
       btn.setAttribute('aria-label',label);
       btn.title=label+' — '+SITEWIDE_FULLSCREEN_HOTKEY_LABEL;
@@ -1131,7 +1137,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     const id=pair.id,config=pair.config;
     if(!config) return;
     const root=document.getElementById(config.root);
-    if(!root||document.fullscreenElement!==root) return;
+    if(!root||activeRecreationFullscreenRoot()!==root) return;
     const available=config.tabs.map(function(tab){return tab[0];});
     const next=available.includes(view)?view:'game';
     root.setAttribute('data-fullscreen-window-view',next);
@@ -1154,7 +1160,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     pane.innerHTML=entry&&entry[2]?cloneFullscreenPanelHtml(entry[2]):'<div class="fullscreen-window-empty">This section is not available.</div>';
   }
   function syncFullscreenWindowTabs(preferredGameId){
-    const fullscreen=document.fullscreenElement;
+    const fullscreen=activeRecreationFullscreenRoot();
     qsa('.game-fullscreen-window-tabs').forEach(function(shell){
       if(!fullscreen||!fullscreen.contains(shell)) shell.remove();
     });
@@ -1175,7 +1181,9 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       + config.tabs.map(function(tab){
           return '<button type="button" role="tab" data-fullscreen-window-tab="'+tab[0]+'">'+tab[1]+'</button>';
         }).join('')
-      + '</div><section class="game-fullscreen-window-pane" aria-live="polite"></section>';
+      + '</div>'
+      + (fullscreen.classList.contains('recreation-mobile-pseudo-fullscreen') ? '<button type="button" class="action ghost recreation-mobile-fullscreen-close" data-game-fullscreen="'+id+'" aria-label="Exit full screen">Exit Full Screen</button>' : '')
+      + '<section class="game-fullscreen-window-pane" aria-live="polite"></section>';
     setFullscreenWindowView(id,current);
   }
   window.BaselineRoundStatusTabs=Object.freeze({
@@ -3978,20 +3986,40 @@ if(ruleShiftState.finished){
     });
   }
 
+function activeRecreationFullscreenRoot(){
+    return document.fullscreenElement || document.querySelector('.recreation-mobile-pseudo-fullscreen');
+  }
 function toggleGameFullscreen(gameId){
-    const id = normaliseGameId(gameId);
+    const id=normaliseGameId(gameId);
     if(!id) return;
-    if(id === 'ninja'){ toggleRealmFullscreen(); return; }
+    if(id==='ninja'){ toggleRealmFullscreen(); return; }
     ensureGamePlayContract();
-    const target = gamePlayRootElement(id) || gamePlaySurfaceElement(id);
+    const target=gamePlayRootElement(id)||gamePlaySurfaceElement(id);
     if(!target) return;
-    if(isTouchOnlyGameDevice()) return;
-    if(!document.fullscreenEnabled) return;
-    if(document.fullscreenElement){
-      document.exitFullscreen().catch(function(){});
-    }else{
-      target.requestFullscreen().then(function(){ syncDesktopKeypadState(); }).catch(function(){});
+    if(target.classList.contains('recreation-mobile-pseudo-fullscreen')){
+      target.classList.remove('recreation-mobile-pseudo-fullscreen');
+      document.body.classList.remove('recreation-mobile-pseudo-fullscreen-active');
+      target.removeAttribute('data-fullscreen-window-view');
+      syncFullscreenWindowTabs(id);
+      syncGameButtonLabels();
+      return;
     }
+    if(document.fullscreenElement){
+      document.exitFullscreen?.().catch(function(){});
+      return;
+    }
+    if(isTouchOnlyGameDevice() || !document.fullscreenEnabled || !target.requestFullscreen){
+      document.querySelectorAll('.recreation-mobile-pseudo-fullscreen').forEach(function(el){
+        el.classList.remove('recreation-mobile-pseudo-fullscreen');
+      });
+      target.classList.add('recreation-mobile-pseudo-fullscreen');
+      document.body.classList.add('recreation-mobile-pseudo-fullscreen-active');
+      target.setAttribute('data-fullscreen-window-view','game');
+      syncFullscreenWindowTabs(id);
+      syncGameButtonLabels();
+      return;
+    }
+    target.requestFullscreen().then(function(){ syncDesktopKeypadState(); }).catch(function(){});
   }
   function ensureGameFullscreenButtons(){
     const ids = ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
@@ -4042,9 +4070,9 @@ function toggleGameFullscreen(gameId){
       const windowActions = gameRoot ? gameRoot.querySelector('.game-window-actions') : null;
       const specificActions = gameRoot ? gameRoot.querySelector('.game-specific-actions') : null;
       qsa('[data-game-fullscreen="' + id + '"]', panel).forEach(function(existingBtn){
-        if(id === 'ninja' || isTouchOnlyGameDevice()) existingBtn.remove();
+        if(id === 'ninja') existingBtn.remove();
       });
-      if(id !== 'ninja' && !isTouchOnlyGameDevice() && !panel.querySelector('[data-game-fullscreen="' + id + '"]')){
+      if(id !== 'ninja' && !panel.querySelector('[data-game-fullscreen="' + id + '"]')){
         const btn = document.createElement('button');
         btn.className = 'action ghost game-fullscreen-toggle';
         btn.type = 'button';
@@ -4241,7 +4269,7 @@ function toggleGameFullscreen(gameId){
       if(openBadmintonFocused){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } requestBadmintonFocusedOpen(); return; }
       const fullscreenWindowTab=event.target.closest('[data-fullscreen-window-tab]');
       if(fullscreenWindowTab){
-        const fullscreen=document.fullscreenElement;
+        const fullscreen=activeRecreationFullscreenRoot();
         const gameId=fullscreenGameIdFromElement(fullscreen);
         if(gameId) setFullscreenWindowView(gameId,fullscreenWindowTab.getAttribute('data-fullscreen-window-tab')||'game');
         return;
@@ -4497,7 +4525,7 @@ function toggleGameFullscreen(gameId){
       window.addEventListener('hashchange', function(){ restoreFromHashState({ useStored:false }); });
       window.addEventListener('popstate', function(){ restoreFromHashState({ useStored:false }); });
       document.addEventListener('fullscreenchange', function(){
-        const fullscreen=document.fullscreenElement;
+        const fullscreen=activeRecreationFullscreenRoot();
         const gameId=fullscreenGameIdFromElement(fullscreen);
         if(fullscreen&&gameId) fullscreen.setAttribute('data-fullscreen-window-view','game');
         syncFullscreenWindowTabs(gameId);
