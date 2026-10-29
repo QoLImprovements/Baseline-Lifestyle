@@ -43,6 +43,18 @@ test('mobile Jigsaw has playable board, one tabbed tray, and navigable fullscree
   expect(layout.width).toBeGreaterThan(100);
   expect(layout.width).toBeLessThanOrEqual(layout.screen);
   expect(layout.height).toBeGreaterThan(100);
+  const actionHit=await page.locator('#weightCoherenceControlsNextBtn').evaluate(button=>{
+    const info=node=>{
+      if(!node) return null;
+      const b=node.getBoundingClientRect(),s=getComputedStyle(node);
+      return {rect:{x:b.x,y:b.y,width:b.width,height:b.height},zIndex:s.zIndex,position:s.position,gridArea:s.gridArea,display:s.display};
+    };
+    const r=button.getBoundingClientRect();
+    const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+    const workspace=document.getElementById('weightCoherenceWorkspace');
+    return {hit:(hit?.tagName||'')+'#'+(hit?.id||''),button:info(button),rail:info(button.parentElement),toolbar:info(button.closest('.weight-coherence-toolbar')),stage:info(workspace.querySelector('.weight-coherence-stage')),board:info(document.getElementById('weightCoherenceBoard')),workspace:info(workspace)};
+  });
+  expect(actionHit.hit,JSON.stringify(actionHit)).toBe('BUTTON#weightCoherenceControlsNextBtn');
   await page.locator('#weightCoherenceControlsNextBtn').click();
   await page.locator('#weightCoherenceFullscreenBtn').click();
   await expect(workspace).not.toHaveClass(/is-pseudo-fullscreen/);
