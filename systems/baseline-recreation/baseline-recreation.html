@@ -39,7 +39,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/systems/baseline-recreation/css/recreation-theme.css?v=RECREATION_ACCOUNT_COHERENCE_20261024_1" rel="stylesheet" data-recreation-theme="true"/>
 <link href="/systems/baseline-recreation/puzzles/shared/css/puzzles-library.css?v=RECREATION_PALETTE_20261022_2" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/puzzles/crossnumber/css/crossnumber.css?v=CROSS_NUMBER_MOBILE_COHERENCE_20261026_1" rel="stylesheet"/>
-<link href="/systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=JIGSAW_TOUCH_MAGNIFIER_20261028_1" rel="stylesheet"/>
+<link href="/systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=JIGSAW_MOBILE_TRAY_TABS_20261029_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/concepts/shared/css/concepts.css?v=CONCEPTS_TEMPLATE_20261022_1" rel="stylesheet"/>
 <link href="/systems/baseline-recreation/concepts/stroop-effect/css/stroop-effect.css?v=STROOP_COMPARISON_20261022_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
@@ -469,7 +469,9 @@ These Markdown rules are a human reference point, not live runtime config.
                 <div class="stat-pill">Placed <span id="weightCoherencePlaced">0 / 100</span></div>
                 <div class="stat-pill">Time <span id="weightCoherenceTimer">00:00</span></div>
               </div>
-              <div class="weight-coherence-actions" aria-label="Puzzle controls">
+              <div class="weight-coherence-action-rail" aria-label="Jigsaw control navigation">
+                <button class="action ghost weight-coherence-action-arrow" id="weightCoherenceControlsPrevBtn" type="button" aria-label="Previous puzzle controls" title="Previous controls">‹</button>
+                <div class="weight-coherence-actions" aria-label="Puzzle controls">
                 <div class="weight-coherence-zoom-actions" role="group" aria-label="Inspection zoom">
                   <button class="action ghost weight-coherence-zoom-step" id="weightCoherenceZoomOutBtn" type="button" aria-label="Decrease inspection zoom" title="Decrease inspection zoom">−</button>
                   <button type="button" class="action ghost weight-coherence-icon-action weight-coherence-zoom-indicator" id="weightCoherenceZoomBtn" aria-pressed="false" aria-keyshortcuts="Z" aria-label="Open board magnifier" title="Open board magnifier">
@@ -501,6 +503,8 @@ These Markdown rules are a human reference point, not live runtime config.
                 <button class="action ghost weight-coherence-icon-action weight-coherence-settings-trigger" id="weightCoherenceToolbarSettingsBtn" type="button" aria-keyshortcuts="Alt+S" aria-label="Open puzzle settings (Alt+S)" aria-controls="weightCoherenceSettingsDialog" aria-expanded="false" title="Puzzle settings · Alt+S">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 2.8h4.6l.6 2.3c.5.2 1 .5 1.5.9l2.2-.7 2.3 4-1.7 1.6c.1.4.1.8.1 1.2s0 .8-.1 1.2l1.7 1.6-2.3 4-2.2-.7c-.5.4-1 .7-1.5.9l-.6 2.3H9.7l-.6-2.3c-.5-.2-1-.5-1.5-.9l-2.2.7-2.3-4 1.7-1.6a7.4 7.4 0 0 1 0-2.4L3.1 9.3l2.3-4 2.2.7c.5-.4 1-.7 1.5-.9l.6-2.3Z"/><circle cx="12" cy="12" r="3.2"/></svg><kbd class="weight-coherence-hotkey">Alt+S</kbd>
                 </button>
+                </div>
+                <button class="action ghost weight-coherence-action-arrow" id="weightCoherenceControlsNextBtn" type="button" aria-label="Next puzzle controls" title="Next controls">›</button>
               </div>
             </div>
 
@@ -576,14 +580,24 @@ These Markdown rules are a human reference point, not live runtime config.
             </div>
 
             <div class="weight-coherence-tray-shell">
-              <div class="weight-coherence-tray-head">
+              <div class="weight-coherence-mobile-tray-tabs" role="tablist" aria-label="Jigsaw piece trays">
+                <button class="action ghost is-active" role="tab" data-jigsaw-tray-tab="main" aria-selected="true" type="button">Main Tray</button>
+                <button class="action ghost" role="tab" data-jigsaw-tray-tab="sort-0" aria-selected="false" type="button">Sort 1</button>
+                <button class="action ghost" role="tab" data-jigsaw-tray-tab="sort-1" aria-selected="false" type="button">Sort 2</button>
+                <button class="action ghost" role="tab" data-jigsaw-tray-tab="sort-2" aria-selected="false" type="button">Sort 3</button>
+                <button class="action ghost" role="tab" data-jigsaw-tray-tab="sort-3" aria-selected="false" type="button">Sort 4</button>
+              </div>
+              <div class="weight-coherence-main-tray-panel" data-jigsaw-tray-panel="main">
+                <div class="weight-coherence-tray-head">
                 <span class="inline-note" id="weightCoherenceTrayMeta">Choose a piece count and start the puzzle.</span>
                 <div class="weight-coherence-tray-nav">
                   <button class="action ghost" id="weightCoherencePrevBtn" type="button" aria-keyshortcuts="ArrowLeft" title="Previous tray · Left arrow" disabled>Previous Tray [←]</button>
                   <button class="action ghost" id="weightCoherenceNextBtn" type="button" aria-keyshortcuts="ArrowRight" title="Next tray · Right arrow" disabled>Next Tray [→]</button>
                 </div>
               </div>
-              <div class="weight-coherence-tray" id="weightCoherenceTray" aria-label="Unplaced jigsaw pieces"></div>
+                <div class="weight-coherence-tray" id="weightCoherenceTray" aria-label="Unplaced jigsaw pieces"></div>
+              </div>
+              <div class="weight-coherence-mobile-sort-host" id="weightCoherenceMobileSortHost"></div>
             </div>
           </div>
         </article>
@@ -1016,7 +1030,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-recreation/js/games-registry.js?v=RECREATION_COHERENCE_20261023_2"></script>
 <script src="/systems/baseline-recreation/js/games-progression.js?v=GAMES_PROGRESSION_AUTHORITY_20261021_1"></script>
 <script src="/systems/baseline-recreation/js/games-core-config.js?v=RECREATION_COHERENCE_20261023_2"></script>
-<script src="/systems/baseline-recreation/js/pairs-engine.js?v=PAIRS_CLEAN_STREAK_RULE_20261024_1"></script>
+<script src="/systems/baseline-recreation/js/pairs-engine.js?v=PAIRS_MOBILE_GRID_20261029_1"></script>
 <script src="/systems/baseline-recreation/js/games-profile-rules.js?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1"></script>
 <script src="/systems/baseline-recreation/js/make-number-engine.js?v=MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1"></script>
 <script src="/systems/baseline-recreation/js/detect-word-engine.js?v=DETECT_WORD_ENGINE_AUTHORITY_20261021_1"></script>
@@ -1030,7 +1044,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-registry.js?v=RECREATION_COHERENCE_20261023_2"></script>
 <script src="/systems/baseline-recreation/puzzles/shared/js/puzzles-library.js?v=RECREATION_ROUTE_OWNERSHIP_20261022_1"></script>
 <script src="/systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js?v=CROSS_NUMBER_FULLSCREEN_WINDOW_TABS_20261025_1"></script>
-<script src="/systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=JIGSAW_TOUCH_PLACEMENT_20261028_2"></script>
+<script src="/systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=JIGSAW_MOBILE_TRAY_TABS_20261029_1"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Recreation shell or another game. -->
 <script type="module" src="/systems/baseline-recreation/games/block-grid/js/block-grid.js?v=BLOCK_GRID_CONTROLS_RESTORE_20261028_2"></script>
 <script type="module" src="/systems/baseline-recreation/games/colour-sort/js/colour-sort.js?v=COLOUR_SORT_SHARED_CONTROLS_20261028_1"></script>
