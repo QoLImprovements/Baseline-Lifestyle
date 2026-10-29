@@ -43,6 +43,33 @@ test('mobile Jigsaw has playable board, one tabbed tray, and navigable fullscree
   expect(layout.width).toBeGreaterThan(100);
   expect(layout.width).toBeLessThanOrEqual(layout.screen);
   expect(layout.height).toBeGreaterThan(100);
+  // Compact fullscreen is not satisfied merely by having the tabs in the DOM.
+  // All three regions must be visible together without scrolling the page.
+  const compact=await page.evaluate(()=>{
+    const rect=selector=>{
+      const el=document.querySelector(selector);
+      if(!el) return null;
+      const r=el.getBoundingClientRect();
+      return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height};
+    };
+    return {
+      viewport:{width:innerWidth,height:innerHeight},
+      toolbar:rect('#weightCoherenceWorkspace .weight-coherence-toolbar'),
+      board:rect('#weightCoherenceWorkspace .weight-coherence-board-wrap'),
+      tabs:rect('#weightCoherenceWorkspace .weight-coherence-mobile-tray-tabs'),
+      tray:rect('#weightCoherenceWorkspace .weight-coherence-tray-shell'),
+      oldSortVisible:[...document.querySelectorAll('#weightCoherenceWorkspace .weight-coherence-sort-column')].some(el=>getComputedStyle(el).display!=='none')
+    };
+  });
+  expect(compact.oldSortVisible).toBe(false);
+  for(const part of ['toolbar','board','tabs','tray']){
+    expect(compact[part],part).not.toBeNull();
+    expect(compact[part].top,part+' top').toBeGreaterThanOrEqual(-1);
+    expect(compact[part].bottom,part+' bottom').toBeLessThanOrEqual(compact.viewport.height+1);
+    expect(compact[part].width,part+' width').toBeGreaterThan(100);
+  }
+  expect(compact.board.bottom).toBeLessThanOrEqual(compact.tabs.top+1);
+  expect(compact.toolbar.bottom).toBeLessThanOrEqual(compact.board.top+1);
   const actionHit=await page.locator('#weightCoherenceControlsNextBtn').evaluate(button=>{
     const info=node=>{
       if(!node) return null;
