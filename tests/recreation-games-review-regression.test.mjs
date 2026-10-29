@@ -349,8 +349,8 @@ test('reported Recreation interaction repairs remain wired',()=>{
   assert.match(core,/--pairs-rows-desktop/);
   assert.match(nonRealmCss,/#pairsGameCard:fullscreen #pairsBoard\{[\s\S]*?grid-template-rows:repeat\(var\(--pairs-rows-desktop,3\)/);
   assert.match(core,/function isTouchOnlyGameDevice\(\)/);
-  assert.match(core,/if\(isTouchOnlyGameDevice\(\)\) return;[\s\S]*?document\.fullscreenEnabled/);
-  assert.match(core,/if\(id === 'ninja' \|\| isTouchOnlyGameDevice\(\)\) existingBtn\.remove\(\)/);
+  assert.match(core,/function requestNativeMobileFullscreen\(root\)[\s\S]*?document\.fullscreenEnabled/);
+  assert.match(core,/if\(id === 'ninja'\) existingBtn\.remove\(\)/);
   assert.doesNotMatch(core,/if\(id === 'ninja' \|\| isMobileGameViewport\(\)\) existingBtn\.remove\(\)/);
   assert.match(core,/--pairs-fit-height/);
   assert.match(core,/--pairs-rows-mobile/);
