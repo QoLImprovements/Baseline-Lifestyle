@@ -17,8 +17,8 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(var\(--recreation-copper-light-rgb\),\.28\)[^}]*background:var\(--recreation-panel\)/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_MOBILE_PLAYABILITY_20261024_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_DUAL_ZOOM_20261024_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_MOBILE_TRAY_TABS_20261029_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_MOBILE_TRAY_TABS_20261029_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
@@ -43,7 +43,8 @@ test('all non-fullscreen jigsaw interactions preserve the actual Baseline scroll
 
 test('rejected drag drops stay at the board and highlight the returned tray piece', () => {
   assert.match(js, /let returnHighlightPieceId = null/);
-  assert.match(js, /if\(!dragState\.moved && Math\.hypot\(dx,dy\)>5\)\{[\s\S]*?dragState\.moved=true;[\s\S]*?interactionScrollSnapshot=null;/);
+  assert.match(js, /Math\.hypot\(dx,dy\)>\(dragState\.pointerType==='touch'\?16:5\)/);
+  assert.match(js, /dragState\.moved=true;[\s\S]*?interactionScrollSnapshot=null;/);
   assert.match(js, /function attemptPlacement\(id,clientX,clientY\)\{[\s\S]*?const scrollSnapshot=pageScrollSnapshot\(\)/);
   assert.match(js, /returnHighlightPieceId=id;[\s\S]*?selectedPieceId=null;[\s\S]*?syncSelectedPieceClasses\(\);[\s\S]*?Its tray piece is highlighted/);
   assert.match(js, /root\.classList\.add\('is-wrong-drop'\);[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return false;/);
@@ -85,11 +86,11 @@ test('sorting trays use full width, top-fill fixed rows, and no blue piece cards
 });
 
 test('zoom level is always adjustable from 200 to 1000 percent, displayed beside the magnifier, and saved server-side', () => {
-  assert.match(html, /id="weightCoherenceZoomOutBtn"(?![^>]*disabled)[\s\S]*?<span[^>]*id="weightCoherenceZoomBtn"[^>]*aria-keyshortcuts="Z"[\s\S]*?id="weightCoherenceZoomValue">200%<\/span>[\s\S]*?id="weightCoherenceZoomInBtn"(?![^>]*disabled)[\s\S]*?id="weightCoherencePreviewBtn"/);
+  assert.match(html, /id="weightCoherenceZoomOutBtn"(?![^>]*disabled)[\s\S]*?<button[^>]*id="weightCoherenceZoomBtn"[^>]*aria-keyshortcuts="Z"[\s\S]*?id="weightCoherenceZoomValue">200%<\/span>[\s\S]*?id="weightCoherenceZoomInBtn"(?![^>]*disabled)[\s\S]*?id="weightCoherencePreviewBtn"/);
   assert.match(html, /weight-coherence-hotkey">Z<\/kbd>/);
-  assert.doesNotMatch(html, /<button[^>]*id="weightCoherenceZoomBtn"/);
+  assert.match(html, /<button[^>]*id="weightCoherenceZoomBtn"/);
   assert.doesNotMatch(html, /id="weightCoherenceZoom(?:Out|In)Btn"[^>]*(?:title|aria-label)="[^"]*%/);
-  assert.match(css, /\.weight-coherence-zoom-indicator\{[^}]*pointer-events:none/);
+  assert.match(css, /\.weight-coherence-zoom-indicator\{[^}]*pointer-events:auto/);
   assert.match(css, /\.weight-coherence-zoom-value\{/);
   assert.match(js, /const ZOOM_MIN = 2/);
   assert.match(js, /const PIECE_ZOOM_DEFAULT = 2/);
@@ -102,7 +103,7 @@ test('zoom level is always adjustable from 200 to 1000 percent, displayed beside
   assert.match(js, /zoomLevel=next;[\s\S]*?saveJigsawZoom\(\)/);
   assert.match(js, /refs\.zoomOut\.addEventListener\('click'[\s\S]*?adjustZoom\(-1\)/);
   assert.match(js, /refs\.zoomIn\.addEventListener\('click'[\s\S]*?adjustZoom\(1\)/);
-  assert.doesNotMatch(js, /refs\.zoomToggle\.addEventListener/);
+  assert.match(js, /if\(refs\.zoomToggle\) refs\.zoomToggle\.addEventListener\('click'/);
   assert.match(css, /#weightCoherencePuzzle \.weight-coherence-piece\.is-zoom-target/);
 });
 
@@ -302,7 +303,7 @@ test('fullscreen jigsaw fits completely without its own board scrollbar', () => 
   assert.match(js, /fullscreenLayoutTimer=window\.setTimeout\(settleFullscreenLayout,180\)/);
 });
 
-test('mobile fullscreen uses a stable fixed viewport and requires landscape', () => {
+test('mobile fullscreen retains portrait and landscape viewport modes', () => {
   assert.match(js, /if\(mobileLike\(\)\)\{\s*setPseudoFullscreen\(true\)/);
   assert.match(js, /classList\.toggle\('is-pseudo-fullscreen',pseudoFullscreen\)/);
   assert.match(js, /function syncMobileFullscreenOrientation\(\)/);
@@ -330,4 +331,25 @@ test('mobile selection avoids rebuilding every piece canvas', () => {
   assert.match(js, /function syncSelectedPieceClasses\(\)/);
   assert.match(js, /if\(!force && key===lastSortRenderKey\)/);
   assert.match(js, /selectedPieceId=selectedPieceId===id\?null:id;[\s\S]*?syncSelectedPieceClasses\(\)/);
+});
+
+
+test('mobile jigsaw has a single tabbed tray and scrollable fullscreen action rail', () => {
+  assert.equal((html.match(/data-jigsaw-tray-tab="/g)||[]).length,5);
+  assert.equal((html.match(/data-jigsaw-sort-tray="/g)||[]).length,4);
+  assert.match(html,/data-jigsaw-tray-tab="main"/);
+  assert.match(html,/id="weightCoherenceMobileSortHost"/);
+  assert.match(html,/id="weightCoherenceControlsPrevBtn"/);
+  assert.match(html,/id="weightCoherenceControlsNextBtn"/);
+  assert.match(js,/function syncMobileTrayTabs\(\)/);
+  assert.match(js,/shell\.parentElement!==parent\) parent\.appendChild\(shell\)/);
+  assert.match(js,/activeMobileTray=view/);
+  assert.match(js,/movePieceToSortBin\(piece,Number\(view\.slice\(5\)\)\)/);
+  assert.match(js,/function scrollMobileActions\(direction\)/);
+  assert.match(js,/mobileActionRail\.scrollBy/);
+  assert.match(js,/const width=Math\.floor\(Math\.min\(availableWidth,availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)\)\)/);
+  assert.match(css,/weight-coherence-mobile-tray-tabs/);
+  assert.match(css,/grid-template-areas:"board"!important/);
+  assert.match(css,/grid-template-areas:"toolbar" "stage" "tray"!important/);
+  assert.match(css,/overflow-x:auto!important/);
 });

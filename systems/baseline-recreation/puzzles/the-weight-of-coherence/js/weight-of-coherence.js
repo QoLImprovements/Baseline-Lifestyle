@@ -1822,6 +1822,9 @@
     const gap=parseFloat(shellStyle.rowGap || shellStyle.gap || '0') || 0;
     const availableHeight=Math.max(0,shellRect.height-statusHeight-gap-6);
     const availableWidth=Math.max(0,shellRect.width-6);
+    // The phone fullscreen grid reserves a fixed viewport share for the tabs
+    // and piece tray. Fit the board into its own measured stage, in portrait
+    // as well as landscape, so the tray and toolbar remain onscreen.
     const width=Math.floor(Math.min(availableWidth,availableHeight*(BOARD_WIDTH/BOARD_HEIGHT)));
     if(width>0) refs.workspace.style.setProperty('--weight-coherence-fullscreen-board-width',width+'px');
   }
@@ -1847,6 +1850,7 @@
     syncMobileFullscreenOrientation();
     renderTray();
     syncFullscreenButton();
+    if(typeof refreshMobileJigsawChrome==='function') refreshMobileJigsawChrome();
   }
 
   function syncFullscreenButton(){
@@ -2090,6 +2094,85 @@
 
   refs.prev.addEventListener('click',previousTray);
   refs.next.addEventListener('click',nextTray);
+
+  // The mobile tabbed tray reuses the actual desktop piece containers. A piece
+  // has one DOM home and one save-state identity in either viewport mode.
+  const mobileTrayTabs=Array.from(root.querySelectorAll('[data-jigsaw-tray-tab]'));
+  const mobileSortHost=document.getElementById('weightCoherenceMobileSortHost');
+  const mobileMainPanel=root.querySelector('[data-jigsaw-tray-panel="main"]');
+  const sortShells=refs.sortTrays.map(function(tray){ return tray.closest('.weight-coherence-sort-shell'); });
+  const sortParents=sortShells.map(function(shell){ return shell?.parentElement; });
+  let activeMobileTray='main';
+
+  function syncMobileTrayTabs(){
+    if(!mobileSortHost || !mobileMainPanel) return;
+    const mobile=mobileLike();
+    sortShells.forEach(function(shell,index){
+      if(!shell) return;
+      const parent=mobile ? mobileSortHost : sortParents[index];
+      if(parent && shell.parentElement!==parent) parent.appendChild(shell);
+      shell.dataset.jigsawTrayPanel='sort-'+index;
+      shell.hidden=mobile && activeMobileTray!=='sort-'+index;
+    });
+    mobileMainPanel.hidden=mobile && activeMobileTray!=='main';
+    mobileSortHost.hidden=!mobile || activeMobileTray==='main';
+    mobileTrayTabs.forEach(function(button){
+      const selected=button.dataset.jigsawTrayTab===activeMobileTray;
+      button.classList.toggle('is-active',selected);
+      button.setAttribute('aria-selected',String(selected));
+      button.tabIndex=selected?0:-1;
+    });
+  }
+  mobileTrayTabs.forEach(function(button,index){
+    button.addEventListener('click',function(){
+      const view=button.dataset.jigsawTrayTab;
+      if(!view) return;
+      if(selectedPieceId!==null && state && !state.completed && view!==activeMobileTray){
+        const piece=selectedPieceId;
+        if(view==='main') movePieceToMainTray(piece);
+        else movePieceToSortBin(piece,Number(view.slice(5)));
+      }
+      activeMobileTray=view;
+      syncMobileTrayTabs();
+    });
+    button.addEventListener('keydown',function(event){
+      if(event.key!=='ArrowRight' && event.key!=='ArrowLeft') return;
+      event.preventDefault();
+      const step=event.key==='ArrowRight'?1:-1;
+      mobileTrayTabs[(index+step+mobileTrayTabs.length)%mobileTrayTabs.length].focus();
+      mobileTrayTabs[(index+step+mobileTrayTabs.length)%mobileTrayTabs.length].click();
+    });
+  });
+
+  const mobileActionRail=root.querySelector('.weight-coherence-actions');
+  const mobileActionPrev=document.getElementById('weightCoherenceControlsPrevBtn');
+  const mobileActionNext=document.getElementById('weightCoherenceControlsNextBtn');
+  function syncMobileActionArrows(){
+    if(!mobileActionRail || !mobileActionPrev || !mobileActionNext) return;
+    const max=Math.max(0,mobileActionRail.scrollWidth-mobileActionRail.clientWidth);
+    mobileActionPrev.disabled=mobileActionRail.scrollLeft<=2;
+    mobileActionNext.disabled=mobileActionRail.scrollLeft>=max-2;
+  }
+  function scrollMobileActions(direction){
+    if(!mobileActionRail) return;
+    mobileActionRail.scrollBy({left:direction*Math.max(120,mobileActionRail.clientWidth*.72),behavior:'smooth'});
+  }
+  if(mobileActionPrev) mobileActionPrev.addEventListener('click',function(){scrollMobileActions(-1);});
+  if(mobileActionNext) mobileActionNext.addEventListener('click',function(){scrollMobileActions(1);});
+  if(mobileActionRail){
+    mobileActionRail.addEventListener('scroll',syncMobileActionArrows,{passive:true});
+    if(typeof ResizeObserver==='function') new ResizeObserver(syncMobileActionArrows).observe(mobileActionRail);
+    if(typeof MutationObserver==='function') new MutationObserver(syncMobileActionArrows).observe(mobileActionRail,{childList:true});
+  }
+  function refreshMobileJigsawChrome(){
+    syncMobileTrayTabs();
+    window.requestAnimationFrame(syncMobileActionArrows);
+  }
+  refreshMobileJigsawChrome();
+  window.addEventListener('resize',refreshMobileJigsawChrome,{passive:true});
+  window.addEventListener('orientationchange',refreshMobileJigsawChrome,{passive:true});
+  document.addEventListener('fullscreenchange',refreshMobileJigsawChrome);
+
 
   root.addEventListener('pointerover',rememberZoomTarget,{passive:true});
   root.addEventListener('pointermove',rememberZoomTarget,{passive:true});

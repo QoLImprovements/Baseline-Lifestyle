@@ -18,9 +18,17 @@
 
   function boardLayout(tier){
     const desktopCols=Math.max(2,Math.min(6,Math.round(Number(tier&&tier.cols)||4)));
-    const mobileCols=Math.min(4,desktopCols);
-    const phoneCols=Math.min(3,desktopCols);
     const pairCount=Math.max(1,Math.round(Number(tier&&tier.pairs)||6));
+    const cardCount=pairCount*2;
+    // Choose a complete rectangular grid on mobile: no stranded final card.
+    function fittingColumns(limit){
+      for(const columns of [4,3,2]){
+        if(columns<=limit && cardCount%columns===0) return columns;
+      }
+      return 2;
+    }
+    const mobileCols=fittingColumns(Math.min(4,desktopCols));
+    const phoneCols=fittingColumns(Math.min(4,desktopCols));
     const cardMax=pairCount<=6?150:pairCount<=8?140:pairCount<=10?128:pairCount<=12?118:pairCount<=15?108:100;
     const gap=10;
     return Object.freeze({

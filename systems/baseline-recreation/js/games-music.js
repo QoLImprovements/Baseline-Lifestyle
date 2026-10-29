@@ -774,12 +774,26 @@
       if(!host) return;
       // One coherent dock within the play window, in both windowed and fullscreen views.
       var playWindow = root.querySelector('.game-play-window') || root;
-      if(host.parentElement !== playWindow) playWindow.appendChild(host);
+      // Never append an ancestor into its descendant. Legacy game shells can
+      // already use the action container as the play-window wrapper.
+      if(host!==playWindow && !host.contains(playWindow) && host.parentElement!==playWindow) playWindow.appendChild(host);
       var specifics = root.querySelector('.game-specific-actions');
       if(specifics){
-        Array.prototype.slice.call(specifics.children).forEach(function(control){
-          if(control.matches('button.action') && control.parentElement !== host) host.appendChild(control);
-        });
+        // The unified two-row dock is mobile-only. Desktop keeps its existing
+        // game-specific controls in their original separate container.
+        var mobileDock=window.matchMedia && window.matchMedia('(max-width:820px), (hover:none) and (pointer:coarse)').matches;
+        if(mobileDock){
+          Array.prototype.slice.call(specifics.children).forEach(function(control){
+            if(!control.matches('button.action')) return;
+            control.setAttribute('data-recreation-original-specific','');
+            host.appendChild(control);
+          });
+        }else{
+          Array.prototype.slice.call(host.querySelectorAll(':scope > [data-recreation-original-specific]')).forEach(function(control){
+            specifics.appendChild(control);
+            control.removeAttribute('data-recreation-original-specific');
+          });
+        }
       }
       host.classList.add('recreation-unified-controls');
       var existingQuick=(panel||root).querySelector('[data-games-music-quick]');
@@ -921,6 +935,14 @@
       syncUi();
     });
     observer.observe(document.body,{childList:true,subtree:true});
+    var wasMobileDock=window.matchMedia && window.matchMedia('(max-width:820px), (hover:none) and (pointer:coarse)').matches;
+    window.addEventListener('resize',function(){
+      var isMobileDock=window.matchMedia && window.matchMedia('(max-width:820px), (hover:none) and (pointer:coarse)').matches;
+      if(isMobileDock!==wasMobileDock){
+        wasMobileDock=isMobileDock;
+        injectSettingsButtons();
+      }
+    },{passive:true});
   }
 
   window.BaselineGamesMusic = Object.freeze({
