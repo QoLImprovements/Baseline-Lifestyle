@@ -2,7 +2,7 @@
   'use strict';
 
   const APP='crossnumber';
-  const BUILD='CROSS_NUMBER_FULLSCREEN_WINDOW_TABS_20261025_1';
+  const BUILD='CROSS_NUMBER_DESKTOP_FIT_20261029_1';
   const root=document.getElementById('crossnumberGame');
   if(!root) return;
   const panel=root.closest('#crossnumberPanel');
@@ -969,47 +969,55 @@
     const panel=document.getElementById('crossnumberGamePanel');
     if(!scroll || !play || !panel) return;
     const full=document.fullscreenElement===panel;
-    const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
-    const mobile=window.matchMedia?.('(max-width:820px)').matches;
+    const mobile=window.matchMedia?.('(max-width:820px), (hover:none) and (pointer:coarse)').matches;
 
-    // On phones, CSS fits the entire equation network to the available
-    // width. Remove desktop fitter dimensions so the board can use its
-    // responsive tracks without inheriting a stale inline size.
+    // Mobile uses the width-responsive CSS board, never desktop inline sizes.
     if(mobile){
       panel.style.removeProperty('--crossnumber-play-height');
-      ['width','height','max-width','max-height'].forEach(function(prop){refs.board.style.removeProperty(prop);});
+      ['width','height','max-width','max-height','--crossnumber-cell-size'].forEach(function(prop){
+        refs.board.style.removeProperty(prop);
+      });
       return;
     }
 
-    // Outside fullscreen, size the whole play area from its actual on-screen
-    // position. This keeps the number bank and the entire puzzle reachable at
-    // once instead of relying on a guessed vh subtraction.
-    if(!full && window.matchMedia?.('(min-width:821px)').matches){
-      const playTop=play.getBoundingClientRect().top;
+    const cols=Math.max(1,Number(layout.cols)||1);
+    const rows=Math.max(1,Number(layout.rows)||1);
+    const gap=2;
+    const minCell=32;
+    const maxCell=44;
+    const minimumBoardHeight=rows*minCell+(rows-1)*gap;
+
+    if(!full){
+      // A tall equation must expand the windowed game area instead of being
+      // squeezed into the space above the bottom of the browser viewport.
+      const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
+      const playTop=Math.max(0,play.getBoundingClientRect().top);
       const commonActions=panel.querySelector('.crossnumber-actions.game-common-actions');
       const footerHeight=Math.max(0,commonActions?.getBoundingClientRect?.().height||0);
-      // Reserve the common-control footer and the panel's lower padding. Never
-      // force a minimum taller than the remaining viewport: the board must fit
-      // the game space rather than making the page scroll to reveal its bottom.
-      const available=Math.max(220,Math.min(680,viewportHeight-playTop-footerHeight-28));
-      panel.style.setProperty('--crossnumber-play-height',Math.floor(available)+'px');
+      const visibleSpace=Math.max(240,viewportHeight-playTop-footerHeight-28);
+      const playHeight=Math.max(360,minimumBoardHeight+16,visibleSpace);
+      panel.style.setProperty('--crossnumber-play-height',Math.ceil(playHeight)+'px');
     }else{
       panel.style.removeProperty('--crossnumber-play-height');
     }
 
-    // Re-read after the play-area constraint has been applied.
+    // Size the grid by its *individual cells*, not just by its aspect ratio.
+    // Fitting large layouts to a short viewport used to make 24px numerals
+    // overlap across tiny cells after exiting fullscreen. If the minimum
+    // readable size does not fit, the board viewport scrolls instead.
     const rect=scroll.getBoundingClientRect();
-    const ratio=Math.max(.25,Number(layout.cols||1)/Math.max(1,Number(layout.rows||1)));
-    const availableWidth=Math.max(120,(scroll.clientWidth||rect.width)-12);
-    const viewportBottom=Math.max(120,viewportHeight-rect.top-(full?8:18));
-    const boundedHeight=Math.max(120,(scroll.clientHeight||rect.height)-12);
-    const availableHeight=Math.max(120,Math.min(boundedHeight,viewportBottom));
-    const width=Math.max(120,Math.min(availableWidth,availableHeight*ratio,full?1280:980));
-    const height=Math.max(120,width/ratio);
-    refs.board.style.width=Math.floor(width)+'px';
-    refs.board.style.height=Math.floor(Math.min(height,availableHeight))+'px';
+    const width=Math.max(0,(scroll.clientWidth||rect.width)-12);
+    const height=Math.max(0,(scroll.clientHeight||rect.height)-12);
+    const fitCell=Math.floor(Math.min(
+      (width-(cols-1)*gap)/cols,
+      (height-(rows-1)*gap)/rows
+    ));
+    const cell=Math.max(minCell,Math.min(maxCell,Number.isFinite(fitCell)?fitCell:minCell));
+    refs.board.style.width=(cols*cell+(cols-1)*gap)+'px';
+    refs.board.style.height=(rows*cell+(rows-1)*gap)+'px';
     refs.board.style.maxWidth='none';
-    refs.board.style.maxHeight=Math.floor(availableHeight)+'px';
+    refs.board.style.maxHeight='none';
+    refs.board.style.setProperty('--crossnumber-cell-size',cell+'px');
   }
 
   function renderAll(){
@@ -1303,7 +1311,7 @@
   function resetCrossNumberFit(){
     const gamePanel=document.getElementById('crossnumberGamePanel');
     if(gamePanel) gamePanel.style.removeProperty('--crossnumber-play-height');
-    ['width','height','max-width','max-height'].forEach(function(prop){refs.board.style.removeProperty(prop);});
+    ['width','height','max-width','max-height','--crossnumber-cell-size'].forEach(function(prop){refs.board.style.removeProperty(prop);});
   }
   document.addEventListener('fullscreenchange',function(){
     syncFullscreenControl();
