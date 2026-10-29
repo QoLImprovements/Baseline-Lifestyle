@@ -2115,6 +2115,7 @@
       shell.hidden=mobile && activeMobileTray!=='sort-'+index;
     });
     mobileMainPanel.hidden=mobile && activeMobileTray!=='main';
+    mobileSortHost.hidden=!mobile || activeMobileTray==='main';
     mobileTrayTabs.forEach(function(button){
       const selected=button.dataset.jigsawTrayTab===activeMobileTray;
       button.classList.toggle('is-active',selected);
