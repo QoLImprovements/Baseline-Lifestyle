@@ -447,11 +447,10 @@ body[data-app="recreation"] .crossnumber-realm-card p{
 }
 
 
-/* 2026-10-23 Cross Number one-screen reachability authority
-   One rule set owns desktop and fullscreen geometry. The board is fitted by
-   crossnumber.js into the bounded board-scroll area; the number bank remains
-   beside it, so every tile and every grid cell stay reachable without
-   vertical game scrolling. */
+/* Cross Number desktop reachability.
+   Windowed play space grows to preserve readable equation cells; fullscreen
+   retains the shared side panel while larger puzzles or number banks scroll
+   inside their respective panes rather than clipping their content. */
 @media(min-width:821px){
   body[data-app="recreation"] #crossnumberGamePanel{
     --crossnumber-play-height:clamp(360px,calc(100dvh - 300px),720px);
