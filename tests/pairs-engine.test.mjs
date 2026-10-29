@@ -44,12 +44,17 @@ test('Pairs layout and tempo calculations preserve existing geometry and clamps'
   const engine=loadEngine();
   assert.deepEqual(
     JSON.parse(JSON.stringify(engine.boardLayout({cols:4,pairs:6}))),
-    {desktopCols:4,mobileCols:4,phoneCols:3,boardMax:630}
+    {desktopCols:4,mobileCols:4,phoneCols:4,boardMax:630}
   );
   assert.deepEqual(
     JSON.parse(JSON.stringify(engine.boardLayout({cols:6,pairs:18}))),
-    {desktopCols:6,mobileCols:4,phoneCols:3,boardMax:650}
+    {desktopCols:6,mobileCols:4,phoneCols:4,boardMax:650}
   );
+  for(const [pairs,expectedColumns] of [[6,4],[8,4],[9,3],[7,2],[18,4]]){
+    const layout=engine.boardLayout({cols:4,pairs});
+    assert.equal(layout.phoneCols,expectedColumns);
+    assert.equal((pairs*2)%layout.phoneCols,0,'phone grid must end in a complete row');
+  }
   assert.equal(engine.mismatchDelay(0),650);
   assert.equal(engine.mismatchDelay(4),290);
   assert.equal(engine.mismatchDelay(10),260);
@@ -96,7 +101,7 @@ test('Recreation core delegates Pairs pure logic to the engine authority',()=>{
   assert.doesNotMatch(source,/addEventListener|createElement|innerHTML|classList|history\./);
 
   const configIndex=html.indexOf('/systems/baseline-recreation/js/games-core-config.js');
-  const engineIndex=html.indexOf('/systems/baseline-recreation/js/pairs-engine.js?v=PAIRS_CLEAN_STREAK_RULE_20261024_1');
+  const engineIndex=html.indexOf('/systems/baseline-recreation/js/pairs-engine.js?v=PAIRS_MOBILE_GRID_20261029_1');
   const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js?v=');
   assert.ok(configIndex>=0 && engineIndex>configIndex && coreIndex>engineIndex);
 });
