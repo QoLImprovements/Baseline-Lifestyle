@@ -774,7 +774,9 @@
       if(!host) return;
       // One coherent dock within the play window, in both windowed and fullscreen views.
       var playWindow = root.querySelector('.game-play-window') || root;
-      if(host.parentElement !== playWindow) playWindow.appendChild(host);
+      // Never append an ancestor into its descendant. Legacy game shells can
+      // already use the action container as the play-window wrapper.
+      if(host!==playWindow && !host.contains(playWindow) && host.parentElement!==playWindow) playWindow.appendChild(host);
       var specifics = root.querySelector('.game-specific-actions');
       if(specifics){
         Array.prototype.slice.call(specifics.children).forEach(function(control){
