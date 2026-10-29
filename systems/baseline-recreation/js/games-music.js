@@ -779,8 +779,15 @@
       if(host!==playWindow && !host.contains(playWindow) && host.parentElement!==playWindow) playWindow.appendChild(host);
       var specifics = root.querySelector('.game-specific-actions');
       if(specifics){
-        Array.prototype.slice.call(specifics.children).forEach(function(control){
-          if(control.matches('button.action') && control.parentElement !== host) host.appendChild(control);
+        // The unified two-row dock is mobile-only. Desktop keeps its existing
+        // game-specific controls in their original separate container.
+        var mobileDock=window.matchMedia && window.matchMedia('(max-width:820px), (hover:none) and (pointer:coarse)').matches;
+        var source=mobileDock?specifics:host;
+        Array.prototype.slice.call(source.children).forEach(function(control){
+          if(!control.matches('button.action')) return;
+          if(mobileDock && control.parentElement!==host) host.appendChild(control);
+          else if(!mobileDock && control.matches('.desktop-keypad-toggle,#pairsHintBtn,#make24HintBtn,#replayTrackCoinShuffleBtn')
+            && control.parentElement!==specifics) specifics.appendChild(control);
         });
       }
       host.classList.add('recreation-unified-controls');
@@ -923,6 +930,14 @@
       syncUi();
     });
     observer.observe(document.body,{childList:true,subtree:true});
+    var wasMobileDock=window.matchMedia && window.matchMedia('(max-width:820px), (hover:none) and (pointer:coarse)').matches;
+    window.addEventListener('resize',function(){
+      var isMobileDock=window.matchMedia && window.matchMedia('(max-width:820px), (hover:none) and (pointer:coarse)').matches;
+      if(isMobileDock!==wasMobileDock){
+        wasMobileDock=isMobileDock;
+        injectSettingsButtons();
+      }
+    },{passive:true});
   }
 
   window.BaselineGamesMusic = Object.freeze({
