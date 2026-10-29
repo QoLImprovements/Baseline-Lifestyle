@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_MOBILE_COHERENCE_20261026_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_MOBILE_CONTROL_COHERENCE_20261029_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -136,10 +136,10 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_EXTENSION_ROUTE_OWNERSHIP_20261025_2/);
+  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_TOUCH_FULLSCREEN_20261028_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_MOBILE_COHERENCE_20261026_1/);
-  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_MOBILE_COHERENCE_20261026_1/);
+  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_CONTROLS_RESTORE_20261028_2/);
+  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_SHARED_CONTROLS_20261028_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -341,9 +341,9 @@ test('reported Recreation interaction repairs remain wired',()=>{
   assert.match(core,/injectMobileGameControls\('make24'\);[\s\S]*?syncDesktopKeypadState\(\)/);
   assert.match(core,/injectMobileGameControls\('detectword'\);[\s\S]*?syncDesktopKeypadState\(\)/);
   assert.match(nonRealmCss,/game-shell-action--keyboard[\s\S]*?place-items:center!important/);
-  assert.match(html,/id="ruleShiftHintBtn"/);
+  assert.match(html,/id="ruleShiftGameCard"[\s\S]*?recreation-unified-controls/);
   assert.match(core,/function useRuleShiftHint\(\)[\s\S]*?The surviving target is/);
-  assert.match(core,/hotkeyGame === 'ruleshift'[\s\S]*?useRuleShiftHint\(\)/);
+  assert.match(nonRealmCss,/Mobile-only dock authority: Block Grid/);
   assert.match(nonRealmCss,/#ruleshiftPanel \.ruleshift-options-grid\{[\s\S]*?display:flex!important[\s\S]*?justify-content:center!important/);
   assert.match(nonRealmCss,/@media\(max-width:820px\)\{[\s\S]*?#ruleshiftPanel \.ruleshift-options-grid\{[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important[\s\S]*?justify-content:center!important/);
   assert.match(core,/--pairs-rows-desktop/);
