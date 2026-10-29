@@ -347,7 +347,7 @@ test('mobile jigsaw has a single tabbed tray and scrollable fullscreen action ra
   assert.match(js,/movePieceToSortBin\(piece,Number\(view\.slice\(5\)\)\)/);
   assert.match(js,/function scrollMobileActions\(direction\)/);
   assert.match(js,/mobileActionRail\.scrollBy/);
-  assert.match(js,/portraitMobile \? availableWidth/);
+  assert.match(js,/const width=Math\.floor\(Math\.min\(availableWidth,availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)\)\)/);
   assert.match(css,/weight-coherence-mobile-tray-tabs/);
   assert.match(css,/grid-template-areas:"board"!important/);
   assert.match(css,/grid-template-areas:"toolbar" "stage" "tray"!important/);
