@@ -302,7 +302,7 @@ test('fullscreen jigsaw fits completely without its own board scrollbar', () => 
   assert.match(js, /fullscreenLayoutTimer=window\.setTimeout\(settleFullscreenLayout,180\)/);
 });
 
-test('mobile fullscreen uses a stable fixed viewport and requires landscape', () => {
+test('mobile fullscreen retains portrait and landscape viewport modes', () => {
   assert.match(js, /if\(mobileLike\(\)\)\{\s*setPseudoFullscreen\(true\)/);
   assert.match(js, /classList\.toggle\('is-pseudo-fullscreen',pseudoFullscreen\)/);
   assert.match(js, /function syncMobileFullscreenOrientation\(\)/);
@@ -330,4 +330,25 @@ test('mobile selection avoids rebuilding every piece canvas', () => {
   assert.match(js, /function syncSelectedPieceClasses\(\)/);
   assert.match(js, /if\(!force && key===lastSortRenderKey\)/);
   assert.match(js, /selectedPieceId=selectedPieceId===id\?null:id;[\s\S]*?syncSelectedPieceClasses\(\)/);
+});
+
+
+test('mobile jigsaw has a single tabbed tray and scrollable fullscreen action rail', () => {
+  assert.equal((html.match(/data-jigsaw-tray-tab="/g)||[]).length,5);
+  assert.equal((html.match(/data-jigsaw-sort-tray="/g)||[]).length,4);
+  assert.match(html,/data-jigsaw-tray-tab="main"/);
+  assert.match(html,/id="weightCoherenceMobileSortHost"/);
+  assert.match(html,/id="weightCoherenceControlsPrevBtn"/);
+  assert.match(html,/id="weightCoherenceControlsNextBtn"/);
+  assert.match(js,/function syncMobileTrayTabs\(\)/);
+  assert.match(js,/shell\.parentElement!==parent\) parent\.appendChild\(shell\)/);
+  assert.match(js,/activeMobileTray=view/);
+  assert.match(js,/movePieceToSortBin\(piece,Number\(view\.slice\(5\)\)\)/);
+  assert.match(js,/function scrollMobileActions\(direction\)/);
+  assert.match(js,/mobileActionRail\.scrollBy/);
+  assert.match(js,/portraitMobile \? availableWidth/);
+  assert.match(css,/weight-coherence-mobile-tray-tabs/);
+  assert.match(css,/grid-template-areas:"board"!important/);
+  assert.match(css,/grid-template-areas:"toolbar" "stage" "tray"!important/);
+  assert.match(css,/overflow-x:auto!important/);
 });
