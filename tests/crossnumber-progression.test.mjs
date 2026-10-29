@@ -86,12 +86,12 @@ test('procedural generator produces many valid layouts at every tier',()=>{
   }
 });
 
-test('Cross Number inherits the Recreation Indigo Circuit palette instead of owning a competing palette',()=>{
-  ['--g01-deep','--g01-mid','--g01-centre','--g01-active','--g01-focus','--g01-card','--g01-ink','--g01-muted'].forEach(token=>{
-    assert.ok(css.includes('var('+token),token);
+test('Cross Number inherits the Recreation palette rather than defining a competing palette',()=>{
+  ['--recreation-burgundy','--recreation-rose','--recreation-copper','--recreation-card','--recreation-ink','--recreation-muted'].forEach(token=>{
+    assert.ok(css.includes('var('+token+')'),token);
   });
   ['#fff7d2','#eadb9b','#fbf3d0','#f5f2e8'].forEach(retired=>assert.doesNotMatch(css,new RegExp(retired,'i')));
-  assert.match(html,/crossnumber\.css\?v=RECREATION_COHERENCE_20261023_/);
+  assert.match(html,/crossnumber\.css\?v=CROSS_NUMBER_DESKTOP_FIT_20261029_1/);
 });
 
 test('Cross Number follows the Recreation single-panel navigation contract',()=>{
@@ -115,34 +115,29 @@ test('Cross Number visible naming is two words while internal identifiers remain
   assert.doesNotThrow(()=>new Function(crossnumber));
 });
 
-test('Cross Number keeps the entire puzzle and answer bank reachable without fullscreen scrolling',()=>{
+test('Cross Number keeps desktop equation cells legible and both play panes reachable',()=>{
   assert.match(html,/class="crossnumber-play-layout"/);
   assert.match(html,/class="crossnumber-board-column"/);
   assert.match(html,/class="crossnumber-bank-panel"/);
   assert.match(crossnumber,/function fitCrossNumberBoard\(\)/);
-  assert.match(crossnumber,/availableHeight\*ratio/);
-  assert.match(crossnumber,/const playTop=play\.getBoundingClientRect\(\)\.top/);
-  assert.match(crossnumber,/--crossnumber-play-height/);
-  assert.match(crossnumber,/window\.requestAnimationFrame\(fitCrossNumberBoard\)/);
-  assert.match(crossnumber,/fullscreenchange[\s\S]*?requestAnimationFrame\(fitCrossNumberBoard\)/);
+  assert.match(crossnumber,/const minCell=32/);
+  assert.match(crossnumber,/const minimumBoardHeight=rows\*minCell/);
+  assert.match(crossnumber,/Math\.max\(360,minimumBoardHeight\+16,visibleSpace\)/);
+  assert.match(crossnumber,/refs\.board\.style\.setProperty\('--crossnumber-cell-size',cell\+'px'\)/);
+  assert.match(crossnumber,/fullscreenchange[\s\S]*?resetCrossNumberFit\(\)[\s\S]*?requestAnimationFrame\(fitCrossNumberBoard\)/);
   assert.match(crossnumber,/visualViewport\?\.addEventListener\?\.\('resize'[\s\S]*?requestAnimationFrame\(fitCrossNumberBoard\)/);
-  assert.match(css,/Cross Number one-screen reachability authority/);
-  assert.equal((css.match(/Cross Number one-screen reachability authority/g)||[]).length,1);
-  assert.match(css,/#crossnumberGamePanel:fullscreen\{[\s\S]*?height:100dvh!important[\s\S]*?overflow:hidden!important/);
-  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?flex:1 1 auto[\s\S]*?min-height:0/);
-  assert.match(css,/#crossnumberGamePanel \.crossnumber-board-column\{[\s\S]*?grid-template-rows:minmax\(0,1fr\) auto/);
-  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-board-scroll,[\s\S]*?overflow:hidden/);
-  assert.match(css,/@media\(max-width:820px\)[\s\S]*?crossnumber-board-scroll\{[\s\S]*?overflow:auto/);
+  assert.match(css,/Cross Number desktop reachability/);
+  assert.match(css,/#crossnumberGamePanel \.crossnumber-board-scroll\{[\s\S]*?overflow:auto/);
+  assert.match(css,/#crossnumberGamePanel \.crossnumber-bank\{[\s\S]*?overflow-x:hidden;[\s\S]*?overflow-y:auto/);
+  assert.match(css,/#crossnumberGamePanel:fullscreen \.crossnumber-board-scroll\{\s*overflow:auto!important/);
 });
 
-test('Cross Number uses shared Auto-Next and keeps larger type inside the tighter cells',()=>{
+test('Cross Number keeps common controls and scales text with actual grid cells',()=>{
   assert.match(html,/data-auto-next-toggle="crossnumber"/);
   assert.match(core,/AUTO_NEXT_GAMES = \[[^\]]*'crossnumber'/);
   assert.match(core,/window\.BaselineGamesAutoNext/);
   assert.match(crossnumber,/autoNextApi\(\)/);
-  assert.match(crossnumber,/schedule\?\.\(APP,function\(\)\{createNewRound/);
-  assert.match(css,/crossnumber-symbol-cell\{[\s\S]*?font-size:clamp\(14px,1\.8vw,26px\)/);
-  assert.match(css,/crossnumber-number-cell\{[\s\S]*?font-size:clamp\(16px,2vw,30px\)/);
+  assert.match(css,/font-size:clamp\(14px,calc\(var\(--crossnumber-cell-size,36px\) \* \.47\),21px\)!important/);
   assert.match(css,/crossnumber-number-tile\{[\s\S]*?font:900 21px\/1/);
 });
 
