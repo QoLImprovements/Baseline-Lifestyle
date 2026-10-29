@@ -1155,3 +1155,20 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
     min-height:0!important;max-height:none!important;height:100%!important;
   }
 }
+
+/* Fullscreen action controls remain above the tall portrait board's canvas.
+   Without a stacking context the canvas can intercept the arrow tap targets. */
+@media(max-width:760px),(hover:none) and (pointer:coarse){
+  #weightCoherencePuzzle .weight-coherence-workspace:fullscreen .weight-coherence-toolbar,
+  #weightCoherencePuzzle .weight-coherence-workspace.is-pseudo-fullscreen .weight-coherence-toolbar{
+    position:relative!important;z-index:40!important;isolation:isolate;
+  }
+  #weightCoherencePuzzle .weight-coherence-workspace:fullscreen .weight-coherence-action-rail,
+  #weightCoherencePuzzle .weight-coherence-workspace.is-pseudo-fullscreen .weight-coherence-action-rail{
+    position:relative!important;z-index:41!important;
+  }
+  #weightCoherencePuzzle .weight-coherence-workspace:fullscreen .weight-coherence-stage,
+  #weightCoherencePuzzle .weight-coherence-workspace.is-pseudo-fullscreen .weight-coherence-stage{
+    position:relative!important;z-index:1!important;
+  }
+}
