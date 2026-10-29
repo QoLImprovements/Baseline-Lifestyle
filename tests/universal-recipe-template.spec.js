@@ -320,15 +320,27 @@ test('signed-out favourite caption floats without changing recipe layout', async
   await expect(favourite).toBeVisible();
   await expect(batch).toBeVisible();
 
-  const before = await batch.boundingBox();
+  await favourite.scrollIntoViewIfNeeded();
+  const before = await page.evaluate(() => {
+    const row = document.querySelector('#r3 .recipe-meta-row');
+    if(!row) return null;
+    const rect = row.getBoundingClientRect();
+    return { documentY: rect.top + window.scrollY, scrollY: window.scrollY };
+  });
   await favourite.click();
   await expect(favourite).toHaveAttribute('data-tip', 'log in required to favorite this recipe.');
   await expect(favourite).toHaveClass(/tip-show/);
-  const after = await batch.boundingBox();
+  const after = await page.evaluate(() => {
+    const row = document.querySelector('#r3 .recipe-meta-row');
+    if(!row) return null;
+    const rect = row.getBoundingClientRect();
+    return { documentY: rect.top + window.scrollY, scrollY: window.scrollY };
+  });
 
   expect(before).not.toBeNull();
   expect(after).not.toBeNull();
-  expect(Math.abs(after.y - before.y)).toBeLessThan(1);
+  expect(Math.abs(after.documentY - before.documentY)).toBeLessThan(1);
+  expect(Math.abs(after.scrollY - before.scrollY)).toBeLessThan(1);
 });
 
 test('A deliberate recipe open always starts on Recipe even after Details was previously active', async ({ page }) => {
