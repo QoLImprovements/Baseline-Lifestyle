@@ -915,8 +915,10 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
 
   const cy=(box)=>box.y+box.height/2;
   const cx=(box)=>box.x+box.width/2;
-  expect(wordStartBox.x).toBeLessThan(wordAutoBox.x);
-  expect(Math.abs(cy(wordStartBox)-cy(wordAutoBox))).toBeLessThanOrEqual(1);
+  // The current desktop dock keeps New Game above Auto New Game on the
+  // same left rail, rather than the retired side-by-side alignment.
+  expect(Math.abs(cx(wordStartBox)-cx(wordAutoBox))).toBeLessThanOrEqual(1);
+  expect(cy(wordStartBox)).toBeLessThan(cy(wordAutoBox));
   expect(wordMusicBox.x).toBeLessThan(wordFullBox.x);
   expect(Math.abs(cy(wordMusicBox)-cy(wordFullBox))).toBeLessThanOrEqual(1);
   expect(cy(wordSettingsBox)).toBeLessThan(cy(wordMusicBox));
