@@ -1053,6 +1053,7 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
     background:rgba(var(--recreation-rose-rgb),.65)!important;
   }
   #weightCoherencePuzzle .weight-coherence-mobile-sort-host{display:block!important;min-width:0;min-height:0}
+  #weightCoherencePuzzle .weight-coherence-mobile-sort-host[hidden]{display:none!important}
   #weightCoherencePuzzle .weight-coherence-sort-column{display:none!important}
   #weightCoherencePuzzle .weight-coherence-sort-shell[hidden],
   #weightCoherencePuzzle .weight-coherence-main-tray-panel[hidden]{display:none!important}
