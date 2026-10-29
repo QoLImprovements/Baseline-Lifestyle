@@ -1822,10 +1822,10 @@
     const gap=parseFloat(shellStyle.rowGap || shellStyle.gap || '0') || 0;
     const availableHeight=Math.max(0,shellRect.height-statusHeight-gap-6);
     const availableWidth=Math.max(0,shellRect.width-6);
-    // In portrait the board lives in the scrollable document flow; its own
-    // auto-height must not be used as an artificial upper bound for its width.
-    const portraitMobile=mobileLike() && !mobileLandscape();
-    const width=Math.floor(portraitMobile ? availableWidth : Math.min(availableWidth,availableHeight*(BOARD_WIDTH/BOARD_HEIGHT)));
+    // The phone fullscreen grid reserves a fixed viewport share for the tabs
+    // and piece tray. Fit the board into its own measured stage, in portrait
+    // as well as landscape, so the tray and toolbar remain onscreen.
+    const width=Math.floor(Math.min(availableWidth,availableHeight*(BOARD_WIDTH/BOARD_HEIGHT)));
     if(width>0) refs.workspace.style.setProperty('--weight-coherence-fullscreen-board-width',width+'px');
   }
 
