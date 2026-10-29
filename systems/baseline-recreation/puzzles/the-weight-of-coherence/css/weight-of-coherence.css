@@ -1172,3 +1172,26 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
     position:relative!important;z-index:1!important;
   }
 }
+
+/* Portrait fullscreen: document-flow stacking is safer than nested grid-area
+   overlays for a tall canvas and a narrow control rail. */
+@media (max-width:760px) and (orientation:portrait){
+  #weightCoherencePuzzle .weight-coherence-workspace.is-pseudo-fullscreen.is-mobile-fullscreen-portrait{
+    display:flex!important;flex-direction:column!important;align-items:stretch!important;
+    overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;
+  }
+  #weightCoherencePuzzle .weight-coherence-workspace.is-pseudo-fullscreen.is-mobile-fullscreen-portrait .weight-coherence-toolbar{
+    position:sticky!important;top:0!important;left:auto!important;
+    z-index:1000!important;flex:0 0 auto!important;min-height:0!important;
+    background:var(--recreation-panel);
+  }
+  #weightCoherencePuzzle .weight-coherence-workspace.is-pseudo-fullscreen.is-mobile-fullscreen-portrait .weight-coherence-stage{
+    position:relative!important;z-index:0!important;flex:0 0 auto!important;
+    width:100%!important;height:auto!important;min-height:0!important;
+    margin:0!important;overflow:visible!important;
+  }
+  #weightCoherencePuzzle .weight-coherence-workspace.is-pseudo-fullscreen.is-mobile-fullscreen-portrait .weight-coherence-tray-shell{
+    position:relative!important;flex:0 0 auto!important;width:100%!important;
+    min-height:0!important;max-height:none!important;
+  }
+}
