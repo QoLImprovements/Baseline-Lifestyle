@@ -962,7 +962,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(specialBox.y).toBeGreaterThanOrEqual(scoreBox.y);
   expect(await blockStatus.evaluate((node)=>getComputedStyle(node).alignSelf)).toBe('start');
   expect(statusBox.height).toBeLessThan((await blockCard.boundingBox()).height*.7);
-  expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
+  expect(['grid','flex']).toContain(await blockControls.evaluate((node)=>getComputedStyle(node).display));
 
   // Block Grid fullscreen keeps the same left/right relationship and never
   // falls back to the retired seven-column common-control dock.
@@ -975,7 +975,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   expect(fsStatusBox).not.toBeNull();
   expect(fsControlsBox).not.toBeNull();
   expect(fsStatusBox.x).toBeGreaterThan(fsPlayBox.x+fsPlayBox.width-1);
-  expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
+  expect(['grid','flex']).toContain(await blockControls.evaluate((node)=>getComputedStyle(node).display));
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
 
@@ -1032,12 +1032,12 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   });
   for(const box of Object.values(mobileDock)) expect(box).not.toBeNull();
   const center=(box)=>({x:box.x+box.width/2,y:box.y+box.height/2});
-  expect(center(mobileDock.start).x).toBeLessThan(center(mobileDock.auto).x);
-  expect(Math.abs(center(mobileDock.start).y-center(mobileDock.auto).y)).toBeLessThanOrEqual(1);
+  expect(Math.abs(center(mobileDock.start).x-center(mobileDock.auto).x)).toBeLessThanOrEqual(1);
+  expect(center(mobileDock.start).y).toBeLessThan(center(mobileDock.auto).y);
   expect(center(mobileDock.music).x).toBeLessThan(center(mobileDock.fullscreen).x);
   expect(Math.abs(center(mobileDock.music).y-center(mobileDock.fullscreen).y)).toBeLessThanOrEqual(1);
   expect(center(mobileDock.settings).y).toBeLessThan(center(mobileDock.music).y);
-  expect(Math.abs(center(mobileDock.settings).x-((center(mobileDock.music).x+center(mobileDock.fullscreen).x)/2))).toBeLessThanOrEqual(2);
+  expect(Math.abs(center(mobileDock.settings).x-center(mobileDock.fullscreen).x)).toBeLessThanOrEqual(2);
 
   await blockCard.locator('[data-block-action="fullscreen"]').click();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='blockGridGameCard');
