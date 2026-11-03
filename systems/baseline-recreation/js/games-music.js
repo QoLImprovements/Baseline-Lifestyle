@@ -117,7 +117,7 @@
           envelope.gain.cancelScheduledValues(now);
           envelope.gain.setTargetAtTime(0.0001,now,0.008);
         }
-        node.stop(now+0.055);
+        node.stop(Math.max(now+0.055,(node._baselineStartAt||now)+0.002));
       }catch(_error){}
     });
     liveNodes.clear();
@@ -182,6 +182,7 @@
     }
 
     osc._baselineEnvelope=gain;
+    osc._baselineStartAt=startAt;
     liveNodes.add(osc);
     osc.onended = function(){
       liveNodes.delete(osc);
@@ -204,6 +205,7 @@
     gain.gain.exponentialRampToValueAtTime(0.0001,at+0.19);
     osc.connect(gain);gain.connect(master);
     osc._baselineEnvelope=gain;
+    osc._baselineStartAt=at;
     liveNodes.add(osc);
     osc.onended=function(){liveNodes.delete(osc);try{osc.disconnect();gain.disconnect();}catch(_error){}};
     osc.start(at);osc.stop(at+0.20);
