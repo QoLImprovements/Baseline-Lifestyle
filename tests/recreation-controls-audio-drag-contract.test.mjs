@@ -61,7 +61,7 @@ test('Cross Number uses the same pointer and real equation-cell drop path on des
 
 test('all changed runtime assets receive fresh cache keys', () => {
   assert.match(html, /ORIGINAL_DISTINCT_THEMES_20261103_2/);
-  assert.match(html, /DESKTOP_DOCK_RESTORE_20261103_2/);
+  assert.match(html, /DESKTOP_DOCK_AUTHORITY_20261103_3/);
   assert.match(html, /DESKTOP_POINTER_DRAG_20261103_2/);
   assert.match(html, /TOUCH_SPECIALS_FULLSCREEN_20261103_2/);
 });
