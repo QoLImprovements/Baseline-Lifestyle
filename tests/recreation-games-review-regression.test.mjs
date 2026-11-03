@@ -138,8 +138,8 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
   assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_TOUCH_FULLSCREEN_20261028_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_CONTROLS_RESTORE_20261028_2/);
-  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_SHARED_CONTROLS_20261028_1/);
+  assert.match(html,/block-grid\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(html,/colour-sort\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -211,9 +211,9 @@ test('Recreation music preferences are server-side and quick controls stay insid
   assert.match(music,/document\.addEventListener\('baseline:game-storage'[\s\S]*?if\(!wasEnabled\) startActive\(\);[\s\S]*?else recoverPlayback\(\)/);
   assert.doesNotMatch(music,/document\.addEventListener\('baseline:game-storage'[\s\S]{0,260}?if\(settings\.enabled && activeGame\) startActive\(\)/);
   assert.match(music,/if\(timer && nextBarTime > c\.currentTime \+ 0\.25\) return;/);
-  assert.match(music,/var SCHEDULE_AHEAD_SECONDS = 8/);
-  assert.match(music,/var SCHEDULER_INTERVAL_MS = 900/);
-  assert.match(music,/normalizedOutput\.gain\.value = 3\.2/);
+  assert.match(music,/var SCHEDULE_AHEAD_SECONDS = 1\.6/);
+  assert.match(music,/var SCHEDULER_INTERVAL_MS = 100/);
+  assert.match(music,/normalizedOutput\.gain\.value = 1\.55/);
   assert.match(music,/while\(nextBarTime < ctx\.currentTime \+ SCHEDULE_AHEAD_SECONDS\)/);
   assert.doesNotMatch(music,/ctx\.currentTime \+ 75/);
   assert.match(music,/function mutationAddsElement\(records\)[\s\S]*?node\.nodeType===1/);
