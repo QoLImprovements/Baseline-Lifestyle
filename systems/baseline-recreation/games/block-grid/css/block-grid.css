@@ -894,3 +894,12 @@ html.is-dragging-block-grid-special body{
   html body[data-app="recreation"] #blockGridPanel #blockGridGameCard:fullscreen > .round-status-card{order:6!important}
   html body[data-app="recreation"] #blockGridPanel #blockGridGameCard:fullscreen > .block-grid-run-objective{order:7!important}
 }
+
+/* Phone dragging uses the grabbed cell as the ghost origin.
+   Do not subtract half the ghost again with translate(-50%,-50%). */
+@media (max-width:820px), (hover:none) and (pointer:coarse){
+  body[data-app="recreation"] .block-grid-drag-ghost,
+  body[data-app="recreation"] .block-grid-drag-ghost.is-over-board{
+    transform:none!important;
+  }
+}
