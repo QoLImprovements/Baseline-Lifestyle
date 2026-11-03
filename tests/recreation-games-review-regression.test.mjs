@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_MOBILE_CONTROL_COHERENCE_20261029_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=DESKTOP_DOCK_RESTORE_20261103_2/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -138,7 +138,7 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
   assert.match(html,/baseline-recreation-core\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(html,/block-grid\.js\?v=TOUCH_SPECIALS_FULLSCREEN_20261103_2/);
   assert.match(html,/colour-sort\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
 });
 
@@ -322,30 +322,28 @@ test('fullscreen layouts use bounded side panels except the deliberately indepen
   const colourCss=read('systems/baseline-recreation/games/colour-sort/css/colour-sort.css');
   assert.match(colourCss,/--colour-fs-side:clamp\(230px,20vw,330px\)/);
 });
-test('each Recreation game has a distinct upbeat major-key song and smooth audio changes',()=>{
+test('every Recreation game retains its original unique three-minute song with smooth transitions',()=>{
   const ids=['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
-  const opening=music.indexOf('var TRACKS={');
-  const closing=music.indexOf('function scheduleBar(',opening);
-  assert.ok(opening>0 && closing>opening,'Music score declaration must be present');
-  const scores=Function(music.slice(opening,closing)+'; return TRACKS;')();
+  const match=music.match(/var TRACKS = (\\{[\\s\\S]*?\\});\\s+var ARRANGEMENTS/);
+  assert.ok(match,'Original game scores must be preserved');
+  const scores=JSON.parse(match[1]);
   assert.deepEqual(Object.keys(scores).sort(),ids.sort());
   const fingerprints=new Set();
   for(const [name,score] of Object.entries(scores)){
-    assert.ok(score.bpm>=100 && score.bpm<=140,name+' has a lively tempo');
-    assert.equal(score.phrases.length,4,name+' has four musical phrases');
-    assert.ok(score.phrases.every(phrase=>phrase.length===score.beats.length),name+' phrase matches its rhythm');
-    for(const chord of score.chords){
-      assert.deepEqual(chord.map(note=>note-chord[0]),[0,4,7],name+' chord is a major triad');
-    }
-    fingerprints.add(JSON.stringify([score.lead,score.chords,score.beats,score.phrases,score.bassBeats,score.kickBeats]));
+    assert.ok(score.bpm>=80 && score.bpm<=140,name+' retains its own original tempo');
+    assert.equal(score.sections.length,7,name+' has seven musical sections');
+    assert.equal(score.sections.reduce((bars,section)=>bars+section.bars,0),score.bars);
+    assert.equal(score.bars*4*60/score.bpm,180,name+' is a three-minute composition');
+    fingerprints.add(JSON.stringify(score));
   }
-  assert.equal(fingerprints.size,ids.length,'Songs must differ beyond tempo or pitch shift');
-  assert.match(music,/var MIX_VERSION = 6/);
-  assert.match(music,/var SCHEDULE_AHEAD_SECONDS = 1\.6/);
+  assert.equal(fingerprints.size,ids.length,'No game may share the same score');
+  assert.match(music,/var ARRANGEMENTS = \\{/);
+  assert.match(music,/var MIX_VERSION = 7/);
+  assert.match(music,/var SCHEDULE_AHEAD_SECONDS = 1\\.6/);
   assert.match(music,/var SCHEDULER_INTERVAL_MS = 100/);
-  assert.match(music,/node\._baselineEnvelope/);
-  assert.match(music,/envelope\.gain\.setTargetAtTime\(0\.0001,now,0\.008\)/);
-  assert.doesNotMatch(music,/Object\.assign\(TRACKS/);
+  assert.match(music,/node\\._baselineEnvelope/);
+  assert.match(music,/envelope\\.gain\\.setTargetAtTime\\(0\\.0001,now,0\\.008\\)/);
+  assert.doesNotMatch(music,/Object\\.assign\\(TRACKS/);
 });
 test('reported Recreation interaction repairs remain wired',()=>{
   assert.match(core,/injectMobileGameControls\('make24'\);[\s\S]*?syncDesktopKeypadState\(\)/);
@@ -505,8 +503,8 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/document\.elementFromPoint\(clientX,clientY\)[\s\S]*?is-touch-drop-target/);
   assert.match(crossnumber,/function finishTouchDrag\(event,cancelled\)[\s\S]*?placeTile\(dropCell\.dataset\.node,state\.tileId\)/);
   assert.match(crossnumber,/refs\.bank\.addEventListener\('pointerup'[\s\S]*?finishTouchDrag\(event,false\)/);
-  assert.match(crossnumber,/touchDragScrollStep[\s\S]*?window\.scrollBy\(0,touchDragScrollVelocity\)/);
-  assert.match(crossnumberCss,/Cross Number touch-drag authority/);
+  assert.match(crossnumber,/touchDragScrollStep[\s\S]*?scroller\.scrollTop\+=touchDragScrollVelocity/);
+  assert.match(crossnumberCss,/One coherent pointer-drag path/);
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
   assert.match(html,/crossnumber\.css\?v=MOBILE_GAME_COHERENCE_20261103_1/);
