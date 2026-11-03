@@ -111,7 +111,7 @@ export function createGameExtensionShell(config) {
     button.addEventListener('pointerdown',function(event){
       if(event.pointerType!=='touch'&&event.pointerType!=='pen') return;
       window.clearTimeout(hold);window.clearTimeout(hide);
-      hold=window.setTimeout(function(){button.dataset.tooltipVisible='true';},520);
+      hold=window.setTimeout(function(){button.dataset.tooltipVisible='true';button.dataset.longPress='true';},520);
     });
     ['pointerup','pointercancel','pointerleave'].forEach(function(type){
       button.addEventListener(type,function(){
@@ -251,6 +251,11 @@ export function createGameExtensionShell(config) {
     if (target.closest(`[data-close-game-extension="${config.id}"]`)) {
       event.preventDefault();
       event.stopImmediatePropagation();
+      const backButton=target.closest(`[data-close-game-extension="${config.id}"]`);
+      if(backButton?.dataset.longPress==='true'){
+        backButton.removeAttribute('data-long-press');
+        return;
+      }
       const panel=document.getElementById(config.panelId);
       if(document.fullscreenElement && panel?.contains(document.fullscreenElement)){
         Promise.resolve(document.exitFullscreen()).then(function(){close();},function(){close();});
