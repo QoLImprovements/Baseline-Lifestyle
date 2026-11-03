@@ -1123,12 +1123,17 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     trackcoin:{root:'trackCoinGamePanel',tabs:[['game','Game'],['skills','Skills','trackCoinSkillPanel'],['tiers','Tiers','trackCoinTierPanel'],['progress','Progress','trackCoinProgressPanel']]},
     ruleshift:{root:'ruleShiftGameCard',tabs:[['game','Game'],['skills','Skills','ruleShiftSkillCard'],['tiers','Tiers','ruleShiftTierCard'],['progress','Progress','ruleShiftProgressCard']]},
     blockgrid:{root:'blockGridGameCard',tabs:[['game','Game'],['skills','Skills','blockGridSkillsCard'],['tiers','Tiers','blockGridModesCard'],['progress','Progress','blockGridProgressCard']]},
-    coloursort:{root:'colourSortGameCard',tabs:[['game','Game'],['tiers','Tiers','colourSortLevelsCard'],['progress','Progress','colourSortProgressCard']]},
+    coloursort:{root:'colourSortGameCard',tabs:[['game','Game'],['round','Round','colourSortRoundCard'],['tiers','Tiers','colourSortLevelsCard'],['progress','Progress','colourSortProgressCard']]},
     crossnumber:{root:'crossnumberGamePanel',tabs:[['game','Game'],['skills','Skills','crossnumberSkillPanel'],['tiers','Tiers','crossnumberTierPanel'],['progress','Progress','crossnumberProgressPanel']]}
   });
   function fullscreenWindowConfig(gameId){
     const id=normaliseGameId(gameId)||String(gameId||'').trim().toLowerCase();
-    return {id:id,config:FULLSCREEN_WINDOW_TABS[id]||null};
+    const base=FULLSCREEN_WINDOW_TABS[id]||null;
+    // Round is an additional Colour Sort fullscreen tab on mobile only.
+    const config=id==='coloursort' && base && !isMobileGameViewport()
+      ? {root:base.root,tabs:base.tabs.filter(function(tab){return tab[0]!=='round';})}
+      : base;
+    return {id:id,config:config};
   }
   function cloneFullscreenPanelHtml(sourceId){
     const source=document.getElementById(sourceId);
