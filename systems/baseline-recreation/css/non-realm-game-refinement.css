@@ -3264,3 +3264,12 @@ html body[data-app="recreation"] .recreation-mobile-pseudo-fullscreen > .game-pl
     grid-column:5!important;grid-row:2!important;justify-self:end!important;
   }
 }
+
+/* Only the floating arrow remains when a core game is open on a phone. */
+@media (max-width:820px), (hover:none) and (pointer:coarse){
+  body[data-app="recreation"].bl-mobile-game-mode #games .game-panel.is-mobile-game-root .game-header button[data-select-game=""],
+  body[data-app="recreation"].bl-mobile-game-mode #games .game-panel.is-mobile-game-root button.action.secondary[data-select-game=""]{
+    display:none!important;
+    visibility:hidden!important;
+  }
+}
