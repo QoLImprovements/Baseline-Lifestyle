@@ -1008,3 +1008,18 @@ html.is-dragging-block-grid-special body{
 #blockGridPanel #blockGridGameCard .block-grid-skill-button:not(:disabled){
   touch-action:none!important;
 }
+
+@media(min-width:821px){
+  html body[data-app="recreation"] #blockGridPanel #blockGridGameCard:fullscreen > .game-window-actions.game-common-actions.recreation-unified-controls{
+    display:grid!important;
+    grid-template-columns:44px 44px minmax(0,1fr) 44px 44px 44px!important;
+    grid-template-rows:44px 44px!important;
+    gap:7px!important;
+    justify-content:stretch!important;
+    align-items:center!important;
+    min-height:95px!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:4px 0 0!important;
+  }
+}
