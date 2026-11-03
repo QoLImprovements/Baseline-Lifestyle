@@ -324,7 +324,7 @@ test('fullscreen layouts use bounded side panels except the deliberately indepen
 });
 test('every Recreation game retains its original unique three-minute song with smooth transitions',()=>{
   const ids=['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
-  const match=music.match(/var TRACKS = (\\{[\\s\\S]*?\\});\\s+var ARRANGEMENTS/);
+  const match=music.match(/var TRACKS = (\{[\s\S]*?\});\s+var ARRANGEMENTS/);
   assert.ok(match,'Original game scores must be preserved');
   const scores=JSON.parse(match[1]);
   assert.deepEqual(Object.keys(scores).sort(),ids.sort());
@@ -337,13 +337,13 @@ test('every Recreation game retains its original unique three-minute song with s
     fingerprints.add(JSON.stringify(score));
   }
   assert.equal(fingerprints.size,ids.length,'No game may share the same score');
-  assert.match(music,/var ARRANGEMENTS = \\{/);
+  assert.match(music,/var ARRANGEMENTS = \{/);
   assert.match(music,/var MIX_VERSION = 7/);
-  assert.match(music,/var SCHEDULE_AHEAD_SECONDS = 1\\.6/);
+  assert.match(music,/var SCHEDULE_AHEAD_SECONDS = 1\.6/);
   assert.match(music,/var SCHEDULER_INTERVAL_MS = 100/);
-  assert.match(music,/node\\._baselineEnvelope/);
-  assert.match(music,/envelope\\.gain\\.setTargetAtTime\\(0\\.0001,now,0\\.008\\)/);
-  assert.doesNotMatch(music,/Object\\.assign\\(TRACKS/);
+  assert.match(music,/node\._baselineEnvelope/);
+  assert.match(music,/envelope\.gain\.setTargetAtTime\(0\.0001,now,0\.008\)/);
+  assert.doesNotMatch(music,/Object\.assign\(TRACKS/);
 });
 test('reported Recreation interaction repairs remain wired',()=>{
   assert.match(core,/injectMobileGameControls\('make24'\);[\s\S]*?syncDesktopKeypadState\(\)/);
@@ -507,8 +507,8 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/One coherent pointer-drag path/);
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
-  assert.match(html,/crossnumber\.css\?v=MOBILE_GAME_COHERENCE_20261103_1/);
-  assert.match(html,/crossnumber\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(html,/crossnumber\.css\?v=DESKTOP_POINTER_DRAG_20261103_2/);
+  assert.match(html,/crossnumber\.js\?v=DESKTOP_POINTER_DRAG_20261103_2/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);
