@@ -80,7 +80,6 @@
   let selectedTile='';
   let undoStack=[];
   let timerId=0;
-  let dragTile='';
   let touchDrag=null;
   let touchDragScrollFrame=0;
   let touchDragScrollVelocity=0;
@@ -593,7 +592,7 @@
   function renderBank(){
     const tiles=availableTiles();
     refs.bank.innerHTML=tiles.map(function(tile){
-      return '<button class="crossnumber-number-tile'+(selectedTile===tile.id?' is-selected':'')+'" type="button" draggable="true" data-tile-id="'+escapeHtml(tile.id)+'" aria-label="Number tile '+tile.value+'">'+tile.value+'</button>';
+      return '<button class="crossnumber-number-tile'+(selectedTile===tile.id?' is-selected':'')+'" type="button" data-tile-id="'+escapeHtml(tile.id)+'" aria-label="Number tile '+tile.value+'">'+tile.value+'</button>';
     }).join('');
     if(refs.bankCount) refs.bankCount.textContent=tiles.length+' remaining';
   }
@@ -1049,13 +1048,14 @@
     });
   }
 
+  // One pointer-to-cell mapping for mouse, pen and touch on desktop/mobile.
   function touchDropCellAt(clientX,clientY){
     clearTouchDropTarget();
     const element=document.elementFromPoint(clientX,clientY);
     let cell=element&&element.closest?element.closest('[data-dropzone="true"]'):null;
     if(!cell || !refs.board.contains(cell)){
-      // A finger can land on the small gutters between cells. Resolve to the
-      // nearest actual equation slot, never an unrelated fixed/filled cell.
+      // Pointer events can end over a cell gutter, or within an equation
+      // containing nested symbols. Resolve only a nearby open number cell.
       const boardRect=refs.board.getBoundingClientRect();
       if(clientX<boardRect.left-12 || clientX>boardRect.right+12 || clientY<boardRect.top-12 || clientY>boardRect.bottom+12) return null;
       let nearest=null,nearestDistance=Infinity;
@@ -1105,29 +1105,44 @@
     }
   }
 
+  function crossnumberDragScroller(clientX, clientY){
+    // The equation board has its own scroll viewport in large desktop tiers.
+    // Scrolling the whole window while dragging there moves the wrong surface.
+    const boardScroller=refs.board.closest('.crossnumber-board-scroll');
+    if(boardScroller){
+      const bounds=boardScroller.getBoundingClientRect();
+      if(clientX>=bounds.left-12 && clientX<=bounds.right+12 &&
+         clientY>=bounds.top-12 && clientY<=bounds.bottom+12 &&
+         boardScroller.scrollHeight>boardScroller.clientHeight+2) return boardScroller;
+    }
+    const mobileScroller=refs.bank.closest('.is-mobile-game-root');
+    if(mobileScroller) return mobileScroller;
+    const panel=document.getElementById('crossnumberGamePanel');
+    return document.fullscreenElement===panel ? panel : document.scrollingElement;
+  }
+
   function touchDragScrollStep(){
     touchDragScrollFrame=0;
     if(!touchDrag||!touchDragScrollVelocity) return;
-    const panel=document.getElementById('crossnumberGamePanel');
-    const mobileScroller=refs.bank.closest('.is-mobile-game-root');
-    if(mobileScroller) mobileScroller.scrollTop+=touchDragScrollVelocity;
-    else if(document.fullscreenElement===panel) panel.scrollBy(0,touchDragScrollVelocity);
-    else window.scrollBy(0,touchDragScrollVelocity);
+    const scroller=crossnumberDragScroller(touchDrag.lastX,touchDrag.lastY);
+    if(scroller) scroller.scrollTop+=touchDragScrollVelocity;
     if(touchDrag.lastX!=null&&touchDrag.lastY!=null) touchDropCellAt(touchDrag.lastX,touchDrag.lastY);
     touchDragScrollFrame=window.requestAnimationFrame(touchDragScrollStep);
   }
 
-  function updateTouchDragAutoScroll(clientY){
-    const mobileScroller=refs.bank.closest('.is-mobile-game-root');
-    const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
-    const rect=mobileScroller?.getBoundingClientRect();
-    const top=rect ? rect.top : 0;
-    const bottom=rect ? rect.bottom : viewportHeight;
-    const edge=Math.min(84,Math.max(56,(bottom-top)*.12));
+  function updateTouchDragAutoScroll(clientX,clientY){
+    const scroller=crossnumberDragScroller(clientX,clientY);
+    if(!scroller || scroller.scrollHeight<=scroller.clientHeight+2){
+      stopTouchDragAutoScroll();return;
+    }
+    const rect=scroller.getBoundingClientRect();
+    const top=Math.max(0,rect.top);
+    const bottom=Math.min(window.innerHeight||rect.bottom,rect.bottom);
+    const edge=Math.min(84,Math.max(46,(bottom-top)*.12));
     let velocity=0;
-    if(clientY<top+edge) velocity=-Math.max(8,Math.round((top+edge-clientY)/4));
-    else if(clientY>bottom-edge) velocity=Math.max(8,Math.round((clientY-(bottom-edge))/4));
-    touchDragScrollVelocity=clamp(velocity,-22,22);
+    if(clientY>=top-12 && clientY<top+edge) velocity=-Math.max(5,Math.round((top+edge-clientY)/5));
+    else if(clientY<=bottom+12 && clientY>bottom-edge) velocity=Math.max(5,Math.round((clientY-(bottom-edge))/5));
+    touchDragScrollVelocity=clamp(velocity,-20,20);
     if(touchDragScrollVelocity&&!touchDragScrollFrame) touchDragScrollFrame=window.requestAnimationFrame(touchDragScrollStep);
     if(!touchDragScrollVelocity) stopTouchDragAutoScroll();
   }
@@ -1158,9 +1173,9 @@
   }
 
   refs.bank.addEventListener('pointerdown',function(event){
-    if(event.pointerType==='mouse') return;
+    if(event.pointerType==='mouse' && event.button!==0) return;
     const tile=event.target.closest('[data-tile-id]');
-    if(!tile||!round) return;
+    if(!tile||!round || touchDrag) return;
     suppressBankClick=false;
     event.preventDefault();
     const tileId=tile.dataset.tileId;
@@ -1193,7 +1208,7 @@
     if(touchDrag.moved){
       event.preventDefault();
       touchDropCellAt(event.clientX,event.clientY);
-      updateTouchDragAutoScroll(event.clientY);
+      updateTouchDragAutoScroll(event.clientX,event.clientY);
     }
   });
 
@@ -1203,6 +1218,10 @@
 
   refs.bank.addEventListener('pointercancel',function(event){
     finishTouchDrag(event,true);
+  });
+  refs.bank.addEventListener('lostpointercapture',function(event){
+    // A captured pointer can disappear if the browser ends a drag unexpectedly.
+    if(touchDrag && touchDrag.pointerId===event.pointerId) finishTouchDrag(event,true);
   });
 
   refs.bank.addEventListener('click',function(event){
@@ -1216,24 +1235,6 @@
     selectedTile=selectedTile===tile.dataset.tileId?'':tile.dataset.tileId;
     renderBank();
     if(selectedTile) setStatus('Number '+tileValue(selectedTile)+' selected. Choose an open equation cell.');
-  });
-  refs.bank.addEventListener('dragstart',function(event){
-    const tile=event.target.closest('[data-tile-id]');
-    if(!tile) return;
-    dragTile=tile.dataset.tileId;
-    event.dataTransfer.effectAllowed='move';
-    try{event.dataTransfer.setData('text/plain',dragTile);}catch(_error){}
-  });
-  refs.board.addEventListener('dragover',function(event){
-    if(event.target.closest('[data-dropzone="true"]')) event.preventDefault();
-  });
-  refs.board.addEventListener('drop',function(event){
-    const cell=event.target.closest('[data-dropzone="true"]');
-    if(!cell) return;
-    event.preventDefault();
-    const tileId=dragTile||event.dataTransfer.getData('text/plain');
-    dragTile='';
-    if(tileId) placeTile(cell.dataset.node,tileId);
   });
   refs.board.addEventListener('click',function(event){
     const cell=event.target.closest('[data-node]');

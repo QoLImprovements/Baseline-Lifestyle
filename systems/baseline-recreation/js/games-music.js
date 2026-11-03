@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  var MIX_VERSION = 6;
+  var MIX_VERSION = 7;
   var DEFAULTS = { enabled:true, volume:0.58 };
   var MUSIC_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
   var ctx = null;
@@ -211,105 +211,143 @@
     osc.start(at);osc.stop(at+0.20);
   }
 
-  // Each game has its own written major-key theme: different melody, phrase,
-  // rhythm, harmony, lead instrument, bass line and percussion. They are not
-  // alternate tempos/transpositions of a common song.
-  var TRACKS={
-    pairs:{
-      bpm:110,bars:32,lead:'mallet',chords:[[60,64,67],[55,59,62],[53,57,60],[60,64,67]],
-      beats:[0,0.75,1.5,2.5,3.25],
-      phrases:[[72,76,79,76,74],[71,74,79,81,79],[72,69,72,77,76],[72,79,76,74,72]],
-      bassBeats:[0,2.5],kickBeats:[0,2],pad:0.010,leadLevel:0.012
-    },
-    detectword:{
-      bpm:124,bars:40,lead:'pluck',chords:[[62,66,69],[57,61,64],[55,59,62],[62,66,69]],
-      beats:[0,0.5,1.75,2.5,3],
-      phrases:[[74,78,76,81,78],[76,73,71,76,74],[71,74,79,76,74],[78,76,74,73,74]],
-      bassBeats:[0,1.5,3],kickBeats:[0,2.5],pad:0.007,leadLevel:0.011
-    },
-    make24:{
-      bpm:132,bars:32,lead:'bell',chords:[[52,56,59],[57,61,64],[59,63,66],[52,56,59]],
-      beats:[0,0.5,1,1.5,2,2.5,3,3.5],
-      phrases:[[64,68,71,76,71,68,76,80],[69,73,76,81,76,73,69,76],[71,75,78,83,78,75,71,78],[76,80,83,80,76,71,68,64]],
-      bassBeats:[0,2],kickBeats:[0,2],pad:0.006,leadLevel:0.009
-    },
-    trackcoin:{
-      bpm:122,bars:36,lead:'pluck',chords:[[55,59,62],[60,64,67],[62,66,69],[55,59,62]],
-      beats:[0,0.75,1.5,2,3.25],
-      phrases:[[67,74,71,76,74],[72,79,76,74,72],[74,78,81,78,74],[79,74,71,69,67]],
-      bassBeats:[0,1,2.5],kickBeats:[0,1.5,3],pad:0.007,leadLevel:0.010
-    },
-    ruleshift:{
-      bpm:118,bars:32,lead:'lead',chords:[[57,61,64],[62,66,69],[64,68,71],[57,61,64]],
-      beats:[0,1,1.5,2.75,3.5],
-      phrases:[[69,73,76,81,78],[74,78,81,76,74],[76,80,83,78,76],[81,76,73,71,69]],
-      bassBeats:[0,2.75],kickBeats:[0,2.75],pad:0.009,leadLevel:0.010
-    },
-    'block-grid':{
-      bpm:108,bars:40,lead:'pluck',chords:[[50,54,57],[55,59,62],[57,61,64],[50,54,57]],
-      beats:[0,0.75,1.5,2.5,3],
-      phrases:[[62,66,69,74,69],[67,71,74,76,71],[69,73,76,73,69],[74,69,66,64,62]],
-      bassBeats:[0,2],kickBeats:[0,2],pad:0.009,leadLevel:0.012
-    },
-    'colour-sort':{
-      bpm:114,bars:32,lead:'flute',chords:[[53,57,60],[58,62,65],[60,64,67],[53,57,60]],
-      beats:[0,0.5,1.25,2,3],
-      phrases:[[65,69,72,74,72],[70,74,77,74,70],[72,76,79,76,72],[77,74,72,69,65]],
-      bassBeats:[0,2.5],kickBeats:[0],pad:0.010,leadLevel:0.013
-    },
-    jigsaw:{
-      bpm:106,bars:28,lead:'bell',chords:[[51,55,58],[56,60,63],[58,62,65],[51,55,58]],
-      beats:[0,1,2.5],
-      phrases:[[67,70,75],[68,72,75],[70,74,77],[75,72,70]],
-      bassBeats:[0,2],kickBeats:[0,2],pad:0.011,leadLevel:0.012,legato:true
-    },
-    crossnumber:{
-      bpm:126,bars:36,lead:'mallet',chords:[[59,63,66],[52,56,59],[54,58,61],[59,63,66]],
-      beats:[0,0.5,1.5,2,3,3.5],
-      phrases:[[71,75,78,75,73,71],[68,71,75,78,75,71],[70,73,78,82,78,73],[78,75,73,71,66,71]],
-      bassBeats:[0,1.5,3],kickBeats:[0,2.5],pad:0.007,leadLevel:0.011
-    },
-    ninja:{
-      bpm:136,bars:40,lead:'lead',chords:[[48,52,55],[53,57,60],[55,59,62],[48,52,55]],
-      beats:[0,0.5,1.25,2,2.5,3,3.5],
-      phrases:[[72,76,79,84,79,76,72],[77,81,84,81,77,72,69],[79,83,86,83,79,74,71],[84,79,76,79,76,72,72]],
-      bassBeats:[0,1,2,3],kickBeats:[0,1.5,2.5],pad:0.008,leadLevel:0.012
-    }
+
+  // The original seven-section, three-minute compositions from before
+  // the 3 November replacement. Every game owns exactly one distinct song.
+  // Dynamics and arrangement evolve within its own song; no game borrows
+  // another game's melody or merely replays a speed-shifted copy.
+  var TRACKS = {"pairs":{"bpm":92,"bars":69,"sections":[{"bars":6,"prog":[[60,64,67],[57,60,64]],"motif":[72,76,74,71],"density":4,"style":"quiet"},{"bars":12,"prog":[[60,64,67],[57,60,64],[65,69,72],[55,59,62]],"motif":[72,76,74,79,76,72,74,71],"density":8,"style":"warm"},{"bars":12,"prog":[[62,65,69],[59,62,67],[64,67,71],[57,60,64]],"motif":[74,77,76,81,79,76,72,74],"density":8,"style":"full"},{"bars":8,"prog":[[53,57,60],[55,59,62],[57,60,64]],"motif":[69,72,71,74,72,69],"density":6,"style":"quiet"},{"bars":12,"prog":[[65,69,72],[60,64,69],[62,65,69],[55,60,64]],"motif":[76,79,81,84,81,79,76,74],"density":8,"style":"lift"},{"bars":13,"prog":[[60,64,67],[57,60,64],[65,69,72],[55,59,62]],"motif":[72,74,76,79,81,76,74,71],"density":8,"style":"full"},{"bars":6,"prog":[[60,64,67],[57,60,64],[60,64,67]],"motif":[76,74,72,71],"density":4,"style":"quiet"}]},"detectword":{"bpm":104,"bars":78,"sections":[{"bars":8,"prog":[[50,57,62],[48,55,60]],"motif":[74,73,71,69],"density":4,"style":"quiet"},{"bars":14,"prog":[[50,57,62],[48,55,60],[53,60,65],[46,53,58]],"motif":[74,73,74,69,71,74,76,71],"density":8,"style":"warm"},{"bars":14,"prog":[[52,59,64],[49,56,61],[55,62,67],[48,55,60]],"motif":[76,74,71,73,78,76,74,69],"density":8,"style":"full"},{"bars":10,"prog":[[45,52,57],[47,54,59],[48,55,60]],"motif":[69,71,73,72,69],"density":5,"style":"quiet"},{"bars":14,"prog":[[53,60,65],[50,57,62],[55,62,67],[46,53,58]],"motif":[74,78,76,73,71,76,79,74],"density":8,"style":"lift"},{"bars":12,"prog":[[50,57,62],[48,55,60],[53,60,65],[46,53,58]],"motif":[74,73,76,71,78,74,76,71],"density":8,"style":"full"},{"bars":6,"prog":[[50,57,62],[48,55,60],[50,57,62]],"motif":[74,71,69],"density":4,"style":"quiet"}]},"make24":{"bpm":120,"bars":90,"sections":[{"bars":8,"prog":[[48,55,60,64],[50,57,62,65]],"motif":[60,67,64,72,62,69,65,74],"density":8,"style":"quiet"},{"bars":16,"prog":[[48,55,60,64],[50,57,62,65],[52,59,64,67],[47,55,59,62]],"motif":[60,67,64,72,62,69,65,74,64,71,67,76,59,67,62,71],"density":16,"style":"drive"},{"bars":16,"prog":[[53,60,65,69],[50,57,62,65],[55,62,67,71],[52,59,64,67]],"motif":[65,72,69,77,67,74,71,79,69,76,72,81,64,72,67,76],"density":16,"style":"full"},{"bars":12,"prog":[[45,52,57,60],[47,54,59,62],[48,55,60,64]],"motif":[57,60,64,67,62,65,69,72],"density":8,"style":"quiet"},{"bars":16,"prog":[[52,59,64,67],[53,60,65,69],[50,57,62,65],[55,62,67,71]],"motif":[64,71,67,76,65,72,69,77,67,74,71,79,72,76,79,83],"density":16,"style":"lift"},{"bars":14,"prog":[[48,55,60,64],[52,59,64,67],[50,57,62,65],[47,55,59,62]],"motif":[60,64,67,72,62,65,69,74,64,67,71,76,59,62,67,71],"density":16,"style":"drive"},{"bars":8,"prog":[[48,55,60,64],[50,57,62,65],[48,55,60,64]],"motif":[67,64,60,62,60],"density":8,"style":"quiet"}]},"trackcoin":{"bpm":132,"bars":99,"sections":[{"bars":8,"prog":[[45,52,57],[43,50,55]],"motif":[69,72,71,74],"density":4,"style":"quiet"},{"bars":18,"prog":[[45,52,57],[45,52,57],[43,50,55],[48,55,60]],"motif":[69,72,76,72,71,74,79,74],"density":8,"style":"drive"},{"bars":18,"prog":[[48,55,60],[46,53,58],[43,50,55],[50,57,62]],"motif":[72,76,81,76,74,79,83,79],"density":8,"style":"full"},{"bars":14,"prog":[[41,48,53],[43,50,55],[45,52,57]],"motif":[64,67,69,72,69,67],"density":6,"style":"quiet"},{"bars":18,"prog":[[50,57,62],[48,55,60],[46,53,58],[43,50,55]],"motif":[76,81,84,79,74,79,83,86],"density":8,"style":"lift"},{"bars":15,"prog":[[45,52,57],[43,50,55],[48,55,60],[50,57,62]],"motif":[69,74,76,72,79,74,81,76],"density":8,"style":"drive"},{"bars":8,"prog":[[45,52,57],[43,50,55],[45,52,57]],"motif":[74,72,69],"density":4,"style":"quiet"}]},"ruleshift":{"bpm":124,"bars":93,"sections":[{"bars":8,"prog":[[48,55,60],[51,58,63]],"motif":[72,67,70,74],"density":4,"style":"quiet"},{"bars":17,"prog":[[48,55,60],[51,58,63],[46,53,58],[49,56,61]],"motif":[72,75,67,70,74,65,69,76],"density":8,"style":"drive"},{"bars":17,"prog":[[50,57,62],[53,60,65],[47,54,59],[51,58,63]],"motif":[76,69,65,74,70,75,67,72],"density":8,"style":"full"},{"bars":13,"prog":[[45,52,57],[48,55,60],[50,57,62]],"motif":[67,69,72,70,65],"density":5,"style":"quiet"},{"bars":17,"prog":[[53,60,65],[49,56,61],[51,58,63],[46,53,58]],"motif":[79,72,75,67,74,70,76,69],"density":8,"style":"lift"},{"bars":13,"prog":[[48,55,60],[46,53,58],[51,58,63],[49,56,61]],"motif":[72,67,75,70,65,74,76,69],"density":8,"style":"drive"},{"bars":8,"prog":[[48,55,60],[51,58,63],[48,55,60]],"motif":[72,70,67],"density":4,"style":"quiet"}]},"block-grid":{"bpm":108,"bars":81,"sections":[{"bars":8,"prog":[[48,55,60,64],[50,57,62,65]],"motif":[67,72,74,76,72,79,76,74],"density":8,"style":"quiet"},{"bars":14,"prog":[[48,55,60,64],[52,59,64,67],[45,52,57,60],[50,57,62,65]],"motif":[67,72,76,72,69,74,77,74],"density":8,"style":"drive"},{"bars":14,"prog":[[53,60,65,69],[50,57,62,65],[55,62,67,71],[48,55,60,64]],"motif":[69,72,77,74,71,76,79,76],"density":8,"style":"full"},{"bars":10,"prog":[[45,52,57,60],[47,54,59,62],[48,55,60,64]],"motif":[64,67,69,72,67,64],"density":6,"style":"quiet"},{"bars":14,"prog":[[52,59,64,67],[53,60,65,69],[50,57,62,65],[55,62,67,71]],"motif":[71,76,79,76,72,77,81,77],"density":8,"style":"lift"},{"bars":13,"prog":[[48,55,60,64],[50,57,62,65],[52,59,64,67],[47,54,59,62]],"motif":[67,72,74,79,76,72,69,74],"density":8,"style":"drive"},{"bars":8,"prog":[[48,55,60,64],[45,52,57,60],[48,55,60,64]],"motif":[72,69,67,64],"density":4,"style":"quiet"}]},"colour-sort":{"bpm":100,"bars":75,"sections":[{"bars":8,"prog":[[50,57,62,66],[47,54,59,62]],"motif":[69,74,78,81,78,74,71,74],"density":8,"style":"quiet"},{"bars":13,"prog":[[50,57,62,66],[54,61,66,69],[47,54,59,62],[52,59,64,67]],"motif":[69,74,78,81,76,81,78,74],"density":8,"style":"warm"},{"bars":13,"prog":[[55,62,67,71],[52,59,64,67],[57,64,69,73],[50,57,62,66]],"motif":[71,74,79,83,81,78,76,74],"density":8,"style":"full"},{"bars":9,"prog":[[47,54,59,62],[50,57,62,66],[52,59,64,67]],"motif":[66,69,71,74,71,69],"density":6,"style":"quiet"},{"bars":13,"prog":[[54,61,66,69],[57,64,69,73],[52,59,64,67],[55,62,67,71]],"motif":[74,78,81,85,81,78,76,81],"density":8,"style":"lift"},{"bars":12,"prog":[[50,57,62,66],[52,59,64,67],[47,54,59,62],[55,62,67,71]],"motif":[69,74,76,81,78,74,71,76],"density":8,"style":"warm"},{"bars":7,"prog":[[50,57,62,66],[47,54,59,62],[50,57,62,66]],"motif":[74,71,69,66],"density":4,"style":"quiet"}]},"jigsaw":{"bpm":88,"bars":66,"sections":[{"bars":8,"prog":[[55,62,67,71],[52,59,64,67]],"motif":[74,79,76,71],"density":4,"style":"quiet"},{"bars":11,"prog":[[55,62,67,71],[52,59,64,67],[48,55,60,64],[50,57,62,66]],"motif":[74,79,76,83,79,76],"density":6,"style":"warm"},{"bars":11,"prog":[[57,64,69,72],[53,60,65,69],[55,62,67,71],[50,57,62,66]],"motif":[76,81,79,84,81,79],"density":6,"style":"full"},{"bars":8,"prog":[[48,55,60,64],[50,57,62,66],[52,59,64,67]],"motif":[72,74,71,69],"density":4,"style":"quiet"},{"bars":11,"prog":[[53,60,65,69],[55,62,67,71],[57,64,69,72],[52,59,64,67]],"motif":[77,81,84,81,79,76],"density":6,"style":"lift"},{"bars":10,"prog":[[55,62,67,71],[52,59,64,67],[48,55,60,64],[50,57,62,66]],"motif":[74,76,79,83,79,76],"density":6,"style":"warm"},{"bars":7,"prog":[[55,62,67,71],[52,59,64,67],[55,62,67,71]],"motif":[79,76,74,71],"density":4,"style":"quiet"}]},"crossnumber":{"bpm":112,"bars":84,"sections":[{"bars":8,"prog":[[48,55,60,64],[51,58,63,67]],"motif":[72,75,67,70,74,79,70,75],"density":8,"style":"quiet"},{"bars":15,"prog":[[48,55,60,64],[51,58,63,67],[53,60,65,69],[46,53,58,62]],"motif":[72,75,79,70,74,77,69,74],"density":8,"style":"drive"},{"bars":15,"prog":[[50,57,62,65],[53,60,65,69],[55,62,67,70],[48,55,60,64]],"motif":[74,77,81,72,76,79,71,76],"density":8,"style":"full"},{"bars":10,"prog":[[45,52,57,60],[48,55,60,64],[50,57,62,65]],"motif":[69,72,75,71,74],"density":5,"style":"quiet"},{"bars":15,"prog":[[53,60,65,69],[55,62,67,70],[51,58,63,67],[48,55,60,64]],"motif":[77,81,84,75,79,82,74,79],"density":8,"style":"lift"},{"bars":13,"prog":[[48,55,60,64],[50,57,62,65],[46,53,58,62],[51,58,63,67]],"motif":[72,75,79,74,70,77,81,75],"density":8,"style":"drive"},{"bars":8,"prog":[[48,55,60,64],[51,58,63,67],[48,55,60,64]],"motif":[75,72,70,67],"density":4,"style":"quiet"}]},"ninja":{"bpm":96,"bars":72,"sections":[{"bars":8,"prog":[[48,55,60,64],[45,52,57,60]],"motif":[72,74,76,72],"density":4,"style":"quiet"},{"bars":14,"prog":[[48,55,60,64],[45,52,57,60],[53,60,65,69],[55,62,67,71]],"motif":[72,74,76,79,81,79,76,74],"density":8,"style":"warm"},{"bars":14,"prog":[[50,57,62,65],[47,54,59,62],[55,62,67,71],[52,59,64,67]],"motif":[74,76,79,83,81,79,76,72],"density":8,"style":"full"},{"bars":10,"prog":[[41,48,53,57],[43,50,55,59],[45,52,57,60]],"motif":[65,67,69,72,69,67],"density":6,"style":"quiet"},{"bars":14,"prog":[[53,60,65,69],[55,62,67,71],[48,55,60,64],[50,57,62,65]],"motif":[76,79,81,84,83,81,79,76],"density":8,"style":"lift"},{"bars":8,"prog":[[48,55,60,64],[53,60,65,69],[45,52,57,60],[55,62,67,71]],"motif":[72,76,79,83,81,79,76,74],"density":8,"style":"full"},{"bars":4,"prog":[[48,55,60,64],[45,52,57,60],[48,55,60,64]],"motif":[76,74,72],"density":4,"style":"quiet"}]}};
+
+  var ARRANGEMENTS = {
+    pairs:{lead:'mallet',alternate:'flute',bass:0.72,melody:0.88,drums:0.55},
+    detectword:{lead:'flute',alternate:'pluck',bass:0.74,melody:0.93,drums:0.50},
+    make24:{lead:'bell',alternate:'pluck',bass:1.12,melody:0.98,drums:0.88},
+    trackcoin:{lead:'pluck',alternate:'mallet',bass:1.10,melody:1.0,drums:1.08},
+    ruleshift:{lead:'lead',alternate:'pluck',bass:1.10,melody:0.98,drums:1.12},
+    'block-grid':{lead:'pluck',alternate:'lead',bass:0.92,melody:0.92,drums:0.78},
+    'colour-sort':{lead:'flute',alternate:'mallet',bass:0.72,melody:0.90,drums:0.60},
+    jigsaw:{lead:'bell',alternate:'flute',bass:0.55,melody:0.78,drums:0.30},
+    crossnumber:{lead:'mallet',alternate:'bell',bass:0.92,melody:0.96,drums:0.84},
+    ninja:{lead:'lead',alternate:'pluck',bass:1.18,melody:1.05,drums:1.0}
   };
+  var SOFT_TIMBRE_GAMES = new Set(['pairs','detectword','colour-sort','jigsaw']);
+  function sectionAt(track, bar){
+    var cursor = 0;
+    for(var i=0;i<track.sections.length;i++){
+      var section = track.sections[i];
+      if(bar < cursor + section.bars) return { section:section, local:bar-cursor, index:i };
+      cursor += section.bars;
+    }
+    return { section:track.sections[track.sections.length-1], local:0, index:track.sections.length-1 };
+  }
+  function tinyHuman(bar, step){
+    var x = Math.sin((bar + 1) * 12.9898 + (step + 1) * 78.233) * 43758.5453;
+    return (x - Math.floor(x) - 0.5) * 0.018;
+  }
 
-  function scheduleBar(track,bar,start){
-    var beat=60/track.bpm;
-    var chord=track.chords[bar%track.chords.length];
-    var phrase=track.phrases[bar%track.phrases.length];
-    var lastPhrase=bar%track.phrases.length===track.phrases.length-1;
-    var variation=Math.floor(bar/track.phrases.length)%4;
-    var softness=variation===0?0.87:(variation===2?1.04:0.96);
+  // A quiet, short percussive tick with a soft attack, tracked so stopping a
+  // theme also fades the note instead of leaving old scheduled voices alive.
+  function tick(start, level){
+    if(!ctx || !master) return;
+    var osc=ctx.createOscillator(), gain=ctx.createGain(), filter=ctx.createBiquadFilter();
+    var at=Math.max(ctx.currentTime,start);
+    osc.type='triangle';
+    osc.frequency.value=1180;
+    filter.type='highpass'; filter.frequency.value=760;
+    gain.gain.setValueAtTime(0.0001,at);
+    gain.gain.linearRampToValueAtTime(Math.max(0.0002,level),at+0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0001,at+0.036);
+    osc.connect(filter); filter.connect(gain); gain.connect(master);
+    osc._baselineEnvelope=gain;
+    osc._baselineStartAt=at;
+    liveNodes.add(osc);
+    osc.onended=function(){liveNodes.delete(osc);try{osc.disconnect();filter.disconnect();gain.disconnect();}catch(_error){}};
+    osc.start(at);osc.stop(at+0.042);
+  }
 
-    // Rounded chord bed; shallow gain and staggered onsets avoid transients.
-    chord.forEach(function(note,i){
-      makeVoice('pad',note,start+i*0.025,beat*3.65,track.pad*softness,0);
+  function scheduleBar(track, bar, start){
+    var beat = 60 / track.bpm;
+    var info = sectionAt(track, bar);
+    var sec = info.section;
+    var chordNotes = sec.prog[info.local % sec.prog.length];
+    var full = sec.style === 'full' || sec.style === 'drive' || sec.style === 'lift';
+    var quiet = sec.style === 'quiet';
+    var isJigsaw = activeGame === 'jigsaw';
+    var isColourSort = activeGame === 'colour-sort';
+    var isBlockGrid = activeGame === 'block-grid';
+    var isCrossnumber = activeGame === 'crossnumber';
+    var softTimbre = SOFT_TIMBRE_GAMES.has(activeGame);
+    var arrangement = ARRANGEMENTS[activeGame] || ARRANGEMENTS.pairs;
+
+    chordNotes.forEach(function(n, idx){
+      var padLevel = quiet ? 0.017 : 0.022;
+      if(isJigsaw) padLevel *= 0.92;
+      if(isColourSort) padLevel *= 0.96;
+      if(softTimbre) padLevel *= 0.82;
+      makeVoice('pad', n, start + idx * 0.012, beat * 3.92, padLevel, softTimbre ? 0 : (idx - 1) * 0.22);
     });
-    track.bassBeats.forEach(function(position,i){
-      var bassNote=chord[i%2===0?0:2]-12;
-      makeVoice('bass',bassNote,start+beat*position,beat*Math.min(0.88,1.8/(track.bassBeats.length)),0.007*softness,0);
-    });
-    phrase.forEach(function(note,i){
-      var position=track.beats[i%track.beats.length];
-      var nextPosition=i+1<track.beats.length ? track.beats[i+1] : 4;
-      var length=Math.max(0.10,Math.min(beat*(nextPosition-position)*(track.legato?0.91:0.70),beat*(track.legato?1.05:0.54)));
-      var amplitude=track.leadLevel*(i===0?1.10:1)*softness;
-      makeVoice(track.lead,note,start+beat*position,length,amplitude,0);
-    });
-    track.kickBeats.forEach(function(position,i){
-      if(variation===0 && i>0) return;
-      kick(start+beat*position,0.010*(i===0?1:0.72)*softness);
-    });
-    if(lastPhrase && variation===3){
-      makeVoice('bell',chord[0]+12,start+beat*3.5,beat*0.4,0.006,0);
+
+    if(sec.style !== 'quiet'){
+      var bassLevel = isJigsaw ? 0.008 : (isColourSort ? 0.010 : (isBlockGrid ? 0.011 : 0.014));
+      bassLevel *= arrangement.bass;
+      makeVoice('bass', chordNotes[0] - 12, start, beat * 1.8, bassLevel, 0);
+      makeVoice('bass', chordNotes[0] - 12, start + beat * 2, beat * 1.75, bassLevel * 0.82, 0);
+    }
+
+    var steps = sec.density;
+    var stepDur = beat * 4 / steps;
+    for(var k=0;k<steps;k++){
+      var pitch = sec.motif[(bar * steps + k) % sec.motif.length];
+      if(sec.style === 'lift' && (k === 2 || k === Math.max(3, steps-2))) pitch += 12;
+
+      // The song has its own timbral identity, while melody and section changes
+      // remain exactly those of the restored original composition.
+      var kind = k % 4 === 3 ? arrangement.alternate : arrangement.lead;
+
+      var voiceLevel = quiet ? 0.014 : 0.019;
+      if(isJigsaw) voiceLevel *= 0.78;
+      if(isColourSort) voiceLevel *= 0.90;
+      if(softTimbre) voiceLevel *= 0.78;
+      if(isJigsaw) pitch = Math.min(pitch, 82);
+      voiceLevel *= arrangement.melody;
+      makeVoice(kind, pitch, start + k * stepDur + tinyHuman(bar,k), Math.min(stepDur * 0.76, beat * 0.44), voiceLevel, softTimbre ? 0 : (k % 2 ? 0.18 : -0.18));
+    }
+
+    if(isJigsaw){
+      if(!quiet && bar % 2 === 0) kick(start, 0.006 * arrangement.drums);
+      return;
+    }
+
+    if(isColourSort){
+      if(full){
+        kick(start, 0.016 * arrangement.drums);
+        if(sec.style === 'lift') kick(start + beat * 2, 0.011 * arrangement.drums);
+        for(var c=0;c<4;c++) tick(start + (c + 0.5) * beat + tinyHuman(bar,c), 0.0018);
+      }else if(sec.style === 'warm' && bar % 2 === 0){
+        kick(start, 0.010 * arrangement.drums);
+      }
+      return;
+    }
+
+    if(isCrossnumber){
+      if(full){
+        kick(start, (sec.style === 'drive' ? 0.024 : 0.019) * arrangement.drums);
+        kick(start + beat * 2, 0.014 * arrangement.drums);
+      }
+      for(var x=0;x<4;x++) tick(start + x * beat + tinyHuman(bar,x), quiet ? 0.0022 : 0.0036);
+      return;
+    }
+
+    if(full){
+      kick(start, (sec.style === 'drive' ? (isBlockGrid ? 0.022 : 0.030) : 0.024) * arrangement.drums);
+      kick(start + beat * 2, (isBlockGrid ? 0.014 : 0.018) * arrangement.drums);
+      for(var q=0;q<4;q++) tick(start + (q + 0.5) * beat + tinyHuman(bar,q), isBlockGrid ? 0.0020 : 0.0036);
+    }else if(sec.style === 'warm' && bar % 2 === 0){
+      kick(start, 0.018 * arrangement.drums);
     }
   }
 
-  function scheduler(){
+    function scheduler(){
     timer = 0;
     if(!ctx || !settings.enabled || !activeGame || !TRACKS[activeGame]) return;
     var track = TRACKS[activeGame];
@@ -543,21 +581,13 @@
       if(host!==playWindow && !host.contains(playWindow) && host.parentElement!==playWindow) playWindow.appendChild(host);
       var specifics = root.querySelector('.game-specific-actions');
       if(specifics){
-        // The unified two-row dock is mobile-only. Desktop keeps its existing
-        // game-specific controls in their original separate container.
-        var mobileDock=window.matchMedia && window.matchMedia('(max-width:820px), (hover:none) and (pointer:coarse)').matches;
-        if(mobileDock){
-          Array.prototype.slice.call(specifics.children).forEach(function(control){
-            if(!control.matches('button.action')) return;
-            control.setAttribute('data-recreation-original-specific','');
-            host.appendChild(control);
-          });
-        }else{
-          Array.prototype.slice.call(host.querySelectorAll(':scope > [data-recreation-original-specific]')).forEach(function(control){
-            specifics.appendChild(control);
-            control.removeAttribute('data-recreation-original-specific');
-          });
-        }
+        // Desktop and mobile share one dock. Game-specific actions occupy the
+        // reserved space beside Settings; they never push or split shared actions.
+        Array.prototype.slice.call(specifics.children).forEach(function(control){
+          if(!control.matches('button.action')) return;
+          control.setAttribute('data-recreation-original-specific','');
+          host.appendChild(control);
+        });
       }
       host.classList.add('recreation-unified-controls');
       var existingQuick=(panel||root).querySelector('[data-games-music-quick]');

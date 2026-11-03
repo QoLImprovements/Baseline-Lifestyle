@@ -3273,3 +3273,84 @@ html body[data-app="recreation"] .recreation-mobile-pseudo-fullscreen > .game-pl
     visibility:hidden!important;
   }
 }
+
+
+/* 2026-11-03 desktop Recreation control contract.
+   Every game has one shared two-row dock, including pen/touch desktop.
+   New Game and Auto New Game form a vertical left pair; common utilities
+   form a clean top-right row. Per-game actions use the spare lower right
+   positions. Mobile retains the compact mobile-specific five-column dock. */
+@media (min-width:821px){
+  html body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,
+    #ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ) :is(.game-window-actions,.crossnumber-actions).game-common-actions.recreation-unified-controls{
+    box-sizing:border-box!important;
+    display:grid!important;
+    grid-template-columns:44px 44px minmax(0,1fr) 44px 44px 44px!important;
+    grid-template-rows:44px 44px!important;
+    gap:7px!important;
+    align-items:center!important;
+    justify-content:stretch!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    min-height:95px!important;
+    height:auto!important;
+    position:relative!important;
+    inset:auto!important;
+    padding:3px 0 0!important;
+    margin:0!important;
+    flex-wrap:nowrap!important;
+    overflow:visible!important;
+  }
+  html body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,
+    #ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel
+  ) .recreation-unified-controls > .action{
+    position:relative!important;
+    inset:auto!important;
+    box-sizing:border-box!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    padding:0!important;
+    margin:0!important;
+    flex:0 0 44px!important;
+    display:inline-grid!important;
+    place-items:center!important;
+    align-self:center!important;
+  }
+  html body[data-app="recreation"] .recreation-unified-controls > .start-new-game-toggle{
+    grid-column:1!important;grid-row:1!important;justify-self:start!important;
+  }
+  html body[data-app="recreation"] .recreation-unified-controls > .auto-next-toggle{
+    grid-column:1!important;grid-row:2!important;justify-self:start!important;
+  }
+  html body[data-app="recreation"] .recreation-unified-controls > #make24RerollBtn{
+    grid-column:2!important;grid-row:1!important;justify-self:start!important;
+  }
+  html body[data-app="recreation"] .recreation-unified-controls > .games-settings-trigger{
+    grid-column:4!important;grid-row:1!important;justify-self:end!important;
+  }
+  html body[data-app="recreation"] .recreation-unified-controls > .games-music-quick-toggle{
+    grid-column:5!important;grid-row:1!important;justify-self:end!important;
+  }
+  html body[data-app="recreation"] .recreation-unified-controls > .game-fullscreen-toggle{
+    grid-column:6!important;grid-row:1!important;justify-self:end!important;
+  }
+  html body[data-app="recreation"] .recreation-unified-controls > :is(
+    .desktop-keypad-toggle,#pairsHintBtn,#make24HintBtn,#replayTrackCoinShuffleBtn
+  ){
+    grid-column:4!important;grid-row:2!important;justify-self:end!important;
+  }
+  /* An extra game-specific action is never allowed to float separately. */
+  html body[data-app="recreation"] :is(
+    #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard
+  ) .game-specific-actions:empty{
+    display:none!important;
+  }
+}
