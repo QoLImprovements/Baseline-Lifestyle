@@ -578,7 +578,26 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     root.classList.add('is-mobile-game-root');
     root.setAttribute('data-mobile-game-root', id);
     if(id !== 'ninja' && !q(':scope > .mobile-game-exit', root)){
-      root.insertAdjacentHTML('afterbegin', '<button class="mobile-game-exit" data-exit-mobile-game-mode type="button" aria-label="Back to Games Overview">Back To Games Overview</button>');
+      root.insertAdjacentHTML('afterbegin', '<button class="mobile-game-exit" data-exit-mobile-game-mode type="button" data-tooltip="Return to games overview" title="Return to games overview" aria-label="Return to games overview"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Return to games overview</span></button>');
+    }
+    const mobileExit=q(':scope > .mobile-game-exit',root);
+    if(mobileExit && !mobileExit.dataset.mobileTooltipReady){
+      mobileExit.dataset.mobileTooltipReady='true';
+      let holdTimer=0,hideTimer=0;
+      mobileExit.addEventListener('pointerdown',function(event){
+        if(event.pointerType!=='touch' && event.pointerType!=='pen') return;
+        window.clearTimeout(holdTimer);window.clearTimeout(hideTimer);
+        holdTimer=window.setTimeout(function(){ mobileExit.dataset.tooltipVisible='true'; },520);
+      });
+      ['pointerup','pointercancel','pointerleave'].forEach(function(type){
+        mobileExit.addEventListener(type,function(){
+          window.clearTimeout(holdTimer);
+          window.clearTimeout(hideTimer);
+          hideTimer=window.setTimeout(function(){ mobileExit.removeAttribute('data-tooltip-visible'); },1600);
+        });
+      });
+      mobileExit.addEventListener('contextmenu',function(event){ event.preventDefault(); });
+      mobileExit.addEventListener('blur',function(){ mobileExit.removeAttribute('data-tooltip-visible'); });
     }
     if(id === 'ninja'){
       const genericExit=q(':scope > .mobile-game-exit',root);
