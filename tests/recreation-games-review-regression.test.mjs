@@ -136,10 +136,10 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_TOUCH_FULLSCREEN_20261028_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=BLOCK_GRID_CONTROLS_RESTORE_20261028_2/);
-  assert.match(html,/colour-sort\.js\?v=COLOUR_SORT_SHARED_CONTROLS_20261028_1/);
+  assert.match(html,/block-grid\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(html,/colour-sort\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -211,9 +211,9 @@ test('Recreation music preferences are server-side and quick controls stay insid
   assert.match(music,/document\.addEventListener\('baseline:game-storage'[\s\S]*?if\(!wasEnabled\) startActive\(\);[\s\S]*?else recoverPlayback\(\)/);
   assert.doesNotMatch(music,/document\.addEventListener\('baseline:game-storage'[\s\S]{0,260}?if\(settings\.enabled && activeGame\) startActive\(\)/);
   assert.match(music,/if\(timer && nextBarTime > c\.currentTime \+ 0\.25\) return;/);
-  assert.match(music,/var SCHEDULE_AHEAD_SECONDS = 8/);
-  assert.match(music,/var SCHEDULER_INTERVAL_MS = 900/);
-  assert.match(music,/normalizedOutput\.gain\.value = 3\.2/);
+  assert.match(music,/var SCHEDULE_AHEAD_SECONDS = 1\.6/);
+  assert.match(music,/var SCHEDULER_INTERVAL_MS = 100/);
+  assert.match(music,/normalizedOutput\.gain\.value = 1\.55/);
   assert.match(music,/while\(nextBarTime < ctx\.currentTime \+ SCHEDULE_AHEAD_SECONDS\)/);
   assert.doesNotMatch(music,/ctx\.currentTime \+ 75/);
   assert.match(music,/function mutationAddsElement\(records\)[\s\S]*?node\.nodeType===1/);
@@ -322,20 +322,30 @@ test('fullscreen layouts use bounded side panels except the deliberately indepen
   const colourCss=read('systems/baseline-recreation/games/colour-sort/css/colour-sort.css');
   assert.match(colourCss,/--colour-fs-side:clamp\(230px,20vw,330px\)/);
 });
-test('reported uncomfortable games use low-fatigue consonant replacement themes',()=>{
-  const replacementBpms={pairs:92,detectword:94,make24:96,crossnumber:90,trackcoin:108,ruleshift:106,'block-grid':102,'colour-sort':100};
-  for(const [id,bpm] of Object.entries(replacementBpms)){
-    assert.match(music,new RegExp("(?:'"+id+"'|"+id+"):\\{bpm:"+bpm));
+test('each Recreation game has a distinct upbeat major-key song and smooth audio changes',()=>{
+  const ids=['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
+  const opening=music.indexOf('var TRACKS={');
+  const closing=music.indexOf('function scheduleBar(',opening);
+  assert.ok(opening>0 && closing>opening,'Music score declaration must be present');
+  const scores=Function(music.slice(opening,closing)+'; return TRACKS;')();
+  assert.deepEqual(Object.keys(scores).sort(),ids.sort());
+  const fingerprints=new Set();
+  for(const [name,score] of Object.entries(scores)){
+    assert.ok(score.bpm>=100 && score.bpm<=140,name+' has a lively tempo');
+    assert.equal(score.phrases.length,4,name+' has four musical phrases');
+    assert.ok(score.phrases.every(phrase=>phrase.length===score.beats.length),name+' phrase matches its rhythm');
+    for(const chord of score.chords){
+      assert.deepEqual(chord.map(note=>note-chord[0]),[0,4,7],name+' chord is a major triad');
+    }
+    fingerprints.add(JSON.stringify([score.lead,score.chords,score.beats,score.phrases,score.bassBeats,score.kickBeats]));
   }
-  assert.match(music,/var MIX_VERSION = 5/);
-  assert.match(music,/SOFT_TIMBRE_GAMES = new Set\(\['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber'\]\)/);
-  assert.match(music,/pairs:\{bpm:92[\s\S]*?density:4/);
-  assert.match(music,/detectword:\{bpm:94[\s\S]*?density:4/);
-  assert.match(music,/make24:\{bpm:96[\s\S]*?density:4/);
-  assert.match(music,/crossnumber:\{bpm:90[\s\S]*?density:4/);
-  assert.match(music,/osc\.type = 'triangle';[\s\S]*?filter\.frequency\.value = 680/);
-  assert.match(music,/filter\.frequency\.value = 2450/);
-  assert.doesNotMatch(music,/SENSORY_GENTLE_GAMES|sensoryGentle/);
+  assert.equal(fingerprints.size,ids.length,'Songs must differ beyond tempo or pitch shift');
+  assert.match(music,/var MIX_VERSION = 6/);
+  assert.match(music,/var SCHEDULE_AHEAD_SECONDS = 1\.6/);
+  assert.match(music,/var SCHEDULER_INTERVAL_MS = 100/);
+  assert.match(music,/node\._baselineEnvelope/);
+  assert.match(music,/envelope\.gain\.setTargetAtTime\(0\.0001,now,0\.008\)/);
+  assert.doesNotMatch(music,/Object\.assign\(TRACKS/);
 });
 test('reported Recreation interaction repairs remain wired',()=>{
   assert.match(core,/injectMobileGameControls\('make24'\);[\s\S]*?syncDesktopKeypadState\(\)/);
@@ -374,8 +384,8 @@ test('extension-game routes clear stale core selection without surrendering exte
   assert.match(extensionSupport,/document\.dispatchEvent\(new CustomEvent\('baseline:game-extension-open'/);
   assert.match(extensionSupport,/detail:\{ id:config\.id, panelId:config\.panelId \}/);
   assert.match(core,/document\.addEventListener\('baseline:game-extension-open'[\s\S]*?selectedGame='';[\s\S]*?renderGamesList\(\)/);
-  assert.match(blockGrid,/game-extension-support\.mjs\?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1/);
-  assert.match(colourSort,/game-extension-support\.mjs\?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1/);
+  assert.match(blockGrid,/game-extension-support\.mjs\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(colourSort,/game-extension-support\.mjs\?v=MOBILE_GAME_COHERENCE_20261103_1/);
   assert.match(extensionSupport,/baseline:recreation:core-ready/);
   assert.match(extensionSupport,/BASELINE_RECREATION_CORE_READY === true/);
 });
@@ -476,17 +486,17 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/function toggleFullscreen\(/);
   assert.match(crossnumber,/newGamePointerAt=performance\.now\(\)[\s\S]*?createNewRound\(\{tierId:profile\.selectedTier\}\)/);
   assert.match(crossnumber,/visualViewport\?\.addEventListener\?\.\('resize'/);
-  assert.match(crossnumber,/const available=Math\.max\(220,Math\.min\(680,viewportHeight-playTop-footerHeight-28\)\)/);
+  assert.match(crossnumber,/const visibleSpace=Math\.max\(240,viewportHeight-playTop-footerHeight-28\)/);
   assert.match(crossnumber,/panel\.style\.setProperty\('--crossnumber-play-height'/);
-  assert.match(crossnumberCss,/Cross Number one-screen reachability authority/);
-  assert.equal((crossnumberCss.match(/Cross Number one-screen reachability authority/g)||[]).length,1);
+  assert.match(crossnumberCss,/Cross Number desktop reachability/);
+  assert.equal((crossnumberCss.match(/Cross Number desktop reachability/g)||[]).length,1);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen\{[\s\S]*?height:100dvh!important[\s\S]*?overflow:hidden!important/);
   assert.match(crossnumberCss,/--crossnumber-fs-side:clamp\(230px,20vw,330px\)[\s\S]*?grid-template-columns:minmax\(0,4fr\) var\(--crossnumber-fs-side\)!important/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen > \.crossnumber-round-status\{[\s\S]*?display:block!important/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen > \.crossnumber-round-status\{[\s\S]*?grid-column:2!important/);
   assert.match(crossnumber,/id:'masterwork'[\s\S]*?nodes:17[\s\S]*?fixed:1/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-bank\{[\s\S]*?grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
-  assert.match(crossnumber,/const mobile=window\.matchMedia\?\.\('\(max-width:820px\)'\)\.matches[\s\S]*?if\(mobile\)[\s\S]*?removeProperty\('width'\)/);
+  assert.match(crossnumber,/const mobile=window\.matchMedia\?\.\('\(max-width:820px\), \(hover:none\) and \(pointer:coarse\)'\)\.matches[\s\S]*?if\(mobile\)[\s\S]*?refs\.board\.style\.removeProperty\(prop\)/);
   assert.match(crossnumberCss,/mobile Cross Number fit authority[\s\S]*?#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)!important/);
   assert.match(crossnumberCss,/grid-template-columns:repeat\(var\(--crossnumber-cols,13\),minmax\(0,1fr\)\)!important/);
   assert.match(crossnumberCss,/\.crossnumber-board-scroll,[\s\S]*?overflow:hidden!important/);
@@ -499,8 +509,8 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/Cross Number touch-drag authority/);
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
-  assert.match(html,/crossnumber\.css\?v=CROSS_NUMBER_MOBILE_COHERENCE_20261026_1/);
-  assert.match(html,/crossnumber\.js\?v=CROSS_NUMBER_FULLSCREEN_WINDOW_TABS_20261025_1/);
+  assert.match(html,/crossnumber\.css\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(html,/crossnumber\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);

@@ -1206,3 +1206,11 @@ body[data-app="recreation"] #crossnumberGamePanel .crossnumber-actions.game-comm
     .crossnumber-play-layout,.crossnumber-actions,.crossnumber-round-toolbar,.game-live-xp,.crossnumber-round-status,.crossnumber-complete
   ){display:none!important}
 }
+
+/* Cross Number follows the finger like Block Grid; the tile shown and the
+   actual equation drop target now share the same pointer coordinates. */
+@media (max-width:820px), (hover:none) and (pointer:coarse){
+  body[data-app="recreation"] .crossnumber-touch-drag-ghost{
+    transform:translate(-50%,-50%)!important;
+  }
+}

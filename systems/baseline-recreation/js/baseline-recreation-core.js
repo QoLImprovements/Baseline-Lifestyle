@@ -578,7 +578,26 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     root.classList.add('is-mobile-game-root');
     root.setAttribute('data-mobile-game-root', id);
     if(id !== 'ninja' && !q(':scope > .mobile-game-exit', root)){
-      root.insertAdjacentHTML('afterbegin', '<button class="mobile-game-exit" data-exit-mobile-game-mode type="button" aria-label="Back to Games Overview">Back To Games Overview</button>');
+      root.insertAdjacentHTML('afterbegin', '<button class="mobile-game-exit" data-exit-mobile-game-mode type="button" data-tooltip="Return to games overview" title="Return to games overview" aria-label="Return to games overview"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Return to games overview</span></button>');
+    }
+    const mobileExit=q(':scope > .mobile-game-exit',root);
+    if(mobileExit && !mobileExit.dataset.mobileTooltipReady){
+      mobileExit.dataset.mobileTooltipReady='true';
+      let holdTimer=0,hideTimer=0;
+      mobileExit.addEventListener('pointerdown',function(event){
+        if(event.pointerType!=='touch' && event.pointerType!=='pen') return;
+        window.clearTimeout(holdTimer);window.clearTimeout(hideTimer);
+        holdTimer=window.setTimeout(function(){ mobileExit.dataset.tooltipVisible='true';mobileExit.dataset.longPress='true'; },520);
+      });
+      ['pointerup','pointercancel','pointerleave'].forEach(function(type){
+        mobileExit.addEventListener(type,function(){
+          window.clearTimeout(holdTimer);
+          window.clearTimeout(hideTimer);
+          hideTimer=window.setTimeout(function(){ mobileExit.removeAttribute('data-tooltip-visible'); },1600);
+        });
+      });
+      mobileExit.addEventListener('contextmenu',function(event){ event.preventDefault(); });
+      mobileExit.addEventListener('blur',function(){ mobileExit.removeAttribute('data-tooltip-visible'); });
     }
     if(id === 'ninja'){
       const genericExit=q(':scope > .mobile-game-exit',root);
@@ -1104,12 +1123,17 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     trackcoin:{root:'trackCoinGamePanel',tabs:[['game','Game'],['skills','Skills','trackCoinSkillPanel'],['tiers','Tiers','trackCoinTierPanel'],['progress','Progress','trackCoinProgressPanel']]},
     ruleshift:{root:'ruleShiftGameCard',tabs:[['game','Game'],['skills','Skills','ruleShiftSkillCard'],['tiers','Tiers','ruleShiftTierCard'],['progress','Progress','ruleShiftProgressCard']]},
     blockgrid:{root:'blockGridGameCard',tabs:[['game','Game'],['skills','Skills','blockGridSkillsCard'],['tiers','Tiers','blockGridModesCard'],['progress','Progress','blockGridProgressCard']]},
-    coloursort:{root:'colourSortGameCard',tabs:[['game','Game'],['tiers','Tiers','colourSortLevelsCard'],['progress','Progress','colourSortProgressCard']]},
+    coloursort:{root:'colourSortGameCard',tabs:[['game','Game'],['round','Round','colourSortRoundCard'],['tiers','Tiers','colourSortLevelsCard'],['progress','Progress','colourSortProgressCard']]},
     crossnumber:{root:'crossnumberGamePanel',tabs:[['game','Game'],['skills','Skills','crossnumberSkillPanel'],['tiers','Tiers','crossnumberTierPanel'],['progress','Progress','crossnumberProgressPanel']]}
   });
   function fullscreenWindowConfig(gameId){
     const id=normaliseGameId(gameId)||String(gameId||'').trim().toLowerCase();
-    return {id:id,config:FULLSCREEN_WINDOW_TABS[id]||null};
+    const base=FULLSCREEN_WINDOW_TABS[id]||null;
+    // Round is an additional Colour Sort fullscreen tab on mobile only.
+    const config=id==='coloursort' && base && !isMobileGameViewport()
+      ? {root:base.root,tabs:base.tabs.filter(function(tab){return tab[0]!=='round';})}
+      : base;
+    return {id:id,config:config};
   }
   function cloneFullscreenPanelHtml(sourceId){
     const source=document.getElementById(sourceId);
@@ -4288,6 +4312,10 @@ function toggleGameFullscreen(gameId){
       }
       const exitMobileModeBtn = event.target.closest('[data-exit-mobile-game-mode]');
       if(exitMobileModeBtn){
+        if(exitMobileModeBtn.dataset.longPress==='true'){
+          exitMobileModeBtn.removeAttribute('data-long-press');
+          return;
+        }
         exitMobileGameMode();
         selectGame('', { historyMode:'push' });
         window.setTimeout(function(){

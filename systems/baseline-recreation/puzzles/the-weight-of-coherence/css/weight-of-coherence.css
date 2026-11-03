@@ -1208,3 +1208,15 @@ body.weight-coherence-pseudo-fullscreen #weightCoherencePuzzle{
     grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:50px!important;
   }
 }
+
+/* Jigsaw sort tabs are live touch/pointer drop destinations on phones. */
+@media (max-width:820px), (hover:none) and (pointer:coarse){
+  #weightCoherencePuzzle [data-jigsaw-tray-tab].is-drag-hover{
+    outline:2px solid var(--recreation-copper-light)!important;
+    outline-offset:-2px!important;
+    box-shadow:0 0 0 3px rgba(var(--recreation-copper-light-rgb),.25)!important;
+  }
+  #weightCoherencePuzzle [data-jigsaw-tray-tab]{
+    touch-action:none;
+  }
+}

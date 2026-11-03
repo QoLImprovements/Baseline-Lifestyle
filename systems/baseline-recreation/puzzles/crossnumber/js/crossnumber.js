@@ -1052,8 +1052,23 @@
   function touchDropCellAt(clientX,clientY){
     clearTouchDropTarget();
     const element=document.elementFromPoint(clientX,clientY);
-    const cell=element&&element.closest?element.closest('[data-dropzone="true"]'):null;
-    if(!cell||!refs.board.contains(cell)) return null;
+    let cell=element&&element.closest?element.closest('[data-dropzone="true"]'):null;
+    if(!cell || !refs.board.contains(cell)){
+      // A finger can land on the small gutters between cells. Resolve to the
+      // nearest actual equation slot, never an unrelated fixed/filled cell.
+      const boardRect=refs.board.getBoundingClientRect();
+      if(clientX<boardRect.left-12 || clientX>boardRect.right+12 || clientY<boardRect.top-12 || clientY>boardRect.bottom+12) return null;
+      let nearest=null,nearestDistance=Infinity;
+      refs.board.querySelectorAll('[data-dropzone="true"]').forEach(function(candidate){
+        const rect=candidate.getBoundingClientRect();
+        const dx=Math.max(rect.left-clientX,0,clientX-rect.right);
+        const dy=Math.max(rect.top-clientY,0,clientY-rect.bottom);
+        const distance=Math.hypot(dx,dy);
+        if(distance<nearestDistance){nearestDistance=distance;nearest=candidate;}
+      });
+      cell=nearestDistance<=12?nearest:null;
+    }
+    if(!cell) return null;
     cell.classList.add('is-touch-drop-target');
     return cell;
   }
@@ -1094,18 +1109,24 @@
     touchDragScrollFrame=0;
     if(!touchDrag||!touchDragScrollVelocity) return;
     const panel=document.getElementById('crossnumberGamePanel');
-    if(document.fullscreenElement===panel) panel.scrollBy(0,touchDragScrollVelocity);
+    const mobileScroller=refs.bank.closest('.is-mobile-game-root');
+    if(mobileScroller) mobileScroller.scrollTop+=touchDragScrollVelocity;
+    else if(document.fullscreenElement===panel) panel.scrollBy(0,touchDragScrollVelocity);
     else window.scrollBy(0,touchDragScrollVelocity);
     if(touchDrag.lastX!=null&&touchDrag.lastY!=null) touchDropCellAt(touchDrag.lastX,touchDrag.lastY);
     touchDragScrollFrame=window.requestAnimationFrame(touchDragScrollStep);
   }
 
   function updateTouchDragAutoScroll(clientY){
+    const mobileScroller=refs.bank.closest('.is-mobile-game-root');
     const viewportHeight=window.visualViewport?.height||window.innerHeight||800;
-    const edge=Math.min(84,Math.max(56,viewportHeight*.12));
+    const rect=mobileScroller?.getBoundingClientRect();
+    const top=rect ? rect.top : 0;
+    const bottom=rect ? rect.bottom : viewportHeight;
+    const edge=Math.min(84,Math.max(56,(bottom-top)*.12));
     let velocity=0;
-    if(clientY<edge) velocity=-Math.max(8,Math.round((edge-clientY)/4));
-    else if(clientY>viewportHeight-edge) velocity=Math.max(8,Math.round((clientY-(viewportHeight-edge))/4));
+    if(clientY<top+edge) velocity=-Math.max(8,Math.round((top+edge-clientY)/4));
+    else if(clientY>bottom-edge) velocity=Math.max(8,Math.round((clientY-(bottom-edge))/4));
     touchDragScrollVelocity=clamp(velocity,-22,22);
     if(touchDragScrollVelocity&&!touchDragScrollFrame) touchDragScrollFrame=window.requestAnimationFrame(touchDragScrollStep);
     if(!touchDragScrollVelocity) stopTouchDragAutoScroll();

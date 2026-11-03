@@ -1334,6 +1334,15 @@
     ghost.style.top=y+'px';
   }
 
+  function hoveredMobileTrayTabAt(x,y){
+    if(!mobileLike()) return null;
+    const hit=document.elementFromPoint(x,y);
+    const tab=hit?.closest?.('[data-jigsaw-tray-tab]');
+    return tab && root.contains(tab) ? tab : null;
+  }
+  function clearDragTrayTabHighlight(){
+    mobileTrayTabs.forEach(function(tab){tab.classList.remove('is-drag-hover');});
+  }
   function endDrag(event){
     if(!dragState) return;
     const drag=dragState;
@@ -1342,6 +1351,7 @@
     window.removeEventListener('pointerup',endDrag,true);
     window.removeEventListener('pointercancel',cancelDrag,true);
     if(drag.ghost && drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost);
+    clearDragTrayTabHighlight();
     if(drag.moved){
       suppressTrayClickUntil=Date.now()+250;
       stabilisePieceFocus();
@@ -1361,6 +1371,15 @@
     }
     suppressBoardClickUntil=Date.now()+400;
     const target=document.elementFromPoint(event.clientX,event.clientY);
+    const trayTab=hoveredMobileTrayTabAt(event.clientX,event.clientY);
+    if(trayTab){
+      const view=trayTab.dataset.jigsawTrayTab;
+      if(view==='main') movePieceToMainTray(drag.id);
+      else if(/^sort-[0-3]$/.test(view)) movePieceToSortBin(drag.id,Number(view.slice(5)));
+      activeMobileTray=view;
+      syncMobileTrayTabs();
+      return;
+    }
     const sortTarget=target?.closest?.('[data-jigsaw-sort-tray]');
     if(sortTarget && root.contains(sortTarget)){
       movePieceToSortBin(drag.id,Number(sortTarget.dataset.jigsawSortTray));
@@ -1382,6 +1401,7 @@
     window.removeEventListener('pointerup',endDrag,true);
     window.removeEventListener('pointercancel',cancelDrag,true);
     if(drag.ghost && drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost);
+    clearDragTrayTabHighlight();
   }
 
   function onDragMove(event){
@@ -1393,7 +1413,21 @@
       dragState.ghost=makeDragGhost(dragState.button,event);
     }
     if(dragState.ghost) moveDragGhost(dragState.ghost,event.clientX,event.clientY);
-    if(dragState.moved) event.preventDefault();
+    if(dragState.moved){
+      event.preventDefault();
+      // The tab itself is a drop target. Reveal its real tray without ending
+      // the pointer gesture, so touch users can continue dragging inside it.
+      const tab=hoveredMobileTrayTabAt(event.clientX,event.clientY);
+      clearDragTrayTabHighlight();
+      if(tab){
+        const view=tab.dataset.jigsawTrayTab;
+        tab.classList.add('is-drag-hover');
+        if(view && view!==activeMobileTray){
+          activeMobileTray=view;
+          syncMobileTrayTabs();
+        }
+      }
+    }
   }
 
   refs.difficultyButtons.forEach(function(button){

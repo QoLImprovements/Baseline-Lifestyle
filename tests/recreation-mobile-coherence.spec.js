@@ -106,3 +106,50 @@ test('mobile Pairs displays complete rows rather than an isolated last card', as
   expect(layout.count % layout.columns).toBe(0);
   await context.close();
 });
+
+test('mobile Colour Sort shows a separate Round tab and a usable three-column bottle board',async ({ browser })=>{
+  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const page=await context.newPage();
+  const errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  await openRecreation(page);
+  await page.getByRole('button',{name:'Games',exact:true}).first().click();
+  await page.locator('[data-open-game-extension="colour-sort"]:visible').first().click();
+  await expect(page.locator('#colourSortPanel')).toBeVisible();
+  await expect(page.locator('#colourSortPanel [data-colour-tab]')).toHaveCount(4);
+  await page.locator('#colourSortPanel [data-colour-tab="round"]').click();
+  await expect(page.locator('#colourSortRoundCard')).toBeVisible();
+  await expect(page.locator('#colourSortGameCard')).toBeHidden();
+  await expect(page.locator('#colourSortRoundCard .round-status-card')).toBeVisible();
+  await page.locator('#colourSortPanel [data-colour-tab="game"]').click();
+  await page.locator('#colourSortPanel [data-colour-action="new"]').first().click();
+  await expect(page.locator('#colourSortGameCard .colour-sort-bottle').first()).toBeVisible();
+  const bottleLayout=await page.locator('#colourSortGameCard .colour-sort-board').evaluate(board=>{
+    const style=getComputedStyle(board);
+    const bounds=board.getBoundingClientRect();
+    return {columns:style.gridTemplateColumns.split(' ').filter(Boolean).length,scrollWidth:board.scrollWidth,width:bounds.width};
+  });
+  expect(bottleLayout.columns).toBe(3);
+  expect(bottleLayout.scrollWidth).toBeLessThanOrEqual(bottleLayout.width+2);
+  const back=page.locator('#colourSortPanel .game-header [data-close-game-extension="colour-sort"]');
+  await expect(back).toBeVisible();
+  await expect(back).toHaveAttribute('aria-label','Return to games overview');
+  expect(errors).toEqual([]);
+  await context.close();
+});
+
+test('mobile core Games uses a top back-arrow rather than duplicate text navigation',async ({ browser })=>{
+  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const page=await context.newPage();
+  await openRecreation(page);
+  await page.getByRole('button',{name:'Games',exact:true}).first().click();
+  await page.locator('[data-select-game="pairs"]:visible').first().click();
+  const back=page.locator('#pairsPanel > .mobile-game-exit');
+  await expect(back).toBeVisible();
+  await expect(back.locator('svg')).toHaveCount(1);
+  await expect(back).toHaveAttribute('data-tooltip','Return to games overview');
+  await expect(page.locator('#pairsPanel .game-header [data-select-game=""]')).toBeHidden();
+  await back.click();
+  await expect(page.locator('#gamesOverviewCard')).toBeVisible();
+  await context.close();
+});

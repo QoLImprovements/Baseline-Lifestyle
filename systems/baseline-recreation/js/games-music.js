@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  var MIX_VERSION = 5;
+  var MIX_VERSION = 6;
   var DEFAULTS = { enabled:true, volume:0.58 };
   var MUSIC_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
   var ctx = null;
@@ -15,8 +15,8 @@
   var barIndex = 0;
   var liveNodes = new Set();
   var unlocked = false;
-  var SCHEDULE_AHEAD_SECONDS = 8;
-  var SCHEDULER_INTERVAL_MS = 900;
+  var SCHEDULE_AHEAD_SECONDS = 1.6;
+  var SCHEDULER_INTERVAL_MS = 100;
 
   function clamp(value, min, max){
     var n = Number(value);
@@ -69,15 +69,15 @@
 
     // The synth voices are intentionally low-level. Apply make-up gain before
     // the final limiter so 100% represents a normal, useful listening level.
-    normalizedOutput.gain.value = 3.2;
+    normalizedOutput.gain.value = 1.55;
 
-    compressor.threshold.value = -10;
+    compressor.threshold.value = -16;
     compressor.knee.value = 8;
-    compressor.ratio.value = 8;
+    compressor.ratio.value = 5;
     compressor.attack.value = 0.008;
     compressor.release.value = 0.24;
 
-    finalOutput.gain.value = 0.80;
+    finalOutput.gain.value = 0.78;
 
     master.connect(normalizedOutput);
     normalizedOutput.connect(compressor);
@@ -107,9 +107,18 @@
   }
 
   function stopLiveNodes(){
+    // Fade active oscillators before stopping. An abrupt stop/disconnect can
+    // sound like a crackle when switching games or muting music.
+    var now=ctx ? ctx.currentTime : 0;
     liveNodes.forEach(function(node){
-      try{ node.stop(); }catch(_error){}
-      try{ node.disconnect(); }catch(_error){}
+      try{
+        var envelope=node._baselineEnvelope;
+        if(envelope && ctx){
+          envelope.gain.cancelScheduledValues(now);
+          envelope.gain.setTargetAtTime(0.0001,now,0.008);
+        }
+        node.stop(Math.max(now+0.055,(node._baselineStartAt||now)+0.002));
+      }catch(_error){}
     });
     liveNodes.clear();
   }
@@ -132,11 +141,19 @@
       osc.type = 'triangle';
       filter.type = 'lowpass';
       filter.frequency.value = 2450;
-    }else if(kind === 'mallet'){
+    }else if(kind === 'mallet' || kind === 'bell'){
       osc.type = 'sine';
-      filter.type = 'bandpass';
-      filter.frequency.value = Math.min(5200, midi(note) * 2.4);
-      filter.Q.value = 0.7;
+      filter.type = 'lowpass';
+      filter.frequency.value = kind === 'bell' ? 3200 : 2300;
+      filter.Q.value = 0.5;
+    }else if(kind === 'pluck'){
+      osc.type = 'triangle';
+      filter.type = 'lowpass';
+      filter.frequency.value = 1800;
+    }else if(kind === 'flute'){
+      osc.type = 'sine';
+      filter.type = 'lowpass';
+      filter.frequency.value = 2100;
     }else{
       osc.type = 'sine';
       filter.type = 'lowpass';
@@ -146,8 +163,8 @@
     osc.frequency.setValueAtTime(midi(note), startAt);
     if(kind === 'mallet') osc.detune.setValueAtTime(((note % 3) - 1) * 2.5, startAt);
 
-    var attack = kind === 'pad' ? 0.16 : 0.012;
-    var release = kind === 'pad' ? 0.55 : (kind === 'mallet' ? 0.22 : 0.12);
+    var attack = Math.min(duration*0.22,kind === 'pad' ? 0.12 : (kind==='flute'?0.035:0.009));
+    var release = Math.min(duration*0.55,kind === 'pad' ? 0.40 : (kind === 'flute' ? 0.19 : 0.12));
     gain.gain.setValueAtTime(0.0001, startAt);
     gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, level), startAt + attack);
     gain.gain.setValueAtTime(Math.max(0.0002, level * 0.72), Math.max(startAt + attack + 0.01, endAt - release));
@@ -164,6 +181,8 @@
       gain.connect(master);
     }
 
+    osc._baselineEnvelope=gain;
+    osc._baselineStartAt=startAt;
     liveNodes.add(osc);
     osc.onended = function(){
       liveNodes.delete(osc);
@@ -173,375 +192,120 @@
     osc.stop(endAt + 0.03);
   }
 
+
   function kick(start, level){
     if(!ctx || !master) return;
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(92, start);
-    osc.frequency.exponentialRampToValueAtTime(42, start + 0.16);
-    gain.gain.setValueAtTime(level, start);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.18);
-    osc.connect(gain); gain.connect(master);
+    var osc=ctx.createOscillator(), gain=ctx.createGain();
+    var at=Math.max(ctx.currentTime,start);
+    osc.type='sine';
+    osc.frequency.setValueAtTime(85,at);
+    osc.frequency.exponentialRampToValueAtTime(46,at+0.18);
+    gain.gain.setValueAtTime(0.0001,at);
+    gain.gain.linearRampToValueAtTime(Math.max(0.0002,level),at+0.007);
+    gain.gain.exponentialRampToValueAtTime(0.0001,at+0.19);
+    osc.connect(gain);gain.connect(master);
+    osc._baselineEnvelope=gain;
+    osc._baselineStartAt=at;
     liveNodes.add(osc);
-    osc.onended = function(){ liveNodes.delete(osc); };
-    osc.start(start); osc.stop(start + 0.2);
+    osc.onended=function(){liveNodes.delete(osc);try{osc.disconnect();gain.disconnect();}catch(_error){}};
+    osc.start(at);osc.stop(at+0.20);
   }
 
-  function tick(start, level){
-    if(!ctx || !master) return;
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    var filter = ctx.createBiquadFilter();
-    osc.type = 'triangle';
-    osc.frequency.value = 1180;
-    filter.type = 'highpass'; filter.frequency.value = 760;
-    gain.gain.setValueAtTime(level, start);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.035);
-    osc.connect(filter); filter.connect(gain); gain.connect(master);
-    liveNodes.add(osc);
-    osc.onended = function(){ liveNodes.delete(osc); };
-    osc.start(start); osc.stop(start + 0.04);
-  }
-
-  var TRACKS = {
+  // Each game has its own written major-key theme: different melody, phrase,
+  // rhythm, harmony, lead instrument, bass line and percussion. They are not
+  // alternate tempos/transpositions of a common song.
+  var TRACKS={
     pairs:{
-      bpm:92, bars:69,
-      sections:[
-        {bars:6,  prog:[[60,64,67],[57,60,64]], motif:[72,76,74,71], density:4, style:'quiet'},
-        {bars:12, prog:[[60,64,67],[57,60,64],[65,69,72],[55,59,62]], motif:[72,76,74,79,76,72,74,71], density:8, style:'warm'},
-        {bars:12, prog:[[62,65,69],[59,62,67],[64,67,71],[57,60,64]], motif:[74,77,76,81,79,76,72,74], density:8, style:'full'},
-        {bars:8,  prog:[[53,57,60],[55,59,62],[57,60,64]], motif:[69,72,71,74,72,69], density:6, style:'quiet'},
-        {bars:12, prog:[[65,69,72],[60,64,69],[62,65,69],[55,60,64]], motif:[76,79,81,84,81,79,76,74], density:8, style:'lift'},
-        {bars:13, prog:[[60,64,67],[57,60,64],[65,69,72],[55,59,62]], motif:[72,74,76,79,81,76,74,71], density:8, style:'full'},
-        {bars:6,  prog:[[60,64,67],[57,60,64],[60,64,67]], motif:[76,74,72,71], density:4, style:'quiet'}
-      ]
+      bpm:110,bars:32,lead:'mallet',chords:[[60,64,67],[55,59,62],[53,57,60],[60,64,67]],
+      beats:[0,0.75,1.5,2.5,3.25],
+      phrases:[[72,76,79,76,74],[71,74,79,81,79],[72,69,72,77,76],[72,79,76,74,72]],
+      bassBeats:[0,2.5],kickBeats:[0,2],pad:0.010,leadLevel:0.012
     },
     detectword:{
-      bpm:104, bars:78,
-      sections:[
-        {bars:8, prog:[[50,57,62],[48,55,60]], motif:[74,73,71,69], density:4, style:'quiet'},
-        {bars:14,prog:[[50,57,62],[48,55,60],[53,60,65],[46,53,58]], motif:[74,73,74,69,71,74,76,71], density:8, style:'warm'},
-        {bars:14,prog:[[52,59,64],[49,56,61],[55,62,67],[48,55,60]], motif:[76,74,71,73,78,76,74,69], density:8, style:'full'},
-        {bars:10,prog:[[45,52,57],[47,54,59],[48,55,60]], motif:[69,71,73,72,69], density:5, style:'quiet'},
-        {bars:14,prog:[[53,60,65],[50,57,62],[55,62,67],[46,53,58]], motif:[74,78,76,73,71,76,79,74], density:8, style:'lift'},
-        {bars:12,prog:[[50,57,62],[48,55,60],[53,60,65],[46,53,58]], motif:[74,73,76,71,78,74,76,71], density:8, style:'full'},
-        {bars:6, prog:[[50,57,62],[48,55,60],[50,57,62]], motif:[74,71,69], density:4, style:'quiet'}
-      ]
+      bpm:124,bars:40,lead:'pluck',chords:[[62,66,69],[57,61,64],[55,59,62],[62,66,69]],
+      beats:[0,0.5,1.75,2.5,3],
+      phrases:[[74,78,76,81,78],[76,73,71,76,74],[71,74,79,76,74],[78,76,74,73,74]],
+      bassBeats:[0,1.5,3],kickBeats:[0,2.5],pad:0.007,leadLevel:0.011
     },
     make24:{
-      bpm:120, bars:90,
-      sections:[
-        {bars:8, prog:[[48,55,60,64],[50,57,62,65]], motif:[60,67,64,72,62,69,65,74], density:8, style:'quiet'},
-        {bars:16,prog:[[48,55,60,64],[50,57,62,65],[52,59,64,67],[47,55,59,62]], motif:[60,67,64,72,62,69,65,74,64,71,67,76,59,67,62,71], density:16, style:'drive'},
-        {bars:16,prog:[[53,60,65,69],[50,57,62,65],[55,62,67,71],[52,59,64,67]], motif:[65,72,69,77,67,74,71,79,69,76,72,81,64,72,67,76], density:16, style:'full'},
-        {bars:12,prog:[[45,52,57,60],[47,54,59,62],[48,55,60,64]], motif:[57,60,64,67,62,65,69,72], density:8, style:'quiet'},
-        {bars:16,prog:[[52,59,64,67],[53,60,65,69],[50,57,62,65],[55,62,67,71]], motif:[64,71,67,76,65,72,69,77,67,74,71,79,72,76,79,83], density:16, style:'lift'},
-        {bars:14,prog:[[48,55,60,64],[52,59,64,67],[50,57,62,65],[47,55,59,62]], motif:[60,64,67,72,62,65,69,74,64,67,71,76,59,62,67,71], density:16, style:'drive'},
-        {bars:8, prog:[[48,55,60,64],[50,57,62,65],[48,55,60,64]], motif:[67,64,60,62,60], density:8, style:'quiet'}
-      ]
+      bpm:132,bars:32,lead:'bell',chords:[[52,56,59],[57,61,64],[59,63,66],[52,56,59]],
+      beats:[0,0.5,1,1.5,2,2.5,3,3.5],
+      phrases:[[64,68,71,76,71,68,76,80],[69,73,76,81,76,73,69,76],[71,75,78,83,78,75,71,78],[76,80,83,80,76,71,68,64]],
+      bassBeats:[0,2],kickBeats:[0,2],pad:0.006,leadLevel:0.009
     },
     trackcoin:{
-      bpm:132, bars:99,
-      sections:[
-        {bars:8, prog:[[45,52,57],[43,50,55]], motif:[69,72,71,74], density:4, style:'quiet'},
-        {bars:18,prog:[[45,52,57],[45,52,57],[43,50,55],[48,55,60]], motif:[69,72,76,72,71,74,79,74], density:8, style:'drive'},
-        {bars:18,prog:[[48,55,60],[46,53,58],[43,50,55],[50,57,62]], motif:[72,76,81,76,74,79,83,79], density:8, style:'full'},
-        {bars:14,prog:[[41,48,53],[43,50,55],[45,52,57]], motif:[64,67,69,72,69,67], density:6, style:'quiet'},
-        {bars:18,prog:[[50,57,62],[48,55,60],[46,53,58],[43,50,55]], motif:[76,81,84,79,74,79,83,86], density:8, style:'lift'},
-        {bars:15,prog:[[45,52,57],[43,50,55],[48,55,60],[50,57,62]], motif:[69,74,76,72,79,74,81,76], density:8, style:'drive'},
-        {bars:8, prog:[[45,52,57],[43,50,55],[45,52,57]], motif:[74,72,69], density:4, style:'quiet'}
-      ]
+      bpm:122,bars:36,lead:'pluck',chords:[[55,59,62],[60,64,67],[62,66,69],[55,59,62]],
+      beats:[0,0.75,1.5,2,3.25],
+      phrases:[[67,74,71,76,74],[72,79,76,74,72],[74,78,81,78,74],[79,74,71,69,67]],
+      bassBeats:[0,1,2.5],kickBeats:[0,1.5,3],pad:0.007,leadLevel:0.010
     },
     ruleshift:{
-      bpm:124, bars:93,
-      sections:[
-        {bars:8, prog:[[48,55,60],[51,58,63]], motif:[72,67,70,74], density:4, style:'quiet'},
-        {bars:17,prog:[[48,55,60],[51,58,63],[46,53,58],[49,56,61]], motif:[72,75,67,70,74,65,69,76], density:8, style:'drive'},
-        {bars:17,prog:[[50,57,62],[53,60,65],[47,54,59],[51,58,63]], motif:[76,69,65,74,70,75,67,72], density:8, style:'full'},
-        {bars:13,prog:[[45,52,57],[48,55,60],[50,57,62]], motif:[67,69,72,70,65], density:5, style:'quiet'},
-        {bars:17,prog:[[53,60,65],[49,56,61],[51,58,63],[46,53,58]], motif:[79,72,75,67,74,70,76,69], density:8, style:'lift'},
-        {bars:13,prog:[[48,55,60],[46,53,58],[51,58,63],[49,56,61]], motif:[72,67,75,70,65,74,76,69], density:8, style:'drive'},
-        {bars:8, prog:[[48,55,60],[51,58,63],[48,55,60]], motif:[72,70,67], density:4, style:'quiet'}
-      ]
+      bpm:118,bars:32,lead:'lead',chords:[[57,61,64],[62,66,69],[64,68,71],[57,61,64]],
+      beats:[0,1,1.5,2.75,3.5],
+      phrases:[[69,73,76,81,78],[74,78,81,76,74],[76,80,83,78,76],[81,76,73,71,69]],
+      bassBeats:[0,2.75],kickBeats:[0,2.75],pad:0.009,leadLevel:0.010
     },
     'block-grid':{
-      bpm:108, bars:81,
-      sections:[
-        {bars:8, prog:[[48,55,60,64],[50,57,62,65]], motif:[67,72,74,76,72,79,76,74], density:8, style:'quiet'},
-        {bars:14,prog:[[48,55,60,64],[52,59,64,67],[45,52,57,60],[50,57,62,65]], motif:[67,72,76,72,69,74,77,74], density:8, style:'drive'},
-        {bars:14,prog:[[53,60,65,69],[50,57,62,65],[55,62,67,71],[48,55,60,64]], motif:[69,72,77,74,71,76,79,76], density:8, style:'full'},
-        {bars:10,prog:[[45,52,57,60],[47,54,59,62],[48,55,60,64]], motif:[64,67,69,72,67,64], density:6, style:'quiet'},
-        {bars:14,prog:[[52,59,64,67],[53,60,65,69],[50,57,62,65],[55,62,67,71]], motif:[71,76,79,76,72,77,81,77], density:8, style:'lift'},
-        {bars:13,prog:[[48,55,60,64],[50,57,62,65],[52,59,64,67],[47,54,59,62]], motif:[67,72,74,79,76,72,69,74], density:8, style:'drive'},
-        {bars:8, prog:[[48,55,60,64],[45,52,57,60],[48,55,60,64]], motif:[72,69,67,64], density:4, style:'quiet'}
-      ]
+      bpm:108,bars:40,lead:'pluck',chords:[[50,54,57],[55,59,62],[57,61,64],[50,54,57]],
+      beats:[0,0.75,1.5,2.5,3],
+      phrases:[[62,66,69,74,69],[67,71,74,76,71],[69,73,76,73,69],[74,69,66,64,62]],
+      bassBeats:[0,2],kickBeats:[0,2],pad:0.009,leadLevel:0.012
     },
     'colour-sort':{
-      bpm:100, bars:75,
-      sections:[
-        {bars:8, prog:[[50,57,62,66],[47,54,59,62]], motif:[69,74,78,81,78,74,71,74], density:8, style:'quiet'},
-        {bars:13,prog:[[50,57,62,66],[54,61,66,69],[47,54,59,62],[52,59,64,67]], motif:[69,74,78,81,76,81,78,74], density:8, style:'warm'},
-        {bars:13,prog:[[55,62,67,71],[52,59,64,67],[57,64,69,73],[50,57,62,66]], motif:[71,74,79,83,81,78,76,74], density:8, style:'full'},
-        {bars:9, prog:[[47,54,59,62],[50,57,62,66],[52,59,64,67]], motif:[66,69,71,74,71,69], density:6, style:'quiet'},
-        {bars:13,prog:[[54,61,66,69],[57,64,69,73],[52,59,64,67],[55,62,67,71]], motif:[74,78,81,85,81,78,76,81], density:8, style:'lift'},
-        {bars:12,prog:[[50,57,62,66],[52,59,64,67],[47,54,59,62],[55,62,67,71]], motif:[69,74,76,81,78,74,71,76], density:8, style:'warm'},
-        {bars:7, prog:[[50,57,62,66],[47,54,59,62],[50,57,62,66]], motif:[74,71,69,66], density:4, style:'quiet'}
-      ]
+      bpm:114,bars:32,lead:'flute',chords:[[53,57,60],[58,62,65],[60,64,67],[53,57,60]],
+      beats:[0,0.5,1.25,2,3],
+      phrases:[[65,69,72,74,72],[70,74,77,74,70],[72,76,79,76,72],[77,74,72,69,65]],
+      bassBeats:[0,2.5],kickBeats:[0],pad:0.010,leadLevel:0.013
     },
     jigsaw:{
-      bpm:88, bars:66,
-      sections:[
-        {bars:8, prog:[[55,62,67,71],[52,59,64,67]], motif:[74,79,76,71], density:4, style:'quiet'},
-        {bars:11,prog:[[55,62,67,71],[52,59,64,67],[48,55,60,64],[50,57,62,66]], motif:[74,79,76,83,79,76], density:6, style:'warm'},
-        {bars:11,prog:[[57,64,69,72],[53,60,65,69],[55,62,67,71],[50,57,62,66]], motif:[76,81,79,84,81,79], density:6, style:'full'},
-        {bars:8, prog:[[48,55,60,64],[50,57,62,66],[52,59,64,67]], motif:[72,74,71,69], density:4, style:'quiet'},
-        {bars:11,prog:[[53,60,65,69],[55,62,67,71],[57,64,69,72],[52,59,64,67]], motif:[77,81,84,81,79,76], density:6, style:'lift'},
-        {bars:10,prog:[[55,62,67,71],[52,59,64,67],[48,55,60,64],[50,57,62,66]], motif:[74,76,79,83,79,76], density:6, style:'warm'},
-        {bars:7, prog:[[55,62,67,71],[52,59,64,67],[55,62,67,71]], motif:[79,76,74,71], density:4, style:'quiet'}
-      ]
+      bpm:106,bars:28,lead:'bell',chords:[[51,55,58],[56,60,63],[58,62,65],[51,55,58]],
+      beats:[0,1,2.5],
+      phrases:[[67,70,75],[68,72,75],[70,74,77],[75,72,70]],
+      bassBeats:[0,2],kickBeats:[0,2],pad:0.011,leadLevel:0.012,legato:true
     },
     crossnumber:{
-      bpm:112, bars:84,
-      sections:[
-        {bars:8, prog:[[48,55,60,64],[51,58,63,67]], motif:[72,75,67,70,74,79,70,75], density:8, style:'quiet'},
-        {bars:15,prog:[[48,55,60,64],[51,58,63,67],[53,60,65,69],[46,53,58,62]], motif:[72,75,79,70,74,77,69,74], density:8, style:'drive'},
-        {bars:15,prog:[[50,57,62,65],[53,60,65,69],[55,62,67,70],[48,55,60,64]], motif:[74,77,81,72,76,79,71,76], density:8, style:'full'},
-        {bars:10,prog:[[45,52,57,60],[48,55,60,64],[50,57,62,65]], motif:[69,72,75,71,74], density:5, style:'quiet'},
-        {bars:15,prog:[[53,60,65,69],[55,62,67,70],[51,58,63,67],[48,55,60,64]], motif:[77,81,84,75,79,82,74,79], density:8, style:'lift'},
-        {bars:13,prog:[[48,55,60,64],[50,57,62,65],[46,53,58,62],[51,58,63,67]], motif:[72,75,79,74,70,77,81,75], density:8, style:'drive'},
-        {bars:8, prog:[[48,55,60,64],[51,58,63,67],[48,55,60,64]], motif:[75,72,70,67], density:4, style:'quiet'}
-      ]
+      bpm:126,bars:36,lead:'mallet',chords:[[59,63,66],[52,56,59],[54,58,61],[59,63,66]],
+      beats:[0,0.5,1.5,2,3,3.5],
+      phrases:[[71,75,78,75,73,71],[68,71,75,78,75,71],[70,73,78,82,78,73],[78,75,73,71,66,71]],
+      bassBeats:[0,1.5,3],kickBeats:[0,2.5],pad:0.007,leadLevel:0.011
     },
     ninja:{
-      bpm:96, bars:72,
-      sections:[
-        {bars:8, prog:[[48,55,60,64],[45,52,57,60]], motif:[72,74,76,72], density:4, style:'quiet'},
-        {bars:14,prog:[[48,55,60,64],[45,52,57,60],[53,60,65,69],[55,62,67,71]], motif:[72,74,76,79,81,79,76,74], density:8, style:'warm'},
-        {bars:14,prog:[[50,57,62,65],[47,54,59,62],[55,62,67,71],[52,59,64,67]], motif:[74,76,79,83,81,79,76,72], density:8, style:'full'},
-        {bars:10,prog:[[41,48,53,57],[43,50,55,59],[45,52,57,60]], motif:[65,67,69,72,69,67], density:6, style:'quiet'},
-        {bars:14,prog:[[53,60,65,69],[55,62,67,71],[48,55,60,64],[50,57,62,65]], motif:[76,79,81,84,83,81,79,76], density:8, style:'lift'},
-        {bars:8, prog:[[48,55,60,64],[53,60,65,69],[45,52,57,60],[55,62,67,71]], motif:[72,76,79,83,81,79,76,74], density:8, style:'full'},
-        {bars:4, prog:[[48,55,60,64],[45,52,57,60],[48,55,60,64]], motif:[76,74,72], density:4, style:'quiet'}
-      ]
+      bpm:136,bars:40,lead:'lead',chords:[[48,52,55],[53,57,60],[55,59,62],[48,52,55]],
+      beats:[0,0.5,1.25,2,2.5,3,3.5],
+      phrases:[[72,76,79,84,79,76,72],[77,81,84,81,77,72,69],[79,83,86,83,79,74,71],[84,79,76,79,76,72,72]],
+      bassBeats:[0,1,2,3],kickBeats:[0,1.5,2.5],pad:0.008,leadLevel:0.012
     }
   };
 
-  // Third-generation Recreation themes: energetic enough to support play while
-  // keeping the timbre rounded and avoiding the piercing/highly lateral mixes
-  // that were previously uncomfortable. These intentionally replace both the
-  // original harsh arrangements and the later over-slowed "gentle" versions.
-  Object.assign(TRACKS,{
-    pairs:{bpm:110,bars:40,sections:[
-      {bars:8,prog:[[60,64,67],[57,60,64],[65,69,72],[55,59,62]],motif:[72,76,74,79,76,72,74,71],density:8,style:'warm'},
-      {bars:8,prog:[[62,65,69],[59,62,67],[64,67,71],[57,60,64]],motif:[74,77,76,81,79,76,72,74],density:8,style:'drive'},
-      {bars:8,prog:[[53,57,60],[55,59,62],[57,60,64]],motif:[69,72,71,74,72,69,67,71],density:8,style:'quiet'},
-      {bars:8,prog:[[65,69,72],[60,64,69],[62,65,69],[55,60,64]],motif:[76,79,81,79,76,74,72,74],density:8,style:'lift'},
-      {bars:8,prog:[[60,64,67],[57,60,64],[65,69,72],[55,59,62]],motif:[72,74,76,79,76,74,71,67],density:8,style:'full'}]},
-    detectword:{bpm:116,bars:40,sections:[
-      {bars:8,prog:[[50,57,62],[48,55,60],[53,60,65],[46,53,58]],motif:[69,74,73,71,74,76,71,73],density:8,style:'warm'},
-      {bars:8,prog:[[52,59,64],[49,56,61],[55,62,67],[48,55,60]],motif:[71,76,74,73,78,76,74,71],density:8,style:'drive'},
-      {bars:8,prog:[[45,52,57],[47,54,59],[48,55,60]],motif:[69,71,73,72,69,71,67,69],density:8,style:'quiet'},
-      {bars:8,prog:[[53,60,65],[50,57,62],[55,62,67],[46,53,58]],motif:[74,78,76,73,71,76,79,74],density:8,style:'lift'},
-      {bars:8,prog:[[50,57,62],[48,55,60],[53,60,65],[46,53,58]],motif:[74,73,76,71,78,74,76,71],density:8,style:'full'}]},
-    make24:{bpm:124,bars:40,sections:[
-      {bars:8,prog:[[48,55,60,64],[50,57,62,65],[52,59,64,67],[47,55,59,62]],motif:[60,67,64,72,62,69,65,74],density:8,style:'drive'},
-      {bars:8,prog:[[53,60,65,69],[50,57,62,65],[55,62,67,71],[52,59,64,67]],motif:[65,72,69,77,67,74,71,79],density:8,style:'full'},
-      {bars:8,prog:[[45,52,57,60],[47,54,59,62],[48,55,60,64]],motif:[57,60,64,67,62,65,69,72],density:8,style:'quiet'},
-      {bars:8,prog:[[52,59,64,67],[53,60,65,69],[50,57,62,65],[55,62,67,71]],motif:[64,71,67,76,65,72,69,77],density:8,style:'lift'},
-      {bars:8,prog:[[48,55,60,64],[52,59,64,67],[50,57,62,65],[47,55,59,62]],motif:[60,64,67,72,62,65,69,74],density:8,style:'drive'}]},
-    trackcoin:{bpm:126,bars:40,sections:[
-      {bars:8,prog:[[45,52,57],[43,50,55],[48,55,60],[50,57,62]],motif:[69,72,76,72,71,74,79,74],density:8,style:'drive'},
-      {bars:8,prog:[[48,55,60],[46,53,58],[43,50,55],[50,57,62]],motif:[72,76,81,76,74,79,83,79],density:8,style:'full'},
-      {bars:8,prog:[[41,48,53],[43,50,55],[45,52,57]],motif:[64,67,69,72,69,67,64,69],density:8,style:'quiet'},
-      {bars:8,prog:[[50,57,62],[48,55,60],[46,53,58],[43,50,55]],motif:[76,81,79,74,79,83,81,76],density:8,style:'lift'},
-      {bars:8,prog:[[45,52,57],[43,50,55],[48,55,60],[50,57,62]],motif:[69,74,76,72,79,74,81,76],density:8,style:'drive'}]},
-    ruleshift:{bpm:122,bars:40,sections:[
-      {bars:8,prog:[[48,55,60],[51,58,63],[46,53,58],[49,56,61]],motif:[72,75,67,70,74,65,69,76],density:8,style:'drive'},
-      {bars:8,prog:[[50,57,62],[53,60,65],[47,54,59],[51,58,63]],motif:[76,69,65,74,70,75,67,72],density:8,style:'full'},
-      {bars:8,prog:[[45,52,57],[48,55,60],[50,57,62]],motif:[67,69,72,70,65,67,64,69],density:8,style:'quiet'},
-      {bars:8,prog:[[53,60,65],[49,56,61],[51,58,63],[46,53,58]],motif:[79,72,75,67,74,70,76,69],density:8,style:'lift'},
-      {bars:8,prog:[[48,55,60],[46,53,58],[51,58,63],[49,56,61]],motif:[72,67,75,70,65,74,76,69],density:8,style:'drive'}]},
-    crossnumber:{bpm:116,bars:40,sections:[
-      {bars:8,prog:[[48,55,60,64],[51,58,63,67],[53,60,65,69],[46,53,58,62]],motif:[67,72,75,70,74,77,69,74],density:8,style:'warm'},
-      {bars:8,prog:[[50,57,62,65],[53,60,65,69],[55,62,67,70],[48,55,60,64]],motif:[70,74,77,72,76,79,71,76],density:8,style:'drive'},
-      {bars:8,prog:[[45,52,57,60],[48,55,60,64],[50,57,62,65]],motif:[69,72,75,71,74,72,69,71],density:8,style:'quiet'},
-      {bars:8,prog:[[53,60,65,69],[55,62,67,70],[51,58,63,67],[48,55,60,64]],motif:[72,77,81,75,79,77,74,79],density:8,style:'lift'},
-      {bars:8,prog:[[48,55,60,64],[50,57,62,65],[46,53,58,62],[51,58,63,67]],motif:[72,75,79,74,70,77,74,71],density:8,style:'full'}]},
-    'block-grid':{bpm:118,bars:40,sections:[
-      {bars:8,prog:[[48,55,60],[50,57,62],[45,52,57],[53,60,65]],motif:[60,67,64,69,62,67,65,72],density:8,style:'warm'},
-      {bars:8,prog:[[50,57,62],[53,60,65],[48,55,60],[55,62,67]],motif:[62,69,65,72,67,74,69,76],density:8,style:'drive'},
-      {bars:8,prog:[[45,52,57],[48,55,60],[43,50,55]],motif:[57,64,60,67,62,65,60,64],density:8,style:'quiet'},
-      {bars:8,prog:[[53,60,65],[55,62,67],[50,57,62],[48,55,60]],motif:[65,72,67,74,69,76,72,67],density:8,style:'lift'},
-      {bars:8,prog:[[48,55,60],[50,57,62],[53,60,65],[45,52,57]],motif:[60,67,64,72,69,65,62,67],density:8,style:'full'}]},
-    'colour-sort':{bpm:114,bars:40,sections:[
-      {bars:8,prog:[[50,57,62],[47,54,59],[52,59,64],[55,62,67]],motif:[62,69,66,71,67,74,69,72],density:8,style:'warm'},
-      {bars:8,prog:[[54,61,66],[50,57,62],[52,59,64],[47,54,59]],motif:[66,73,69,74,71,76,69,73],density:8,style:'drive'},
-      {bars:8,prog:[[47,54,59],[50,57,62],[52,59,64]],motif:[59,66,62,69,64,67,62,66],density:8,style:'quiet'},
-      {bars:8,prog:[[54,61,66],[57,64,69],[52,59,64],[55,62,67]],motif:[66,73,69,76,71,78,74,69],density:8,style:'lift'},
-      {bars:8,prog:[[50,57,62],[52,59,64],[47,54,59],[55,62,67]],motif:[62,69,64,71,66,73,69,67],density:8,style:'full'}]},
-    jigsaw:{bpm:104,bars:40,sections:[
-      {bars:8,prog:[[55,62,67],[52,59,64],[48,55,60],[50,57,62]],motif:[67,71,69,74,71,67,64,69],density:8,style:'warm'},
-      {bars:8,prog:[[57,64,69],[53,60,65],[55,62,67],[50,57,62]],motif:[69,72,71,76,72,69,67,71],density:8,style:'full'},
-      {bars:8,prog:[[48,55,60],[50,57,62],[52,59,64]],motif:[64,67,66,69,67,64,62,66],density:8,style:'quiet'},
-      {bars:8,prog:[[53,60,65],[55,62,67],[57,64,69],[52,59,64]],motif:[65,69,72,69,67,71,74,69],density:8,style:'lift'},
-      {bars:8,prog:[[55,62,67],[52,59,64],[48,55,60],[50,57,62]],motif:[67,69,71,74,71,69,67,64],density:8,style:'warm'}]}
-  });
-  // 2026-10-24 consonant major-key replacements for games whose prior
-  // arrangements read as tense/off-tone. These use only clear major triads
-  // and major-pentatonic melodic material, with lower density and softer voices.
-  Object.assign(TRACKS,{
-    trackcoin:{bpm:108,bars:40,sections:[
-      {bars:8,prog:[[48,52,55],[53,57,60],[55,59,62],[48,52,55]],motif:[60,64,67,69,67,64,62,60],density:8,style:'warm'},
-      {bars:8,prog:[[53,57,60],[48,52,55],[55,59,62],[48,52,55]],motif:[65,69,72,69,67,64,62,64],density:8,style:'warm'},
-      {bars:8,prog:[[48,52,55],[55,59,62],[53,57,60],[48,52,55]],motif:[60,62,64,67,69,67,64,62],density:8,style:'quiet'},
-      {bars:8,prog:[[55,59,62],[53,57,60],[48,52,55],[55,59,62]],motif:[67,69,72,74,72,69,67,64],density:8,style:'lift'},
-      {bars:8,prog:[[48,52,55],[53,57,60],[55,59,62],[48,52,55]],motif:[60,64,67,72,69,67,64,60],density:8,style:'warm'}]},
-    ruleshift:{bpm:106,bars:40,sections:[
-      {bars:8,prog:[[55,59,62],[60,64,67],[62,66,69],[55,59,62]],motif:[67,71,74,76,74,71,69,67],density:8,style:'warm'},
-      {bars:8,prog:[[60,64,67],[55,59,62],[62,66,69],[55,59,62]],motif:[72,76,79,76,74,71,69,71],density:8,style:'warm'},
-      {bars:8,prog:[[55,59,62],[62,66,69],[60,64,67],[55,59,62]],motif:[67,69,71,74,76,74,71,69],density:8,style:'quiet'},
-      {bars:8,prog:[[62,66,69],[60,64,67],[55,59,62],[62,66,69]],motif:[74,76,79,81,79,76,74,71],density:8,style:'lift'},
-      {bars:8,prog:[[55,59,62],[60,64,67],[62,66,69],[55,59,62]],motif:[67,71,74,79,76,74,71,67],density:8,style:'warm'}]},
-    'block-grid':{bpm:102,bars:40,sections:[
-      {bars:8,prog:[[50,54,57],[55,59,62],[57,61,64],[50,54,57]],motif:[62,66,69,71,69,66,64,62],density:8,style:'warm'},
-      {bars:8,prog:[[55,59,62],[50,54,57],[57,61,64],[50,54,57]],motif:[67,71,74,71,69,66,64,66],density:8,style:'warm'},
-      {bars:8,prog:[[50,54,57],[57,61,64],[55,59,62],[50,54,57]],motif:[62,64,66,69,71,69,66,64],density:8,style:'quiet'},
-      {bars:8,prog:[[57,61,64],[55,59,62],[50,54,57],[57,61,64]],motif:[69,71,74,76,74,71,69,66],density:8,style:'lift'},
-      {bars:8,prog:[[50,54,57],[55,59,62],[57,61,64],[50,54,57]],motif:[62,66,69,74,71,69,66,62],density:8,style:'warm'}]},
-    'colour-sort':{bpm:100,bars:40,sections:[
-      {bars:8,prog:[[53,57,60],[58,62,65],[60,64,67],[53,57,60]],motif:[65,69,72,74,72,69,67,65],density:8,style:'warm'},
-      {bars:8,prog:[[58,62,65],[53,57,60],[60,64,67],[53,57,60]],motif:[70,74,77,74,72,69,67,69],density:8,style:'warm'},
-      {bars:8,prog:[[53,57,60],[60,64,67],[58,62,65],[53,57,60]],motif:[65,67,69,72,74,72,69,67],density:8,style:'quiet'},
-      {bars:8,prog:[[60,64,67],[58,62,65],[53,57,60],[60,64,67]],motif:[72,74,77,79,77,74,72,69],density:8,style:'lift'},
-      {bars:8,prog:[[53,57,60],[58,62,65],[60,64,67],[53,57,60]],motif:[65,69,72,77,74,72,69,65],density:8,style:'warm'}]}
-  });
-  // 2026-10-24 low-fatigue themes for the four remaining bright/dense games.
-  // Major triads + major-pentatonic contours, restrained register and fewer
-  // melodic events keep long sessions consonant without becoming inert.
-  Object.assign(TRACKS,{
-    pairs:{bpm:92,bars:40,sections:[
-      {bars:8,prog:[[48,52,55],[53,57,60],[55,59,62],[48,52,55]],motif:[60,64,67,64],density:4,style:'warm'},
-      {bars:8,prog:[[53,57,60],[48,52,55],[55,59,62],[48,52,55]],motif:[65,67,69,67,64,62],density:6,style:'warm'},
-      {bars:8,prog:[[48,52,55],[55,59,62],[53,57,60]],motif:[60,62,64,67],density:4,style:'quiet'},
-      {bars:8,prog:[[55,59,62],[53,57,60],[48,52,55]],motif:[67,69,72,69,67,64],density:6,style:'warm'},
-      {bars:8,prog:[[48,52,55],[53,57,60],[48,52,55]],motif:[60,64,67,64],density:4,style:'quiet'}]},
-    detectword:{bpm:94,bars:40,sections:[
-      {bars:8,prog:[[50,54,57],[55,59,62],[57,61,64],[50,54,57]],motif:[62,66,69,66],density:4,style:'warm'},
-      {bars:8,prog:[[55,59,62],[50,54,57],[57,61,64],[50,54,57]],motif:[67,69,71,69,66,64],density:6,style:'warm'},
-      {bars:8,prog:[[50,54,57],[57,61,64],[55,59,62]],motif:[62,64,66,69],density:4,style:'quiet'},
-      {bars:8,prog:[[57,61,64],[55,59,62],[50,54,57]],motif:[69,71,74,71,69,66],density:6,style:'warm'},
-      {bars:8,prog:[[50,54,57],[55,59,62],[50,54,57]],motif:[62,66,69,66],density:4,style:'quiet'}]},
-    make24:{bpm:96,bars:40,sections:[
-      {bars:8,prog:[[48,52,55],[55,59,62],[53,57,60],[48,52,55]],motif:[60,64,67,64],density:4,style:'warm'},
-      {bars:8,prog:[[55,59,62],[53,57,60],[48,52,55],[55,59,62]],motif:[67,69,72,69,67,64],density:6,style:'warm'},
-      {bars:8,prog:[[48,52,55],[53,57,60],[55,59,62]],motif:[60,62,64,67],density:4,style:'quiet'},
-      {bars:8,prog:[[53,57,60],[55,59,62],[48,52,55]],motif:[65,67,69,72,69,67],density:6,style:'warm'},
-      {bars:8,prog:[[48,52,55],[55,59,62],[48,52,55]],motif:[60,64,67,64],density:4,style:'quiet'}]},
-    crossnumber:{bpm:90,bars:40,sections:[
-      {bars:8,prog:[[53,57,60],[58,62,65],[60,64,67],[53,57,60]],motif:[65,69,72,69],density:4,style:'warm'},
-      {bars:8,prog:[[58,62,65],[53,57,60],[60,64,67],[53,57,60]],motif:[70,72,74,72,69,67],density:6,style:'warm'},
-      {bars:8,prog:[[53,57,60],[60,64,67],[58,62,65]],motif:[65,67,69,72],density:4,style:'quiet'},
-      {bars:8,prog:[[60,64,67],[58,62,65],[53,57,60]],motif:[72,74,77,74,72,69],density:6,style:'warm'},
-      {bars:8,prog:[[53,57,60],[58,62,65],[53,57,60]],motif:[65,69,72,69],density:4,style:'quiet'}]}
-  });
-  var SOFT_TIMBRE_GAMES = new Set(['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber']);
+  function scheduleBar(track,bar,start){
+    var beat=60/track.bpm;
+    var chord=track.chords[bar%track.chords.length];
+    var phrase=track.phrases[bar%track.phrases.length];
+    var lastPhrase=bar%track.phrases.length===track.phrases.length-1;
+    var variation=Math.floor(bar/track.phrases.length)%4;
+    var softness=variation===0?0.87:(variation===2?1.04:0.96);
 
-  function sectionAt(track, bar){
-    var cursor = 0;
-    for(var i=0;i<track.sections.length;i++){
-      var section = track.sections[i];
-      if(bar < cursor + section.bars) return { section:section, local:bar-cursor, index:i };
-      cursor += section.bars;
-    }
-    return { section:track.sections[track.sections.length-1], local:0, index:track.sections.length-1 };
-  }
-
-  function tinyHuman(bar, step){
-    var x = Math.sin((bar + 1) * 12.9898 + (step + 1) * 78.233) * 43758.5453;
-    return (x - Math.floor(x) - 0.5) * 0.018;
-  }
-
-  function scheduleBar(track, bar, start){
-    var beat = 60 / track.bpm;
-    var info = sectionAt(track, bar);
-    var sec = info.section;
-    var chordNotes = sec.prog[info.local % sec.prog.length];
-    var full = sec.style === 'full' || sec.style === 'drive' || sec.style === 'lift';
-    var quiet = sec.style === 'quiet';
-    var isJigsaw = activeGame === 'jigsaw';
-    var isColourSort = activeGame === 'colour-sort';
-    var isBlockGrid = activeGame === 'block-grid';
-    var isCrossnumber = activeGame === 'crossnumber';
-    var softTimbre = SOFT_TIMBRE_GAMES.has(activeGame);
-
-    chordNotes.forEach(function(n, idx){
-      var padLevel = quiet ? 0.017 : 0.022;
-      if(isJigsaw) padLevel *= 0.92;
-      if(isColourSort) padLevel *= 0.96;
-      if(softTimbre) padLevel *= 0.82;
-      makeVoice('pad', n, start + idx * 0.012, beat * 3.92, padLevel, softTimbre ? 0 : (idx - 1) * 0.22);
+    // Rounded chord bed; shallow gain and staggered onsets avoid transients.
+    chord.forEach(function(note,i){
+      makeVoice('pad',note,start+i*0.025,beat*3.65,track.pad*softness,0);
     });
-
-    if(sec.style !== 'quiet'){
-      var bassLevel = isJigsaw ? 0.008 : (isColourSort ? 0.010 : (isBlockGrid ? 0.011 : 0.014));
-      makeVoice('bass', chordNotes[0] - 12, start, beat * 1.8, bassLevel, 0);
-      makeVoice('bass', chordNotes[0] - 12, start + beat * 2, beat * 1.75, bassLevel * 0.82, 0);
-    }
-
-    var steps = sec.density;
-    var stepDur = beat * 4 / steps;
-    for(var k=0;k<steps;k++){
-      var pitch = sec.motif[(bar * steps + k) % sec.motif.length];
-      if(sec.style === 'lift' && (k === 2 || k === Math.max(3, steps-2))) pitch += 12;
-
-      var kind;
-      if(softTimbre) kind = k % 3 === 0 ? 'mallet' : 'lead';
-      else if(activeGame === 'detectword' || isCrossnumber) kind = k % 4 === 3 ? 'lead' : 'mallet';
-      else if(activeGame === 'trackcoin' || isBlockGrid) kind = k % 3 === 0 ? 'mallet' : 'lead';
-      else if(isColourSort) kind = k % 2 === 0 ? 'mallet' : 'lead';
-      else if(isJigsaw) kind = k % 3 === 0 ? 'mallet' : 'lead';
-      else kind = k % 3 === 0 ? 'mallet' : 'lead';
-
-      var voiceLevel = quiet ? 0.014 : 0.019;
-      if(isJigsaw) voiceLevel *= 0.78;
-      if(isColourSort) voiceLevel *= 0.90;
-      if(softTimbre) voiceLevel *= 0.78;
-      if(softTimbre) pitch = Math.min(pitch, 76);
-      makeVoice(kind, pitch, start + k * stepDur + tinyHuman(bar,k), Math.min(stepDur * 0.76, beat * 0.44), voiceLevel, softTimbre ? 0 : (k % 2 ? 0.18 : -0.18));
-    }
-
-    if(isJigsaw){
-      if(!quiet && bar % 2 === 0) kick(start, 0.006);
-      return;
-    }
-
-    if(isColourSort){
-      if(full){
-        kick(start, 0.016);
-        if(sec.style === 'lift') kick(start + beat * 2, 0.011);
-        for(var c=0;c<4;c++) tick(start + (c + 0.5) * beat + tinyHuman(bar,c), 0.0018);
-      }else if(sec.style === 'warm' && bar % 2 === 0){
-        kick(start, 0.010);
-      }
-      return;
-    }
-
-    if(isCrossnumber){
-      if(full){
-        kick(start, sec.style === 'drive' ? 0.024 : 0.019);
-        kick(start + beat * 2, 0.014);
-      }
-      for(var x=0;x<4;x++) tick(start + x * beat + tinyHuman(bar,x), quiet ? 0.0022 : 0.0036);
-      return;
-    }
-
-    if(full){
-      kick(start, sec.style === 'drive' ? (isBlockGrid ? 0.022 : 0.030) : 0.024);
-      kick(start + beat * 2, isBlockGrid ? 0.014 : 0.018);
-      for(var q=0;q<4;q++) tick(start + (q + 0.5) * beat + tinyHuman(bar,q), isBlockGrid ? 0.0020 : 0.0036);
-    }else if(sec.style === 'warm' && bar % 2 === 0){
-      kick(start, 0.018);
+    track.bassBeats.forEach(function(position,i){
+      var bassNote=chord[i%2===0?0:2]-12;
+      makeVoice('bass',bassNote,start+beat*position,beat*Math.min(0.88,1.8/(track.bassBeats.length)),0.007*softness,0);
+    });
+    phrase.forEach(function(note,i){
+      var position=track.beats[i%track.beats.length];
+      var nextPosition=i+1<track.beats.length ? track.beats[i+1] : 4;
+      var length=Math.max(0.10,Math.min(beat*(nextPosition-position)*(track.legato?0.91:0.70),beat*(track.legato?1.05:0.54)));
+      var amplitude=track.leadLevel*(i===0?1.10:1)*softness;
+      makeVoice(track.lead,note,start+beat*position,length,amplitude,0);
+    });
+    track.kickBeats.forEach(function(position,i){
+      if(variation===0 && i>0) return;
+      kick(start+beat*position,0.010*(i===0?1:0.72)*softness);
+    });
+    if(lastPhrase && variation===3){
+      makeVoice('bell',chord[0]+12,start+beat*3.5,beat*0.4,0.006,0);
     }
   }
 
