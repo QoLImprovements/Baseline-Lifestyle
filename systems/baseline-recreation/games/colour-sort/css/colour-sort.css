@@ -494,7 +494,8 @@ html.is-dragging-colour-sort-bottle,html.is-dragging-colour-sort-bottle body{ove
     font-size:clamp(11px,3.3vw,14px)!important;
     white-space:nowrap!important;
   }
-  body[data-app="recreation"] #colourSortPanel #colourSortGameCard .round-status-card{
+  body[data-app="recreation"] #colourSortPanel #colourSortGameCard > .round-status-card,
+  body[data-app="recreation"] #colourSortPanel #colourSortGameCard > .colour-sort-empty > .round-status-card{
     display:none!important;
   }
   body[data-app="recreation"] #colourSortPanel #colourSortRoundCard:not([hidden]){
