@@ -486,7 +486,7 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/function toggleFullscreen\(/);
   assert.match(crossnumber,/newGamePointerAt=performance\.now\(\)[\s\S]*?createNewRound\(\{tierId:profile\.selectedTier\}\)/);
   assert.match(crossnumber,/visualViewport\?\.addEventListener\?\.\('resize'/);
-  assert.match(crossnumber,/const available=Math\.max\(220,Math\.min\(680,viewportHeight-playTop-footerHeight-28\)\)/);
+  assert.match(crossnumber,/const visibleSpace=Math\.max\(240,viewportHeight-playTop-footerHeight-28\)/);
   assert.match(crossnumber,/panel\.style\.setProperty\('--crossnumber-play-height'/);
   assert.match(crossnumberCss,/Cross Number one-screen reachability authority/);
   assert.equal((crossnumberCss.match(/Cross Number one-screen reachability authority/g)||[]).length,1);
