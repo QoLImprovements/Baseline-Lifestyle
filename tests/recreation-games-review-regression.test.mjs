@@ -322,20 +322,30 @@ test('fullscreen layouts use bounded side panels except the deliberately indepen
   const colourCss=read('systems/baseline-recreation/games/colour-sort/css/colour-sort.css');
   assert.match(colourCss,/--colour-fs-side:clamp\(230px,20vw,330px\)/);
 });
-test('reported uncomfortable games use low-fatigue consonant replacement themes',()=>{
-  const replacementBpms={pairs:92,detectword:94,make24:96,crossnumber:90,trackcoin:108,ruleshift:106,'block-grid':102,'colour-sort':100};
-  for(const [id,bpm] of Object.entries(replacementBpms)){
-    assert.match(music,new RegExp("(?:'"+id+"'|"+id+"):\\{bpm:"+bpm));
+test('each Recreation game has a distinct upbeat major-key song and smooth audio changes',()=>{
+  const ids=['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
+  const opening=music.indexOf('var TRACKS={');
+  const closing=music.indexOf('function scheduleBar(',opening);
+  assert.ok(opening>0 && closing>opening,'Music score declaration must be present');
+  const scores=Function(music.slice(opening,closing)+'; return TRACKS;')();
+  assert.deepEqual(Object.keys(scores).sort(),ids.sort());
+  const fingerprints=new Set();
+  for(const [name,score] of Object.entries(scores)){
+    assert.ok(score.bpm>=100 && score.bpm<=140,name+' has a lively tempo');
+    assert.equal(score.phrases.length,4,name+' has four musical phrases');
+    assert.ok(score.phrases.every(phrase=>phrase.length===score.beats.length),name+' phrase matches its rhythm');
+    for(const chord of score.chords){
+      assert.deepEqual(chord.map(note=>note-chord[0]),[0,4,7],name+' chord is a major triad');
+    }
+    fingerprints.add(JSON.stringify([score.lead,score.chords,score.beats,score.phrases,score.bassBeats,score.kickBeats]));
   }
-  assert.match(music,/var MIX_VERSION = 5/);
-  assert.match(music,/SOFT_TIMBRE_GAMES = new Set\(\['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber'\]\)/);
-  assert.match(music,/pairs:\{bpm:92[\s\S]*?density:4/);
-  assert.match(music,/detectword:\{bpm:94[\s\S]*?density:4/);
-  assert.match(music,/make24:\{bpm:96[\s\S]*?density:4/);
-  assert.match(music,/crossnumber:\{bpm:90[\s\S]*?density:4/);
-  assert.match(music,/osc\.type = 'triangle';[\s\S]*?filter\.frequency\.value = 680/);
-  assert.match(music,/filter\.frequency\.value = 2450/);
-  assert.doesNotMatch(music,/SENSORY_GENTLE_GAMES|sensoryGentle/);
+  assert.equal(fingerprints.size,ids.length,'Songs must differ beyond tempo or pitch shift');
+  assert.match(music,/var MIX_VERSION = 6/);
+  assert.match(music,/var SCHEDULE_AHEAD_SECONDS = 1\.6/);
+  assert.match(music,/var SCHEDULER_INTERVAL_MS = 100/);
+  assert.match(music,/node\._baselineEnvelope/);
+  assert.match(music,/envelope\.gain\.setTargetAtTime\(0\.0001,now,0\.008\)/);
+  assert.doesNotMatch(music,/Object\.assign\(TRACKS/);
 });
 test('reported Recreation interaction repairs remain wired',()=>{
   assert.match(core,/injectMobileGameControls\('make24'\);[\s\S]*?syncDesktopKeypadState\(\)/);
