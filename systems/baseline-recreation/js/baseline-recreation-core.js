@@ -587,7 +587,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       mobileExit.addEventListener('pointerdown',function(event){
         if(event.pointerType!=='touch' && event.pointerType!=='pen') return;
         window.clearTimeout(holdTimer);window.clearTimeout(hideTimer);
-        holdTimer=window.setTimeout(function(){ mobileExit.dataset.tooltipVisible='true'; },520);
+        holdTimer=window.setTimeout(function(){ mobileExit.dataset.tooltipVisible='true';mobileExit.dataset.longPress='true'; },520);
       });
       ['pointerup','pointercancel','pointerleave'].forEach(function(type){
         mobileExit.addEventListener(type,function(){
@@ -4307,6 +4307,10 @@ function toggleGameFullscreen(gameId){
       }
       const exitMobileModeBtn = event.target.closest('[data-exit-mobile-game-mode]');
       if(exitMobileModeBtn){
+        if(exitMobileModeBtn.dataset.longPress==='true'){
+          exitMobileModeBtn.removeAttribute('data-long-press');
+          return;
+        }
         exitMobileGameMode();
         selectGame('', { historyMode:'push' });
         window.setTimeout(function(){
