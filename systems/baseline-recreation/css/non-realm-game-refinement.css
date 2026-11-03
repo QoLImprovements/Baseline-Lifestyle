@@ -3354,3 +3354,71 @@ html body[data-app="recreation"] .recreation-mobile-pseudo-fullscreen > .game-pl
     display:none!important;
   }
 }
+
+/* 2026-11-03: final desktop dock ownership. The prior fullscreen selectors
+   included the play-window ancestor and outranked the generic dock rules,
+   leaving Settings incorrectly to the right of Music. Give actual game roots
+   explicit matching-or-higher specificity, including large touchscreens. */
+@media(min-width:821px){
+  html body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard).game-play-root:is(:fullscreen,:not(:fullscreen)) .game-window-actions.game-common-actions.recreation-unified-controls,
+html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls{
+    display:grid!important;
+    grid-template-columns:44px 44px minmax(0,1fr) 44px 44px 44px!important;
+    grid-template-rows:44px 44px!important;
+    gap:7px!important;
+    min-height:95px!important;
+    width:100%!important;
+    max-width:100%!important;
+    align-items:center!important;
+  }
+  html body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard).game-play-root:is(:fullscreen,:not(:fullscreen)) .game-window-actions.game-common-actions.recreation-unified-controls > .start-new-game-toggle,
+html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls > .start-new-game-toggle{
+    grid-column:1!important;grid-row:1!important;
+    justify-self:start!important;
+  }
+  html body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard).game-play-root:is(:fullscreen,:not(:fullscreen)) .game-window-actions.game-common-actions.recreation-unified-controls > .auto-next-toggle,
+html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls > .auto-next-toggle{
+    grid-column:1!important;grid-row:2!important;
+    justify-self:start!important;
+  }
+  html body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard).game-play-root:is(:fullscreen,:not(:fullscreen)) .game-window-actions.game-common-actions.recreation-unified-controls > #make24RerollBtn,
+html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls > #make24RerollBtn{
+    grid-column:2!important;grid-row:1!important;
+    justify-self:start!important;
+  }
+  html body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard).game-play-root:is(:fullscreen,:not(:fullscreen)) .game-window-actions.game-common-actions.recreation-unified-controls > .games-settings-trigger,
+html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls > .games-settings-trigger{
+    grid-column:4!important;grid-row:1!important;
+    justify-self:end!important;
+  }
+  html body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard).game-play-root:is(:fullscreen,:not(:fullscreen)) .game-window-actions.game-common-actions.recreation-unified-controls > .games-music-quick-toggle,
+html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls > .games-music-quick-toggle{
+    grid-column:5!important;grid-row:1!important;
+    justify-self:end!important;
+  }
+  html body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard).game-play-root:is(:fullscreen,:not(:fullscreen)) .game-window-actions.game-common-actions.recreation-unified-controls > .game-fullscreen-toggle,
+html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls > .game-fullscreen-toggle{
+    grid-column:6!important;grid-row:1!important;
+    justify-self:end!important;
+  }
+  html body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard).game-play-root:is(:fullscreen,:not(:fullscreen)) .game-window-actions.game-common-actions.recreation-unified-controls > .desktop-keypad-toggle,
+html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls > .desktop-keypad-toggle{
+    grid-column:4!important;grid-row:2!important;
+    justify-self:end!important;
+  }
+  html body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard).game-play-root:is(:fullscreen,:not(:fullscreen)) .game-window-actions.game-common-actions.recreation-unified-controls > #pairsHintBtn,
+html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls > #pairsHintBtn{
+    grid-column:4!important;grid-row:2!important;
+    justify-self:end!important;
+  }
+  html body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard).game-play-root:is(:fullscreen,:not(:fullscreen)) .game-window-actions.game-common-actions.recreation-unified-controls > #make24HintBtn,
+html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls > #make24HintBtn{
+    grid-column:4!important;grid-row:2!important;
+    justify-self:end!important;
+  }
+  html body[data-app="recreation"] :is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard).game-play-root:is(:fullscreen,:not(:fullscreen)) .game-window-actions.game-common-actions.recreation-unified-controls > #replayTrackCoinShuffleBtn,
+html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls > #replayTrackCoinShuffleBtn{
+    grid-column:4!important;grid-row:2!important;
+    justify-self:end!important;
+  }
+}
