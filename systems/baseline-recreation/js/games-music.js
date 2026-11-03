@@ -581,21 +581,13 @@
       if(host!==playWindow && !host.contains(playWindow) && host.parentElement!==playWindow) playWindow.appendChild(host);
       var specifics = root.querySelector('.game-specific-actions');
       if(specifics){
-        // The unified two-row dock is mobile-only. Desktop keeps its existing
-        // game-specific controls in their original separate container.
-        var mobileDock=window.matchMedia && window.matchMedia('(max-width:820px), (hover:none) and (pointer:coarse)').matches;
-        if(mobileDock){
-          Array.prototype.slice.call(specifics.children).forEach(function(control){
-            if(!control.matches('button.action')) return;
-            control.setAttribute('data-recreation-original-specific','');
-            host.appendChild(control);
-          });
-        }else{
-          Array.prototype.slice.call(host.querySelectorAll(':scope > [data-recreation-original-specific]')).forEach(function(control){
-            specifics.appendChild(control);
-            control.removeAttribute('data-recreation-original-specific');
-          });
-        }
+        // Desktop and mobile share one dock. Game-specific actions occupy the
+        // reserved space beside Settings; they never push or split shared actions.
+        Array.prototype.slice.call(specifics.children).forEach(function(control){
+          if(!control.matches('button.action')) return;
+          control.setAttribute('data-recreation-original-specific','');
+          host.appendChild(control);
+        });
       }
       host.classList.add('recreation-unified-controls');
       var existingQuick=(panel||root).querySelector('[data-games-music-quick]');
