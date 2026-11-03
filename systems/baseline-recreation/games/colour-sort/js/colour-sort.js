@@ -411,10 +411,12 @@ function renderProgress() {
     </div>`;
 }
 
-const COLOUR_TABS = Object.freeze(['game','tiers','progress']);
+const COLOUR_TABS = Object.freeze(['game','round','tiers','progress']);
+let activeColourTab='game';
+function mobileColourView(){return Boolean(window.matchMedia?.('(max-width:820px), (hover:none) and (pointer:coarse)').matches);}
 
 function colourTabFromLocation() {
-  if (!/^\/baseline-recreation\/games\/colour-sort\/?$/i.test(String(location.pathname || ''))) return 'game';
+  if (!/^\/baseline-recreation\/games\/colour-sort\/?$/i.test(String(location.pathname || ''))) return activeColourTab;
   try {
     const requested = String(new URLSearchParams(location.search || '').get('view') || '').toLowerCase();
     return requested==='levels' ? 'tiers' : (COLOUR_TABS.includes(requested) ? requested : 'game');
@@ -432,9 +434,11 @@ function colourTabUrl(name) {
 }
 
 function setTab(name, historyMode = 'none') {
-  const next = COLOUR_TABS.includes(name) ? name : 'game';
+  const requested = COLOUR_TABS.includes(name) ? name : 'game';
+  const next = requested === 'round' && !mobileColourView() ? 'game' : requested;
+  activeColourTab=next;
   document.querySelectorAll('[data-colour-tab]').forEach(button => button.classList.toggle('is-active', button.dataset.colourTab === next));
-  const cards={game:'colourSortGameCard',tiers:'colourSortLevelsCard',progress:'colourSortProgressCard'};
+  const cards={game:'colourSortGameCard',round:'colourSortRoundCard',tiers:'colourSortLevelsCard',progress:'colourSortProgressCard'};
   Object.entries(cards).forEach(([key,id])=>{ const card=document.getElementById(id); if(card) card.hidden=key!==next; });
   if (historyMode !== 'none' && /^\/baseline-recreation\/games\/colour-sort\/?$/i.test(String(location.pathname || ''))) {
     try {
@@ -448,11 +452,17 @@ function setTab(name, historyMode = 'none') {
   }
 }
 
+function renderRoundPanel(){
+  const card=document.getElementById('colourSortRoundCard');
+  if(card) card.innerHTML='<div class="summary-box round-status-card" aria-live="polite">'+statusHtml()+'</div>';
+}
+
 function render() {
   renderGameInfo();
   renderLevels();
   renderProgress();
   renderGame();
+  renderRoundPanel();
   // A fresh game replaces its dock: restore shared Settings and Music synchronously.
   globalThis.BaselineGamesMusic?.refreshControls?.();
   setTab(colourTabFromLocation(), 'none');
@@ -1039,11 +1049,13 @@ function panelHtml() {
       </details>
       <div class="game-toggle-row">
         <button class="action ghost game-toggle-btn is-active" data-colour-tab="game" type="button">Game</button>
+        <button class="action ghost game-toggle-btn colour-sort-mobile-round-tab" data-colour-tab="round" type="button">Round</button>
         <button class="action ghost game-toggle-btn" data-colour-tab="tiers" type="button">Tiers</button>
         <button class="action ghost game-toggle-btn" data-colour-tab="progress" type="button">Progress</button>
       </div>
       <div class="game-panel-stack">
         <section class="card game-card game-play-root" id="colourSortGameCard" data-game-play-root="colour-sort"></section>
+        <section class="card game-card colour-sort-round-card" id="colourSortRoundCard" hidden></section>
         <section class="card game-card" id="colourSortLevelsCard" hidden></section>
         <section class="card game-card" id="colourSortProgressCard" hidden></section>
       </div>
