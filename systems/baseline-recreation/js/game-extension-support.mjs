@@ -96,6 +96,49 @@ function showGamesSection() {
 
 export function createGameExtensionShell(config) {
   let observer = null;
+  let fullscreenObserver = null;
+
+  function mobileGameViewport(){
+    return Boolean(window.matchMedia?.('(max-width:820px), (hover:none) and (pointer:coarse)').matches);
+  }
+  function decorateMobileBack(button){
+    if(!button || button.dataset.mobileBackReady) return;
+    button.dataset.mobileBackReady='true';
+    button.setAttribute('aria-label','Return to games overview');
+    button.setAttribute('title','Return to games overview');
+    button.setAttribute('data-tooltip','Return to games overview');
+    let hold=0,hide=0;
+    button.addEventListener('pointerdown',function(event){
+      if(event.pointerType!=='touch'&&event.pointerType!=='pen') return;
+      window.clearTimeout(hold);window.clearTimeout(hide);
+      hold=window.setTimeout(function(){button.dataset.tooltipVisible='true';},520);
+    });
+    ['pointerup','pointercancel','pointerleave'].forEach(function(type){
+      button.addEventListener(type,function(){
+        window.clearTimeout(hold);
+        window.clearTimeout(hide);
+        hide=window.setTimeout(function(){button.removeAttribute('data-tooltip-visible');},1600);
+      });
+    });
+    button.addEventListener('contextmenu',function(event){if(mobileGameViewport()) event.preventDefault();});
+  }
+  function syncMobileFullscreenBack(){
+    if(!mobileGameViewport()) return;
+    const panel=document.getElementById(config.panelId);
+    const fullscreen=document.fullscreenElement;
+    if(!fullscreen||!panel?.contains(fullscreen)) return;
+    let back=fullscreen.querySelector(':scope > .mobile-game-exit--extension');
+    if(!back){
+      back=document.createElement('button');
+      back.type='button';
+      back.className='mobile-game-exit mobile-game-exit--extension';
+      back.setAttribute('data-close-game-extension',config.id);
+      back.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      fullscreen.prepend(back);
+    }
+    decorateMobileBack(back);
+  }
+
 
   function progressText() {
     try { return String(config.progressText?.() || 'Ready'); }
@@ -131,6 +174,7 @@ export function createGameExtensionShell(config) {
   function open({ historyMode = 'push' } = {}) {
     const panel = ensurePanel();
     if (!panel) return null;
+    decorateMobileBack(panel.querySelector('[data-close-game-extension]'));
     showGamesSection();
     document.querySelectorAll('#games .game-panel').forEach(other => {
       const active = other === panel;
@@ -207,7 +251,10 @@ export function createGameExtensionShell(config) {
     if (target.closest(`[data-close-game-extension="${config.id}"]`)) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      close();
+      const panel=document.getElementById(config.panelId);
+      if(document.fullscreenElement && panel?.contains(document.fullscreenElement)){
+        Promise.resolve(document.exitFullscreen()).then(function(){close();},function(){close();});
+      }else close();
       return;
     }
     const panel = document.getElementById(config.panelId);
@@ -252,6 +299,12 @@ export function createGameExtensionShell(config) {
     ensurePanel();
     ensureOverviewEntry();
     installObserver();
+    document.addEventListener('fullscreenchange',syncMobileFullscreenBack);
+    const extensionPanel=document.getElementById(config.panelId);
+    if(extensionPanel && !fullscreenObserver){
+      fullscreenObserver=new MutationObserver(syncMobileFullscreenBack);
+      fullscreenObserver.observe(extensionPanel,{childList:true,subtree:true});
+    }
     document.addEventListener('click', handleClick, true);
     window.addEventListener('popstate', syncFromBrowserHistory);
     requestAnimationFrame(initialRouteOpen);
