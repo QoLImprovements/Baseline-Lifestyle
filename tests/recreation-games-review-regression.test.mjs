@@ -136,7 +136,7 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_TOUCH_FULLSCREEN_20261028_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
   assert.match(html,/block-grid\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
   assert.match(html,/colour-sort\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
@@ -384,8 +384,8 @@ test('extension-game routes clear stale core selection without surrendering exte
   assert.match(extensionSupport,/document\.dispatchEvent\(new CustomEvent\('baseline:game-extension-open'/);
   assert.match(extensionSupport,/detail:\{ id:config\.id, panelId:config\.panelId \}/);
   assert.match(core,/document\.addEventListener\('baseline:game-extension-open'[\s\S]*?selectedGame='';[\s\S]*?renderGamesList\(\)/);
-  assert.match(blockGrid,/game-extension-support\.mjs\?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1/);
-  assert.match(colourSort,/game-extension-support\.mjs\?v=RECREATION_EXTENSION_ROUTE_READY_20261025_1/);
+  assert.match(blockGrid,/game-extension-support\.mjs\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(colourSort,/game-extension-support\.mjs\?v=MOBILE_GAME_COHERENCE_20261103_1/);
   assert.match(extensionSupport,/baseline:recreation:core-ready/);
   assert.match(extensionSupport,/BASELINE_RECREATION_CORE_READY === true/);
 });
@@ -509,8 +509,8 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/Cross Number touch-drag authority/);
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
-  assert.match(html,/crossnumber\.css\?v=CROSS_NUMBER_MOBILE_COHERENCE_20261026_1/);
-  assert.match(html,/crossnumber\.js\?v=CROSS_NUMBER_FULLSCREEN_WINDOW_TABS_20261025_1/);
+  assert.match(html,/crossnumber\.css\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(html,/crossnumber\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);
