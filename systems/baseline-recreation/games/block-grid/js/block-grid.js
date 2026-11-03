@@ -44,6 +44,8 @@ let selectedPiece = -1;
 let previewAnchor = null;
 let statusMessage = '';
 let dragState = null;
+let blockDragScrollFrame = 0;
+let blockDragScrollVelocity = 0;
 let specialDragState = null;
 let suppressClick = false;
 let storageAuth = null;
@@ -589,6 +591,7 @@ function positionDragGhost(ghost, clientX, clientY, anchor, grip = dragState) {
   ghost.style.top=(clientY-grabbedY)+'px';
 }
 function destroyDragGhost() {
+  stopBlockDragAutoScroll();
   if (dragState?.ghost?.isConnected) dragState.ghost.remove();
   dragState?.sourceElement?.classList?.remove('is-drag-origin');
   document.documentElement.classList.remove('is-dragging-block-grid-piece');
@@ -914,6 +917,36 @@ function paintPreview() {
   });
 }
 
+function stopBlockDragAutoScroll(){
+  blockDragScrollVelocity=0;
+  if(blockDragScrollFrame){
+    window.cancelAnimationFrame(blockDragScrollFrame);
+    blockDragScrollFrame=0;
+  }
+}
+function blockDragScrollStep(){
+  blockDragScrollFrame=0;
+  const scroller=document.getElementById('blockGridPanel');
+  if(!dragState || !dragState.moved || !scroller?.classList.contains('is-mobile-game-root') || !blockDragScrollVelocity) return;
+  scroller.scrollTop += blockDragScrollVelocity;
+  const anchor=boardAnchorFromPointer(dragState.lastX,dragState.lastY,dragState);
+  if((!anchor && previewAnchor) || (anchor && (!previewAnchor || anchor.row!==previewAnchor.row || anchor.col!==previewAnchor.col))){
+    previewAnchor=anchor;
+    paintPreview();
+  }
+  blockDragScrollFrame=window.requestAnimationFrame(blockDragScrollStep);
+}
+function updateBlockDragAutoScroll(y){
+  const scroller=document.getElementById('blockGridPanel');
+  if(!scroller?.classList.contains('is-mobile-game-root') || !dragState?.moved){stopBlockDragAutoScroll();return;}
+  const rect=scroller.getBoundingClientRect();
+  const edge=72;
+  const velocity=y<rect.top+edge ? -Math.min(17,Math.max(5,(rect.top+edge-y)/5))
+    : y>rect.bottom-edge ? Math.min(17,Math.max(5,(y-(rect.bottom-edge))/5)) : 0;
+  blockDragScrollVelocity=velocity;
+  if(velocity && !blockDragScrollFrame) blockDragScrollFrame=window.requestAnimationFrame(blockDragScrollStep);
+  if(!velocity) stopBlockDragAutoScroll();
+}
 function handlePointerMove(event) {
   if(specialDragState && specialDragState.pointerId===event.pointerId){
     event.preventDefault();
@@ -922,9 +955,12 @@ function handlePointerMove(event) {
     return;
   }
   if (!dragState || dragState.pointerId !== event.pointerId) return;
+  dragState.lastX=event.clientX;
+  dragState.lastY=event.clientY;
   if (Math.hypot(event.clientX - dragState.startX, event.clientY - dragState.startY) > 7) dragState.moved = true;
   if (!dragState.moved) return;
   event.preventDefault();
+  updateBlockDragAutoScroll(event.clientY);
   const anchor = boardAnchorFromPointer(event.clientX, event.clientY, dragState);
   positionDragGhost(dragState.ghost, event.clientX, event.clientY, anchor, dragState);
   if ((!anchor && previewAnchor) || (anchor && (!previewAnchor || previewAnchor.row !== anchor.row || previewAnchor.col !== anchor.col))) {
