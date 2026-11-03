@@ -612,12 +612,21 @@ html.is-dragging-block-grid-special body{
   user-select:none!important;
   -webkit-user-select:none!important;
 }
-#blockGridPanel .block-grid-skill-actions .game-control-icon:not(:disabled){
+/* Specials are .block-grid-skill-button (not .game-control-icon).
+   Without touch-action:none the browser cancels captured touch pointers when
+   the user drags a Special from the sidebar in fullscreen mode. */
+#blockGridPanel .block-grid-skill-actions .block-grid-skill-button:not(:disabled){
   cursor:grab!important;
   touch-action:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  -webkit-user-drag:none!important;
 }
-#blockGridPanel .block-grid-skill-actions .game-control-icon:not(:disabled):active{
+#blockGridPanel .block-grid-skill-actions .block-grid-skill-button:not(:disabled):active{
   cursor:grabbing!important;
+}
+#blockGridPanel .block-grid-skill-actions .block-grid-skill-button span{
+  pointer-events:none!important;
 }
 #blockGridPanel .block-grid-piece.is-drag-origin{
   opacity:.14!important;
