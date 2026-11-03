@@ -488,15 +488,15 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumber,/visualViewport\?\.addEventListener\?\.\('resize'/);
   assert.match(crossnumber,/const visibleSpace=Math\.max\(240,viewportHeight-playTop-footerHeight-28\)/);
   assert.match(crossnumber,/panel\.style\.setProperty\('--crossnumber-play-height'/);
-  assert.match(crossnumberCss,/Cross Number one-screen reachability authority/);
-  assert.equal((crossnumberCss.match(/Cross Number one-screen reachability authority/g)||[]).length,1);
+  assert.match(crossnumberCss,/Cross Number desktop reachability/);
+  assert.equal((crossnumberCss.match(/Cross Number desktop reachability/g)||[]).length,1);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen\{[\s\S]*?height:100dvh!important[\s\S]*?overflow:hidden!important/);
   assert.match(crossnumberCss,/--crossnumber-fs-side:clamp\(230px,20vw,330px\)[\s\S]*?grid-template-columns:minmax\(0,4fr\) var\(--crossnumber-fs-side\)!important/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen > \.crossnumber-round-status\{[\s\S]*?display:block!important/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen > \.crossnumber-round-status\{[\s\S]*?grid-column:2!important/);
   assert.match(crossnumber,/id:'masterwork'[\s\S]*?nodes:17[\s\S]*?fixed:1/);
   assert.match(crossnumberCss,/#crossnumberGamePanel:fullscreen \.crossnumber-bank\{[\s\S]*?grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
-  assert.match(crossnumber,/const mobile=window\.matchMedia\?\.\('\(max-width:820px\)'\)\.matches[\s\S]*?if\(mobile\)[\s\S]*?removeProperty\('width'\)/);
+  assert.match(crossnumber,/const mobile=window\.matchMedia\?\.\('\(max-width:820px\), \(hover:none\) and \(pointer:coarse\)'\)\.matches[\s\S]*?if\(mobile\)[\s\S]*?refs\.board\.style\.removeProperty\(prop\)/);
   assert.match(crossnumberCss,/mobile Cross Number fit authority[\s\S]*?#crossnumberGamePanel:fullscreen \.crossnumber-play-layout\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)!important/);
   assert.match(crossnumberCss,/grid-template-columns:repeat\(var\(--crossnumber-cols,13\),minmax\(0,1fr\)\)!important/);
   assert.match(crossnumberCss,/\.crossnumber-board-scroll,[\s\S]*?overflow:hidden!important/);
