@@ -549,3 +549,13 @@ html.is-dragging-colour-sort-bottle,html.is-dragging-colour-sort-bottle body{ove
     min-height:0!important;
   }
 }
+
+/* The mobile layout uses important display rules; hidden panels must still hide. */
+@media (max-width:820px), (hover:none) and (pointer:coarse){
+  body[data-app="recreation"] #colourSortPanel #colourSortGameCard[hidden],
+  body[data-app="recreation"] #colourSortPanel #colourSortRoundCard[hidden],
+  body[data-app="recreation"] #colourSortPanel #colourSortLevelsCard[hidden],
+  body[data-app="recreation"] #colourSortPanel #colourSortProgressCard[hidden]{
+    display:none!important;
+  }
+}
