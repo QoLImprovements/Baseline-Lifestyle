@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=TRACKCOIN_FULLHEIGHT_ROUND_20261104_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_UNIFIED_20261104_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -136,10 +136,10 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=TRACKCOIN_SEPARATE_ROUND_20261104_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_UNIFIED_20261104_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=TOUCH_SPECIALS_FULLSCREEN_20261103_2/);
-  assert.match(html,/colour-sort\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(html,/block-grid\.js\?v=RECREATION_UNIFIED_20261104_1/);
+  assert.match(html,/colour-sort\.js\?v=RECREATION_UNIFIED_20261104_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -527,8 +527,8 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/One coherent pointer-drag path/);
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
-  assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_NUMBER_CARD_ACTIONS_20261104_1/);
-  assert.match(html,/crossnumber\.js\?v=DESKTOP_POINTER_DRAG_20261103_2/);
+  assert.match(html,/crossnumber\.css\?v=RECREATION_UNIFIED_20261104_1/);
+  assert.match(html,/crossnumber\.js\?v=RECREATION_UNIFIED_20261104_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);
