@@ -273,11 +273,37 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(crossnumber,/Bank Coins · \+'\+rewards\.xp\+' XP'[\s\S]*?Clean Streak Bonus/);
 });
 
+test('all standard games use a single five-control dock and separate Round sections',()=>{
+  const cases=[
+    ['pairsRoundCard','pairsRoundSummary'],
+    ['wordRoundCard','wordRoundSummary'],
+    ['make24RoundCard','make24RoundSummary'],
+    ['trackCoinRoundPanel','trackCoinSummary'],
+    ['ruleShiftRoundCard','ruleShiftRoundSummary'],
+    ['crossnumberRoundPanel','data-crossnumber-status']
+  ];
+  for(const [panelId,statusId] of cases){
+    assert.match(html,new RegExp('id="'+panelId+'"[^>]*hidden'));
+    assert.match(html,new RegExp(statusId));
+  }
+  assert.match(blockGrid,/id="blockGridRoundCard"/);
+  assert.match(blockGrid,/function renderRoundPanel\(/);
+  assert.match(colourSort,/id="colourSortRoundCard"/);
+  assert.match(core,/\['round','Round','pairsRoundCard'\]/);
+  assert.match(core,/\['round','Round','ruleShiftRoundCard'\]/);
+  assert.match(core,/\['round','Round','crossnumberRoundPanel'\]/);
+  assert.match(music,/Each game's individual actions belong to its own toolbar/);
+  assert.doesNotMatch(music,/host\.appendChild\(control\)/);
+  assert.match(nonRealmCss,/SINGLE RECREATION DOCK AUTHORITY/);
+  assert.match(nonRealmCss,/grid-template-columns:var\(--bl-icon-size,44px\) minmax\(0,1fr\) var\(--bl-icon-size,44px\) var\(--bl-icon-size,44px\)!important/);
+  assert.match(nonRealmCss,/justify-self:end!important;[\s\S]*?grid-column:4!important/);
+});
+
 test('fullscreen right rail mirrors each game windowed tabs and defaults to Game',()=>{
   assert.match(core,/const FULLSCREEN_WINDOW_TABS=Object\.freeze/);
-  assert.match(core,/detectword:\{root:'wordGameCard',tabs:\[\['game','Game'\],\['skills','Skills','wordSkillCard'\],\['tiers','Tiers','wordTierCard'\],\['progress','Progress','wordProgressCard'\]\]\}/);
-  assert.match(core,/blockgrid:\{root:'blockGridGameCard',tabs:\[\['game','Game'\],\['skills','Skills','blockGridSkillsCard'\],\['tiers','Tiers','blockGridModesCard'\],\['progress','Progress','blockGridProgressCard'\]\]\}/);
-  assert.match(core,/crossnumber:\{root:'crossnumberGamePanel',tabs:\[\['game','Game'\],\['skills','Skills','crossnumberSkillPanel'\],\['tiers','Tiers','crossnumberTierPanel'\],\['progress','Progress','crossnumberProgressPanel'\]\]\}/);
+  assert.match(core,/detectword:\{root:'wordGameCard',tabs:\[\['game','Game'\],\['round','Round','wordRoundCard'\],\['skills','Skills','wordSkillCard'\]/);
+  assert.match(core,/blockgrid:\{root:'blockGridGameCard',tabs:\[\['game','Game'\],\['round','Round','blockGridRoundCard'\],\['skills','Skills','blockGridSkillsCard'\]/);
+  assert.match(core,/crossnumber:\{root:'crossnumberGamePanel',tabs:\[\['game','Game'\],\['round','Round','crossnumberRoundPanel'\],\['skills','Skills','crossnumberSkillPanel'\]/);
   assert.match(core,/fullscreen\.setAttribute\('data-fullscreen-window-view','game'\)/);
   assert.match(core,/data-fullscreen-window-tab/);
   assert.match(core,/cloneFullscreenPanelHtml/);
@@ -443,7 +469,7 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/active\.gameOver = !hasAnyPlacement\(active\.board, active\.tray\);[\s\S]*?if\(active\.gameOver\) settleRunXp\(active\)/);
   assert.doesNotMatch(blockGrid,/awardXp\(profile, Math\.max\(1, Math\.ceil\(awardedScore \/ 5\)/);
   assert.doesNotMatch(blockGrid,/Open Space/);
-  assert.match(blockGrid,/BLOCK_TABS = Object\.freeze\(\['game','skills','modes','progress'\]\)/);
+  assert.match(blockGrid,/BLOCK_TABS = Object\.freeze\(\['game','round','skills','modes','progress'\]\)/);
   assert.match(blockGrid,/id="blockGridSkillsCard"/);
   assert.match(blockGrid,/Score-based progression[\s\S]*?10 points = 1 XP/);
   assert.doesNotMatch(blockCss,/Block Grid windowed composition \+ score progression/);
