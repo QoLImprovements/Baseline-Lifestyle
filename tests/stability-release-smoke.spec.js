@@ -718,10 +718,14 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-phase-pick/);
   await expect(page.locator('.trackcoin-pick-prompt')).toHaveText('Choose the cup');
   const trackStatus=page.locator('#trackCoinSummary');
+  // Game and Round are independent panels even in the windowed view.
+  await expect(trackStatus).toBeHidden();
+  await page.locator('#trackCoinRoundToggleBtn').click();
   await expect(trackStatus).toBeVisible();
   await expect(trackStatus.locator('.round-status-heading')).toHaveText('Round Status');
   expect(await page.locator('#trackCoinScene #trackCoinSummary').count()).toBe(0);
-  expect(await trackStatus.locator('.round-status-heading').evaluate((node)=>getComputedStyle(node).textAlign)).toBe('center');
+  await page.locator('#trackCoinGameToggleBtn').click();
+  await expect(trackStatus).toBeHidden();
   const selectableCup=page.locator('#trackCoinScene .trackcoin-cup.is-selectable').first();
   await expect(selectableCup).toBeVisible();
   await page.evaluate(()=>{
@@ -744,13 +748,16 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   }
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-resolved/);
   await expect(page.locator('#trackCoinScene')).toHaveClass(/is-phase-review/);
+  await page.locator('#trackCoinRoundToggleBtn').click();
+  await expect(trackStatus).toBeVisible();
   await expect(trackStatus.locator('.round-status-previous-heading')).toHaveText('Previous Round');
   await expect(trackStatus.locator('.round-status-previous-grid')).toContainText('Exp');
   await expect(trackStatus.locator('.round-status-previous-grid')).toContainText(/\d+ XP/);
+  await page.locator('#trackCoinGameToggleBtn').click();
   expect(recreationPageErrors).toEqual([]);
 
-  // Fullscreen geometry: the cup arena must remain the dominant LEFT surface
-  // while the live Round Status occupies the shared RIGHT information rail.
+  // Fullscreen geometry: Track the Coin fills the available LEFT height,
+  // while the right rail has independently selectable Game and Round tabs.
   await page.setViewportSize({ width:1280, height:760 });
   const trackFullscreen=page.locator('#trackCoinGamePanel [data-game-fullscreen="trackcoin"]');
   await expect(trackFullscreen).toBeVisible();
@@ -760,9 +767,15 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   // Fullscreen must expose the same information architecture as windowed mode.
   const trackFsTabs=page.locator('#trackCoinGamePanel > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
   await expect(trackFsTabs).toBeVisible();
-  await expect(trackFsTabs.getByRole('tab')).toHaveCount(4);
-  expect(await trackFsTabs.getByRole('tab').allTextContents()).toEqual(['Game','Skills','Tiers','Progress']);
+  await expect(trackFsTabs.getByRole('tab')).toHaveCount(5);
+  expect(await trackFsTabs.getByRole('tab').allTextContents()).toEqual(['Game','Round','Skills','Tiers','Progress']);
   await expect(trackFsTabs.getByRole('tab',{name:'Game',exact:true})).toHaveClass(/is-active/);
+  await expect(trackStatus).toBeHidden();
+  await trackFsTabs.getByRole('tab',{name:'Round',exact:true}).click();
+  const trackRoundPane=page.locator('#trackCoinGamePanel > .game-fullscreen-window-tabs .game-fullscreen-window-pane');
+  await expect(trackRoundPane).toContainText('Round Status');
+  await expect(trackRoundPane).toContainText('Previous Round');
+  await expect(trackRoundPane).toContainText('Winning Streak');
   await trackFsTabs.getByRole('tab',{name:'Skills',exact:true}).click();
   await expect(page.locator('#trackCoinGamePanel > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Track the Coin Skill Tree');
   await trackFsTabs.getByRole('tab',{name:'Tiers',exact:true}).click();
@@ -770,22 +783,24 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await trackFsTabs.getByRole('tab',{name:'Progress',exact:true}).click();
   await expect(page.locator('#trackCoinGamePanel > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Progress');
   await trackFsTabs.getByRole('tab',{name:'Game',exact:true}).click();
-  await expect(trackStatus).toBeVisible();
-  const [trackBoardBox,trackStatusBox,trackCardBox]=await Promise.all([
+  await expect(trackRoundPane).toBeHidden();
+  const [trackBoardBox,trackCardBox,trackSceneBox,trackLaneBox]=await Promise.all([
     page.locator('#trackCoinBoard').boundingBox(),
-    trackStatus.boundingBox(),
-    page.locator('#trackCoinGamePanel').boundingBox()
+    page.locator('#trackCoinGamePanel').boundingBox(),
+    page.locator('#trackCoinScene').boundingBox(),
+    page.locator('#trackCoinScene .trackcoin-lane').boundingBox()
   ]);
-  expect(trackBoardBox).not.toBeNull();
-  expect(trackStatusBox).not.toBeNull();
-  expect(trackCardBox).not.toBeNull();
-  expect(trackStatusBox.x).toBeGreaterThan(trackBoardBox.x+trackBoardBox.width-1);
-  expect(trackStatusBox.x+trackStatusBox.width).toBeLessThanOrEqual(trackCardBox.x+trackCardBox.width+1);
-  const trackSceneBox=await page.locator('#trackCoinScene').boundingBox();
-  expect(trackSceneBox).not.toBeNull();
-  expect(Math.abs((trackSceneBox.y+(trackSceneBox.height/2))-(trackBoardBox.y+(trackBoardBox.height/2)))).toBeLessThanOrEqual(8);
-  expect(await trackStatus.evaluate((node)=>getComputedStyle(node).alignSelf)).toBe('start');
-  expect(trackStatusBox.height).toBeLessThan(trackCardBox.height*.7);
+  for(const [name,rect] of Object.entries({trackBoardBox,trackCardBox,trackSceneBox,trackLaneBox}))
+    expect(rect,name+' must be present').not.toBeNull();
+  expect(trackBoardBox.width).toBeGreaterThan(trackCardBox.width*.65);
+  expect(trackBoardBox.height).toBeGreaterThan(trackCardBox.height*.85);
+  expect(trackSceneBox.height).toBeGreaterThan(trackCardBox.height*.80);
+  expect(trackLaneBox.height).toBeGreaterThan(trackCardBox.height*.65);
+  expect(Math.abs((trackSceneBox.y+trackSceneBox.height/2)-(trackBoardBox.y+trackBoardBox.height/2))).toBeLessThanOrEqual(8);
+  const cupBox=await page.locator('#trackCoinScene .trackcoin-cup').first().boundingBox();
+  expect(cupBox).not.toBeNull();
+  expect(cupBox.y).toBeGreaterThan(trackLaneBox.y+trackLaneBox.height*.15);
+  expect(cupBox.y+cupBox.height).toBeLessThan(trackLaneBox.y+trackLaneBox.height*.85);
   expect(await page.locator('#trackCoinGamePanel .game-window-actions').evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
