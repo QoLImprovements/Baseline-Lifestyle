@@ -94,6 +94,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   let trackCoinState = null;
   let trackCoinRoundToken = 0;
   let trackCoinAnimationFrame = 0;
+  let trackCoinStageObserver = null;
   let trackCoinShuffleTimer = 0;
   let trackCoinOpenPanel = 'trackCoinGamePanel';
   let ruleShiftOpenPanel = 'ruleShiftGameCard';
@@ -3398,6 +3399,29 @@ if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
     }).join('');
     refs.trackCoinSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Read ' + profile.skills.read + ' · Banker ' + profile.skills.banker + ' · Flow ' + profile.skills.flow + ' · Discipline ' + profile.skills.discipline + ' · Pace Control -' + (profile.skills.steal * 4) + '%</span><span class="inline-note">Unspent skill points: ' + profile.skillPoints + '</span>';
   }
+  // The game uses pixel-based cup motion. Centre that whole motion band in
+  // the available arena instead of leaving the cups pinned to its top edge.
+  // The same measurement is used for windowed and fullscreen presentations.
+  function centreTrackCoinStage(){
+    const lane=refs.trackCoinBoard?.querySelector('.trackcoin-lane');
+    if(trackCoinStageObserver){trackCoinStageObserver.disconnect();trackCoinStageObserver=null;}
+    if(!lane) return;
+    const update=function(){
+      if(!lane.isConnected)return;
+      const height=lane.getBoundingClientRect().height;
+      if(height<1)return;
+      const offset=Math.max(0,Math.min(450,Math.round((height-315)/2)));
+      lane.style.setProperty('--trackcoin-stage-offset',offset+'px');
+    };
+    update();
+    if(typeof ResizeObserver==='function'){
+      trackCoinStageObserver=new ResizeObserver(update);
+      trackCoinStageObserver.observe(lane);
+    }else{
+      window.requestAnimationFrame(update);
+    }
+  }
+
   function renderTrackCoin(){
     if(!refs.trackCoinBoard || !refs.trackCoinTierSelectList || !refs.trackCoinXpFill || !refs.trackCoinXpMeta || !refs.trackCoinLevelHeading || !refs.trackCoinCoinsValue || !refs.trackCoinTierValue || !refs.trackCoinUnlockedTierValue || !refs.trackCoinStreakValue || !refs.trackCoinStats || !refs.trackCoinRpgState || !refs.trackCoinSkillPointsValue) return;
     const profile = profiles.trackcoin;
@@ -3477,6 +3501,7 @@ if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
     const pickPrompt=trackCoinState.phase==='pick'&&!trackCoinState.resolved ? '<div class="trackcoin-pick-prompt">Choose the cup</div>' : '';
     refs.trackCoinBoard.innerHTML = '<div id="trackCoinScene" class="trackcoin-scene' + phaseClass + (trackCoinState.phase === 'hide' ? ' is-busy' : '') + (trackCoinState.resolved ? ' is-resolved' : '') + '"><div class="trackcoin-status"><strong>' + escapeHtml(tier.name) + '</strong><span class="inline-note">Containers ' + tier.containers + ' · ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '</span></div>' + resumeHtml + '<div class="trackcoin-lane" data-cups="' + tier.containers + '">' + pickPrompt + coinHtml + positions + '</div></div>';
     bindTrackCoinCupChoices();
+    centreTrackCoinStage();
     ensureGamePlayContract();
   }
   function renderTrackCoinSummary(){
