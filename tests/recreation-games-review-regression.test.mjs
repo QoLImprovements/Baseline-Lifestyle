@@ -325,7 +325,7 @@ test('fullscreen layouts use bounded side panels except the deliberately indepen
 test('Recreation preserves the newest unique themes and the last effective low-fatigue music without reviving rejected originals',()=>{
   const ids=['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
   const modernMatch=music.match(/var TRACKS = (\{[\s\S]*?\});\s+var RECENT_TRACKS/);
-  const recoveredMatch=music.match(/var RECENT_TRACKS = (\{[\s\S]*?\});\s+var RECENT_PROFILES/);
+  const recoveredMatch=music.match(/var RECENT_TRACKS = (\{[^\n]*\});/);
   assert.ok(modernMatch&&recoveredMatch,'Both recent song generations must be present');
   const modern=JSON.parse(modernMatch[1]),recovered=JSON.parse(recoveredMatch[1]);
   assert.deepEqual(Object.keys(modern),ids);
@@ -336,6 +336,19 @@ test('Recreation preserves the newest unique themes and the last effective low-f
     assert.equal(recovered[id].bars,40,'Keep the active late October song for '+id);
     assert.equal(recovered[id].sections.length,5,'Never return to the earlier seven-section rejected composition for '+id);
   }
+  // Previous final October versions included repeated transposed themes.
+  // The real playback motifs must now be different even with keys normalized.
+  const distinctMatch=music.match(/var DISTINCT_RECOVERED_MELODIES = (\{[^\n]*\});/);
+  assert.ok(distinctMatch,'Distinct written melody lines required for formerly cloned songs');
+  const distinctive=JSON.parse(distinctMatch[1]);
+  assert.deepEqual(Object.keys(distinctive).sort(),['detectword','crossnumber','ruleshift','block-grid','colour-sort'].sort());
+  const contours=Object.entries(recovered).map(([game,score])=>
+    score.sections.map((section,index)=>{
+      const motif=distinctive[game]?.[index]||section.motif;
+      return motif.map(note=>note-motif[0]).join(',');
+    }).join('/')
+  );
+  assert.equal(new Set(contours).size,9,'Restored songs must differ in melody, not merely tempo, key or bass');
   const identifiers=ids.flatMap(id=>id==='ninja'?[id+'-nov03-unique']:[id+'-oct24-recovered',id+'-nov03-unique']);
   assert.equal(new Set(identifiers).size,19,'Every song is assigned once and to its own game');
   assert.equal(new Set(ids.map(id=>JSON.stringify(modern[id]))).size,10,'November songs may not be tempo-only clones');
