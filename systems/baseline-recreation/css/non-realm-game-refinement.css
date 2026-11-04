@@ -3934,3 +3934,18 @@ html body[data-app="recreation"] :is(
     width:100%!important;
   }
 }
+
+/* Tab selection must truly remove inactive canvases. Some old game-root
+   rules force display:grid!important even when the card has [hidden],
+   defeating the browser's normal hidden attribute. */
+html body[data-app="recreation"] :is(
+  #pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,
+  #blockGridPanel,#colourSortPanel,#crossnumberPanel
+) :is(
+  #pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,
+  #ruleShiftGameCard,#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel,
+  #pairsRoundCard,#wordRoundCard,#make24RoundCard,#trackCoinRoundPanel,
+  #ruleShiftRoundCard,#blockGridRoundCard,#colourSortRoundCard,#crossnumberRoundPanel
+)[hidden]{
+  display:none!important;
+}
