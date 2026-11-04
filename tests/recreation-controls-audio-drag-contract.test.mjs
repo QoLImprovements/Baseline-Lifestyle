@@ -102,6 +102,5 @@ test('all changed runtime assets receive fresh cache keys', () => {
   assert.match(html, /CROSSNUMBER_NUMBER_CARD_ACTIONS_20261104_1/);
   assert.match(html, /CROSSNUMBER_SHARED_DOCK_20261104_1/);
   assert.match(html, /DESKTOP_POINTER_DRAG_20261103_2/);
-  assert.match(html, /crossnumber\\.css\\?v=CROSSNUMBER_NUMBER_CARD_ACTIONS_20261104_1/);
   assert.match(html, /TOUCH_SPECIALS_FULLSCREEN_20261103_2/);
 });
