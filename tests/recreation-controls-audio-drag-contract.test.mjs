@@ -55,7 +55,8 @@ test('desktop game controls form one dock while phones retain their own layout',
   assert.match(dock, /\.games-settings-trigger\{[\s\S]*?grid-column:4!important;grid-row:1/);
   assert.match(dock, /\.games-music-quick-toggle\{[\s\S]*?grid-column:5!important;grid-row:1/);
   assert.match(dock, /\.game-fullscreen-toggle\{[\s\S]*?grid-column:6!important;grid-row:1/);
-  assert.match(music, /host\.appendChild\(control\)/);
+  assert.doesNotMatch(music, /host\.appendChild\(control\)/);
+  assert.match(music, /specifics\.appendChild\(control\)/);
 });
 
 test('Block Grid fullscreen has a bounded board, no phantom tab grid item and touch-draggable Specials', () => {
