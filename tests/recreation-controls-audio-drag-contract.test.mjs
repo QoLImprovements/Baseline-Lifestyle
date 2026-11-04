@@ -12,21 +12,25 @@ const crossCss = at('systems/baseline-recreation/puzzles/crossnumber/css/crossnu
 const crossJs = at('systems/baseline-recreation/puzzles/crossnumber/js/crossnumber.js');
 const html = at('systems/baseline-recreation/baseline-recreation.html');
 
-test('the original ten three-minute, seven-section compositions are preserved and unique', () => {
-  const match = music.match(/var TRACKS = (\{[\s\S]*?\});\s+var ARRANGEMENTS/);
-  assert.ok(match, 'Original per-game compositions should be explicitly retained');
-  const tracks = JSON.parse(match[1]);
-  const gameIds = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'block-grid', 'colour-sort', 'jigsaw', 'crossnumber', 'ninja'];
-  assert.deepEqual(Object.keys(tracks), gameIds);
-  assert.equal(new Set(gameIds.map(id => JSON.stringify(tracks[id]))).size, gameIds.length);
-  for (const id of gameIds) {
-    assert.equal(tracks[id].sections.length, 7, id + ' should have seven distinct musical sections');
-    assert.equal(tracks[id].sections.reduce((n, section) => n + section.bars, 0), tracks[id].bars);
-    assert.equal(tracks[id].bars * 4 * 60 / tracks[id].bpm, 180, id + ' should remain three minutes');
-  }
-  assert.match(music, /var ARRANGEMENTS = \{/);
-  assert.match(music, /function sectionAt\(/);
-  assert.match(music, /function scheduleBar\(/);
+test('restore only the effective late-October gentle tracks alongside all ten November compositions', () => {
+  const modernMatch=music.match(/var TRACKS = (\{[\s\S]*?\});\s+var RECENT_TRACKS/);
+  const recoveredMatch=music.match(/var RECENT_TRACKS = (\{[\s\S]*?\});\s+var RECENT_PROFILES/);
+  assert.ok(modernMatch&&recoveredMatch,'Both generations of recent songs should coexist');
+  const modern=JSON.parse(modernMatch[1]),recovered=JSON.parse(recoveredMatch[1]);
+  const ids=['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
+  assert.deepEqual(Object.keys(modern),ids);
+  assert.deepEqual(Object.keys(recovered),ids.filter(id=>id!=='ninja'));
+  assert.equal(new Set(Object.values(modern).map(score=>JSON.stringify(score))).size,10);
+  assert.equal(new Set(Object.values(recovered).map(score=>JSON.stringify(score))).size,9);
+  ids.forEach(id=>{
+    assert.equal(modern[id].phrases.length,4,id+' should retain its own new song');
+    if(id!=='ninja')assert.equal(recovered[id].sections.length,5,id+' should use the final October theme, not the older seven-section one');
+  });
+  assert.match(music,/function scheduleRecovered\(/);
+  assert.match(music,/function scheduleModern\(/);
+  assert.match(music,/activeSongIndex=\(activeSongIndex\+1\)%songs\.length/);
+  assert.match(music,/function catchUpTo\(/);
+  assert.doesNotMatch(music,/var ARRANGEMENTS =/);
 });
 
 test('desktop game controls form one dock while phones retain their own layout', () => {
