@@ -133,7 +133,7 @@ test('Block Grid and Colour Sort asset URLs are versioned for the new palette',a
     read(files.hub),read(files.blockJs),read(files.colourJs)
   ]);
   assert.match(blockJs,/block-grid-overview\.svg\?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2/);
-  assert.match(blockJs,/block-grid\.css\?v=BLOCK_FULLSCREEN_TOUCH_FIT_20261103_2/);
+  assert.match(blockJs,/block-grid\.css\?v=RECREATION_UNIFIED_20261104_1/);
   assert.match(colourJs,/colour-sort-overview\.svg\?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2/);
   assert.match(colourJs,/colour-sort\.css\?v=RECREATION_UNIFIED_20261104_1/);
   assert.match(hub,/block-grid\.js\?v=RECREATION_UNIFIED_20261104_1/);
