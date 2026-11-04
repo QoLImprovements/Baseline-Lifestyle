@@ -865,8 +865,11 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
 
   const wordTabs=page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
   await expect(wordTabs).toBeVisible();
-  expect(await wordTabs.getByRole('tab').allTextContents()).toEqual(['Game','Skills','Tiers','Progress']);
+  expect(await wordTabs.getByRole('tab').allTextContents()).toEqual(['Game','Round','Skills','Tiers','Progress']);
   await expect(wordTabs.getByRole('tab',{name:'Game',exact:true})).toHaveClass(/is-active/);
+  await wordTabs.getByRole('tab',{name:'Round',exact:true}).click();
+  await expect(page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Round Status');
+  await wordTabs.getByRole('tab',{name:'Game',exact:true}).click();
   await wordTabs.getByRole('tab',{name:'Skills',exact:true}).click();
   await expect(page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Detect The Word Skill Tree');
   await wordTabs.getByRole('tab',{name:'Tiers',exact:true}).click();
