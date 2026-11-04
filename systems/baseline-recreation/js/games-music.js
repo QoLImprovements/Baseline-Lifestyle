@@ -374,7 +374,7 @@
     if(!ctx || !settings.enabled || !activeGame || !currentSong())return;
     catchUpTo(ctx.currentTime);
     if(nextBarTime<ctx.currentTime+0.04)nextBarTime=ctx.currentTime+0.04;
-    while(nextBarTime<ctx.currentTime+SCHEDULE_AHEAD_SECONDS){
+    while(nextBarTime < ctx.currentTime + SCHEDULE_AHEAD_SECONDS){
       var song=currentSong();
       if(!song)break;
       scheduleBar(song,barIndex,nextBarTime);
