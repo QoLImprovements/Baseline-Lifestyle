@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  var MIX_VERSION = 7;
+  var MIX_VERSION = 8;
   var DEFAULTS = { enabled:true, volume:0.58 };
   var MUSIC_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
   var ctx = null;
@@ -212,167 +212,171 @@
   }
 
 
-  // The original seven-section, three-minute compositions from before
-  // the 3 November replacement. Every game owns exactly one distinct song.
-  // Dynamics and arrangement evolve within its own song; no game borrows
-  // another game's melody or merely replays a speed-shifted copy.
-  var TRACKS = {"pairs":{"bpm":92,"bars":69,"sections":[{"bars":6,"prog":[[60,64,67],[57,60,64]],"motif":[72,76,74,71],"density":4,"style":"quiet"},{"bars":12,"prog":[[60,64,67],[57,60,64],[65,69,72],[55,59,62]],"motif":[72,76,74,79,76,72,74,71],"density":8,"style":"warm"},{"bars":12,"prog":[[62,65,69],[59,62,67],[64,67,71],[57,60,64]],"motif":[74,77,76,81,79,76,72,74],"density":8,"style":"full"},{"bars":8,"prog":[[53,57,60],[55,59,62],[57,60,64]],"motif":[69,72,71,74,72,69],"density":6,"style":"quiet"},{"bars":12,"prog":[[65,69,72],[60,64,69],[62,65,69],[55,60,64]],"motif":[76,79,81,84,81,79,76,74],"density":8,"style":"lift"},{"bars":13,"prog":[[60,64,67],[57,60,64],[65,69,72],[55,59,62]],"motif":[72,74,76,79,81,76,74,71],"density":8,"style":"full"},{"bars":6,"prog":[[60,64,67],[57,60,64],[60,64,67]],"motif":[76,74,72,71],"density":4,"style":"quiet"}]},"detectword":{"bpm":104,"bars":78,"sections":[{"bars":8,"prog":[[50,57,62],[48,55,60]],"motif":[74,73,71,69],"density":4,"style":"quiet"},{"bars":14,"prog":[[50,57,62],[48,55,60],[53,60,65],[46,53,58]],"motif":[74,73,74,69,71,74,76,71],"density":8,"style":"warm"},{"bars":14,"prog":[[52,59,64],[49,56,61],[55,62,67],[48,55,60]],"motif":[76,74,71,73,78,76,74,69],"density":8,"style":"full"},{"bars":10,"prog":[[45,52,57],[47,54,59],[48,55,60]],"motif":[69,71,73,72,69],"density":5,"style":"quiet"},{"bars":14,"prog":[[53,60,65],[50,57,62],[55,62,67],[46,53,58]],"motif":[74,78,76,73,71,76,79,74],"density":8,"style":"lift"},{"bars":12,"prog":[[50,57,62],[48,55,60],[53,60,65],[46,53,58]],"motif":[74,73,76,71,78,74,76,71],"density":8,"style":"full"},{"bars":6,"prog":[[50,57,62],[48,55,60],[50,57,62]],"motif":[74,71,69],"density":4,"style":"quiet"}]},"make24":{"bpm":120,"bars":90,"sections":[{"bars":8,"prog":[[48,55,60,64],[50,57,62,65]],"motif":[60,67,64,72,62,69,65,74],"density":8,"style":"quiet"},{"bars":16,"prog":[[48,55,60,64],[50,57,62,65],[52,59,64,67],[47,55,59,62]],"motif":[60,67,64,72,62,69,65,74,64,71,67,76,59,67,62,71],"density":16,"style":"drive"},{"bars":16,"prog":[[53,60,65,69],[50,57,62,65],[55,62,67,71],[52,59,64,67]],"motif":[65,72,69,77,67,74,71,79,69,76,72,81,64,72,67,76],"density":16,"style":"full"},{"bars":12,"prog":[[45,52,57,60],[47,54,59,62],[48,55,60,64]],"motif":[57,60,64,67,62,65,69,72],"density":8,"style":"quiet"},{"bars":16,"prog":[[52,59,64,67],[53,60,65,69],[50,57,62,65],[55,62,67,71]],"motif":[64,71,67,76,65,72,69,77,67,74,71,79,72,76,79,83],"density":16,"style":"lift"},{"bars":14,"prog":[[48,55,60,64],[52,59,64,67],[50,57,62,65],[47,55,59,62]],"motif":[60,64,67,72,62,65,69,74,64,67,71,76,59,62,67,71],"density":16,"style":"drive"},{"bars":8,"prog":[[48,55,60,64],[50,57,62,65],[48,55,60,64]],"motif":[67,64,60,62,60],"density":8,"style":"quiet"}]},"trackcoin":{"bpm":132,"bars":99,"sections":[{"bars":8,"prog":[[45,52,57],[43,50,55]],"motif":[69,72,71,74],"density":4,"style":"quiet"},{"bars":18,"prog":[[45,52,57],[45,52,57],[43,50,55],[48,55,60]],"motif":[69,72,76,72,71,74,79,74],"density":8,"style":"drive"},{"bars":18,"prog":[[48,55,60],[46,53,58],[43,50,55],[50,57,62]],"motif":[72,76,81,76,74,79,83,79],"density":8,"style":"full"},{"bars":14,"prog":[[41,48,53],[43,50,55],[45,52,57]],"motif":[64,67,69,72,69,67],"density":6,"style":"quiet"},{"bars":18,"prog":[[50,57,62],[48,55,60],[46,53,58],[43,50,55]],"motif":[76,81,84,79,74,79,83,86],"density":8,"style":"lift"},{"bars":15,"prog":[[45,52,57],[43,50,55],[48,55,60],[50,57,62]],"motif":[69,74,76,72,79,74,81,76],"density":8,"style":"drive"},{"bars":8,"prog":[[45,52,57],[43,50,55],[45,52,57]],"motif":[74,72,69],"density":4,"style":"quiet"}]},"ruleshift":{"bpm":124,"bars":93,"sections":[{"bars":8,"prog":[[48,55,60],[51,58,63]],"motif":[72,67,70,74],"density":4,"style":"quiet"},{"bars":17,"prog":[[48,55,60],[51,58,63],[46,53,58],[49,56,61]],"motif":[72,75,67,70,74,65,69,76],"density":8,"style":"drive"},{"bars":17,"prog":[[50,57,62],[53,60,65],[47,54,59],[51,58,63]],"motif":[76,69,65,74,70,75,67,72],"density":8,"style":"full"},{"bars":13,"prog":[[45,52,57],[48,55,60],[50,57,62]],"motif":[67,69,72,70,65],"density":5,"style":"quiet"},{"bars":17,"prog":[[53,60,65],[49,56,61],[51,58,63],[46,53,58]],"motif":[79,72,75,67,74,70,76,69],"density":8,"style":"lift"},{"bars":13,"prog":[[48,55,60],[46,53,58],[51,58,63],[49,56,61]],"motif":[72,67,75,70,65,74,76,69],"density":8,"style":"drive"},{"bars":8,"prog":[[48,55,60],[51,58,63],[48,55,60]],"motif":[72,70,67],"density":4,"style":"quiet"}]},"block-grid":{"bpm":108,"bars":81,"sections":[{"bars":8,"prog":[[48,55,60,64],[50,57,62,65]],"motif":[67,72,74,76,72,79,76,74],"density":8,"style":"quiet"},{"bars":14,"prog":[[48,55,60,64],[52,59,64,67],[45,52,57,60],[50,57,62,65]],"motif":[67,72,76,72,69,74,77,74],"density":8,"style":"drive"},{"bars":14,"prog":[[53,60,65,69],[50,57,62,65],[55,62,67,71],[48,55,60,64]],"motif":[69,72,77,74,71,76,79,76],"density":8,"style":"full"},{"bars":10,"prog":[[45,52,57,60],[47,54,59,62],[48,55,60,64]],"motif":[64,67,69,72,67,64],"density":6,"style":"quiet"},{"bars":14,"prog":[[52,59,64,67],[53,60,65,69],[50,57,62,65],[55,62,67,71]],"motif":[71,76,79,76,72,77,81,77],"density":8,"style":"lift"},{"bars":13,"prog":[[48,55,60,64],[50,57,62,65],[52,59,64,67],[47,54,59,62]],"motif":[67,72,74,79,76,72,69,74],"density":8,"style":"drive"},{"bars":8,"prog":[[48,55,60,64],[45,52,57,60],[48,55,60,64]],"motif":[72,69,67,64],"density":4,"style":"quiet"}]},"colour-sort":{"bpm":100,"bars":75,"sections":[{"bars":8,"prog":[[50,57,62,66],[47,54,59,62]],"motif":[69,74,78,81,78,74,71,74],"density":8,"style":"quiet"},{"bars":13,"prog":[[50,57,62,66],[54,61,66,69],[47,54,59,62],[52,59,64,67]],"motif":[69,74,78,81,76,81,78,74],"density":8,"style":"warm"},{"bars":13,"prog":[[55,62,67,71],[52,59,64,67],[57,64,69,73],[50,57,62,66]],"motif":[71,74,79,83,81,78,76,74],"density":8,"style":"full"},{"bars":9,"prog":[[47,54,59,62],[50,57,62,66],[52,59,64,67]],"motif":[66,69,71,74,71,69],"density":6,"style":"quiet"},{"bars":13,"prog":[[54,61,66,69],[57,64,69,73],[52,59,64,67],[55,62,67,71]],"motif":[74,78,81,85,81,78,76,81],"density":8,"style":"lift"},{"bars":12,"prog":[[50,57,62,66],[52,59,64,67],[47,54,59,62],[55,62,67,71]],"motif":[69,74,76,81,78,74,71,76],"density":8,"style":"warm"},{"bars":7,"prog":[[50,57,62,66],[47,54,59,62],[50,57,62,66]],"motif":[74,71,69,66],"density":4,"style":"quiet"}]},"jigsaw":{"bpm":88,"bars":66,"sections":[{"bars":8,"prog":[[55,62,67,71],[52,59,64,67]],"motif":[74,79,76,71],"density":4,"style":"quiet"},{"bars":11,"prog":[[55,62,67,71],[52,59,64,67],[48,55,60,64],[50,57,62,66]],"motif":[74,79,76,83,79,76],"density":6,"style":"warm"},{"bars":11,"prog":[[57,64,69,72],[53,60,65,69],[55,62,67,71],[50,57,62,66]],"motif":[76,81,79,84,81,79],"density":6,"style":"full"},{"bars":8,"prog":[[48,55,60,64],[50,57,62,66],[52,59,64,67]],"motif":[72,74,71,69],"density":4,"style":"quiet"},{"bars":11,"prog":[[53,60,65,69],[55,62,67,71],[57,64,69,72],[52,59,64,67]],"motif":[77,81,84,81,79,76],"density":6,"style":"lift"},{"bars":10,"prog":[[55,62,67,71],[52,59,64,67],[48,55,60,64],[50,57,62,66]],"motif":[74,76,79,83,79,76],"density":6,"style":"warm"},{"bars":7,"prog":[[55,62,67,71],[52,59,64,67],[55,62,67,71]],"motif":[79,76,74,71],"density":4,"style":"quiet"}]},"crossnumber":{"bpm":112,"bars":84,"sections":[{"bars":8,"prog":[[48,55,60,64],[51,58,63,67]],"motif":[72,75,67,70,74,79,70,75],"density":8,"style":"quiet"},{"bars":15,"prog":[[48,55,60,64],[51,58,63,67],[53,60,65,69],[46,53,58,62]],"motif":[72,75,79,70,74,77,69,74],"density":8,"style":"drive"},{"bars":15,"prog":[[50,57,62,65],[53,60,65,69],[55,62,67,70],[48,55,60,64]],"motif":[74,77,81,72,76,79,71,76],"density":8,"style":"full"},{"bars":10,"prog":[[45,52,57,60],[48,55,60,64],[50,57,62,65]],"motif":[69,72,75,71,74],"density":5,"style":"quiet"},{"bars":15,"prog":[[53,60,65,69],[55,62,67,70],[51,58,63,67],[48,55,60,64]],"motif":[77,81,84,75,79,82,74,79],"density":8,"style":"lift"},{"bars":13,"prog":[[48,55,60,64],[50,57,62,65],[46,53,58,62],[51,58,63,67]],"motif":[72,75,79,74,70,77,81,75],"density":8,"style":"drive"},{"bars":8,"prog":[[48,55,60,64],[51,58,63,67],[48,55,60,64]],"motif":[75,72,70,67],"density":4,"style":"quiet"}]},"ninja":{"bpm":96,"bars":72,"sections":[{"bars":8,"prog":[[48,55,60,64],[45,52,57,60]],"motif":[72,74,76,72],"density":4,"style":"quiet"},{"bars":14,"prog":[[48,55,60,64],[45,52,57,60],[53,60,65,69],[55,62,67,71]],"motif":[72,74,76,79,81,79,76,74],"density":8,"style":"warm"},{"bars":14,"prog":[[50,57,62,65],[47,54,59,62],[55,62,67,71],[52,59,64,67]],"motif":[74,76,79,83,81,79,76,72],"density":8,"style":"full"},{"bars":10,"prog":[[41,48,53,57],[43,50,55,59],[45,52,57,60]],"motif":[65,67,69,72,69,67],"density":6,"style":"quiet"},{"bars":14,"prog":[[53,60,65,69],[55,62,67,71],[48,55,60,64],[50,57,62,65]],"motif":[76,79,81,84,83,81,79,76],"density":8,"style":"lift"},{"bars":8,"prog":[[48,55,60,64],[53,60,65,69],[45,52,57,60],[55,62,67,71]],"motif":[72,76,79,83,81,79,76,74],"density":8,"style":"full"},{"bars":4,"prog":[[48,55,60,64],[45,52,57,60],[48,55,60,64]],"motif":[76,74,72],"density":4,"style":"quiet"}]}};
 
-  var ARRANGEMENTS = {
-    pairs:{lead:'mallet',alternate:'flute',bass:0.72,melody:0.88,drums:0.55},
-    detectword:{lead:'flute',alternate:'pluck',bass:0.74,melody:0.93,drums:0.50},
-    make24:{lead:'bell',alternate:'pluck',bass:1.12,melody:0.98,drums:0.88},
-    trackcoin:{lead:'pluck',alternate:'mallet',bass:1.10,melody:1.0,drums:1.08},
-    ruleshift:{lead:'lead',alternate:'pluck',bass:1.10,melody:0.98,drums:1.12},
-    'block-grid':{lead:'pluck',alternate:'lead',bass:0.92,melody:0.92,drums:0.78},
-    'colour-sort':{lead:'flute',alternate:'mallet',bass:0.72,melody:0.90,drums:0.60},
-    jigsaw:{lead:'bell',alternate:'flute',bass:0.55,melody:0.78,drums:0.30},
-    crossnumber:{lead:'mallet',alternate:'bell',bass:0.92,melody:0.96,drums:0.84},
-    ninja:{lead:'lead',alternate:'pluck',bass:1.18,melody:1.05,drums:1.0}
-  };
-  var SOFT_TIMBRE_GAMES = new Set(['pairs','detectword','colour-sort','jigsaw']);
-  function sectionAt(track, bar){
-    var cursor = 0;
-    for(var i=0;i<track.sections.length;i++){
-      var section = track.sections[i];
-      if(bar < cursor + section.bars) return { section:section, local:bar-cursor, index:i };
-      cursor += section.bars;
+  // Approved source generations:
+  // - NOVEMBER_SONGS: individually composed 3 November 2026 major-key themes.
+  // - OCTOBER_SONGS: the final *effective* 24 October low-fatigue themes.
+  //   These are intentionally NOT the older 7-section themes left underneath
+  //   several Object.assign overrides, which the player rejected as harsh.
+  // Each distinct score is assigned to one game only. Tempo is part of a
+  // composition, never a method of pretending the same song is a new song.
+  var TRACKS = {"pairs":{"bpm":110,"bars":32,"lead":"mallet","chords":[[60,64,67],[55,59,62],[53,57,60],[60,64,67]],"beats":[0,0.75,1.5,2.5,3.25],"phrases":[[72,76,79,76,74],[71,74,79,81,79],[72,69,72,77,76],[72,79,76,74,72]],"bassBeats":[0,2.5],"kickBeats":[0,2],"pad":0.01,"leadLevel":0.012},"detectword":{"bpm":124,"bars":40,"lead":"pluck","chords":[[62,66,69],[57,61,64],[55,59,62],[62,66,69]],"beats":[0,0.5,1.75,2.5,3],"phrases":[[74,78,76,81,78],[76,73,71,76,74],[71,74,79,76,74],[78,76,74,73,74]],"bassBeats":[0,1.5,3],"kickBeats":[0,2.5],"pad":0.007,"leadLevel":0.011},"make24":{"bpm":132,"bars":32,"lead":"bell","chords":[[52,56,59],[57,61,64],[59,63,66],[52,56,59]],"beats":[0,0.5,1,1.5,2,2.5,3,3.5],"phrases":[[64,68,71,76,71,68,76,80],[69,73,76,81,76,73,69,76],[71,75,78,83,78,75,71,78],[76,80,83,80,76,71,68,64]],"bassBeats":[0,2],"kickBeats":[0,2],"pad":0.006,"leadLevel":0.009},"trackcoin":{"bpm":122,"bars":36,"lead":"pluck","chords":[[55,59,62],[60,64,67],[62,66,69],[55,59,62]],"beats":[0,0.75,1.5,2,3.25],"phrases":[[67,74,71,76,74],[72,79,76,74,72],[74,78,81,78,74],[79,74,71,69,67]],"bassBeats":[0,1,2.5],"kickBeats":[0,1.5,3],"pad":0.007,"leadLevel":0.01},"ruleshift":{"bpm":118,"bars":32,"lead":"lead","chords":[[57,61,64],[62,66,69],[64,68,71],[57,61,64]],"beats":[0,1,1.5,2.75,3.5],"phrases":[[69,73,76,81,78],[74,78,81,76,74],[76,80,83,78,76],[81,76,73,71,69]],"bassBeats":[0,2.75],"kickBeats":[0,2.75],"pad":0.009,"leadLevel":0.01},"block-grid":{"bpm":108,"bars":40,"lead":"pluck","chords":[[50,54,57],[55,59,62],[57,61,64],[50,54,57]],"beats":[0,0.75,1.5,2.5,3],"phrases":[[62,66,69,74,69],[67,71,74,76,71],[69,73,76,73,69],[74,69,66,64,62]],"bassBeats":[0,2],"kickBeats":[0,2],"pad":0.009,"leadLevel":0.012},"colour-sort":{"bpm":114,"bars":32,"lead":"flute","chords":[[53,57,60],[58,62,65],[60,64,67],[53,57,60]],"beats":[0,0.5,1.25,2,3],"phrases":[[65,69,72,74,72],[70,74,77,74,70],[72,76,79,76,72],[77,74,72,69,65]],"bassBeats":[0,2.5],"kickBeats":[0],"pad":0.01,"leadLevel":0.013},"jigsaw":{"bpm":106,"bars":28,"lead":"bell","chords":[[51,55,58],[56,60,63],[58,62,65],[51,55,58]],"beats":[0,1,2.5],"phrases":[[67,70,75],[68,72,75],[70,74,77],[75,72,70]],"bassBeats":[0,2],"kickBeats":[0,2],"pad":0.011,"leadLevel":0.012,"legato":true},"crossnumber":{"bpm":126,"bars":36,"lead":"mallet","chords":[[59,63,66],[52,56,59],[54,58,61],[59,63,66]],"beats":[0,0.5,1.5,2,3,3.5],"phrases":[[71,75,78,75,73,71],[68,71,75,78,75,71],[70,73,78,82,78,73],[78,75,73,71,66,71]],"bassBeats":[0,1.5,3],"kickBeats":[0,2.5],"pad":0.007,"leadLevel":0.011},"ninja":{"bpm":136,"bars":40,"lead":"lead","chords":[[48,52,55],[53,57,60],[55,59,62],[48,52,55]],"beats":[0,0.5,1.25,2,2.5,3,3.5],"phrases":[[72,76,79,84,79,76,72],[77,81,84,81,77,72,69],[79,83,86,83,79,74,71],[84,79,76,79,76,72,72]],"bassBeats":[0,1,2,3],"kickBeats":[0,1.5,2.5],"pad":0.008,"leadLevel":0.012}};
+  var RECENT_TRACKS = {"pairs":{"bpm":92,"bars":40,"sections":[{"bars":8,"prog":[[48,52,55],[53,57,60],[55,59,62],[48,52,55]],"motif":[60,64,67,64],"density":4,"style":"warm"},{"bars":8,"prog":[[53,57,60],[48,52,55],[55,59,62],[48,52,55]],"motif":[65,67,69,67,64,62],"density":6,"style":"warm"},{"bars":8,"prog":[[48,52,55],[55,59,62],[53,57,60]],"motif":[60,62,64,67],"density":4,"style":"quiet"},{"bars":8,"prog":[[55,59,62],[53,57,60],[48,52,55]],"motif":[67,69,72,69,67,64],"density":6,"style":"warm"},{"bars":8,"prog":[[48,52,55],[53,57,60],[48,52,55]],"motif":[60,64,67,64],"density":4,"style":"quiet"}]},"detectword":{"bpm":94,"bars":40,"sections":[{"bars":8,"prog":[[50,54,57],[55,59,62],[57,61,64],[50,54,57]],"motif":[62,66,69,66],"density":4,"style":"warm"},{"bars":8,"prog":[[55,59,62],[50,54,57],[57,61,64],[50,54,57]],"motif":[67,69,71,69,66,64],"density":6,"style":"warm"},{"bars":8,"prog":[[50,54,57],[57,61,64],[55,59,62]],"motif":[62,64,66,69],"density":4,"style":"quiet"},{"bars":8,"prog":[[57,61,64],[55,59,62],[50,54,57]],"motif":[69,71,74,71,69,66],"density":6,"style":"warm"},{"bars":8,"prog":[[50,54,57],[55,59,62],[50,54,57]],"motif":[62,66,69,66],"density":4,"style":"quiet"}]},"make24":{"bpm":96,"bars":40,"sections":[{"bars":8,"prog":[[48,52,55],[55,59,62],[53,57,60],[48,52,55]],"motif":[60,64,67,64],"density":4,"style":"warm"},{"bars":8,"prog":[[55,59,62],[53,57,60],[48,52,55],[55,59,62]],"motif":[67,69,72,69,67,64],"density":6,"style":"warm"},{"bars":8,"prog":[[48,52,55],[53,57,60],[55,59,62]],"motif":[60,62,64,67],"density":4,"style":"quiet"},{"bars":8,"prog":[[53,57,60],[55,59,62],[48,52,55]],"motif":[65,67,69,72,69,67],"density":6,"style":"warm"},{"bars":8,"prog":[[48,52,55],[55,59,62],[48,52,55]],"motif":[60,64,67,64],"density":4,"style":"quiet"}]},"trackcoin":{"bpm":108,"bars":40,"sections":[{"bars":8,"prog":[[48,52,55],[53,57,60],[55,59,62],[48,52,55]],"motif":[60,64,67,69,67,64,62,60],"density":8,"style":"warm"},{"bars":8,"prog":[[53,57,60],[48,52,55],[55,59,62],[48,52,55]],"motif":[65,69,72,69,67,64,62,64],"density":8,"style":"warm"},{"bars":8,"prog":[[48,52,55],[55,59,62],[53,57,60],[48,52,55]],"motif":[60,62,64,67,69,67,64,62],"density":8,"style":"quiet"},{"bars":8,"prog":[[55,59,62],[53,57,60],[48,52,55],[55,59,62]],"motif":[67,69,72,74,72,69,67,64],"density":8,"style":"lift"},{"bars":8,"prog":[[48,52,55],[53,57,60],[55,59,62],[48,52,55]],"motif":[60,64,67,72,69,67,64,60],"density":8,"style":"warm"}]},"ruleshift":{"bpm":106,"bars":40,"sections":[{"bars":8,"prog":[[55,59,62],[60,64,67],[62,66,69],[55,59,62]],"motif":[67,71,74,76,74,71,69,67],"density":8,"style":"warm"},{"bars":8,"prog":[[60,64,67],[55,59,62],[62,66,69],[55,59,62]],"motif":[72,76,79,76,74,71,69,71],"density":8,"style":"warm"},{"bars":8,"prog":[[55,59,62],[62,66,69],[60,64,67],[55,59,62]],"motif":[67,69,71,74,76,74,71,69],"density":8,"style":"quiet"},{"bars":8,"prog":[[62,66,69],[60,64,67],[55,59,62],[62,66,69]],"motif":[74,76,79,81,79,76,74,71],"density":8,"style":"lift"},{"bars":8,"prog":[[55,59,62],[60,64,67],[62,66,69],[55,59,62]],"motif":[67,71,74,79,76,74,71,67],"density":8,"style":"warm"}]},"block-grid":{"bpm":102,"bars":40,"sections":[{"bars":8,"prog":[[50,54,57],[55,59,62],[57,61,64],[50,54,57]],"motif":[62,66,69,71,69,66,64,62],"density":8,"style":"warm"},{"bars":8,"prog":[[55,59,62],[50,54,57],[57,61,64],[50,54,57]],"motif":[67,71,74,71,69,66,64,66],"density":8,"style":"warm"},{"bars":8,"prog":[[50,54,57],[57,61,64],[55,59,62],[50,54,57]],"motif":[62,64,66,69,71,69,66,64],"density":8,"style":"quiet"},{"bars":8,"prog":[[57,61,64],[55,59,62],[50,54,57],[57,61,64]],"motif":[69,71,74,76,74,71,69,66],"density":8,"style":"lift"},{"bars":8,"prog":[[50,54,57],[55,59,62],[57,61,64],[50,54,57]],"motif":[62,66,69,74,71,69,66,62],"density":8,"style":"warm"}]},"colour-sort":{"bpm":100,"bars":40,"sections":[{"bars":8,"prog":[[53,57,60],[58,62,65],[60,64,67],[53,57,60]],"motif":[65,69,72,74,72,69,67,65],"density":8,"style":"warm"},{"bars":8,"prog":[[58,62,65],[53,57,60],[60,64,67],[53,57,60]],"motif":[70,74,77,74,72,69,67,69],"density":8,"style":"warm"},{"bars":8,"prog":[[53,57,60],[60,64,67],[58,62,65],[53,57,60]],"motif":[65,67,69,72,74,72,69,67],"density":8,"style":"quiet"},{"bars":8,"prog":[[60,64,67],[58,62,65],[53,57,60],[60,64,67]],"motif":[72,74,77,79,77,74,72,69],"density":8,"style":"lift"},{"bars":8,"prog":[[53,57,60],[58,62,65],[60,64,67],[53,57,60]],"motif":[65,69,72,77,74,72,69,65],"density":8,"style":"warm"}]},"jigsaw":{"bpm":104,"bars":40,"sections":[{"bars":8,"prog":[[55,62,67],[52,59,64],[48,55,60],[50,57,62]],"motif":[67,71,69,74,71,67,64,69],"density":8,"style":"warm"},{"bars":8,"prog":[[57,64,69],[53,60,65],[55,62,67],[50,57,62]],"motif":[69,72,71,76,72,69,67,71],"density":8,"style":"full"},{"bars":8,"prog":[[48,55,60],[50,57,62],[52,59,64]],"motif":[64,67,66,69,67,64,62,66],"density":8,"style":"quiet"},{"bars":8,"prog":[[53,60,65],[55,62,67],[57,64,69],[52,59,64]],"motif":[65,69,72,69,67,71,74,69],"density":8,"style":"lift"},{"bars":8,"prog":[[55,62,67],[52,59,64],[48,55,60],[50,57,62]],"motif":[67,69,71,74,71,69,67,64],"density":8,"style":"warm"}]},"crossnumber":{"bpm":90,"bars":40,"sections":[{"bars":8,"prog":[[53,57,60],[58,62,65],[60,64,67],[53,57,60]],"motif":[65,69,72,69],"density":4,"style":"warm"},{"bars":8,"prog":[[58,62,65],[53,57,60],[60,64,67],[53,57,60]],"motif":[70,72,74,72,69,67],"density":6,"style":"warm"},{"bars":8,"prog":[[53,57,60],[60,64,67],[58,62,65]],"motif":[65,67,69,72],"density":4,"style":"quiet"},{"bars":8,"prog":[[60,64,67],[58,62,65],[53,57,60]],"motif":[72,74,77,74,72,69],"density":6,"style":"warm"},{"bars":8,"prog":[[53,57,60],[58,62,65],[53,57,60]],"motif":[65,69,72,69],"density":4,"style":"quiet"}]}};
+  var RECENT_PROFILES = {"pairs":{"lead":"mallet","beats":[0,1,2.4,3.25],"bass":[0,2.5],"kick":[],"pad":0.0062,"level":0.01,"form":[0,1,2,3,4]},"detectword":{"lead":"flute","beats":[0,0.5,1.5,2.5,3.15,3.6],"bass":[0,3],"kick":[0],"pad":0.0055,"level":0.009,"form":[0,1,2,3,4]},"make24":{"lead":"pluck","beats":[0,0.45,0.9,1.5,2.1,2.8,3.5],"bass":[0,2],"kick":[0,2.5],"pad":0.0042,"level":0.0085,"form":[0,1,2,3,4]},"trackcoin":{"lead":"bell","beats":[0,0.75,1.25,1.9,2.55,3.1,3.6],"bass":[0,1.5,3],"kick":[0,2.5],"pad":0.0046,"level":0.0085,"form":[0,1,2,3,4]},"ruleshift":{"lead":"lead","beats":[0,0.6,1.4,2.25,3.25],"bass":[0,2.75],"kick":[0,3],"pad":0.0045,"level":0.0085,"form":[0,1,2,3,4]},"block-grid":{"lead":"mallet","beats":[0,1,1.75,2.75,3.35],"bass":[0,2],"kick":[0],"pad":0.0061,"level":0.01,"form":[0,1,2,3,4]},"colour-sort":{"lead":"flute","beats":[0,1.25,2.2,3.25],"bass":[0,2.5],"kick":[],"pad":0.0065,"level":0.009,"form":[0,1,2,3,4]},"jigsaw":{"lead":"bell","beats":[0,1.5,3],"bass":[0],"kick":[],"pad":0.0065,"level":0.009,"form":[0,1,2,3,4]},"crossnumber":{"lead":"pluck","beats":[0,0.5,1.15,2.05,2.7,3.35],"bass":[0,3],"kick":[0],"pad":0.005,"level":0.009,"form":[0,1,2,3,4]}};
+  var MODERN_PHRASE_FORMS = {"pairs":[0,1,2,3,1,2,0],"detectword":[0,2,1,3,2,0,3],"make24":[0,1,3,2,1,3,0],"trackcoin":[0,2,3,1,2,3,0],"ruleshift":[0,3,1,2,3,1,0],"block-grid":[0,1,2,3,1,0,3],"colour-sort":[0,2,1,3,2,0,1],"jigsaw":[0,1,2,3,0,2,0],"crossnumber":[0,3,2,1,3,0,1],"ninja":[0,1,3,2,3,1,0]};
+  var PLAYLISTS = Object.create(null);
+  MUSIC_GAMES.forEach(function(game){
+    var playlist=[];
+    if(RECENT_TRACKS[game]){
+      playlist.push({
+        id:game+'-oct24-recovered',
+        game:game, family:'recovered', profile:RECENT_PROFILES[game],
+        score:RECENT_TRACKS[game]
+      });
     }
-    return { section:track.sections[track.sections.length-1], local:0, index:track.sections.length-1 };
-  }
-  function tinyHuman(bar, step){
-    var x = Math.sin((bar + 1) * 12.9898 + (step + 1) * 78.233) * 43758.5453;
-    return (x - Math.floor(x) - 0.5) * 0.018;
-  }
-
-  // A quiet, short percussive tick with a soft attack, tracked so stopping a
-  // theme also fades the note instead of leaving old scheduled voices alive.
-  function tick(start, level){
-    if(!ctx || !master) return;
-    var osc=ctx.createOscillator(), gain=ctx.createGain(), filter=ctx.createBiquadFilter();
-    var at=Math.max(ctx.currentTime,start);
-    osc.type='triangle';
-    osc.frequency.value=1180;
-    filter.type='highpass'; filter.frequency.value=760;
-    gain.gain.setValueAtTime(0.0001,at);
-    gain.gain.linearRampToValueAtTime(Math.max(0.0002,level),at+0.005);
-    gain.gain.exponentialRampToValueAtTime(0.0001,at+0.036);
-    osc.connect(filter); filter.connect(gain); gain.connect(master);
-    osc._baselineEnvelope=gain;
-    osc._baselineStartAt=at;
-    liveNodes.add(osc);
-    osc.onended=function(){liveNodes.delete(osc);try{osc.disconnect();filter.disconnect();gain.disconnect();}catch(_error){}};
-    osc.start(at);osc.stop(at+0.042);
-  }
-
-  function scheduleBar(track, bar, start){
-    var beat = 60 / track.bpm;
-    var info = sectionAt(track, bar);
-    var sec = info.section;
-    var chordNotes = sec.prog[info.local % sec.prog.length];
-    var full = sec.style === 'full' || sec.style === 'drive' || sec.style === 'lift';
-    var quiet = sec.style === 'quiet';
-    var isJigsaw = activeGame === 'jigsaw';
-    var isColourSort = activeGame === 'colour-sort';
-    var isBlockGrid = activeGame === 'block-grid';
-    var isCrossnumber = activeGame === 'crossnumber';
-    var softTimbre = SOFT_TIMBRE_GAMES.has(activeGame);
-    var arrangement = ARRANGEMENTS[activeGame] || ARRANGEMENTS.pairs;
-
-    chordNotes.forEach(function(n, idx){
-      var padLevel = quiet ? 0.017 : 0.022;
-      if(isJigsaw) padLevel *= 0.92;
-      if(isColourSort) padLevel *= 0.96;
-      if(softTimbre) padLevel *= 0.82;
-      makeVoice('pad', n, start + idx * 0.012, beat * 3.92, padLevel, softTimbre ? 0 : (idx - 1) * 0.22);
+    playlist.push({
+      id:game+'-nov03-unique',
+      game:game, family:'modern', form:MODERN_PHRASE_FORMS[game],
+      score:TRACKS[game]
     });
+    PLAYLISTS[game]=playlist;
+  });
+  var activeSongIndex = 0;
+  function currentSong(){
+    var songs=PLAYLISTS[activeGame];
+    return songs && songs.length ? songs[activeSongIndex % songs.length] : null;
+  }
+  function advanceSong(){
+    var songs=PLAYLISTS[activeGame];
+    if(!songs || !songs.length)return;
+    activeSongIndex=(activeSongIndex+1)%songs.length;
+    barIndex=0;
+  }
+  function songDuration(song){ return song.score.bars*4*60/song.score.bpm; }
+  function songCycleDuration(){
+    return (PLAYLISTS[activeGame]||[]).reduce(function(total,song){return total+songDuration(song);},0);
+  }
 
-    if(sec.style !== 'quiet'){
-      var bassLevel = isJigsaw ? 0.008 : (isColourSort ? 0.010 : (isBlockGrid ? 0.011 : 0.014));
-      bassLevel *= arrangement.bass;
-      makeVoice('bass', chordNotes[0] - 12, start, beat * 1.8, bassLevel, 0);
-      makeVoice('bass', chordNotes[0] - 12, start + beat * 2, beat * 1.75, bassLevel * 0.82, 0);
+  // Later 24 October arrangements: keep their melodies and harmonic
+  // progressions, but restore their individual instrumentation/grooves.
+  function scheduleRecovered(song,bar,start){
+    var track=song.score,profile=song.profile,beat=60/track.bpm;
+    var sectionIndex=Math.min(track.sections.length-1,Math.floor(bar/8));
+    var sec=track.sections[sectionIndex];
+    var local=bar-sectionIndex*8;
+    var chord=sec.prog[local%sec.prog.length];
+    var quiet=sec.style==='quiet';
+    var lift=sec.style==='lift'||sec.style==='full'||sec.style==='drive';
+    var strength=(quiet?0.69:(lift?1.02:0.86))*(local===0?0.85:1);
+    chord.forEach(function(note,i){
+      makeVoice('pad',note,start+i*0.024,beat*3.72,profile.pad*strength,0);
+    });
+    if(!quiet){
+      profile.bass.forEach(function(at,i){
+        var root=chord[i%chord.length]-12;
+        makeVoice('bass',root,start+at*beat,beat*0.85,0.0061*strength,0);
+      });
     }
-
-    var steps = sec.density;
-    var stepDur = beat * 4 / steps;
-    for(var k=0;k<steps;k++){
-      var pitch = sec.motif[(bar * steps + k) % sec.motif.length];
-      if(sec.style === 'lift' && (k === 2 || k === Math.max(3, steps-2))) pitch += 12;
-
-      // The song has its own timbral identity, while melody and section changes
-      // remain exactly those of the restored original composition.
-      var kind = k % 4 === 3 ? arrangement.alternate : arrangement.lead;
-
-      var voiceLevel = quiet ? 0.014 : 0.019;
-      if(isJigsaw) voiceLevel *= 0.78;
-      if(isColourSort) voiceLevel *= 0.90;
-      if(softTimbre) voiceLevel *= 0.78;
-      if(isJigsaw) pitch = Math.min(pitch, 82);
-      voiceLevel *= arrangement.melody;
-      makeVoice(kind, pitch, start + k * stepDur + tinyHuman(bar,k), Math.min(stepDur * 0.76, beat * 0.44), voiceLevel, softTimbre ? 0 : (k % 2 ? 0.18 : -0.18));
+    // Every restored song keeps its own authored sequence and its own rhythm.
+    // No pitch-shift or speed-adjusted clones are manufactured.
+    var count=Math.min(sec.motif.length,profile.beats.length,sec.density);
+    for(var i=0;i<count;i++){
+      if(quiet && i%3===2)continue;
+      var pitch=sec.motif[(i+(local%3))%sec.motif.length];
+      var at=profile.beats[i];
+      var next=i+1<profile.beats.length?profile.beats[i+1]:4;
+      var length=Math.max(0.12,Math.min(beat*(next-at)*0.70,beat*0.74));
+      var volume=profile.level*strength*(i===0?1.06:0.94);
+      makeVoice(profile.lead,Math.min(83,pitch),start+beat*at,length,volume,0);
     }
-
-    if(isJigsaw){
-      if(!quiet && bar % 2 === 0) kick(start, 0.006 * arrangement.drums);
-      return;
-    }
-
-    if(isColourSort){
-      if(full){
-        kick(start, 0.016 * arrangement.drums);
-        if(sec.style === 'lift') kick(start + beat * 2, 0.011 * arrangement.drums);
-        for(var c=0;c<4;c++) tick(start + (c + 0.5) * beat + tinyHuman(bar,c), 0.0018);
-      }else if(sec.style === 'warm' && bar % 2 === 0){
-        kick(start, 0.010 * arrangement.drums);
-      }
-      return;
-    }
-
-    if(isCrossnumber){
-      if(full){
-        kick(start, (sec.style === 'drive' ? 0.024 : 0.019) * arrangement.drums);
-        kick(start + beat * 2, 0.014 * arrangement.drums);
-      }
-      for(var x=0;x<4;x++) tick(start + x * beat + tinyHuman(bar,x), quiet ? 0.0022 : 0.0036);
-      return;
-    }
-
-    if(full){
-      kick(start, (sec.style === 'drive' ? (isBlockGrid ? 0.022 : 0.030) : 0.024) * arrangement.drums);
-      kick(start + beat * 2, (isBlockGrid ? 0.014 : 0.018) * arrangement.drums);
-      for(var q=0;q<4;q++) tick(start + (q + 0.5) * beat + tinyHuman(bar,q), isBlockGrid ? 0.0020 : 0.0036);
-    }else if(sec.style === 'warm' && bar % 2 === 0){
-      kick(start, 0.018 * arrangement.drums);
+    if(!quiet && profile.kick.length && sectionIndex!==0){
+      profile.kick.forEach(function(at,i){
+        if(i>0 && !lift && local%2===0)return;
+        kick(start+beat*at,0.0065*(i?0.65:1)*strength);
+      });
     }
   }
 
-    function scheduler(){
-    timer = 0;
-    if(!ctx || !settings.enabled || !activeGame || !TRACKS[activeGame]) return;
-    var track = TRACKS[activeGame];
-    var barDur = 4 * 60 / track.bpm;
-
-    // A background tab can throttle timers heavily. If scheduling has fallen
-    // behind, advance the composition instead of firing missed bars at once.
-    if(nextBarTime < ctx.currentTime - 0.05){
-      var missedBars = Math.floor((ctx.currentTime - nextBarTime) / barDur) + 1;
-      barIndex = (barIndex + missedBars) % track.bars;
-      nextBarTime += missedBars * barDur;
+  // The independent newer songs keep their distinct notes, phrase timings,
+  // bass and percussion. Seven dynamic phases offer intros, contrasting
+  // motifs, a quieter passage, a lift and a resolve instead of flat repeats.
+  function scheduleModern(song,bar,start){
+    var track=song.score,beat=60/track.bpm;
+    var phase=Math.min(6,Math.floor(bar*7/track.bars));
+    var selection=song.form[phase];
+    var phrase=track.phrases[(bar+selection)%track.phrases.length];
+    var chord=track.chords[(bar+selection)%track.chords.length];
+    var strength=[0.71,0.91,0.97,0.66,1.04,1.00,0.76][phase];
+    var muted=phase===0||phase===3||phase===6;
+    chord.forEach(function(note,i){
+      makeVoice('pad',note,start+i*0.025,beat*3.65,track.pad*strength,0);
+    });
+    if(phase!==0 && phase!==6){
+      track.bassBeats.forEach(function(at,i){
+        if(phase===3&&i>0)return;
+        var bass=chord[i%2===0?0:2]-12;
+        makeVoice('bass',bass,start+at*beat,beat*0.80,0.0068*strength,0);
+      });
     }
-    if(nextBarTime < ctx.currentTime + 0.04) nextBarTime = ctx.currentTime + 0.04;
-
-    // Keep only a short rolling window of Web Audio nodes queued. The old
-    // 75-second look-ahead could leave hundreds of oscillators/gain/filter
-    // nodes alive at once, which is particularly prone to crackle on mobile
-    // audio hardware and can also stress desktop browsers.
-    while(nextBarTime < ctx.currentTime + SCHEDULE_AHEAD_SECONDS){
-      scheduleBar(track, barIndex, nextBarTime);
-      nextBarTime += barDur;
-      barIndex += 1;
-      if(barIndex >= track.bars) barIndex = 0;
+    phrase.forEach(function(note,i){
+      if(muted && i%3===2)return;
+      var at=track.beats[i%track.beats.length];
+      var next=i+1<track.beats.length?track.beats[i+1]:4;
+      var legato=track.legato?0.92:0.73;
+      var length=Math.max(0.11,Math.min(beat*(next-at)*legato,beat*(track.legato?1.08:0.56)));
+      var level=track.leadLevel*strength*(i===0?1.08:1);
+      makeVoice(track.lead,note,start+beat*at,length,level,0);
+    });
+    if(phase!==0 && phase!==3 && phase!==6){
+      track.kickBeats.forEach(function(at,i){
+        if(phase===1 && i>0)return;
+        kick(start+beat*at,0.0076*(i===0?1:0.68)*strength);
+      });
     }
-    timer = window.setTimeout(scheduler, SCHEDULER_INTERVAL_MS);
+    if(phase===5 && bar%4===3)makeVoice('bell',chord[0]+12,start+beat*3.6,beat*0.30,0.0035,0);
+  }
+  function scheduleBar(song,bar,start){
+    if(song.family==='recovered')scheduleRecovered(song,bar,start);
+    else scheduleModern(song,bar,start);
+  }
+
+  // Skip throttled/suspended playback in musical time, crossing each real
+  // song boundary without replaying hundreds of old notes at once.
+  function catchUpTo(now){
+    if(!nextBarTime || nextBarTime>=now-0.05)return;
+    var cycle=songCycleDuration();
+    if(cycle>0 && now-nextBarTime>cycle){
+      nextBarTime+=Math.floor((now-nextBarTime)/cycle)*cycle;
+    }
+    var guard=0;
+    while(nextBarTime<now-0.05 && guard++<512){
+      var song=currentSong();
+      if(!song)break;
+      var barDuration=4*60/song.score.bpm;
+      var missing=Math.max(1,Math.floor((now-nextBarTime)/barDuration)+1);
+      var available=song.score.bars-barIndex;
+      var skip=Math.min(available,missing);
+      nextBarTime+=skip*barDuration;
+      barIndex+=skip;
+      if(barIndex>=song.score.bars)advanceSong();
+    }
+  }
+
+
+  function scheduler(){
+    timer=0;
+    if(!ctx || !settings.enabled || !activeGame || !currentSong())return;
+    catchUpTo(ctx.currentTime);
+    if(nextBarTime<ctx.currentTime+0.04)nextBarTime=ctx.currentTime+0.04;
+    while(nextBarTime<ctx.currentTime+SCHEDULE_AHEAD_SECONDS){
+      var song=currentSong();
+      if(!song)break;
+      scheduleBar(song,barIndex,nextBarTime);
+      nextBarTime+=4*60/song.score.bpm;
+      barIndex++;
+      if(barIndex>=song.score.bars)advanceSong();
+    }
+    timer=window.setTimeout(scheduler,SCHEDULER_INTERVAL_MS);
   }
 
   function startActive(){
@@ -390,7 +394,7 @@
   function restartScheduler(resetBar){
     if(timer){ clearTimeout(timer); timer = 0; }
     stopLiveNodes();
-    if(resetBar !== false) barIndex = 0;
+    if(resetBar !== false){ barIndex=0; activeSongIndex=0; }
     if(!ctx || !activeGame || !settings.enabled) { applyGain(); return; }
     nextBarTime = ctx.currentTime + 0.08;
     applyGain();
@@ -408,12 +412,7 @@
       // Healthy playback should be left completely alone.
       if(timer && nextBarTime > c.currentTime + 0.25) return;
 
-      var track = TRACKS[activeGame];
-      var barDur = 4 * 60 / track.bpm;
-      if(nextBarTime && nextBarTime < c.currentTime){
-        var missedBars = Math.floor((c.currentTime - nextBarTime) / barDur) + 1;
-        barIndex = (barIndex + missedBars) % track.bars;
-      }
+      catchUpTo(c.currentTime);
       nextBarTime = c.currentTime + 0.08;
       if(timer){ clearTimeout(timer); timer = 0; }
       scheduler();
@@ -434,6 +433,7 @@
     if(id === activeGame) return;
     activeGame = id;
     barIndex = 0;
+    activeSongIndex=0;
     applyGain();
     if(!id){
       if(timer){ clearTimeout(timer); timer=0; }
@@ -534,7 +534,7 @@
       '<section class="games-music-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="gamesMusicSettingsTitle">' +
         '<header><div><small>Baseline Recreation</small><h3 id="gamesMusicSettingsTitle">Settings</h3></div><button class="games-music-settings-close" type="button" data-games-settings-close aria-label="Close settings">×</button></header>' +
         '<div class="games-music-settings-list">' +
-          '<section class="games-music-setting-row"><div><strong>Music</strong><small>Play the three-minute game theme.</small></div><button class="action ghost" type="button" data-games-music-toggle aria-pressed="true">On</button></section>' +
+          '<section class="games-music-setting-row"><div><strong>Music</strong><small>Play this game's own unique music collection.</small></div><button class="action ghost" type="button" data-games-music-toggle aria-pressed="true">On</button></section>' +
           '<label class="games-music-setting-row games-music-setting-row--slider"><span><strong>Music volume</strong><small>Game music level. 100% is the full normalized mix.</small></span><input data-games-music-volume type="range" min="0" max="1" step="0.05" value="0.58" aria-label="Game music volume"></label>' +
           '<label class="games-music-setting-row games-music-setting-row--slider" data-games-text-size-row hidden><span><strong>Game text size</strong><small>Adjust text and keypad sizing for this game.</small></span><input data-games-text-size type="range" min="0.82" max="1.24" step="0.06" value="1" aria-label="Game text size"></label>' +
         '</div>' +
