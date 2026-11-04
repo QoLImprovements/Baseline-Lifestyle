@@ -187,12 +187,16 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/everyCupMoves/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-scene\.is-phase-pick \.trackcoin-cup\.is-selectable[\s\S]*?pointer-events:auto!important/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-cup\{[\s\S]*?opacity:1!important/);
-  assert.match(html,/data-game-play-window="trackcoin">[\s\S]*?id="trackCoinSummary"[\s\S]*?id="trackCoinBoard"/);
+  assert.match(html,/data-game-play-window="trackcoin">[\s\S]*?id="trackCoinBoard"/);
+  assert.match(html,/id="trackCoinRoundPanel"[^>]*hidden[\s\S]*?id="trackCoinSummary"/);
+  assert.match(html,/data-trackcoin-panel="trackCoinRoundPanel"[^>]*>Round<\/button>/);
   assert.match(core,/const trackCoinSummary = document\.getElementById\('trackCoinSummary'\);[\s\S]*?trackCoinSummary\.innerHTML = coherentRoundStatusHtml/);
   assert.doesNotMatch(core,/trackCoinBoard\.innerHTML[\s\S]{0,500}?roundStatusHtml/);
   assert.doesNotMatch(nonRealmCss,/trackcoin-scene\.is-phase-(?:show|hide|pick) \.trackcoin-game-status/);
-  assert.match(nonRealmCss,/#trackCoinGamePanel:fullscreen #trackCoinBoard[\s\S]*?place-items:center stretch!important/);
-  assert.match(nonRealmCss,/#trackCoinGamePanel:fullscreen #trackCoinBoard > \.trackcoin-scene[\s\S]*?grid-template-rows:auto auto!important[\s\S]*?align-self:center!important/);
+  assert.match(nonRealmCss,/#trackCoinGamePanel:fullscreen #trackCoinBoard[\s\S]*?height:calc\(100dvh - 24px\)!important/);
+  assert.match(nonRealmCss,/#trackCoinGamePanel:fullscreen #trackCoinBoard > \.trackcoin-scene[\s\S]*?grid-template-rows:auto minmax\(0,1fr\)!important[\s\S]*?height:100%!important/);
+  assert.match(core,/trackcoin:\{root:'trackCoinGamePanel',tabs:\[\['game','Game'\],\['round','Round','trackCoinRoundPanel'\]/);
+  assert.match(core,/setFullscreenWindowView\('trackcoin','round'\)/);
 });
 
 test('Recreation music preferences are server-side and quick controls stay inside activity controls',()=>{
