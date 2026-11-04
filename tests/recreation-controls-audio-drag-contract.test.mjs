@@ -14,7 +14,7 @@ const html = at('systems/baseline-recreation/baseline-recreation.html');
 
 test('restore only the effective late-October gentle tracks alongside all ten November compositions', () => {
   const modernMatch=music.match(/var TRACKS = (\{[\s\S]*?\});\s+var RECENT_TRACKS/);
-  const recoveredMatch=music.match(/var RECENT_TRACKS = (\{[\s\S]*?\});\s+var RECENT_PROFILES/);
+  const recoveredMatch=music.match(/var RECENT_TRACKS = (\{[^\n]*\});/);
   assert.ok(modernMatch&&recoveredMatch,'Both generations of recent songs should coexist');
   const modern=JSON.parse(modernMatch[1]),recovered=JSON.parse(recoveredMatch[1]);
   const ids=['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
@@ -26,6 +26,19 @@ test('restore only the effective late-October gentle tracks alongside all ten No
     assert.equal(modern[id].phrases.length,4,id+' should retain its own new song');
     if(id!=='ninja')assert.equal(recovered[id].sections.length,5,id+' should use the final October theme, not the older seven-section one');
   });
+  // Previous final October versions included repeated transposed themes.
+  // The real playback motifs must now be different even with keys normalized.
+  const distinctMatch=music.match(/var DISTINCT_RECOVERED_MELODIES = (\{[^\n]*\});/);
+  assert.ok(distinctMatch,'Distinct written melody lines required for formerly cloned songs');
+  const distinctive=JSON.parse(distinctMatch[1]);
+  assert.deepEqual(Object.keys(distinctive).sort(),['detectword','crossnumber','ruleshift','block-grid','colour-sort'].sort());
+  const contours=Object.entries(recovered).map(([game,score])=>
+    score.sections.map((section,index)=>{
+      const motif=distinctive[game]?.[index]||section.motif;
+      return motif.map(note=>note-motif[0]).join(',');
+    }).join('/')
+  );
+  assert.equal(new Set(contours).size,9,'Restored songs must differ in melody, not merely tempo, key or bass');
   assert.match(music,/function scheduleRecovered\(/);
   assert.match(music,/function scheduleModern\(/);
   assert.match(music,/activeSongIndex=\(activeSongIndex\+1\)%songs\.length/);
