@@ -132,11 +132,11 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   })());
 
   const GAME_PANEL_MAP = Object.freeze({
-    pairs:{ panels:['pairsGameCard','pairsSkillCard','pairsTierCard','pairsProgressCard'], defaultPanel:'pairsGameCard', get:function(){ return pairsOpenPanel; }, set:function(value){ pairsOpenPanel = value; } },
-    detectword:{ panels:['wordGameCard','wordSkillCard','wordTierCard','wordProgressCard'], defaultPanel:'wordGameCard', get:function(){ return wordOpenPanel; }, set:function(value){ wordOpenPanel = value; } },
-    make24:{ panels:['make24GameCard','make24SkillCard','make24TierCard','make24ProgressCard'], defaultPanel:'make24GameCard', get:function(){ return make24OpenPanel; }, set:function(value){ make24OpenPanel = value; } },
+    pairs:{ panels:['pairsGameCard','pairsRoundCard','pairsSkillCard','pairsTierCard','pairsProgressCard'], defaultPanel:'pairsGameCard', get:function(){ return pairsOpenPanel; }, set:function(value){ pairsOpenPanel = value; } },
+    detectword:{ panels:['wordGameCard','wordRoundCard','wordSkillCard','wordTierCard','wordProgressCard'], defaultPanel:'wordGameCard', get:function(){ return wordOpenPanel; }, set:function(value){ wordOpenPanel = value; } },
+    make24:{ panels:['make24GameCard','make24RoundCard','make24SkillCard','make24TierCard','make24ProgressCard'], defaultPanel:'make24GameCard', get:function(){ return make24OpenPanel; }, set:function(value){ make24OpenPanel = value; } },
     trackcoin:{ panels:['trackCoinGamePanel','trackCoinRoundPanel','trackCoinSkillPanel','trackCoinTierPanel','trackCoinProgressPanel'], defaultPanel:'trackCoinGamePanel', get:function(){ return trackCoinOpenPanel; }, set:function(value){ trackCoinOpenPanel = value; } },
-    ruleshift:{ panels:['ruleShiftGameCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftProgressCard'], defaultPanel:'ruleShiftGameCard', get:function(){ return ruleShiftOpenPanel; }, set:function(value){ ruleShiftOpenPanel = value; } },
+    ruleshift:{ panels:['ruleShiftGameCard','ruleShiftRoundCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftProgressCard'], defaultPanel:'ruleShiftGameCard', get:function(){ return ruleShiftOpenPanel; }, set:function(value){ ruleShiftOpenPanel = value; } },
     ninja:{ panels:['ninjaGameCard'], defaultPanel:'ninjaGameCard', get:function(){ return ninjaOpenPanel; }, set:function(value){ ninjaOpenPanel = value; } }
   });
 
@@ -1117,22 +1117,21 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   }
 
   const FULLSCREEN_WINDOW_TABS=Object.freeze({
-    pairs:{root:'pairsGameCard',tabs:[['game','Game'],['skills','Skills','pairsSkillCard'],['tiers','Tiers','pairsTierCard'],['progress','Progress','pairsProgressCard']]},
-    detectword:{root:'wordGameCard',tabs:[['game','Game'],['skills','Skills','wordSkillCard'],['tiers','Tiers','wordTierCard'],['progress','Progress','wordProgressCard']]},
-    make24:{root:'make24GameCard',tabs:[['game','Game'],['skills','Skills','make24SkillCard'],['tiers','Tiers','make24TierCard'],['progress','Progress','make24ProgressCard']]},
+    pairs:{root:'pairsGameCard',tabs:[['game','Game'],['round','Round','pairsRoundCard'],['skills','Skills','pairsSkillCard'],['tiers','Tiers','pairsTierCard'],['progress','Progress','pairsProgressCard']]},
+    detectword:{root:'wordGameCard',tabs:[['game','Game'],['round','Round','wordRoundCard'],['skills','Skills','wordSkillCard'],['tiers','Tiers','wordTierCard'],['progress','Progress','wordProgressCard']]},
+    make24:{root:'make24GameCard',tabs:[['game','Game'],['round','Round','make24RoundCard'],['skills','Skills','make24SkillCard'],['tiers','Tiers','make24TierCard'],['progress','Progress','make24ProgressCard']]},
     trackcoin:{root:'trackCoinGamePanel',tabs:[['game','Game'],['round','Round','trackCoinRoundPanel'],['skills','Skills','trackCoinSkillPanel'],['tiers','Tiers','trackCoinTierPanel'],['progress','Progress','trackCoinProgressPanel']]},
-    ruleshift:{root:'ruleShiftGameCard',tabs:[['game','Game'],['skills','Skills','ruleShiftSkillCard'],['tiers','Tiers','ruleShiftTierCard'],['progress','Progress','ruleShiftProgressCard']]},
-    blockgrid:{root:'blockGridGameCard',tabs:[['game','Game'],['skills','Skills','blockGridSkillsCard'],['tiers','Tiers','blockGridModesCard'],['progress','Progress','blockGridProgressCard']]},
+    ruleshift:{root:'ruleShiftGameCard',tabs:[['game','Game'],['round','Round','ruleShiftRoundCard'],['skills','Skills','ruleShiftSkillCard'],['tiers','Tiers','ruleShiftTierCard'],['progress','Progress','ruleShiftProgressCard']]},
+    blockgrid:{root:'blockGridGameCard',tabs:[['game','Game'],['round','Round','blockGridStatus'],['skills','Skills','blockGridSkillsCard'],['tiers','Tiers','blockGridModesCard'],['progress','Progress','blockGridProgressCard']]},
     coloursort:{root:'colourSortGameCard',tabs:[['game','Game'],['round','Round','colourSortRoundCard'],['tiers','Tiers','colourSortLevelsCard'],['progress','Progress','colourSortProgressCard']]},
-    crossnumber:{root:'crossnumberGamePanel',tabs:[['game','Game'],['skills','Skills','crossnumberSkillPanel'],['tiers','Tiers','crossnumberTierPanel'],['progress','Progress','crossnumberProgressPanel']]}
+    crossnumber:{root:'crossnumberGamePanel',tabs:[['game','Game'],['round','Round','crossnumberRoundPanel'],['skills','Skills','crossnumberSkillPanel'],['tiers','Tiers','crossnumberTierPanel'],['progress','Progress','crossnumberProgressPanel']]}
   });
   function fullscreenWindowConfig(gameId){
     const id=normaliseGameId(gameId)||String(gameId||'').trim().toLowerCase();
     const base=FULLSCREEN_WINDOW_TABS[id]||null;
-    // Round is an additional Colour Sort fullscreen tab on mobile only.
-    const config=id==='coloursort' && base && !isMobileGameViewport()
-      ? {root:base.root,tabs:base.tabs.filter(function(tab){return tab[0]!=='round';})}
-      : base;
+    // Every game keeps Game / Round / Skills / Tiers / Progress visible
+    // at every desktop, mobile and fullscreen breakpoint.
+    const config=base;
     return {id:id,config:config};
   }
   function cloneFullscreenPanelHtml(sourceId){
@@ -1181,7 +1180,14 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     }
     const entry=config.tabs.find(function(tab){return tab[0]===next;});
     pane.hidden=false;
-    pane.innerHTML=entry&&entry[2]?cloneFullscreenPanelHtml(entry[2]):'<div class="fullscreen-window-empty">This section is not available.</div>';
+    const sourceId=entry&&entry[2];
+    const source=sourceId?document.getElementById(sourceId):null;
+    // A Round source may be a live status element rather than a card.
+    pane.innerHTML=source
+      ? (next==='round' && source.matches('.round-status-card')
+          ? '<div class="summary-box round-status-card">'+cloneFullscreenPanelHtml(sourceId)+'</div>'
+          : cloneFullscreenPanelHtml(sourceId))
+      : '<div class="fullscreen-window-empty">This section is not available.</div>';
   }
   function syncFullscreenWindowTabs(preferredGameId){
     const fullscreen=activeRecreationFullscreenRoot();
@@ -1707,19 +1713,19 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
 
   function setPairsPanel(panelId, historyMode){
     pairsOpenPanel = normalisePanelId('pairs', panelId || 'pairsGameCard');
-    setExclusivePanel(pairsOpenPanel, ['pairsGameCard','pairsSkillCard','pairsTierCard','pairsProgressCard'], 'data-pairs-panel', { id:'pairsSkillCard', ready: profiles.pairs && profiles.pairs.skillPoints > 0 });
+    setExclusivePanel(pairsOpenPanel, ['pairsGameCard','pairsRoundCard','pairsSkillCard','pairsTierCard','pairsProgressCard'], 'data-pairs-panel', { id:'pairsSkillCard', ready: profiles.pairs && profiles.pairs.skillPoints > 0 });
     syncHashState(historyMode);
   }
 
   function setWordPanel(panelId, historyMode){
     wordOpenPanel = normalisePanelId('detectword', panelId || 'wordGameCard');
-    setExclusivePanel(wordOpenPanel, ['wordGameCard','wordSkillCard','wordTierCard','wordProgressCard'], 'data-word-panel', { id:'wordSkillCard', ready: profiles.detectword && profiles.detectword.skillPoints > 0 });
+    setExclusivePanel(wordOpenPanel, ['wordGameCard','wordRoundCard','wordSkillCard','wordTierCard','wordProgressCard'], 'data-word-panel', { id:'wordSkillCard', ready: profiles.detectword && profiles.detectword.skillPoints > 0 });
     syncHashState(historyMode);
   }
 
   function setMake24Panel(panelId, historyMode){
     make24OpenPanel = normalisePanelId('make24', panelId || 'make24GameCard');
-    setExclusivePanel(make24OpenPanel, ['make24GameCard','make24SkillCard','make24TierCard','make24ProgressCard'], 'data-make24-panel', { id:'make24SkillCard', ready: profiles.make24 && profiles.make24.skillPoints > 0 });
+    setExclusivePanel(make24OpenPanel, ['make24GameCard','make24RoundCard','make24SkillCard','make24TierCard','make24ProgressCard'], 'data-make24-panel', { id:'make24SkillCard', ready: profiles.make24 && profiles.make24.skillPoints > 0 });
     syncHashState(historyMode);
   }
 
@@ -1732,7 +1738,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
 
   function setRuleShiftPanel(panelId, historyMode){
     ruleShiftOpenPanel = normalisePanelId('ruleshift', panelId || 'ruleShiftGameCard');
-    setExclusivePanel(ruleShiftOpenPanel, ['ruleShiftGameCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftProgressCard'], 'data-ruleshift-panel', { id:'ruleShiftSkillCard', ready: profiles.ruleshift && profiles.ruleshift.skillPoints > 0 });
+    setExclusivePanel(ruleShiftOpenPanel, ['ruleShiftGameCard','ruleShiftRoundCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftProgressCard'], 'data-ruleshift-panel', { id:'ruleShiftSkillCard', ready: profiles.ruleshift && profiles.ruleshift.skillPoints > 0 });
     syncHashState(historyMode);
   }
 
