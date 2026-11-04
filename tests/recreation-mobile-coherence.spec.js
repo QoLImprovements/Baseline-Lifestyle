@@ -214,3 +214,81 @@ test('Cross Number keeps puzzle-only actions at the foot of Numbers on desktop, 
     await context.close();
   }
 });
+
+
+test('all eight standard Recreation games share one five-button dock and a distinct Round view',async({browser})=>{
+  test.setTimeout(180000);
+  const cases=[
+    ['pairs','/baseline-recreation/games/pairs','#pairsGameCard','[data-pairs-panel="pairsRoundCard"]','[data-pairs-panel="pairsGameCard"]','#pairsRoundSummary',5],
+    ['detectword','/baseline-recreation/games/detect-the-word','#wordGameCard','[data-word-panel="wordRoundCard"]','[data-word-panel="wordGameCard"]','#wordRoundSummary',5],
+    ['make24','/baseline-recreation/games/make-the-number','#make24GameCard','[data-make24-panel="make24RoundCard"]','[data-make24-panel="make24GameCard"]','#make24RoundSummary',5],
+    ['trackcoin','/baseline-recreation/games/track-the-coin','#trackCoinGamePanel','[data-trackcoin-panel="trackCoinRoundPanel"]','[data-trackcoin-panel="trackCoinGamePanel"]','#trackCoinSummary',5],
+    ['ruleshift','/baseline-recreation/games/rule-shift','#ruleShiftGameCard','[data-ruleshift-panel="ruleShiftRoundCard"]','[data-ruleshift-panel="ruleShiftGameCard"]','#ruleShiftRoundSummary',5],
+    ['blockgrid','/baseline-recreation/games/block-grid','#blockGridGameCard','[data-block-tab="round"]','[data-block-tab="game"]','#blockGridStatus',5],
+    ['coloursort','/baseline-recreation/games/colour-sort','#colourSortGameCard','[data-colour-tab="round"]','[data-colour-tab="game"]','#colourSortRoundCard .round-status-card',4],
+    ['crossnumber','/baseline-recreation/puzzles/crossnumber','#crossnumberGamePanel','[data-crossnumber-panel="crossnumberRoundPanel"]','[data-crossnumber-panel="crossnumberGamePanel"]','#crossnumberRoundPanel [data-crossnumber-status]',5]
+  ];
+  const context=await browser.newContext({viewport:{width:1440,height:900},hasTouch:true});
+  const page=await context.newPage();
+  await page.route('**/systems/baseline-recreation/api/games_data.php**',async route=>{
+    await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:'save_unavailable'})});
+  });
+  const geometry=async(rootSelector,game)=>{
+    const values=await page.evaluate(selector=>{
+      const root=document.querySelector(selector);
+      const dock=root?.querySelector('.game-window-actions.game-common-actions.recreation-unified-controls');
+      const rect=cls=>{
+        const el=dock?.querySelector(cls);
+        if(!el)return null;
+        const r=el.getBoundingClientRect(),style=getComputedStyle(el);
+        return {x:r.x+r.width/2,y:r.y+r.height/2,width:r.width,height:r.height,display:style.display};
+      };
+      return {dock:dock?.getBoundingClientRect().toJSON()||null,
+        start:rect('.start-new-game-toggle'),auto:rect('.auto-next-toggle'),
+        settings:rect('.games-settings-trigger'),music:rect('.games-music-quick-toggle'),
+        fullscreen:rect('.game-fullscreen-toggle'),
+        specificsInDock:dock?.querySelectorAll('[data-recreation-original-specific],.game-specific-actions').length||0};
+    },rootSelector);
+    for(const label of ['start','auto','settings','music','fullscreen']){
+      expect(values[label],game+' '+label).not.toBeNull();
+      expect(values[label].width,game+' '+label+' width').toBeGreaterThan(35);
+      expect(values[label].display,game+' '+label+' display').not.toBe('none');
+    }
+    expect(Math.abs(values.start.x-values.auto.x),game+' +/A').toBeLessThanOrEqual(2);
+    expect(values.start.y,game+' New Game above Auto').toBeLessThan(values.auto.y);
+    expect(Math.abs(values.settings.x-values.fullscreen.x),game+' Settings/Fullscreen').toBeLessThanOrEqual(2);
+    expect(values.settings.y,game+' Settings above Fullscreen').toBeLessThan(values.fullscreen.y);
+    expect(Math.abs(values.music.y-values.fullscreen.y),game+' Music/Fullscreen same row').toBeLessThanOrEqual(2);
+    expect(values.music.x,game+' Music left of Fullscreen').toBeLessThan(values.fullscreen.x);
+    expect(values.specificsInDock,game+' no extra dock actions').toBe(0);
+  };
+  for(const [name,url,rootSelector,roundTab,gameTab,status,count] of cases){
+    await page.goto(url,{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(selector=>Boolean(
+      globalThis.BASELINE_RECREATION_CORE_READY && globalThis.BaselineGamesMusic &&
+      document.querySelector(selector)?.getClientRects().length
+    ),rootSelector,{timeout:20000});
+    const root=page.locator(rootSelector);
+    await expect(root,name+' visible game').toBeVisible();
+    await geometry(rootSelector,name+' windowed');
+    await expect(page.locator(roundTab),name+' Round tab').toBeVisible();
+    await page.locator(roundTab).click();
+    await expect(page.locator(status),name+' live Round Status').toBeVisible();
+    await expect(page.locator(status)).toContainText('Round Status');
+    await expect(root).toBeHidden();
+    await page.locator(gameTab).click();
+    await expect(root).toBeVisible();
+    await expect(page.locator(status)).toBeHidden();
+    await root.locator('.game-fullscreen-toggle').click();
+    await page.waitForFunction(selector=>document.fullscreenElement?.matches(selector),rootSelector);
+    await geometry(rootSelector,name+' fullscreen');
+    const tabs=root.locator(':scope > .game-fullscreen-window-tabs [data-fullscreen-window-tab]');
+    await expect(tabs).toHaveCount(count);
+    await tabs.filter({hasText:/^Round$/}).click();
+    await expect(root.locator(':scope > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Round Status');
+    await tabs.filter({hasText:/^Game$/}).click();
+    await page.evaluate(()=>document.exitFullscreen());
+    await page.waitForFunction(()=>document.fullscreenElement===null);
+  }
+  await context.close();
+});
