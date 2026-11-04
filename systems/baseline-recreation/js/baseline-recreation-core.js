@@ -135,7 +135,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     pairs:{ panels:['pairsGameCard','pairsSkillCard','pairsTierCard','pairsProgressCard'], defaultPanel:'pairsGameCard', get:function(){ return pairsOpenPanel; }, set:function(value){ pairsOpenPanel = value; } },
     detectword:{ panels:['wordGameCard','wordSkillCard','wordTierCard','wordProgressCard'], defaultPanel:'wordGameCard', get:function(){ return wordOpenPanel; }, set:function(value){ wordOpenPanel = value; } },
     make24:{ panels:['make24GameCard','make24SkillCard','make24TierCard','make24ProgressCard'], defaultPanel:'make24GameCard', get:function(){ return make24OpenPanel; }, set:function(value){ make24OpenPanel = value; } },
-    trackcoin:{ panels:['trackCoinGamePanel','trackCoinSkillPanel','trackCoinTierPanel','trackCoinProgressPanel'], defaultPanel:'trackCoinGamePanel', get:function(){ return trackCoinOpenPanel; }, set:function(value){ trackCoinOpenPanel = value; } },
+    trackcoin:{ panels:['trackCoinGamePanel','trackCoinRoundPanel','trackCoinSkillPanel','trackCoinTierPanel','trackCoinProgressPanel'], defaultPanel:'trackCoinGamePanel', get:function(){ return trackCoinOpenPanel; }, set:function(value){ trackCoinOpenPanel = value; } },
     ruleshift:{ panels:['ruleShiftGameCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftProgressCard'], defaultPanel:'ruleShiftGameCard', get:function(){ return ruleShiftOpenPanel; }, set:function(value){ ruleShiftOpenPanel = value; } },
     ninja:{ panels:['ninjaGameCard'], defaultPanel:'ninjaGameCard', get:function(){ return ninjaOpenPanel; }, set:function(value){ ninjaOpenPanel = value; } }
   });
@@ -1120,7 +1120,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     pairs:{root:'pairsGameCard',tabs:[['game','Game'],['skills','Skills','pairsSkillCard'],['tiers','Tiers','pairsTierCard'],['progress','Progress','pairsProgressCard']]},
     detectword:{root:'wordGameCard',tabs:[['game','Game'],['skills','Skills','wordSkillCard'],['tiers','Tiers','wordTierCard'],['progress','Progress','wordProgressCard']]},
     make24:{root:'make24GameCard',tabs:[['game','Game'],['skills','Skills','make24SkillCard'],['tiers','Tiers','make24TierCard'],['progress','Progress','make24ProgressCard']]},
-    trackcoin:{root:'trackCoinGamePanel',tabs:[['game','Game'],['skills','Skills','trackCoinSkillPanel'],['tiers','Tiers','trackCoinTierPanel'],['progress','Progress','trackCoinProgressPanel']]},
+    trackcoin:{root:'trackCoinGamePanel',tabs:[['game','Game'],['round','Round','trackCoinRoundPanel'],['skills','Skills','trackCoinSkillPanel'],['tiers','Tiers','trackCoinTierPanel'],['progress','Progress','trackCoinProgressPanel']]},
     ruleshift:{root:'ruleShiftGameCard',tabs:[['game','Game'],['skills','Skills','ruleShiftSkillCard'],['tiers','Tiers','ruleShiftTierCard'],['progress','Progress','ruleShiftProgressCard']]},
     blockgrid:{root:'blockGridGameCard',tabs:[['game','Game'],['skills','Skills','blockGridSkillsCard'],['tiers','Tiers','blockGridModesCard'],['progress','Progress','blockGridProgressCard']]},
     coloursort:{root:'colourSortGameCard',tabs:[['game','Game'],['round','Round','colourSortRoundCard'],['tiers','Tiers','colourSortLevelsCard'],['progress','Progress','colourSortProgressCard']]},
@@ -1725,7 +1725,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
 
   function setTrackCoinPanel(panelId, historyMode){
     trackCoinOpenPanel = normalisePanelId('trackcoin', panelId || 'trackCoinGamePanel');
-    setExclusivePanel(trackCoinOpenPanel, ['trackCoinGamePanel','trackCoinSkillPanel','trackCoinTierPanel','trackCoinProgressPanel'], 'data-trackcoin-panel', { id:'trackCoinSkillPanel', ready: profiles.trackcoin && profiles.trackcoin.skillPoints > 0 });
+    setExclusivePanel(trackCoinOpenPanel, ['trackCoinGamePanel','trackCoinRoundPanel','trackCoinSkillPanel','trackCoinTierPanel','trackCoinProgressPanel'], 'data-trackcoin-panel', { id:'trackCoinSkillPanel', ready: profiles.trackcoin && profiles.trackcoin.skillPoints > 0 });
     syncHashState(historyMode);
   }
 
@@ -3439,6 +3439,13 @@ if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
     if(trackCoinSummary){
       trackCoinSummary.className = 'summary-box round-status-card trackcoin-game-status' + trackCoinResultClass;
       trackCoinSummary.innerHTML = coherentRoundStatusHtml('Round Status',trackCoinStatusMessage,profile,currentTrackCoinTier().name);
+      // Round is a separate view. Its fullscreen pane is a snapshot, so
+      // refresh that snapshot whenever the live status changes while open.
+      const fullscreen=document.fullscreenElement;
+      if(fullscreen && fullscreen.id==='trackCoinGamePanel' &&
+         fullscreen.getAttribute('data-fullscreen-window-view')==='round'){
+        setFullscreenWindowView('trackcoin','round');
+      }
 }
 
     if(!trackCoinState){
