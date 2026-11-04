@@ -878,7 +878,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await expect(page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Progress');
   await wordTabs.getByRole('tab',{name:'Game',exact:true}).click();
 
-  const wordKeyboard=page.locator('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"]');
+  const wordKeyboard=page.locator('#wordGameCard .game-specific-actions [data-desktop-keypad-toggle="detectword"]');
   const wordDock=page.locator('#wordGameCard .game-window-actions.game-common-actions');
   const wordStart=wordDock.locator('#newWordRoundBtn');
   const wordAuto=wordDock.locator('[data-auto-next-toggle="detectword"]');
@@ -900,13 +900,13 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
     };
     return {
       dock:rect('#wordGameCard .game-window-actions.game-common-actions'),
-      keyboard:rect('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"]'),
+      keyboard:rect('#wordGameCard .game-specific-actions [data-desktop-keypad-toggle="detectword"]'),
       start:rect('#wordGameCard .game-window-actions #newWordRoundBtn'),
       auto:rect('#wordGameCard .game-window-actions [data-auto-next-toggle="detectword"]'),
       settings:rect('#wordGameCard .game-window-actions [data-games-settings]'),
       music:rect('#wordGameCard .game-window-actions [data-games-music-quick]'),
       fullscreen:rect('#wordGameCard .game-window-actions [data-game-fullscreen="detectword"]'),
-      icon:rect('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"] .game-shell-action__svg')
+      icon:rect('#wordGameCard .game-specific-actions [data-desktop-keypad-toggle="detectword"] .game-shell-action__svg')
     };
   });
   for(const [name,box] of Object.entries(wordGeometry)){
@@ -937,17 +937,16 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   // same left rail, rather than the retired side-by-side alignment.
   expect(Math.abs(cx(wordStartBox)-cx(wordAutoBox))).toBeLessThanOrEqual(1);
   expect(cy(wordStartBox)).toBeLessThan(cy(wordAutoBox));
-  // Settings, Music and Fullscreen share one right-aligned top row.
-  // Keypad occupies its reserved second-row slot inside the same dock.
-  expect(cx(wordSettingsBox)).toBeLessThan(cx(wordMusicBox));
+  // One canonical two-row layout: Settings directly above Fullscreen,
+  // Music to the left of Fullscreen. Keypad is game-specific and stays
+  // outside the five-button shared dock.
+  expect(Math.abs(cx(wordSettingsBox)-cx(wordFullBox))).toBeLessThanOrEqual(2);
+  expect(cy(wordSettingsBox)).toBeLessThan(cy(wordFullBox));
   expect(cx(wordMusicBox)).toBeLessThan(cx(wordFullBox));
-  expect(Math.abs(cy(wordSettingsBox)-cy(wordMusicBox))).toBeLessThanOrEqual(1);
-  expect(Math.abs(cy(wordMusicBox)-cy(wordFullBox))).toBeLessThanOrEqual(1);
-  expect(cy(wordKeyboardBox)).toBeGreaterThan(cy(wordSettingsBox));
+  expect(Math.abs(cy(wordMusicBox)-cy(wordFullBox))).toBeLessThanOrEqual(2);
   expect(cx(wordStartBox)).toBeLessThan(wordDockBox.x+wordDockBox.width/2);
   expect(cx(wordMusicBox)).toBeGreaterThan(wordDockBox.x+wordDockBox.width/2);
-  expect(wordKeyboardBox.x).toBeGreaterThanOrEqual(wordDockBox.x);
-  expect(wordKeyboardBox.x+wordKeyboardBox.width).toBeLessThanOrEqual(wordDockBox.x+wordDockBox.width+2);
+  expect(await wordDock.locator('[data-desktop-keypad-toggle="detectword"]').count()).toBe(0);
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
 
