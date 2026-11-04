@@ -76,9 +76,31 @@ test('Cross Number uses the same pointer and real equation-cell drop path on des
   assert.match(crossCss, /\.crossnumber-number-tile\{\s*touch-action:none!important/);
 });
 
+test('Cross Number puzzle-only actions remain in the spacious Numbers card in both windowed and fullscreen modes', () => {
+  const start=html.indexOf('<aside class="crossnumber-bank-panel"');
+  const end=html.indexOf('</aside>',start);
+  assert.ok(start>0&&end>start,'Number tiles have their own card');
+  const bank=html.slice(start,end);
+  assert.match(bank, /class="crossnumber-specific-actions game-specific-actions"/);
+  for (const action of ['sort','undo','hint','restart']) {
+    assert.match(bank,new RegExp('data-crossnumber-action="'+action+'"'));
+    assert.equal((html.match(new RegExp('data-crossnumber-action="'+action+'"','g'))||[]).length,1);
+  }
+  assert.match(music, /if\(id === 'crossnumberGamePanel'\)/);
+  assert.match(music, /bankPanel\.appendChild\(numberActions\)/);
+  assert.match(music, /numberActions\.appendChild\(control\)/);
+  assert.match(crossCss, /\.crossnumber-bank-panel > \.crossnumber-specific-actions\.game-specific-actions\{/);
+  assert.match(crossCss, /grid-template-columns:repeat\(4,44px\)!important/);
+  assert.match(crossCss, /grid-template-rows:auto minmax\(0,1fr\) auto!important/);
+  assert.match(dock, /Cross Number universal dock: only the five shared controls belong here/);
+  assert.match(dock, /\.games-settings-trigger\{\s*grid-column:4!important;grid-row:1/);
+  assert.match(dock, /\.games-music-quick-toggle\{\s*grid-column:3!important;grid-row:2/);
+  assert.match(dock, /\.game-fullscreen-toggle\{\s*grid-column:4!important;grid-row:2/);
+});
+
 test('all changed runtime assets receive fresh cache keys', () => {
-  assert.match(html, /RECENT_UNIQUE_SONGS_20261104_1/);
-  assert.match(html, /DESKTOP_DOCK_AUTHORITY_20261103_3/);
+  assert.match(html, /CROSSNUMBER_NUMBER_CARD_ACTIONS_20261104_1/);
+  assert.match(html, /CROSSNUMBER_SHARED_DOCK_20261104_1/);
   assert.match(html, /DESKTOP_POINTER_DRAG_20261103_2/);
   assert.match(html, /TOUCH_SPECIALS_FULLSCREEN_20261103_2/);
 });
