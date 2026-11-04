@@ -586,9 +586,24 @@
       // already use the action container as the play-window wrapper.
       if(host!==playWindow && !host.contains(playWindow) && host.parentElement!==playWindow) playWindow.appendChild(host);
       var specifics = root.querySelector('.game-specific-actions');
-      if(specifics){
-        // Desktop and mobile share one dock. Game-specific actions occupy the
-        // reserved space beside Settings; they never push or split shared actions.
+      if(id === 'crossnumberGamePanel'){
+        // Cross Number's Numbers card already owns four puzzle-only actions.
+        // Do not pull them into the shared New/Auto/Music/Settings/Fullscreen
+        // dock: keep them in the bank's own full-height action row on desktop,
+        // phone and fullscreen. Restore any buttons moved by an older build.
+        var bankPanel = root.querySelector('.crossnumber-bank-panel');
+        var numberActions = root.querySelector('.crossnumber-specific-actions');
+        if(bankPanel && numberActions){
+          if(numberActions.parentElement!==bankPanel) bankPanel.appendChild(numberActions);
+          ['sort','undo','hint','restart'].forEach(function(action){
+            var control=root.querySelector('[data-crossnumber-action="'+action+'"]');
+            if(!control) return;
+            if(control.parentElement!==numberActions) numberActions.appendChild(control);
+            control.removeAttribute('data-recreation-original-specific');
+          });
+        }
+      }else if(specifics){
+        // Other games retain their existing shared dock behavior.
         Array.prototype.slice.call(specifics.children).forEach(function(control){
           if(!control.matches('button.action')) return;
           control.setAttribute('data-recreation-original-specific','');
