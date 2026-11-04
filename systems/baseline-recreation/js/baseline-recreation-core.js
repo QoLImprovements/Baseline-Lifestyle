@@ -1123,7 +1123,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     make24:{root:'make24GameCard',tabs:[['game','Game'],['round','Round','make24RoundCard'],['skills','Skills','make24SkillCard'],['tiers','Tiers','make24TierCard'],['progress','Progress','make24ProgressCard']]},
     trackcoin:{root:'trackCoinGamePanel',tabs:[['game','Game'],['round','Round','trackCoinRoundPanel'],['skills','Skills','trackCoinSkillPanel'],['tiers','Tiers','trackCoinTierPanel'],['progress','Progress','trackCoinProgressPanel']]},
     ruleshift:{root:'ruleShiftGameCard',tabs:[['game','Game'],['round','Round','ruleShiftRoundCard'],['skills','Skills','ruleShiftSkillCard'],['tiers','Tiers','ruleShiftTierCard'],['progress','Progress','ruleShiftProgressCard']]},
-    blockgrid:{root:'blockGridGameCard',tabs:[['game','Game'],['round','Round','blockGridStatus'],['skills','Skills','blockGridSkillsCard'],['tiers','Tiers','blockGridModesCard'],['progress','Progress','blockGridProgressCard']]},
+    blockgrid:{root:'blockGridGameCard',tabs:[['game','Game'],['round','Round','blockGridRoundCard'],['skills','Skills','blockGridSkillsCard'],['tiers','Tiers','blockGridModesCard'],['progress','Progress','blockGridProgressCard']]},
     coloursort:{root:'colourSortGameCard',tabs:[['game','Game'],['round','Round','colourSortRoundCard'],['tiers','Tiers','colourSortLevelsCard'],['progress','Progress','colourSortProgressCard']]},
     crossnumber:{root:'crossnumberGamePanel',tabs:[['game','Game'],['round','Round','crossnumberRoundPanel'],['skills','Skills','crossnumberSkillPanel'],['tiers','Tiers','crossnumberTierPanel'],['progress','Progress','crossnumberProgressPanel']]}
   });
