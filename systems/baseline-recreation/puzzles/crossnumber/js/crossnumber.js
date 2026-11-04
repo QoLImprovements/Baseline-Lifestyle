@@ -63,6 +63,7 @@
   const panelViews=Array.from(root.querySelectorAll?.('.crossnumber-panel-stack > [id]')||[]);
   const PANEL_ROUTES=Object.freeze({
     game:'crossnumberGamePanel',
+    round:'crossnumberRoundPanel',
     skills:'crossnumberSkillPanel',
     tiers:'crossnumberTierPanel',
     progress:'crossnumberProgressPanel'
