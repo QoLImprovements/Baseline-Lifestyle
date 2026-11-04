@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=CROSSNUMBER_SHARED_DOCK_20261104_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=TRACKCOIN_FULLHEIGHT_ROUND_20261104_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -136,7 +136,7 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=TRACKCOIN_SEPARATE_ROUND_20261104_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
   assert.match(html,/block-grid\.js\?v=TOUCH_SPECIALS_FULLSCREEN_20261103_2/);
   assert.match(html,/colour-sort\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
@@ -187,12 +187,16 @@ test('Track the Coin uses one continuous shuffle timeline and reliably selectabl
   assert.match(core,/everyCupMoves/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-scene\.is-phase-pick \.trackcoin-cup\.is-selectable[\s\S]*?pointer-events:auto!important/);
   assert.match(nonRealmCss,/#trackcoinPanel \.trackcoin-cup\{[\s\S]*?opacity:1!important/);
-  assert.match(html,/data-game-play-window="trackcoin">[\s\S]*?id="trackCoinSummary"[\s\S]*?id="trackCoinBoard"/);
+  assert.match(html,/data-game-play-window="trackcoin">[\s\S]*?id="trackCoinBoard"/);
+  assert.match(html,/id="trackCoinRoundPanel"[^>]*hidden[\s\S]*?id="trackCoinSummary"/);
+  assert.match(html,/data-trackcoin-panel="trackCoinRoundPanel"[^>]*>Round<\/button>/);
   assert.match(core,/const trackCoinSummary = document\.getElementById\('trackCoinSummary'\);[\s\S]*?trackCoinSummary\.innerHTML = coherentRoundStatusHtml/);
   assert.doesNotMatch(core,/trackCoinBoard\.innerHTML[\s\S]{0,500}?roundStatusHtml/);
   assert.doesNotMatch(nonRealmCss,/trackcoin-scene\.is-phase-(?:show|hide|pick) \.trackcoin-game-status/);
-  assert.match(nonRealmCss,/#trackCoinGamePanel:fullscreen #trackCoinBoard[\s\S]*?place-items:center stretch!important/);
-  assert.match(nonRealmCss,/#trackCoinGamePanel:fullscreen #trackCoinBoard > \.trackcoin-scene[\s\S]*?grid-template-rows:auto auto!important[\s\S]*?align-self:center!important/);
+  assert.match(nonRealmCss,/#trackCoinGamePanel:fullscreen #trackCoinBoard[\s\S]*?height:calc\(100dvh - 24px\)!important/);
+  assert.match(nonRealmCss,/#trackCoinGamePanel:fullscreen #trackCoinBoard > \.trackcoin-scene[\s\S]*?grid-template-rows:auto minmax\(0,1fr\)!important[\s\S]*?height:100%!important/);
+  assert.match(core,/trackcoin:\{root:'trackCoinGamePanel',tabs:\[\['game','Game'\],\['round','Round','trackCoinRoundPanel'\]/);
+  assert.match(core,/setFullscreenWindowView\('trackcoin','round'\)/);
 });
 
 test('Recreation music preferences are server-side and quick controls stay inside activity controls',()=>{

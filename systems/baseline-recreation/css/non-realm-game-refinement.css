@@ -3472,3 +3472,170 @@ html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:full
 html body[data-app="recreation"] #crossnumberGamePanel:is(:fullscreen,:not(:fullscreen)) .crossnumber-actions.game-common-actions.recreation-unified-controls > .game-fullscreen-toggle{
   grid-column:4!important;grid-row:2!important;justify-self:end!important;align-self:center!important;
 }
+
+/* 2026-11-04 Track the Coin: the playing field fills fullscreen height.
+   The right rail is a five-tab workspace; Round is its own tab, never
+   part of Game. Overrides the old max-300px lane and short centred scene. */
+@media (min-width:821px){
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen{
+    --recreation-fs-side:clamp(300px,23vw,360px);
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) var(--recreation-fs-side)!important;
+    grid-template-rows:auto auto auto minmax(0,1fr) auto auto!important;
+    column-gap:12px!important;
+    row-gap:8px!important;
+    padding:12px!important;
+    box-sizing:border-box!important;
+    align-content:stretch!important;
+    width:100vw!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    overflow:hidden!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen > .game-play-window{
+    display:contents!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen #trackCoinBoard{
+    grid-column:1!important;
+    grid-row:1/-1!important;
+    display:block!important;
+    width:100%!important;
+    height:calc(100dvh - 24px)!important;
+    min-height:0!important;
+    max-height:calc(100dvh - 24px)!important;
+    align-self:stretch!important;
+    justify-self:stretch!important;
+    overflow:hidden!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen #trackCoinBoard > .trackcoin-scene{
+    box-sizing:border-box!important;
+    display:grid!important;
+    grid-template-rows:auto minmax(0,1fr)!important;
+    grid-auto-rows:initial!important;
+    align-content:stretch!important;
+    justify-items:stretch!important;
+    gap:10px!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:clamp(10px,1.4vw,20px)!important;
+    margin:0!important;
+    align-self:stretch!important;
+    justify-self:stretch!important;
+    overflow:hidden!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .trackcoin-scene > .trackcoin-lane{
+    --trackcoin-stage-offset:clamp(0px,calc((100dvh - 400px) / 2),400px);
+    position:relative!important;
+    box-sizing:border-box!important;
+    align-self:stretch!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    overflow:hidden!important;
+  }
+  /* The engine animates cups in pixel coordinates around top:68px.
+     Translate the entire motion path into the vertical centre without
+     altering its per-frame X/Y movement, timing, or click target. */
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .trackcoin-lane .trackcoin-cup{
+    transform:translateX(-50%) translateY(var(--trackcoin-stage-offset)) rotate(var(--cup-tilt,0deg))!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .trackcoin-scene.is-busy .trackcoin-lane .trackcoin-cup{
+    transform:translateX(-50%) translateY(var(--trackcoin-stage-offset)) translateZ(0) rotate(var(--cup-tilt,0deg))!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .trackcoin-lane .trackcoin-cup.is-lifted{
+    transform:translateX(-50%) translateY(calc(var(--trackcoin-stage-offset) - 46px)) rotate(var(--cup-tilt,0deg))!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .trackcoin-lane .trackcoin-item-token{
+    transform:translate(-50%,calc(-50% + var(--trackcoin-stage-offset)))!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen > .game-fullscreen-window-tabs > .game-fullscreen-window-tabbar{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    width:calc(100% - 16px)!important;
+    margin:0 8px!important;
+    gap:4px!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen > .game-fullscreen-window-tabs > .game-fullscreen-window-tabbar > button{
+    min-width:0!important;
+    padding:6px 2px!important;
+    font-size:clamp(10px,.85vw,12px)!important;
+    white-space:nowrap!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen > .game-toolbar{
+    grid-column:2!important;
+    grid-row:2!important;
+    min-width:0!important;
+    padding:8px!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen > .game-live-xp{
+    grid-column:2!important;
+    grid-row:3!important;
+    min-width:0!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen > .game-fullscreen-window-tabs > .game-fullscreen-window-pane{
+    grid-column:2!important;
+    grid-row:2 / 6!important;
+    min-height:0!important;
+    max-height:100%!important;
+    margin:0 8px!important;
+    overflow-x:hidden!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen[data-fullscreen-window-view="round"] > .game-fullscreen-window-tabs > .game-fullscreen-window-pane{
+    overflow-y:auto!important;
+    scrollbar-width:none!important;
+    padding:5px 2px!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen[data-fullscreen-window-view="round"] .game-fullscreen-window-pane::-webkit-scrollbar{
+    display:none!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .game-fullscreen-window-pane .round-status-card{
+    box-sizing:border-box!important;
+    min-height:0!important;
+    max-height:none!important;
+    width:100%!important;
+    overflow:visible!important;
+    margin:0!important;
+    padding:10px!important;
+  }
+  /* Keep replay on the spare top-right slot without shifting the
+     established New/Auto and Settings/Music/Fullscreen hierarchy. */
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen > .game-play-window > .game-window-actions.game-common-actions.recreation-unified-controls{
+    grid-column:2!important;
+    grid-row:6!important;
+    display:grid!important;
+    grid-template-columns:44px minmax(0,1fr) 44px 44px!important;
+    grid-template-rows:44px 44px!important;
+    min-height:95px!important;
+    width:calc(100% - 16px)!important;
+    max-width:calc(100% - 16px)!important;
+    margin:0 8px!important;
+    padding:5px 0 0!important;
+    align-self:end!important;
+    justify-content:stretch!important;
+    gap:7px!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .recreation-unified-controls > .start-new-game-toggle{
+    grid-column:1!important;grid-row:1!important;justify-self:start!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .recreation-unified-controls > .auto-next-toggle{
+    grid-column:1!important;grid-row:2!important;justify-self:start!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .recreation-unified-controls > #replayTrackCoinShuffleBtn{
+    grid-column:3!important;grid-row:1!important;justify-self:end!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .recreation-unified-controls > .games-settings-trigger{
+    grid-column:4!important;grid-row:1!important;justify-self:end!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .recreation-unified-controls > .games-music-quick-toggle{
+    grid-column:3!important;grid-row:2!important;justify-self:end!important;
+  }
+  html body[data-app="recreation"] #trackCoinGamePanel:fullscreen .recreation-unified-controls > .game-fullscreen-toggle{
+    grid-column:4!important;grid-row:2!important;justify-self:end!important;
+  }
+}

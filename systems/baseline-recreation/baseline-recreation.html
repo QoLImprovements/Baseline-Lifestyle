@@ -50,7 +50,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/systems/baseline-recreation/games/baseline-realm/exploration/css/exploration-jrpg.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-style="exploration"/>
 <link href="/systems/baseline-recreation/games/baseline-realm/ninja-training/css/ninja-training.css?v=REALM_DISABLED_CONTROL_20261026_1" rel="stylesheet" data-realm-style="ninja-training"/>
 <link href="/systems/baseline-recreation/games/baseline-realm/shared/css/realm-mobile.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-mobile="true"/>
-<link href="/systems/baseline-recreation/css/non-realm-game-refinement.css?v=CROSSNUMBER_SHARED_DOCK_20261104_1" rel="stylesheet" data-nonrealm-game-refinement="true"/>
+<link href="/systems/baseline-recreation/css/non-realm-game-refinement.css?v=TRACKCOIN_FULLHEIGHT_ROUND_20261104_1" rel="stylesheet" data-nonrealm-game-refinement="true"/>
 <link href="/systems/baseline-recreation/css/games-music.css?v=RECREATION_MUSIC_PALETTE_20261022_2" rel="stylesheet" data-games-music-style="true"/>
 </head>
 <body data-app="recreation" data-page="baseline-recreation">
@@ -872,6 +872,7 @@ These Markdown rules are a human reference point, not live runtime config.
 </details>
           <div class="game-toggle-row trackcoin-tab-row">
             <button class="action ghost game-toggle-btn is-active" id="trackCoinGameToggleBtn" data-trackcoin-panel="trackCoinGamePanel" aria-expanded="true" type="button">Game</button>
+            <button class="action ghost game-toggle-btn" id="trackCoinRoundToggleBtn" data-trackcoin-panel="trackCoinRoundPanel" aria-expanded="false" type="button">Round</button>
             <button class="action ghost game-toggle-btn" id="trackCoinSkillToggleBtn" data-trackcoin-panel="trackCoinSkillPanel" aria-expanded="false" type="button">Skills</button>
             <button class="action ghost game-toggle-btn" id="trackCoinTierToggleBtn" data-trackcoin-panel="trackCoinTierPanel" aria-expanded="false" type="button">Tiers</button>
             <button class="action ghost game-toggle-btn" id="trackCoinProgressToggleBtn" data-trackcoin-panel="trackCoinProgressPanel" aria-expanded="false" type="button">Progress</button>
@@ -886,10 +887,12 @@ These Markdown rules are a human reference point, not live runtime config.
                 <div class="game-toolbar-spacer" aria-hidden="true"></div>
               </div>
               <div class="game-play-window" data-game-play-window="trackcoin">
-                <div class="summary-box round-status-card trackcoin-game-status" id="trackCoinSummary" aria-live="polite"></div>
                 <div class="trackcoin-board game-play-surface" id="trackCoinBoard" data-game-play-surface="trackcoin"></div>
                 <div class="game-specific-actions"><button class="action ghost game-control-icon" id="replayTrackCoinShuffleBtn" data-action="replay-trackcoin" type="button" hidden data-tooltip="Replay last shuffle" title="Replay last shuffle" aria-label="Replay last shuffle"><span aria-hidden="true">↻</span><span class="sr-only">Replay last shuffle</span></button></div><div class="game-window-actions game-common-actions"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" id="newTrackCoinRoundBtn" data-action="start-trackcoin" type="button" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="trackcoin" type="button" aria-pressed="false" aria-label="Auto New Game off"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button></div>
               </div>
+            </section>
+            <section class="card game-card trackcoin-round-panel" id="trackCoinRoundPanel" hidden aria-label="Track the Coin round status">
+              <div class="summary-box round-status-card trackcoin-game-status" id="trackCoinSummary" aria-live="polite"></div>
             </section>
             <section class="card game-card" id="trackCoinSkillPanel" hidden>
               <div class="skill-head"><h3>Track the Coin Skill Tree</h3><div class="inline-note">Spend one point per Player Rank gained.</div></div>
@@ -1037,7 +1040,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-recreation/js/recreation-legacy-state-migration.js?v=RECREATION_LEGACY_STATE_MIGRATION_20261022_1"></script>
 <script src="/systems/baseline-recreation/js/baseline-recreation-guard.js?v=RECREATION_COHERENCE_20261023_2"></script>
 <script src="/systems/baseline-recreation/js/games-help-modal.js?v=GAMES_HELP_MODAL_AUTHORITY_20261022_1"></script>
-<script src="/systems/baseline-recreation/js/baseline-recreation-core.js?v=MOBILE_GAME_COHERENCE_20261103_1"></script>
+<script src="/systems/baseline-recreation/js/baseline-recreation-core.js?v=TRACKCOIN_SEPARATE_ROUND_20261104_1"></script>
 <script src="/systems/baseline-recreation/js/games-music.js?v=CROSSNUMBER_NUMBER_CARD_ACTIONS_20261104_1"></script>
 <script src="/systems/baseline-recreation/concepts/shared/js/concepts.js?v=CONCEPTS_TEMPLATE_20261022_2"></script>
 <script src="/systems/baseline-recreation/concepts/stroop-effect/js/stroop-effect.js?v=STROOP_COMPARISON_20261022_1"></script>
