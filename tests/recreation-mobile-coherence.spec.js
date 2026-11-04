@@ -153,3 +153,64 @@ test('mobile core Games uses a top back-arrow rather than duplicate text navigat
   await expect(page.locator('#gamesOverviewCard')).toBeVisible();
   await context.close();
 });
+
+
+test('Cross Number keeps puzzle-only actions at the foot of Numbers on desktop, touch and fullscreen', async ({ browser }) => {
+  for (const setup of [
+    {viewport:{width:1440,height:900},isMobile:false,hasTouch:false},
+    {viewport:{width:390,height:844},isMobile:true,hasTouch:true}
+  ]) {
+    const context=await browser.newContext(setup);
+    const page=await context.newPage();
+    await page.route('**/systems/baseline-recreation/api/games_data.php**', async route => {
+      await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:'save_unavailable'})});
+    });
+    await page.goto('/baseline-recreation/puzzles/crossnumber',{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>Boolean(globalThis.BaselineGamesMusic && globalThis.BASELINE_RECREATION_CORE_READY));
+    const panel=page.locator('#crossnumberGamePanel');
+    await expect(panel).toBeVisible();
+    const bank=panel.locator('.crossnumber-bank-panel');
+    const controls=bank.locator('.crossnumber-specific-actions');
+    const common=panel.locator('.crossnumber-actions.game-common-actions');
+    const puzzleActions=['sort','undo','hint','restart'];
+    for(const action of puzzleActions) {
+      await expect(controls.locator('[data-crossnumber-action="'+action+'"]')).toHaveCount(1);
+      await expect(common.locator('[data-crossnumber-action="'+action+'"]')).toHaveCount(0);
+    }
+    await expect(controls).toBeVisible();
+    const verify=async()=>{
+      const result=await page.evaluate(()=>{
+        const rect=selector=>document.querySelector(selector)?.getBoundingClientRect();
+        const r=selector=>{const b=rect(selector);return b?{x:b.x,y:b.y,right:b.right,bottom:b.bottom}:null};
+        const scope='#crossnumberGamePanel ';
+        return {
+          bank:r(scope+'.crossnumber-bank-panel'),
+          actionRow:r(scope+'.crossnumber-bank-panel > .crossnumber-specific-actions'),
+          numberBank:r(scope+'.crossnumber-bank'),
+          newGame:r(scope+'.crossnumber-actions > .start-new-game-toggle'),
+          auto:r(scope+'.crossnumber-actions > .auto-next-toggle'),
+          settings:r(scope+'.crossnumber-actions > .games-settings-trigger'),
+          music:r(scope+'.crossnumber-actions > .games-music-quick-toggle'),
+          fullscreen:r(scope+'.crossnumber-actions > .game-fullscreen-toggle')
+        };
+      });
+      for(const [name,box] of Object.entries(result)) expect(box,name+' must exist').not.toBeNull();
+      expect(result.actionRow.y).toBeGreaterThanOrEqual(result.numberBank.y);
+      expect(result.actionRow.bottom).toBeLessThanOrEqual(result.bank.bottom+2);
+      expect(Math.abs(result.newGame.x-result.auto.x)).toBeLessThanOrEqual(2);
+      expect(result.newGame.y).toBeLessThan(result.auto.y);
+      expect(Math.abs(result.settings.x-result.fullscreen.x)).toBeLessThanOrEqual(2);
+      expect(result.settings.y).toBeLessThan(result.fullscreen.y);
+      expect(result.music.x).toBeLessThan(result.fullscreen.x);
+      expect(Math.abs(result.music.y-result.fullscreen.y)).toBeLessThanOrEqual(2);
+    };
+    await verify();
+    if(!setup.isMobile){
+      await panel.locator('[data-crossnumber-action="fullscreen"]').click();
+      await page.waitForFunction(()=>document.fullscreenElement?.id==='crossnumberGamePanel');
+      await verify();
+      await page.evaluate(()=>document.exitFullscreen());
+    }
+    await context.close();
+  }
+});
