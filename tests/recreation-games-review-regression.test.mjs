@@ -322,28 +322,31 @@ test('fullscreen layouts use bounded side panels except the deliberately indepen
   const colourCss=read('systems/baseline-recreation/games/colour-sort/css/colour-sort.css');
   assert.match(colourCss,/--colour-fs-side:clamp\(230px,20vw,330px\)/);
 });
-test('every Recreation game retains its original unique three-minute song with smooth transitions',()=>{
+test('Recreation preserves the newest unique themes and the last effective low-fatigue music without reviving rejected originals',()=>{
   const ids=['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
-  const match=music.match(/var TRACKS = (\{[\s\S]*?\});\s+var ARRANGEMENTS/);
-  assert.ok(match,'Original game scores must be preserved');
-  const scores=JSON.parse(match[1]);
-  assert.deepEqual(Object.keys(scores).sort(),ids.sort());
-  const fingerprints=new Set();
-  for(const [name,score] of Object.entries(scores)){
-    assert.ok(score.bpm>=80 && score.bpm<=140,name+' retains its own original tempo');
-    assert.equal(score.sections.length,7,name+' has seven musical sections');
-    assert.equal(score.sections.reduce((bars,section)=>bars+section.bars,0),score.bars);
-    assert.equal(score.bars*4*60/score.bpm,180,name+' is a three-minute composition');
-    fingerprints.add(JSON.stringify(score));
+  const modernMatch=music.match(/var TRACKS = (\{[\s\S]*?\});\s+var RECENT_TRACKS/);
+  const recoveredMatch=music.match(/var RECENT_TRACKS = (\{[\s\S]*?\});\s+var RECENT_PROFILES/);
+  assert.ok(modernMatch&&recoveredMatch,'Both recent song generations must be present');
+  const modern=JSON.parse(modernMatch[1]),recovered=JSON.parse(recoveredMatch[1]);
+  assert.deepEqual(Object.keys(modern),ids);
+  assert.deepEqual(Object.keys(recovered),ids.filter(id=>id!=='ninja'));
+  for(const id of ids){
+    assert.equal(modern[id].phrases.length,4,'Keep the individually authored 3 November song for '+id);
+    if(id==='ninja')continue;
+    assert.equal(recovered[id].bars,40,'Keep the active late October song for '+id);
+    assert.equal(recovered[id].sections.length,5,'Never return to the earlier seven-section rejected composition for '+id);
   }
-  assert.equal(fingerprints.size,ids.length,'No game may share the same score');
-  assert.match(music,/var ARRANGEMENTS = \{/);
-  assert.match(music,/var MIX_VERSION = 7/);
+  const identifiers=ids.flatMap(id=>id==='ninja'?[id+'-nov03-unique']:[id+'-oct24-recovered',id+'-nov03-unique']);
+  assert.equal(new Set(identifiers).size,19,'Every song is assigned once and to its own game');
+  assert.equal(new Set(ids.map(id=>JSON.stringify(modern[id]))).size,10,'November songs may not be tempo-only clones');
+  assert.equal(new Set(Object.values(recovered).map(score=>JSON.stringify(score))).size,9,'Recovered songs are independently authored');
+  assert.match(music,/var MIX_VERSION = 8/);
+  assert.match(music,/function scheduleRecovered\(/);
+  assert.match(music,/function scheduleModern\(/);
+  assert.match(music,/function advanceSong\(/);
   assert.match(music,/var SCHEDULE_AHEAD_SECONDS = 1\.6/);
-  assert.match(music,/var SCHEDULER_INTERVAL_MS = 100/);
   assert.match(music,/node\._baselineEnvelope/);
-  assert.match(music,/envelope\.gain\.setTargetAtTime\(0\.0001,now,0\.008\)/);
-  assert.doesNotMatch(music,/Object\.assign\(TRACKS/);
+  assert.doesNotMatch(music,/var ARRANGEMENTS =/);
 });
 test('reported Recreation interaction repairs remain wired',()=>{
   assert.match(core,/injectMobileGameControls\('make24'\);[\s\S]*?syncDesktopKeypadState\(\)/);
