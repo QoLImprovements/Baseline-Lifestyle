@@ -217,7 +217,7 @@ test('Cross Number keeps puzzle-only actions at the foot of Numbers on desktop, 
 
 
 test('all eight standard Recreation games share one five-button dock and a distinct Round view',async({browser})=>{
-  test.setTimeout(180000);
+  test.setTimeout(120000);
   const cases=[
     ['pairs','/baseline-recreation/games/pairs','#pairsGameCard','[data-pairs-panel="pairsRoundCard"]','[data-pairs-panel="pairsGameCard"]','#pairsRoundSummary',5],
     ['detectword','/baseline-recreation/games/detect-the-word','#wordGameCard','[data-word-panel="wordRoundCard"]','[data-word-panel="wordGameCard"]','#wordRoundSummary',5],
@@ -228,7 +228,9 @@ test('all eight standard Recreation games share one five-button dock and a disti
     ['coloursort','/baseline-recreation/games/colour-sort','#colourSortGameCard','[data-colour-tab="round"]','[data-colour-tab="game"]','#colourSortRoundCard .round-status-card',4],
     ['crossnumber','/baseline-recreation/puzzles/crossnumber','#crossnumberGamePanel','[data-crossnumber-panel="crossnumberRoundPanel"]','[data-crossnumber-panel="crossnumberGamePanel"]','#crossnumberRoundPanel [data-crossnumber-status]',5]
   ];
-  const context=await browser.newContext({viewport:{width:1440,height:900},hasTouch:true});
+  // Native browser fullscreen and touch-only pseudo-fullscreen are separate paths.
+  // This desktop geometry suite must exercise native fullscreen.
+  const context=await browser.newContext({viewport:{width:1440,height:900},hasTouch:false});
   const page=await context.newPage();
   await page.route('**/systems/baseline-recreation/api/games_data.php**',async route=>{
     await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:'save_unavailable'})});
@@ -280,7 +282,7 @@ test('all eight standard Recreation games share one five-button dock and a disti
     await expect(root).toBeVisible();
     await expect(page.locator(status)).toBeHidden();
     await root.locator('.game-fullscreen-toggle').click();
-    await page.waitForFunction(selector=>document.fullscreenElement?.matches(selector),rootSelector);
+    await page.waitForFunction(selector=>document.fullscreenElement?.matches(selector),rootSelector,{timeout:10000});
     await geometry(rootSelector,name+' fullscreen');
     const tabs=root.locator(':scope > .game-fullscreen-window-tabs [data-fullscreen-window-tab]');
     await expect(tabs).toHaveCount(count);
