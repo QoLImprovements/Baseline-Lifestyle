@@ -965,38 +965,43 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   const blockPlay=blockCard.locator('.block-grid-play-cluster');
   const blockScore=blockCard.locator('.block-grid-score-window');
   const blockXp=blockCard.locator('.game-live-xp');
-  const blockStatus=blockCard.locator('.round-status-card');
+  const blockStatus=page.locator('#blockGridRoundCard .round-status-card');
   const blockTier=blockCard.locator('.block-grid-run-objective');
   const blockSpecial=blockCard.locator('.block-grid-skill');
   const blockControls=blockCard.locator('.game-window-actions');
-  for(const locator of [blockPlay,blockScore,blockXp,blockStatus,blockTier,blockSpecial,blockControls]) await expect(locator).toBeVisible();
+  for(const locator of [blockPlay,blockScore,blockXp,blockTier,blockSpecial,blockControls]) await expect(locator).toBeVisible();
+  await expect(blockStatus).toBeHidden();
+  await page.locator('#blockGridPanel [data-block-tab="round"]').click();
+  await expect(blockStatus).toBeVisible();
   await expect(blockStatus.locator('.round-status-heading')).toHaveText('Round Status');
-  expect(await blockStatus.locator('.round-status-heading').evaluate((node)=>getComputedStyle(node).textAlign)).toBe('center');
-  const [playBox,scoreBox,xpBox,statusBox,tierBox,specialBox,controlsBox]=await Promise.all([
-    blockPlay.boundingBox(),blockScore.boundingBox(),blockXp.boundingBox(),blockStatus.boundingBox(),blockTier.boundingBox(),blockSpecial.boundingBox(),blockControls.boundingBox()
+  await page.locator('#blockGridPanel [data-block-tab="game"]').click();
+  await expect(blockStatus).toBeHidden();
+  const [playBox,scoreBox,xpBox,tierBox,specialBox,controlsBox]=await Promise.all([
+    blockPlay.boundingBox(),blockScore.boundingBox(),blockXp.boundingBox(),blockTier.boundingBox(),blockSpecial.boundingBox(),blockControls.boundingBox()
   ]);
-  for(const box of [playBox,scoreBox,xpBox,statusBox,tierBox,specialBox,controlsBox]) expect(box).not.toBeNull();
-  for(const box of [scoreBox,xpBox,statusBox,tierBox,specialBox,controlsBox]) expect(box.x).toBeGreaterThan(playBox.x+playBox.width-1);
+  for(const box of [playBox,scoreBox,xpBox,tierBox,specialBox,controlsBox]) expect(box).not.toBeNull();
+  for(const box of [scoreBox,xpBox,tierBox,specialBox,controlsBox]) expect(box.x).toBeGreaterThan(playBox.x+playBox.width-1);
   expect(xpBox.y).toBeGreaterThanOrEqual(scoreBox.y);
-  expect(statusBox.y).toBeGreaterThanOrEqual(xpBox.y);
-  expect(tierBox.y).toBeGreaterThanOrEqual(statusBox.y);
+  expect(tierBox.y).toBeGreaterThanOrEqual(xpBox.y);
   expect(specialBox.y).toBeGreaterThanOrEqual(scoreBox.y);
-  expect(await blockStatus.evaluate((node)=>getComputedStyle(node).alignSelf)).toBe('start');
-  expect(statusBox.height).toBeLessThan((await blockCard.boundingBox()).height*.7);
-  expect(['grid','flex']).toContain(await blockControls.evaluate((node)=>getComputedStyle(node).display));
+  expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
 
   // Block Grid fullscreen keeps the same left/right relationship and never
   // falls back to the retired seven-column common-control dock.
   await blockCard.locator('[data-block-action="fullscreen"]').click();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='blockGridGameCard');
-  const [fsPlayBox,fsStatusBox,fsControlsBox]=await Promise.all([
-    blockPlay.boundingBox(),blockStatus.boundingBox(),blockControls.boundingBox()
+  const [fsPlayBox,fsControlsBox]=await Promise.all([
+    blockPlay.boundingBox(),blockControls.boundingBox()
   ]);
   expect(fsPlayBox).not.toBeNull();
-  expect(fsStatusBox).not.toBeNull();
   expect(fsControlsBox).not.toBeNull();
-  expect(fsStatusBox.x).toBeGreaterThan(fsPlayBox.x+fsPlayBox.width-1);
-  expect(['grid','flex']).toContain(await blockControls.evaluate((node)=>getComputedStyle(node).display));
+  expect(fsPlayBox.width).toBeGreaterThan(450);
+  expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
+  const blockFullscreenTabs=blockCard.locator(':scope > .game-fullscreen-window-tabs [data-fullscreen-window-tab]');
+  await expect(blockFullscreenTabs).toHaveCount(5);
+  await blockFullscreenTabs.filter({hasText:/^Round$/}).click();
+  await expect(blockCard.locator(':scope > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Round Status');
+  await blockFullscreenTabs.filter({hasText:/^Game$/}).click();
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
 
@@ -1022,19 +1027,17 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
       rail:rect('#blockGridGameCard > .block-grid-score-skills-rail'),
       play:rect('#blockGridGameCard > .block-grid-play-cluster'),
       xp:rect('#blockGridGameCard > .game-live-xp'),
-      status:rect('#blockGridGameCard > .round-status-card'),
       dock:rect('#blockGridGameCard > .game-window-actions'),
       display:style('#blockGridGameCard','display'),
       dockDisplay:style('#blockGridGameCard > .game-window-actions','display')
     };
   });
   expect(mobileWindowed.pageScrollWidth).toBeLessThanOrEqual(mobileWindowed.viewport+1);
-  for(const box of [mobileWindowed.card,mobileWindowed.rail,mobileWindowed.play,mobileWindowed.xp,mobileWindowed.status,mobileWindowed.dock]) expect(box).not.toBeNull();
+  for(const box of [mobileWindowed.card,mobileWindowed.rail,mobileWindowed.play,mobileWindowed.xp,mobileWindowed.dock]) expect(box).not.toBeNull();
   expect(mobileWindowed.display).toBe('flex');
   expect(mobileWindowed.dockDisplay).toBe('grid');
   expect(mobileWindowed.rail.bottom).toBeLessThanOrEqual(mobileWindowed.play.y+12);
   expect(mobileWindowed.xp.y).toBeGreaterThanOrEqual(mobileWindowed.play.bottom-1);
-  expect(mobileWindowed.status.y).toBeGreaterThanOrEqual(mobileWindowed.xp.y);
 
   const mobileDock=await page.evaluate(()=>{
     const rect=(selector)=>{
