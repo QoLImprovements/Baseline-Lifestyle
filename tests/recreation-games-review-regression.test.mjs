@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=TRACKCOIN_FULLHEIGHT_ROUND_20261104_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_UNIFIED_20261104_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -136,10 +136,10 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=TRACKCOIN_SEPARATE_ROUND_20261104_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_UNIFIED_20261104_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=TOUCH_SPECIALS_FULLSCREEN_20261103_2/);
-  assert.match(html,/colour-sort\.js\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(html,/block-grid\.js\?v=RECREATION_UNIFIED_20261104_1/);
+  assert.match(html,/colour-sort\.js\?v=RECREATION_UNIFIED_20261104_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -273,11 +273,37 @@ test('Round Status and reward terminology stay coherent across Recreation',()=>{
   assert.match(crossnumber,/Bank Coins · \+'\+rewards\.xp\+' XP'[\s\S]*?Clean Streak Bonus/);
 });
 
+test('all standard games use a single five-control dock and separate Round sections',()=>{
+  const cases=[
+    ['pairsRoundCard','pairsRoundSummary'],
+    ['wordRoundCard','wordRoundSummary'],
+    ['make24RoundCard','make24RoundSummary'],
+    ['trackCoinRoundPanel','trackCoinSummary'],
+    ['ruleShiftRoundCard','ruleShiftRoundSummary'],
+    ['crossnumberRoundPanel','data-crossnumber-status']
+  ];
+  for(const [panelId,statusId] of cases){
+    assert.match(html,new RegExp('id="'+panelId+'"[^>]*hidden'));
+    assert.match(html,new RegExp(statusId));
+  }
+  assert.match(blockGrid,/id="blockGridRoundCard"/);
+  assert.match(blockGrid,/function renderRoundPanel\(/);
+  assert.match(colourSort,/id="colourSortRoundCard"/);
+  assert.match(core,/\['round','Round','pairsRoundCard'\]/);
+  assert.match(core,/\['round','Round','ruleShiftRoundCard'\]/);
+  assert.match(core,/\['round','Round','crossnumberRoundPanel'\]/);
+  assert.match(music,/Each game's individual actions belong to its own toolbar/);
+  assert.doesNotMatch(music,/host\.appendChild\(control\)/);
+  assert.match(nonRealmCss,/SINGLE RECREATION DOCK AUTHORITY/);
+  assert.match(nonRealmCss,/grid-template-columns:var\(--bl-icon-size,44px\) minmax\(0,1fr\) var\(--bl-icon-size,44px\) var\(--bl-icon-size,44px\)!important/);
+  assert.match(nonRealmCss,/justify-self:end!important;[\s\S]*?grid-column:4!important/);
+});
+
 test('fullscreen right rail mirrors each game windowed tabs and defaults to Game',()=>{
   assert.match(core,/const FULLSCREEN_WINDOW_TABS=Object\.freeze/);
-  assert.match(core,/detectword:\{root:'wordGameCard',tabs:\[\['game','Game'\],\['skills','Skills','wordSkillCard'\],\['tiers','Tiers','wordTierCard'\],\['progress','Progress','wordProgressCard'\]\]\}/);
-  assert.match(core,/blockgrid:\{root:'blockGridGameCard',tabs:\[\['game','Game'\],\['skills','Skills','blockGridSkillsCard'\],\['tiers','Tiers','blockGridModesCard'\],\['progress','Progress','blockGridProgressCard'\]\]\}/);
-  assert.match(core,/crossnumber:\{root:'crossnumberGamePanel',tabs:\[\['game','Game'\],\['skills','Skills','crossnumberSkillPanel'\],\['tiers','Tiers','crossnumberTierPanel'\],\['progress','Progress','crossnumberProgressPanel'\]\]\}/);
+  assert.match(core,/detectword:\{root:'wordGameCard',tabs:\[\['game','Game'\],\['round','Round','wordRoundCard'\],\['skills','Skills','wordSkillCard'\]/);
+  assert.match(core,/blockgrid:\{root:'blockGridGameCard',tabs:\[\['game','Game'\],\['round','Round','blockGridRoundCard'\],\['skills','Skills','blockGridSkillsCard'\]/);
+  assert.match(core,/crossnumber:\{root:'crossnumberGamePanel',tabs:\[\['game','Game'\],\['round','Round','crossnumberRoundPanel'\],\['skills','Skills','crossnumberSkillPanel'\]/);
   assert.match(core,/fullscreen\.setAttribute\('data-fullscreen-window-view','game'\)/);
   assert.match(core,/data-fullscreen-window-tab/);
   assert.match(core,/cloneFullscreenPanelHtml/);
@@ -443,7 +469,7 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/active\.gameOver = !hasAnyPlacement\(active\.board, active\.tray\);[\s\S]*?if\(active\.gameOver\) settleRunXp\(active\)/);
   assert.doesNotMatch(blockGrid,/awardXp\(profile, Math\.max\(1, Math\.ceil\(awardedScore \/ 5\)/);
   assert.doesNotMatch(blockGrid,/Open Space/);
-  assert.match(blockGrid,/BLOCK_TABS = Object\.freeze\(\['game','skills','modes','progress'\]\)/);
+  assert.match(blockGrid,/BLOCK_TABS = Object\.freeze\(\['game','round','skills','modes','progress'\]\)/);
   assert.match(blockGrid,/id="blockGridSkillsCard"/);
   assert.match(blockGrid,/Score-based progression[\s\S]*?10 points = 1 XP/);
   assert.doesNotMatch(blockCss,/Block Grid windowed composition \+ score progression/);
@@ -527,8 +553,8 @@ test('Cross Number avoids recent layouts, fits the whole board, and keeps all co
   assert.match(crossnumberCss,/One coherent pointer-drag path/);
   assert.match(crossnumberCss,/\.crossnumber-touch-drag-ghost\{[\s\S]*?position:fixed!important[\s\S]*?z-index:2147483000!important/);
   assert.match(crossnumberCss,/\.crossnumber-number-tile\{[\s\S]*?touch-action:none!important/);
-  assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_NUMBER_CARD_ACTIONS_20261104_1/);
-  assert.match(html,/crossnumber\.js\?v=DESKTOP_POINTER_DRAG_20261103_2/);
+  assert.match(html,/crossnumber\.css\?v=RECREATION_UNIFIED_20261104_1/);
+  assert.match(html,/crossnumber\.js\?v=RECREATION_UNIFIED_20261104_1/);
   assert.doesNotMatch(crossnumber,/setCross NumberPanel|BaselineCross Number|baselineCross Number/);
   assert.match(html,/data-crossnumber-action="restart"[^>]*data-tooltip="Restart · Alt\+R"[^>]*><span aria-hidden="true">R<\/span>/);
   assert.match(html,/data-crossnumber-action="fullscreen"[^>]*data-tooltip="Full screen · Alt\+F"[^>]*aria-label="Full screen"/);

@@ -325,7 +325,7 @@ function renderGame() {
   if (!root) return;
   const active = puzzle();
   if (!active) {
-    root.innerHTML = `<div class="colour-sort-empty"><div class="summary-box round-status-card" aria-live="polite">${statusHtml()}</div><p>${escapeHtml(tierById(profile.selectedTier).name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions game-common-actions recreation-unified-controls"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-colour-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto New Game off"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-colour-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
+    root.innerHTML = `<div class="colour-sort-empty"><p>${escapeHtml(tierById(profile.selectedTier).name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions game-common-actions recreation-unified-controls"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-colour-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto New Game off"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-colour-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
     syncAutoNextControl();
     return;
   }
@@ -345,7 +345,7 @@ function renderGame() {
       </div>
     </div>
     <div class="game-live-xp" data-live-xp="coloursort"><strong>Player Rank ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
-    <div class="summary-box round-status-card" aria-live="polite">${statusHtml()}</div>
+    
     <div class="colour-sort-progress-head"><div><strong>Game Progress</strong><span>Drag a bottle onto a valid destination, or tap source then destination.</span></div><strong>${sorted} / ${colours}</strong></div>
     <div class="colour-sort-progress-meter" aria-label="${sorted} of ${colours} colours sorted"><span style="width:${sortedPercent}%"></span></div>
     ${mechanics.coverBuried || mechanics.lockMoves ? `<div class="colour-sort-mechanic-note"><strong>${escapeHtml(tierForLevel(active.level).name)} mechanic</strong><span>${escapeHtml(mechanics.label)}</span></div>` : ''}
@@ -435,7 +435,7 @@ function colourTabUrl(name) {
 
 function setTab(name, historyMode = 'none') {
   const requested = COLOUR_TABS.includes(name) ? name : 'game';
-  const next = requested === 'round' && !mobileColourView() ? 'game' : requested;
+  const next = requested;
   activeColourTab=next;
   document.querySelectorAll('[data-colour-tab]').forEach(button => button.classList.toggle('is-active', button.dataset.colourTab === next));
   const cards={game:'colourSortGameCard',round:'colourSortRoundCard',tiers:'colourSortLevelsCard',progress:'colourSortProgressCard'};
@@ -1049,7 +1049,7 @@ function panelHtml() {
       </details>
       <div class="game-toggle-row">
         <button class="action ghost game-toggle-btn is-active" data-colour-tab="game" type="button">Game</button>
-        <button class="action ghost game-toggle-btn colour-sort-mobile-round-tab" data-colour-tab="round" type="button">Round</button>
+        <button class="action ghost game-toggle-btn" data-colour-tab="round" type="button">Round</button>
         <button class="action ghost game-toggle-btn" data-colour-tab="tiers" type="button">Tiers</button>
         <button class="action ghost game-toggle-btn" data-colour-tab="progress" type="button">Progress</button>
       </div>
@@ -1069,7 +1069,7 @@ const shell = createGameExtensionShell({
   name:'Colour Sort',
   order:20,
   art:'/systems/baseline-recreation/games/colour-sort/art/colour-sort-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=MOBILE_GAME_COHERENCE_20261103_1',
+  styleUrl:'/systems/baseline-recreation/games/colour-sort/css/colour-sort.css?v=RECREATION_UNIFIED_20261104_1',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `${tierById(profile.selectedTier).name} Tier · ${profile.gamesPlayed} games` : 'Ready',

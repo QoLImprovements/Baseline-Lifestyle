@@ -865,8 +865,11 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
 
   const wordTabs=page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-tabbar');
   await expect(wordTabs).toBeVisible();
-  expect(await wordTabs.getByRole('tab').allTextContents()).toEqual(['Game','Skills','Tiers','Progress']);
+  expect(await wordTabs.getByRole('tab').allTextContents()).toEqual(['Game','Round','Skills','Tiers','Progress']);
   await expect(wordTabs.getByRole('tab',{name:'Game',exact:true})).toHaveClass(/is-active/);
+  await wordTabs.getByRole('tab',{name:'Round',exact:true}).click();
+  await expect(page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Round Status');
+  await wordTabs.getByRole('tab',{name:'Game',exact:true}).click();
   await wordTabs.getByRole('tab',{name:'Skills',exact:true}).click();
   await expect(page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Detect The Word Skill Tree');
   await wordTabs.getByRole('tab',{name:'Tiers',exact:true}).click();
@@ -875,7 +878,7 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await expect(page.locator('#wordGameCard > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Progress');
   await wordTabs.getByRole('tab',{name:'Game',exact:true}).click();
 
-  const wordKeyboard=page.locator('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"]');
+  const wordKeyboard=page.locator('#wordGameCard .game-specific-actions [data-desktop-keypad-toggle="detectword"]');
   const wordDock=page.locator('#wordGameCard .game-window-actions.game-common-actions');
   const wordStart=wordDock.locator('#newWordRoundBtn');
   const wordAuto=wordDock.locator('[data-auto-next-toggle="detectword"]');
@@ -897,13 +900,13 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
     };
     return {
       dock:rect('#wordGameCard .game-window-actions.game-common-actions'),
-      keyboard:rect('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"]'),
+      keyboard:rect('#wordGameCard .game-specific-actions [data-desktop-keypad-toggle="detectword"]'),
       start:rect('#wordGameCard .game-window-actions #newWordRoundBtn'),
       auto:rect('#wordGameCard .game-window-actions [data-auto-next-toggle="detectword"]'),
       settings:rect('#wordGameCard .game-window-actions [data-games-settings]'),
       music:rect('#wordGameCard .game-window-actions [data-games-music-quick]'),
       fullscreen:rect('#wordGameCard .game-window-actions [data-game-fullscreen="detectword"]'),
-      icon:rect('#wordGameCard .game-window-actions [data-desktop-keypad-toggle="detectword"] .game-shell-action__svg')
+      icon:rect('#wordGameCard .game-specific-actions [data-desktop-keypad-toggle="detectword"] .game-shell-action__svg')
     };
   });
   for(const [name,box] of Object.entries(wordGeometry)){
@@ -934,17 +937,16 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   // same left rail, rather than the retired side-by-side alignment.
   expect(Math.abs(cx(wordStartBox)-cx(wordAutoBox))).toBeLessThanOrEqual(1);
   expect(cy(wordStartBox)).toBeLessThan(cy(wordAutoBox));
-  // Settings, Music and Fullscreen share one right-aligned top row.
-  // Keypad occupies its reserved second-row slot inside the same dock.
-  expect(cx(wordSettingsBox)).toBeLessThan(cx(wordMusicBox));
+  // One canonical two-row layout: Settings directly above Fullscreen,
+  // Music to the left of Fullscreen. Keypad is game-specific and stays
+  // outside the five-button shared dock.
+  expect(Math.abs(cx(wordSettingsBox)-cx(wordFullBox))).toBeLessThanOrEqual(2);
+  expect(cy(wordSettingsBox)).toBeLessThan(cy(wordFullBox));
   expect(cx(wordMusicBox)).toBeLessThan(cx(wordFullBox));
-  expect(Math.abs(cy(wordSettingsBox)-cy(wordMusicBox))).toBeLessThanOrEqual(1);
-  expect(Math.abs(cy(wordMusicBox)-cy(wordFullBox))).toBeLessThanOrEqual(1);
-  expect(cy(wordKeyboardBox)).toBeGreaterThan(cy(wordSettingsBox));
+  expect(Math.abs(cy(wordMusicBox)-cy(wordFullBox))).toBeLessThanOrEqual(2);
   expect(cx(wordStartBox)).toBeLessThan(wordDockBox.x+wordDockBox.width/2);
   expect(cx(wordMusicBox)).toBeGreaterThan(wordDockBox.x+wordDockBox.width/2);
-  expect(wordKeyboardBox.x).toBeGreaterThanOrEqual(wordDockBox.x);
-  expect(wordKeyboardBox.x+wordKeyboardBox.width).toBeLessThanOrEqual(wordDockBox.x+wordDockBox.width+2);
+  expect(await wordDock.locator('[data-desktop-keypad-toggle="detectword"]').count()).toBe(0);
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
 
@@ -963,38 +965,43 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   const blockPlay=blockCard.locator('.block-grid-play-cluster');
   const blockScore=blockCard.locator('.block-grid-score-window');
   const blockXp=blockCard.locator('.game-live-xp');
-  const blockStatus=blockCard.locator('.round-status-card');
+  const blockStatus=page.locator('#blockGridRoundCard .round-status-card');
   const blockTier=blockCard.locator('.block-grid-run-objective');
   const blockSpecial=blockCard.locator('.block-grid-skill');
   const blockControls=blockCard.locator('.game-window-actions');
-  for(const locator of [blockPlay,blockScore,blockXp,blockStatus,blockTier,blockSpecial,blockControls]) await expect(locator).toBeVisible();
+  for(const locator of [blockPlay,blockScore,blockXp,blockTier,blockSpecial,blockControls]) await expect(locator).toBeVisible();
+  await expect(blockStatus).toBeHidden();
+  await page.locator('#blockGridPanel [data-block-tab="round"]').click();
+  await expect(blockStatus).toBeVisible();
   await expect(blockStatus.locator('.round-status-heading')).toHaveText('Round Status');
-  expect(await blockStatus.locator('.round-status-heading').evaluate((node)=>getComputedStyle(node).textAlign)).toBe('center');
-  const [playBox,scoreBox,xpBox,statusBox,tierBox,specialBox,controlsBox]=await Promise.all([
-    blockPlay.boundingBox(),blockScore.boundingBox(),blockXp.boundingBox(),blockStatus.boundingBox(),blockTier.boundingBox(),blockSpecial.boundingBox(),blockControls.boundingBox()
+  await page.locator('#blockGridPanel [data-block-tab="game"]').click();
+  await expect(blockStatus).toBeHidden();
+  const [playBox,scoreBox,xpBox,tierBox,specialBox,controlsBox]=await Promise.all([
+    blockPlay.boundingBox(),blockScore.boundingBox(),blockXp.boundingBox(),blockTier.boundingBox(),blockSpecial.boundingBox(),blockControls.boundingBox()
   ]);
-  for(const box of [playBox,scoreBox,xpBox,statusBox,tierBox,specialBox,controlsBox]) expect(box).not.toBeNull();
-  for(const box of [scoreBox,xpBox,statusBox,tierBox,specialBox,controlsBox]) expect(box.x).toBeGreaterThan(playBox.x+playBox.width-1);
+  for(const box of [playBox,scoreBox,xpBox,tierBox,specialBox,controlsBox]) expect(box).not.toBeNull();
+  for(const box of [scoreBox,xpBox,tierBox,specialBox,controlsBox]) expect(box.x).toBeGreaterThan(playBox.x+playBox.width-1);
   expect(xpBox.y).toBeGreaterThanOrEqual(scoreBox.y);
-  expect(statusBox.y).toBeGreaterThanOrEqual(xpBox.y);
-  expect(tierBox.y).toBeGreaterThanOrEqual(statusBox.y);
+  expect(tierBox.y).toBeGreaterThanOrEqual(xpBox.y);
   expect(specialBox.y).toBeGreaterThanOrEqual(scoreBox.y);
-  expect(await blockStatus.evaluate((node)=>getComputedStyle(node).alignSelf)).toBe('start');
-  expect(statusBox.height).toBeLessThan((await blockCard.boundingBox()).height*.7);
-  expect(['grid','flex']).toContain(await blockControls.evaluate((node)=>getComputedStyle(node).display));
+  expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
 
   // Block Grid fullscreen keeps the same left/right relationship and never
   // falls back to the retired seven-column common-control dock.
   await blockCard.locator('[data-block-action="fullscreen"]').click();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='blockGridGameCard');
-  const [fsPlayBox,fsStatusBox,fsControlsBox]=await Promise.all([
-    blockPlay.boundingBox(),blockStatus.boundingBox(),blockControls.boundingBox()
+  const [fsPlayBox,fsControlsBox]=await Promise.all([
+    blockPlay.boundingBox(),blockControls.boundingBox()
   ]);
   expect(fsPlayBox).not.toBeNull();
-  expect(fsStatusBox).not.toBeNull();
   expect(fsControlsBox).not.toBeNull();
-  expect(fsStatusBox.x).toBeGreaterThan(fsPlayBox.x+fsPlayBox.width-1);
-  expect(['grid','flex']).toContain(await blockControls.evaluate((node)=>getComputedStyle(node).display));
+  expect(fsPlayBox.width).toBeGreaterThan(450);
+  expect(await blockControls.evaluate((node)=>getComputedStyle(node).display)).toBe('grid');
+  const blockFullscreenTabs=blockCard.locator(':scope > .game-fullscreen-window-tabs [data-fullscreen-window-tab]');
+  await expect(blockFullscreenTabs).toHaveCount(5);
+  await blockFullscreenTabs.filter({hasText:/^Round$/}).click();
+  await expect(blockCard.locator(':scope > .game-fullscreen-window-tabs .game-fullscreen-window-pane')).toContainText('Round Status');
+  await blockFullscreenTabs.filter({hasText:/^Game$/}).click();
   await page.evaluate(()=>document.exitFullscreen());
   await page.waitForFunction(()=>document.fullscreenElement===null);
 
@@ -1020,19 +1027,17 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
       rail:rect('#blockGridGameCard > .block-grid-score-skills-rail'),
       play:rect('#blockGridGameCard > .block-grid-play-cluster'),
       xp:rect('#blockGridGameCard > .game-live-xp'),
-      status:rect('#blockGridGameCard > .round-status-card'),
       dock:rect('#blockGridGameCard > .game-window-actions'),
       display:style('#blockGridGameCard','display'),
       dockDisplay:style('#blockGridGameCard > .game-window-actions','display')
     };
   });
   expect(mobileWindowed.pageScrollWidth).toBeLessThanOrEqual(mobileWindowed.viewport+1);
-  for(const box of [mobileWindowed.card,mobileWindowed.rail,mobileWindowed.play,mobileWindowed.xp,mobileWindowed.status,mobileWindowed.dock]) expect(box).not.toBeNull();
+  for(const box of [mobileWindowed.card,mobileWindowed.rail,mobileWindowed.play,mobileWindowed.xp,mobileWindowed.dock]) expect(box).not.toBeNull();
   expect(mobileWindowed.display).toBe('flex');
   expect(mobileWindowed.dockDisplay).toBe('grid');
   expect(mobileWindowed.rail.bottom).toBeLessThanOrEqual(mobileWindowed.play.y+12);
   expect(mobileWindowed.xp.y).toBeGreaterThanOrEqual(mobileWindowed.play.bottom-1);
-  expect(mobileWindowed.status.y).toBeGreaterThanOrEqual(mobileWindowed.xp.y);
 
   const mobileDock=await page.evaluate(()=>{
     const rect=(selector)=>{

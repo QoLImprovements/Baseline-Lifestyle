@@ -473,10 +473,7 @@ html.is-dragging-colour-sort-bottle,html.is-dragging-colour-sort-bottle body{ove
   ){display:none!important}
 }
 
-/* Round is a phone-only navigation pane; desktop retains its original game layout. */
-@media (min-width:821px) and (hover:hover) and (pointer:fine){
-  #colourSortPanel [data-colour-tab="round"]{display:none!important}
-}
+/* Round is a normal, separate tab on every viewport, including desktop. */
 @media (max-width:820px), (hover:none) and (pointer:coarse){
   body[data-app="recreation"] #colourSortPanel .game-toggle-row{
     display:grid!important;

@@ -55,7 +55,8 @@ test('desktop game controls form one dock while phones retain their own layout',
   assert.match(dock, /\.games-settings-trigger\{[\s\S]*?grid-column:4!important;grid-row:1/);
   assert.match(dock, /\.games-music-quick-toggle\{[\s\S]*?grid-column:5!important;grid-row:1/);
   assert.match(dock, /\.game-fullscreen-toggle\{[\s\S]*?grid-column:6!important;grid-row:1/);
-  assert.match(music, /host\.appendChild\(control\)/);
+  assert.doesNotMatch(music, /host\.appendChild\(control\)/);
+  assert.match(music, /specifics\.appendChild\(control\)/);
 });
 
 test('Block Grid fullscreen has a bounded board, no phantom tab grid item and touch-draggable Specials', () => {
@@ -99,8 +100,8 @@ test('Cross Number puzzle-only actions remain in the spacious Numbers card in bo
 });
 
 test('all changed runtime assets receive fresh cache keys', () => {
-  assert.match(html, /CROSSNUMBER_NUMBER_CARD_ACTIONS_20261104_1/);
-  assert.match(html, /TRACKCOIN_FULLHEIGHT_ROUND_20261104_1/);
-  assert.match(html, /DESKTOP_POINTER_DRAG_20261103_2/);
-  assert.match(html, /TOUCH_SPECIALS_FULLSCREEN_20261103_2/);
+  assert.match(html, /RECREATION_UNIFIED_20261104_1/);
+  assert.match(html, /RECREATION_UNIFIED_20261104_1/);
+  assert.match(html, /RECREATION_UNIFIED_20261104_1/);
+  assert.match(html, /RECREATION_UNIFIED_20261104_1/);
 });

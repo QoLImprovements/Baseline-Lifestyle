@@ -313,7 +313,7 @@ function renderGame() {
   if (!root) return;
   const active = run();
   if (!active) {
-    root.innerHTML = `<div class="block-grid-empty"><div class="summary-box round-status-card" id="blockGridStatus" aria-live="polite">${statusHtml()}</div><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions game-common-actions recreation-unified-controls"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto New Game off"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
+    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} Tier selected. Press New Game when ready.</p><div class="game-window-actions game-common-actions recreation-unified-controls"><button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-block-action="new" data-tooltip="New Game · Alt+N" title="New Game · Alt+N" aria-label="New Game" type="button"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button><button class="action ghost auto-next-toggle game-control-icon game-shell-action game-shell-action--icon" data-auto-next-toggle="${APP}" type="button" aria-pressed="false" aria-label="Auto New Game off"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button><button class="action ghost game-shell-action game-shell-action--icon game-fullscreen-toggle" data-block-action="fullscreen" data-tooltip="Full screen · Alt+F" type="button" aria-label="Full screen" title="Full screen — Alt+F"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></div>`;
     syncAutoNextControl();
     return;
   }
@@ -338,7 +338,7 @@ function renderGame() {
       </div>
     </aside>
     <div class="game-live-xp" data-live-xp="blockgrid"><strong>Player Rank ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
-    <div class="summary-box round-status-card" id="blockGridStatus" aria-live="polite">${statusHtml()}</div>
+    
     <div class="block-grid-run-objective">
       <div><strong>${escapeHtml(currentMode().name)} Tier</strong><span>Difficulty tier · random pieces every game</span></div>
       <span>${active.lines} lines cleared</span>
@@ -403,7 +403,7 @@ function renderProgress() {
     </div>`;
 }
 
-const BLOCK_TABS = Object.freeze(['game','skills','modes','progress']);
+const BLOCK_TABS = Object.freeze(['game','round','skills','modes','progress']);
 
 function blockTabFromLocation() {
   if (!/^\/baseline-recreation\/games\/block-grid\/?$/i.test(String(location.pathname || ''))) return 'game';
@@ -427,6 +427,7 @@ function setTab(name, historyMode = 'none') {
   const next = BLOCK_TABS.includes(name) ? name : 'game';
   const cards={
     game:'blockGridGameCard',
+    round:'blockGridRoundCard',
     skills:'blockGridSkillsCard',
     modes:'blockGridModesCard',
     progress:'blockGridProgressCard'
@@ -452,12 +453,18 @@ function setTab(name, historyMode = 'none') {
   }
 }
 
+function renderRoundPanel(){
+  const card=document.getElementById('blockGridRoundCard');
+  if(card) card.innerHTML='<div class="summary-box round-status-card" id="blockGridStatus" aria-live="polite">'+statusHtml()+'</div>';
+}
+
 function render() {
   renderGameInfo();
   renderModes();
   renderSkills();
   renderProgress();
   renderGame();
+  renderRoundPanel();
   // Rendering replaces game buttons; restore shared Settings and Music immediately.
   globalThis.BaselineGamesMusic?.refreshControls?.();
   setTab(blockTabFromLocation(), 'none');
@@ -1028,12 +1035,14 @@ function panelHtml() {
       </details>
       <div class="game-toggle-row">
         <button class="action ghost game-toggle-btn is-active" data-block-tab="game" type="button">Game</button>
+        <button class="action ghost game-toggle-btn" data-block-tab="round" type="button">Round</button>
         <button class="action ghost game-toggle-btn" data-block-tab="skills" type="button">Skills</button>
         <button class="action ghost game-toggle-btn" data-block-tab="modes" type="button">Tiers</button>
         <button class="action ghost game-toggle-btn" data-block-tab="progress" type="button">Progress</button>
       </div>
       <div class="game-panel-stack">
         <section class="card game-card game-play-root" id="blockGridGameCard" data-game-play-root="block-grid"></section>
+        <section class="card game-card recreation-round-panel" id="blockGridRoundCard" hidden></section>
         <section class="card game-card" id="blockGridSkillsCard" hidden></section>
         <section class="card game-card" id="blockGridModesCard" hidden></section>
         <section class="card game-card" id="blockGridProgressCard" hidden></section>
@@ -1048,7 +1057,7 @@ const shell = createGameExtensionShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=BLOCK_FULLSCREEN_TOUCH_FIT_20261103_2',
+  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=RECREATION_UNIFIED_20261104_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `${currentMode().name} Tier · Best ${profile.bestScore}` : 'Ready',

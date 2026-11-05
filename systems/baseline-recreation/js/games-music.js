@@ -603,11 +603,12 @@
           });
         }
       }else if(specifics){
-        // Other games retain their existing shared dock behavior.
-        Array.prototype.slice.call(specifics.children).forEach(function(control){
-          if(!control.matches('button.action')) return;
-          control.setAttribute('data-recreation-original-specific','');
-          host.appendChild(control);
+        // The universal dock is exclusively for the five common controls.
+        // Each game's individual actions belong to its own toolbar. Earlier
+        // revisions wrongly moved Hint, Replay and Keypad into the dock.
+        Array.prototype.slice.call(host.querySelectorAll('[data-recreation-original-specific]')).forEach(function(control){
+          specifics.appendChild(control);
+          control.removeAttribute('data-recreation-original-specific');
         });
       }
       host.classList.add('recreation-unified-controls');
