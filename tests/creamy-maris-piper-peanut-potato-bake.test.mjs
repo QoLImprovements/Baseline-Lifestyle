@@ -29,7 +29,8 @@ test('published ingredients and BAKE instructions match the adapted recipe', () 
   assert.match(recipe, /BAKE at 180°C/);
   assert.match(recipe, /60–75 minutes/);
   assert.match(recipe, /not a verified appliance-tested result/);
-  assert.doesNotMatch(recipe, /soya milk|cornflour|garlic|onion/i);
+  assert.doesNotMatch(recipe, /data-ingredient="ing-(?:onion|garlic|soy|cornflour)"/i);
+  assert.match(recipe, /no added oil, onion, garlic, milk or soya milk/);
 });
 
 test('recipe overview, registry and linked ingredient records remain consistent', () => {
