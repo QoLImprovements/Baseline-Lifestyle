@@ -218,6 +218,22 @@
       "ing-tapioca-starch",
       "ing-lemon"
     ]
+  },
+  {
+    "id": "r13",
+    "slug": "creamy-maris-piper-peanut-potato-bake",
+    "title": "Creamy Maris Piper & Peanut Potato Bake",
+    "category": "Bake",
+    "href": "/baseline-food-approach/recipes/creamy-maris-piper-peanut-potato-bake",
+    "ingredients": [
+      "ing-potato",
+      "ing-peanut-butter",
+      "ing-water",
+      "ing-tapioca-starch",
+      "ing-herbes-de-provence",
+      "ing-lemon",
+      "ing-sea-salt"
+    ]
   }
 ]);
 })(window);
