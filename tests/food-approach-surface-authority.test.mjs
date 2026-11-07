@@ -44,7 +44,12 @@ test('Recipes overview contains no historical visible recipe-card grid', () => {
 
 test('Food Recipes overview exposes every canonical registered recipe', () => {
   const entries = Array.from(recipeIndex.matchAll(/\{\s*"id":\s*"([^"]+)",\s*"slug":\s*"([^"]+)",\s*"title":\s*"([^"]+)",\s*"category":\s*"([^"]+)",\s*"href":\s*"([^"]+)"/g));
-  assert.equal(entries.length, 12, 'canonical Food recipe registry count changed unexpectedly');
+  const physicalSlugs = fs.readdirSync(recipeDir)
+    .filter(name => name.endsWith('.html'))
+    .map(name => name.slice(0, -5))
+    .sort();
+  const registeredSlugs = entries.map(([, , slug]) => slug).sort();
+  assert.deepEqual(registeredSlugs, physicalSlugs, 'Food recipe registry must match canonical recipe files');
 
   for (const [, id, slug, title, category, href] of entries) {
     assert.ok(foodHtml.includes(`data-recipe-id="${id}"`), `Recipes overview is missing ${title} (${id})`);
@@ -54,7 +59,7 @@ test('Food Recipes overview exposes every canonical registered recipe', () => {
 
 test('Food recipe sources are content fragments only', () => {
   const files = fs.readdirSync(recipeDir).filter((name) => name.endsWith('.html'));
-  assert.equal(files.length, 12);
+  assert.ok(files.length > 0, 'Food recipes folder must contain canonical records');
 
   for (const name of files) {
     const html = read(path.join('systems/baseline-food-approach/recipes', name));
