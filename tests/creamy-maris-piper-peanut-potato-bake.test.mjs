@@ -6,7 +6,7 @@ const slug = 'creamy-maris-piper-peanut-potato-bake';
 const recipe = fs.readFileSync('systems/baseline-food-approach/recipes/' + slug + '.html', 'utf8');
 const food = fs.readFileSync('systems/baseline-food-approach/baseline-food-approach.html', 'utf8');
 const index = fs.readFileSync('systems/baseline-food-approach/js/baseline-food-recipe-index.js', 'utf8');
-const registry = JSON.parse('[' + index.match(/Object\\.freeze\\(\\[([\\s\\S]*?)\\]\\);/)[1] + ']');
+const registry = JSON.parse('[' + index.match(/Object\.freeze\(\[([\s\S]*?)\]\);/)[1] + ']');
 
 test('Ninja potato bake is a canonical Food recipe using the shared four-view shell', () => {
   assert.match(recipe, /class="recipe card recipe-page recipe-universal-template"/);
@@ -38,7 +38,7 @@ test('recipe overview, registry and linked ingredient records remain consistent'
   assert.ok(entry);
   assert.equal(entry.slug, slug);
   assert.equal(entry.category, 'Bake');
-  assert.match(food, /<h4>Bake<\\/h4>[\\s\\S]*data-recipe-id="r13"/);
+  assert.match(food, /<h4>Bake<\/h4>[\s\S]*data-recipe-id="r13"/);
   assert.ok(food.includes(entry.href));
   for (const ingredientId of entry.ingredients) {
     assert.ok(recipe.includes('data-ingredient="' + ingredientId + '"'), ingredientId + ' recipe reference');
