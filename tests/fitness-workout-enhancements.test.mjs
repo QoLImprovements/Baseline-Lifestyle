@@ -128,3 +128,36 @@ test('Fitness Saved Data writes are serialised and retry revision conflicts',()=
   assert.match(bridge,/rememberRevision\(fresh\)/);
   assert.doesNotMatch(bridge,/if\(!enabled\|\|syncing\|\|saveBlocked\)return null/);
 });
+
+test('overlapping Fitness Saved Data writes preserve both changes under revision conflict',async()=>{
+  const {runInNewContext}=require('node:vm');
+  const writes=[];
+  let revision=0;
+  const account={profile:null,bodyHistory:[],activeWorkout:null,progressionHistory:{outcomes:[],failures:[]},selectedPlanId:0};
+  const fetch=async(_url,options={})=>{
+    if(options.method!=='POST')return{status:200,json:async()=>({ok:true,revision,...account})};
+    const body=JSON.parse(options.body);
+    writes.push([body.action,body.expectedRevision]);
+    if(body.expectedRevision!==revision)return{status:409,json:async()=>({ok:false,error:'revision_conflict',revision})};
+    if(body.action==='save_progression_history')account.progressionHistory=body.progressionHistory;
+    if(body.action==='save_selected_plan')account.selectedPlanId=body.selectedPlanId;
+    revision+=1;
+    return{status:200,json:async()=>({ok:true,revision,...account})};
+  };
+  const doc={documentElement:{removeAttribute(){},setAttribute(){}},querySelector(){return null;},getElementById(){return null;},dispatchEvent(){},addEventListener(){}};
+  const win={BASELINE_auth:{get:()=>({authed:true,name:'Test Account'}),onChange(){}},addEventListener(){},clearTimeout(){},setTimeout(){}};
+  class CustomEvent{constructor(type,details){this.type=type;this.detail=details?.detail;}}
+  runInNewContext(read('systems/baseline-fitness/js/fitness-saved-data-bridge.js'),{window:win,document:doc,CustomEvent,fetch});
+  for(let i=0;i<12;i+=1)await Promise.resolve();
+  const bridge=win.BASELINE_FITNESS_SAVED_DATA;
+  assert.equal(bridge.enabled,true);
+  revision=1; // another server write happened before these two operations
+  const outcomes=await Promise.all([
+    bridge.saveProgressionHistory({outcomes:[],failures:[]}),
+    bridge.saveSelectedPlanId(0)
+  ]);
+  assert.deepEqual(outcomes.map(value=>value.ok),[true,true]);
+  assert.deepEqual(writes,[['save_progression_history',0],['save_progression_history',1],['save_selected_plan',2]]);
+  assert.equal(revision,3);
+  assert.equal(bridge.saveBlocked,false);
+});
