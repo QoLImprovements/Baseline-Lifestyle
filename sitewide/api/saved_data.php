@@ -136,6 +136,8 @@ function bl_saved_game_files(): array {
     'unheardsignal' => 'the-unheard-signal.json',
     'tearswithoutwitness' => 'tears-without-witness.json',
     'movedalong' => 'moved-along.json',
+    'moonbearswitness' => 'the-moon-bears-witness.json',
+    'the-moon-bears-witness' => 'the-moon-bears-witness.json',
     'pantherjigsaw' => 'black-panther.json',
     'bearjigsaw' => 'bear.json',
     'foxjigsaw' => 'fox.json',

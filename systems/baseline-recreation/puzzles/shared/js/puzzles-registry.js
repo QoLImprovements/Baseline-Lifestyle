@@ -6,7 +6,7 @@
       id:'jigsaws',
       name:'Jigsaws',
       note:'Image-based piece puzzles with selectable difficulty, saved state and experience earned for completed jigsaws.',
-      meta:'8 jigsaws · completion XP',
+      meta:'9 jigsaws · completion XP',
       preview:'/systems/baseline-recreation/puzzles/shared/art/jigsaws.svg?v=RECREATION_PUZZLE_ART_20261022_2'
     }),
     Object.freeze({
@@ -66,6 +66,18 @@
       alt:'Two police officers move a homeless man on from a shallow rain-sheltered doorway, one gathering his belongings while sinister clown-like reflections appear in a nearby police van.',
       libraryDescription:'Help is offered inside a process whose immediate outcome is displacement: belongings are gathered, direction is given, and a man is moved from the little shelter he has.',
       description:'Two officers may be acting within a role intended to offer help, yet the practical message is unmistakable: the man’s bedding and belongings are being gathered while he is directed away from the shallow doorway sheltering him from the rain. The distorted reflections in the police van separate personal intention from systemic effect. They symbolise how institutions can inherit procedures, repeat them as normal and communicate something harsher than the people carrying them out may recognise. The work centres the tension between assistance and displacement when following a system takes priority over listening to the person in front of it.'
+    }),
+    Object.freeze({
+      id:'the-moon-bears-witness',
+      group:'Symbolic',
+      title:'The Moon Bears Witness',
+      app:'moonbearswitness',
+      image:'/systems/baseline-recreation/puzzles/the-moon-bears-witness/art/the-moon-bears-witness.png?v=THE_MOON_BEARS_WITNESS_20261109_1',
+      width:1122,
+      height:1402,
+      alt:'A luminous full moon casts gentle rays into a dark, overgrown garden, revealing a solitary white flower sheltered among ancient tree roots and a ruined stone arch.',
+      libraryDescription:'The luminous moon sees into the depths of darkness, recognising hidden vulnerability through perception, understanding and compassion. Its gentle radiance embodies nurturing, protection and comfort, bringing warmth to what others may overlook.',
+      description:'The luminous moon sees into the depths of darkness, recognising hidden vulnerability through perception, understanding and compassion. Its gentle radiance embodies nurturing, protection and comfort, bringing warmth to what others may overlook. There is an awareness beyond the overpowering judgements of society, beyond those who did not listen and those who questioned with a hidden agenda. It understands that every situation and every story has roots. Through that awareness comes a deeper compassion and a quieter truth: Ultimately, it\'s not your fault. You are more than the blame placed upon you.'
     }),
     Object.freeze({
       id:'black-panther',

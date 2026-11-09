@@ -30,7 +30,7 @@ test('Puzzles opens as a type library with Jigsaws as a nested selection', () =>
   assert.match(core, /BaselinePuzzlesLibrary\.showOverview\(\)/);
 });
 
-test('Jigsaws are grouped into Symbolic and Animals collections with all eight artworks', () => {
+test('Jigsaws are grouped into Symbolic and Animals collections with all nine artworks', () => {
   assert.match(registry, /group:'Symbolic'/);
   assert.match(registry, /group:'Animals'/);
   assert.doesNotMatch(registry, /Psychological & Symbolic/);
@@ -42,6 +42,10 @@ test('Jigsaws are grouped into Symbolic and Animals collections with all eight a
 
   assert.match(registry, /id:'tears-without-witness'/);
   assert.match(registry, /id:'moved-along'/);
+  assert.match(registry, /id:'the-moon-bears-witness'/);
+  assert.match(registry, /title:'The Moon Bears Witness'/);
+  assert.match(registry, /app:'moonbearswitness'/);
+  assert.match(registry, /You are more than the blame placed upon you/);
   assert.match(registry, /title:'Moved Along'/);
 
   assert.match(registry, /id:'black-panther'/);
@@ -54,7 +58,12 @@ test('Jigsaws are grouped into Symbolic and Animals collections with all eight a
   assert.match(registry, /bear\.webp\?v=BEAR_JIGSAW_20261018_1/);
 
   assert.match(registry, /the-unheard-signal\.png\?v=THE_UNHEARD_SIGNAL_FULL_20261017_1/);
-  assert.match(registry, /meta:'8 jigsaws · completion XP'/);
+  assert.match(registry, /meta:'9 jigsaws · completion XP'/);
+
+  const moonArt = fs.readFileSync('systems/baseline-recreation/puzzles/the-moon-bears-witness/art/the-moon-bears-witness.png');
+  assert.equal(moonArt.length, 2362356);
+  assert.equal(moonArt.subarray(1,4).toString('ascii'), 'PNG');
+  assert.equal(crypto.createHash('sha256').update(moonArt).digest('hex'), '7a6f96c2055fc28faeb70ab40e468c8d95a6b8d0612d5883ebb5126daf427d06');
 
   const symbolicArt = fs.readFileSync('systems/baseline-recreation/puzzles/the-unheard-signal/art/the-unheard-signal.png');
   assert.equal(symbolicArt.length, 2600964);

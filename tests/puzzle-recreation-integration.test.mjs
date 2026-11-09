@@ -66,7 +66,7 @@ test('jigsaws use the Recreation server save authority with separate puzzle prof
   assert.match(source, /BaselineGameStorage/);
   assert.doesNotMatch(source, /\b(?:localStorage|sessionStorage|indexedDB)\b/);
 
-  for (const app of ['weightcoherence','unheardsignal','tearswithoutwitness','movedalong','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw']) {
+  for (const app of ['weightcoherence','unheardsignal','tearswithoutwitness','movedalong','moonbearswitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw']) {
     assert.ok(registry.includes(`app:'${app}'`));
     assert.ok(guard.includes(`'${app}'`));
     assert.ok(api.includes(`'${app}'`));
@@ -76,6 +76,7 @@ test('jigsaws use the Recreation server save authority with separate puzzle prof
   assert.match(saved, /'unheardsignal'\s*=>\s*'the-unheard-signal\.json'/);
   assert.match(saved, /'tearswithoutwitness'\s*=>\s*'tears-without-witness\.json'/);
   assert.match(saved, /'movedalong'\s*=>\s*'moved-along\.json'/);
+  assert.ok(saved.includes("'moonbearswitness' => 'the-moon-bears-witness.json'"));
   assert.match(saved, /'pantherjigsaw'\s*=>\s*'black-panther\.json'/);
   assert.match(saved, /'bearjigsaw'\s*=>\s*'bear\.json'/);
   assert.match(saved, /'foxjigsaw'\s*=>\s*'fox\.json'/);

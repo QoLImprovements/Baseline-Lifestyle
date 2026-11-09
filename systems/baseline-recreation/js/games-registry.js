@@ -45,6 +45,7 @@
     'unheardsignal',
     'tearswithoutwitness',
     'movedalong',
+    'moonbearswitness',
     'pantherjigsaw',
     'bearjigsaw',
     'foxjigsaw',
