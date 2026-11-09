@@ -27,7 +27,7 @@
   const FILE_PROTOCOL = typeof location !== 'undefined' && location.protocol === 'file:';
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Object.freeze({ TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, PROGRESSION_MODES, setValues, progressionIncrements, progressedSetValues, planSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
+    module.exports = Object.freeze({ TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, PROGRESSION_MODES, normaliseTrainingLoad, isRecoverySession, isMaintenanceSession, isBaselineCheckIn, applyTrainingLoad, setValues, progressionIncrements, progressedSetValues, planSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
   }
   if (typeof document === 'undefined') return;
   if (global.__BASELINE_FITNESS_APP__) return;
