@@ -161,6 +161,7 @@
     plan.days = plan.scheduleMode === 'specific-days' && Array.isArray(plan.days) ? plan.days.filter((day) => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(day)).slice(0, 7) : [];
     if (plan.scheduleMode === 'specific-days' && plan.days.length) plan.frequency = `${plan.days.length}x`;
     plan.timerStartDelay = Math.round(clamp(plan.timerStartDelay || 5, 1, 10));
+    plan.executionOrder = plan.executionOrder === 'straight' ? 'straight' : 'alternating';
     return plan;
   }
   function setValues(baseline, count) {
@@ -222,7 +223,7 @@
         : { item: definition, unit: 'reps', sets: item.sets, values: planSetValues(item, definition, sessionIndex), progressionType: item.progressionType };
     });
   }
-  function executionSteps(work) {
+  function executionSteps(work, order = 'alternating') {
     const reps = work.filter((item) => item.unit === 'reps');
     const holds = work.filter((item) => item.unit === 'seconds');
     const steps = [];
@@ -272,6 +273,10 @@
         }));
       }
     });
+    if (order === 'straight') {
+      const byExercise = new Map(reps.map((entry,index) => [entry.item.name,index]));
+      return steps.filter(step => !step.isTimed).sort((a,b) => (byExercise.get(a.exercise) ?? 0) - (byExercise.get(b.exercise) ?? 0)).concat(steps.filter(step => step.isTimed));
+    }
     return steps;
   }
 
@@ -514,7 +519,7 @@
     const startDate = $('#startDate')?.value && $('#startDate').value >= today() ? $('#startDate').value : today();
     const days = scheduleMode === 'specific-days' ? (selectedDays.length ? selectedDays : [['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][parseDate(startDate).getDay()]]) : [];
     const frequency = scheduleMode === 'specific-days' ? `${days.length}x` : ($('#freq')?.value || '3x');
-    const plan = { version: 9, startDate, frequency, scheduleMode, sessions: totalSessionsForUi(items), lengthMode, items, days, timerStartDelay: Math.round(clamp(existing.timerStartDelay || 5, 1, 10)) };
+    const plan = { version: 9, startDate, frequency, scheduleMode, sessions: totalSessionsForUi(items), lengthMode, items, days, executionOrder:$('#executionOrder')?.value === 'straight' ? 'straight' : 'alternating', timerStartDelay: Math.round(clamp(existing.timerStartDelay || 5, 1, 10)) };
     if (lengthMode === 'goal') plan.goal = { exercise: $('#goalExercise')?.value || '', amount: Math.round(clamp($('#goalAmount')?.value || 1, 1, 99999)) };
     return plan;
   }
@@ -527,6 +532,7 @@
       if ($('#startDate')) $('#startDate').value = today();
       if ($('#freq')) $('#freq').value = '3x';
       if ($('#scheduleMode')) $('#scheduleMode').value = 'weekly-count';
+      if ($('#executionOrder')) $('#executionOrder').value = 'alternating';
       $$('#specificDayControls input[data-plan-day]').forEach((control) => { control.checked = false; });
       global.BASELINE_syncCalisthenicsSchedule?.();
       if ($('#lengthMode')) $('#lengthMode').value = 'sessions';
@@ -546,6 +552,7 @@
       if ($('#startDate')) $('#startDate').value = plan.startDate || today();
       if ($('#freq')) $('#freq').value = plan.frequency;
       if ($('#scheduleMode')) $('#scheduleMode').value = plan.scheduleMode;
+      if ($('#executionOrder')) $('#executionOrder').value = plan.executionOrder;
       $$('#specificDayControls input[data-plan-day]').forEach((control) => { control.checked = plan.days.includes(control.dataset.planDay); });
       global.BASELINE_syncCalisthenicsSchedule?.();
       if ($('#lengthMode')) $('#lengthMode').value = plan.lengthMode;
@@ -726,7 +733,7 @@
     const sessionIndex = Number(current.progress?.nextIndex || 0);
     const row = current.sessions.find((item) => Number(item.session_index) === sessionIndex);
     if (!row) return Object.assign(empty, { available: true, allComplete: true, planComplete: true });
-    const steps = executionSteps(workForSession(current.planJson.items, sessionIndex));
+    const steps = executionSteps(workForSession(current.planJson.items, sessionIndex), current.planJson.executionOrder);
     const state = readStepState(sessionIndex);
     const completed = Math.round(clamp(state.completedSteps || 0, 0, steps.length));
     const access = accessFor(row, sessionIndex);
@@ -763,7 +770,7 @@
     const step = context.step;
     state.started = true;
     state.results[context.stepIndex] = {
-      status: step.isTimed ? 'success' : status,
+      status:step.isTimed ? (Number(achieved) >= Number(step.target) ? 'success' : 'failed') : status,
       achieved: Math.round(clamp(achieved, 0, 99999)),
       inputMode: inputMode === 'voice' ? 'voice' : 'manual',
       exercise: step.exercise || step.name,
@@ -871,7 +878,7 @@
       const failOpen = state.pendingFailureStep === index;
       const resultText = result
         ? step.isTimed
-          ? `<div class="step-status success">✓ Recorded · ${escapeHtml(result.achieved)} seconds</div>`
+          ? `<div class="step-status ${result.status === 'success' ? 'success' : 'failed'}">${result.status === 'success' ? '✓ Succeeded' : '✕ Below target'} · Achieved ${escapeHtml(result.achieved)} seconds</div>`
           : `<div class="step-status ${result.status === 'success' ? 'success' : 'failed'}">${result.status === 'success' ? '✓ Succeeded' : '✕ Failed'} · Achieved ${escapeHtml(result.achieved)}</div>`
         : '';
       const timedActions = step.isTimed
@@ -897,7 +904,7 @@
     $$('.step-fail-toggle', out).forEach((button) => button.addEventListener('click', () => { const next = readStepState(context.sessionIndex); next.started = true; next.pendingFailureStep = Number(button.dataset.step); writeStepState(context.sessionIndex, next); renderCurrentWorkout(); }));
     $$('.step-hold-toggle', out).forEach((button) => button.addEventListener('click', () => { const next = readStepState(context.sessionIndex); next.started = true; next.pendingFailureStep = Number(button.dataset.step); writeStepState(context.sessionIndex, next); renderCurrentWorkout(); }));
     $$('.step-fail-save', out).forEach((button) => button.addEventListener('click', () => { const field = $(`#failedAmount${button.dataset.step}`, out); if (!field || String(field.value).trim() === '') { field?.focus(); return; } recordStep('failed', field.value); }));
-    $$('.step-hold-save', out).forEach((button) => button.addEventListener('click', () => { const field = $(`#failedAmount${button.dataset.step}`, out); if (!field || Number(field.value) <= 0) { field?.focus(); return; } closeTimerModal(); recordStep('success', field.value); }));
+    $$('.step-hold-save', out).forEach((button) => button.addEventListener('click', () => { const field = $(`#failedAmount${button.dataset.step}`, out); if (!field || String(field.value).trim() === '' || Number(field.value) < 0) { field?.focus(); return; } closeTimerModal(); recordStep('success', field.value); }));
     $$('.step-timer', out).forEach((button) => button.addEventListener('click', () => openTimer(context.steps[Number(button.dataset.step)])));
     $('#resetWorkout', out)?.addEventListener('click', resetCurrentWorkout);
     $('#finishWorkout', out)?.addEventListener('click', finishCurrentWorkout);
@@ -1110,7 +1117,7 @@
     $('#addExerciseBtn')?.addEventListener('click', () => { markDirty(); const used = new Set(itemsFromUi().map((item) => item.exercise)); const next = EXERCISES.find((item) => !used.has(item.name)) || EXERCISES[0]; $('#exerciseList')?.append(makeExerciseRow(next.name)); syncGoalControls(); });
     $('#lengthMode')?.addEventListener('change', () => { markDirty(); syncLengthMode(); });
     $('#goalExercise')?.addEventListener('change', () => { markDirty(); syncGoalControls(); });
-    ['startDate', 'freq', 'sessions', 'goalAmount'].forEach((id) => { const control = $(`#${id}`); control?.addEventListener('input', markDirty); control?.addEventListener('change', markDirty); });
+    ['startDate', 'freq', 'sessions', 'goalAmount','executionOrder'].forEach((id) => { const control = $(`#${id}`); control?.addEventListener('input', markDirty); control?.addEventListener('change', markDirty); });
     $('#genBtn')?.addEventListener('click', renderPreview);
     $('#savePlanBtn')?.addEventListener('click', savePlan);
     $('#cancelEditPlanBtn')?.addEventListener('click', () => { generatorMode = 'view'; syncPlanShells(); });

@@ -333,7 +333,7 @@
     const section = $('#my-plan');
     if (!section || section.dataset.routineWorkspaceV2 === 'true') return;
     const topTab = $('.tab[data-target="my-plan"]');
-    if (topTab) topTab.textContent = 'My Routine';
+    if (topTab) topTab.textContent = 'My Workout';
 
     const original = Array.from(section.childNodes);
     const shell = document.createElement('div');
