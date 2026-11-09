@@ -711,7 +711,8 @@
       return items.length ? `<section class="fitness-routine-log-group"><h3>${label}</h3>${items.map(renderLogItem).join('')}</section>` : '';
     }).join('');
 
-    target.innerHTML = `${calisthenicsLogHtml()}${activityHtml}${linkedBadmintonHtml() || ''}${(!activityHtml && !linkedBadmintonHtml()) ? '<div class="fitness-routine-empty">No non-calisthenics activities are due for this date.</div>' : ''}`;
+    const linkedHtml=linkedBadmintonHtml();
+    target.innerHTML = `${calisthenicsLogHtml()}${activityHtml}${linkedHtml}${(!activityHtml && !linkedHtml) ? '<div class="fitness-routine-empty">No non-calisthenics activities are due for this date.</div>' : ''}`;
   }
 
   function completedActivityCount(date) {
@@ -724,9 +725,9 @@
     return activities + calisthenics + linked;
   }
 
-  function calendarDayButton(date, inCurrentMonth = true) {
+  function calendarDayButton(date, inCurrentMonth = true, completionCounts = null) {
     const iso = isoDate(date);
-    const count = completedActivityCount(iso);
+    const count = completionCounts ? (completionCounts.get(iso) || 0) : completedActivityCount(iso);
     const selected = iso === state.selectedDate;
     const today = iso === todayIso();
     const future = isFutureDate(iso);
@@ -743,6 +744,13 @@
       const selected = button.dataset.calendarView === state.calendarView;
       button.setAttribute('aria-selected', selected ? 'true' : 'false');
     });
+    const completionCounts = new Map();
+    const unified=global.BASELINE_FITNESS_WORKOUT_RECORDS?.getAll?.();
+    if(unified){for(const item of unified){if(item.status==='done')completionCounts.set(item.date,(completionCounts.get(item.date)||0)+1);}}
+    else {
+      const relevantMonth=firstOfMonth(state.calendarAnchor);
+      for(let offset=-7;offset<45;offset+=1){const date=new Date(relevantMonth);date.setDate(date.getDate()+offset);const key=isoDate(date);completionCounts.set(key,completedActivityCount(key));}
+    }
     const orderedWeekdays = global.BASELINE_RoutineSystem?.orderedDays?.(DAYS) || DAYS;
     weekdays.innerHTML = orderedWeekdays.map((day) => `<span>${day.slice(0, 3)}</span>`).join('');
 
@@ -754,7 +762,7 @@
       for (let index = 0; index < 7; index += 1) {
         const date = new Date(bounds.startDate);
         date.setDate(date.getDate() + index);
-        days.push(calendarDayButton(date));
+        days.push(calendarDayButton(date,true,completionCounts));
       }
       grid.innerHTML = days.join('');
       return;
@@ -771,7 +779,7 @@
     for (let index = 0; index < 42; index += 1) {
       const date = new Date(first);
       date.setDate(date.getDate() + index);
-      buttons.push(calendarDayButton(date, date.getMonth() === month.getMonth()));
+      buttons.push(calendarDayButton(date, date.getMonth() === month.getMonth(),completionCounts));
     }
     grid.innerHTML = buttons.join('');
   }

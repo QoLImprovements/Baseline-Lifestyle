@@ -111,3 +111,11 @@ test('rescheduled activity retains a validated future date and is due on the tar
   assert.match(api,/'rescheduledTo'=>\$rescheduledTo/);
   assert.match(api,/\$rescheduledTo <= \$date/);
 });
+
+test('calendar uses one workout-history scan rather than repeating it for every day',()=>{
+  const code=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  assert.match(code,/const completionCounts = new Map\(\)/);
+  assert.match(code,/const unified=global\.BASELINE_FITNESS_WORKOUT_RECORDS\?\.getAll\?\.\(\)/);
+  assert.match(code,/calendarDayButton\(date,true,completionCounts\)/);
+  assert.match(code,/calendarDayButton\(date, date\.getMonth\(\) === month\.getMonth\(\),completionCounts\)/);
+});

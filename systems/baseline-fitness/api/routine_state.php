@@ -106,7 +106,7 @@ function bl_fitness_routine_logs($value): array {
       $completedAt = bl_fitness_routine_text($raw['completedAt'] ?? '', 40);
       if($completedAt !== '' && strtotime($completedAt) === false) $completedAt = '';
       $rescheduledTo = trim((string)($raw['rescheduledTo'] ?? ''));
-      if(($raw['status'] ?? '') !== 'rescheduled' || preg_match('/^\d{4}-\d{2}-\d{2}$/', $rescheduledTo) !== 1 || $rescheduledTo <= $date || DateTimeImmutable::createFromFormat('!Y-m-d',$rescheduledTo) === false) $rescheduledTo = '';
+      if(($raw['status'] ?? '') !== 'rescheduled' || preg_match('/^\d{4}-\d{2}-\d{2}$/', $rescheduledTo) !== 1 || $rescheduledTo <= $date || (($checked = DateTimeImmutable::createFromFormat('!Y-m-d',$rescheduledTo)) === false || $checked->format('Y-m-d') !== $rescheduledTo)) $rescheduledTo = '';
       $entries[$key] = [
         'completed'=>!empty($raw['completed']),
         'status'=>!empty($raw['completed'])?'done':(in_array((string)($raw['status'] ?? ''),['partial','skipped','rescheduled'],true)?(string)$raw['status']:'planned'),

@@ -28,3 +28,7 @@ html[data-app="fitness"] .fitness-load-help{margin:6px 0 14px}
 html[data-app="fitness"] .fitness-load-settings :is(select,label){min-width:0;width:100%}
 html[data-app="fitness"] .fitness-load-notice{border-left:3px solid var(--border-2,var(--border));padding:8px 12px;margin:12px 0;background:var(--filter-bg)}
 @media(max-width:850px){html[data-app="fitness"] .fitness-load-settings{grid-template-columns:1fr}}
+
+html[data-app="fitness"] .fitness-log-reschedule{display:grid;gap:6px;min-width:195px;max-width:100%}
+html[data-app="fitness"] .fitness-log-reschedule input{min-height:44px;max-width:100%}
+@media(max-width:620px){html[data-app="fitness"] .fitness-log-reschedule{width:100%;min-width:0}}
