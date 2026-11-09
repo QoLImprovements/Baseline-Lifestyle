@@ -44,11 +44,12 @@ test('plan-name writes are bound to the selected plan identity',()=>{
 });
 
 
-test('selected-plan persistence refreshes and retries after a Saved Data revision conflict',()=>{
+test('selected-plan persistence does not replay a stale Saved Data revision',()=>{
   const bridge=read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
-  assert.match(bridge,/if\(result\?\.error==='revision_conflict'\)/);
-  assert.match(bridge,/const refreshed=await reload\(\)/);
-  assert.match(bridge,/result=await post\(\{action:'save_selected_plan',selectedPlanId:next\}\)/);
+  assert.match(bridge,/return post\(\{action:'save_selected_plan',selectedPlanId:next\}\)/);
+  assert.match(bridge,/const result=pendingWrite\.then\(write,write\)/);
+  assert.match(bridge,/blockSaving\(data\?\.error\|\|'save_failed'\)/);
+  assert.doesNotMatch(bridge,/if\(result\?\.error==='revision_conflict'\)/);
 });
 
 
