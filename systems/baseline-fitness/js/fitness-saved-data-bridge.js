@@ -20,6 +20,7 @@
   let saveBlocked=false;
   let lastError='';
   let profile=null;
+  let bodyHistory=[];
   let activeWorkout=null;
   let progressionHistory={outcomes:[],failures:[]};
   let selectedPlanId=0;
@@ -46,6 +47,7 @@
         enabled,
         saveBlocked,
         profile:clone(profile),
+        bodyHistory:clone(bodyHistory),
         activeWorkout:clone(activeWorkout),
         progressionHistory:clone(progressionHistory),
         selectedPlanId
@@ -97,6 +99,7 @@
     if(!data?.ok)return false;
     rememberRevision(data);
     profile=data.profile&&typeof data.profile==='object'?clone(data.profile):null;
+    bodyHistory=Array.isArray(data.bodyHistory)?clone(data.bodyHistory):[];
     activeWorkout=data.activeWorkout&&typeof data.activeWorkout==='object'?clone(data.activeWorkout):null;
     const history=data.progressionHistory&&typeof data.progressionHistory==='object'?data.progressionHistory:{};
     progressionHistory={
@@ -117,6 +120,7 @@
       enabled=false;
       savedDataDisabled=true;
       profile=null;
+      bodyHistory=[];
       activeWorkout=null;
       progressionHistory={outcomes:[],failures:[]};
       selectedPlanId=0;
@@ -151,6 +155,7 @@
     return true;
   }
   function getProfile(){return clone(profile);}
+  function getBodyHistory(){return clone(bodyHistory);}
   function getActiveWorkout(){return clone(activeWorkout);}
   function getProgressionHistory(){return clone(progressionHistory);}
   function getSelectedPlanId(){return selectedPlanId;}
@@ -203,6 +208,7 @@
       authName='';
       revision=0;
       profile=null;
+      bodyHistory=[];
       activeWorkout=null;
       progressionHistory={outcomes:[],failures:[]};
       selectedPlanId=0;
@@ -217,6 +223,7 @@
       timers.clear();
       revision=0;
       profile=null;
+      bodyHistory=[];
       activeWorkout=null;
       progressionHistory={outcomes:[],failures:[]};
       selectedPlanId=0;
@@ -240,6 +247,7 @@
     reload,
     syncForAuth,
     getProfile,
+    getBodyHistory,
     getActiveWorkout,
     getProgressionHistory,
     getSelectedPlanId,
