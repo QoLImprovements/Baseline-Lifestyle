@@ -142,7 +142,10 @@ function bl_fitness_progression_records_validate($value, bool $failures=false): 
       'at'=>mb_substr(trim((string)($raw['at'] ?? '')), 0, 64),
     ];
     if($failures) $record['failed'] = true;
-    else $record['success'] = !empty($raw['success']);
+    else {
+      $record['success'] = !empty($raw['success']);
+      $record['maintenance'] = !empty($raw['maintenance']);
+    }
     $records[] = $record;
   }
   return $records;

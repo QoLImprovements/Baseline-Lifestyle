@@ -58,3 +58,25 @@ test('library offers exercise technique and starts a plan',()=>{
   assert.match(app,/data-fitness-library-use/);
   assert.match(app,/Common error:/);
 });
+
+test('recovery, maintenance and reassessment are optional explicit plan rules',()=>{
+  const empty=fitness.normaliseTrainingLoad({});
+  assert.equal(empty.deloadEvery,0);
+  assert.equal(empty.maintenanceEvery,0);
+  assert.equal(empty.reassessEvery,0);
+  const config={deloadEvery:4,deloadPercent:70,maintenanceEvery:6,reassessEvery:8};
+  assert.equal(fitness.isRecoverySession(config,4),true);
+  assert.equal(fitness.isRecoverySession(config,5),false);
+  assert.equal(fitness.isMaintenanceSession(config,6),true);
+  assert.equal(fitness.isBaselineCheckIn(config,8),true);
+  assert.equal(fitness.applyTrainingLoad(20,config,4),14);
+  assert.equal(fitness.applyTrainingLoad(20,config,3),20);
+  assert.equal(fitness.normaliseTrainingLoad({deloadEvery:4,deloadPercent:5}).deloadPercent,70);
+  const def=fitness.EXERCISES.find(x=>x.name==='Knee Push-Ups');
+  const item={exercise:'Knee Push-Ups',baseline:20,sets:3,progressionMode:'straight-sets',workingPercent:80,repIncrease:1};
+  assert.deepEqual(fitness.planSetValues(item,def,4),[19,19,19]);
+  assert.deepEqual(fitness.planSetValues(item,def,4,config),[13,13,13]);
+  assert.deepEqual(fitness.planSetValues(item,def,3,config),[18,18,18]);
+  assert.match(read('systems/baseline-fitness/js/fitness-live-policy-v1.js'),/outcome\.maintenance===true\?0:/);
+  assert.match(read('systems/baseline-fitness/api/fitness_state.php'),/\$record\['maintenance'\] = !empty\(\$raw\['maintenance'\]\)/);
+});
