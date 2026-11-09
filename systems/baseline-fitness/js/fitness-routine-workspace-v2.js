@@ -203,7 +203,8 @@
           status:raw.completed?'done':(['partial','skipped','rescheduled'].includes(raw.status)?raw.status:'planned'),
           note:cleanText(raw.note, 800),
           metrics:normaliseMetricValues(raw.metrics, definition, raw.actual, activity?.measure),
-          completedAt:cleanText(raw.completedAt, 40)
+          completedAt:cleanText(raw.completedAt, 40),
+          rescheduledTo:raw.status==='rescheduled' && /^\d{4}-\d{2}-\d{2}$/.test(String(raw.rescheduledTo||'')) && raw.rescheduledTo>date ? String(raw.rescheduledTo) : ''
         };
       });
       logs[date] = entries;
@@ -665,7 +666,7 @@
     const metaSummary = [item.timeOfDay && item.timeOfDay !== 'anytime' ? timeLabel(item.timeOfDay) : '', targetSummary].filter(Boolean).join(' · ');
     return `<article class="session-card fitness-routine-log-item${entry.completed ? ' complete' : ''}">
       <div class="fitness-log-item-head">
-        <label class="fitness-log-completion"><input type="checkbox" data-fitness-log-complete="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.name)}</strong>${metaSummary ? `<small>${escapeHtml(metaSummary)}</small>` : ''}</span></label><label class="field-stack fitness-log-status" ${entry.completed ? 'hidden' : ''}><span>When not completed</span><select data-fitness-log-status="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"><option value="planned"${(!entry.status || entry.status === 'planned') ? ' selected' : ''}>Not completed</option><option value="partial"${entry.status === 'partial' ? ' selected' : ''}>Partially completed</option><option value="skipped"${entry.status === 'skipped' ? ' selected' : ''}>Skipped</option><option value="rescheduled"${entry.status === 'rescheduled' ? ' selected' : ''}>Rescheduled</option></select></label>
+        <label class="fitness-log-completion"><input type="checkbox" data-fitness-log-complete="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.name)}</strong>${metaSummary ? `<small>${escapeHtml(metaSummary)}</small>` : ''}</span></label><label class="field-stack fitness-log-status" ${entry.completed ? 'hidden' : ''}><span>When not completed</span><select data-fitness-log-status="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"><option value="planned"${(!entry.status || entry.status === 'planned') ? ' selected' : ''}>Not completed</option><option value="partial"${entry.status === 'partial' ? ' selected' : ''}>Partially completed</option><option value="skipped"${entry.status === 'skipped' ? ' selected' : ''}>Skipped</option><option value="rescheduled"${entry.status === 'rescheduled' ? ' selected' : ''}>Rescheduled</option></select></label>${entry.status === 'rescheduled' && !entry.completed ? `<label class="field-stack fitness-log-reschedule"><span>Rescheduled to</span><input type="date" min="${escapeHtml(state.selectedDate)}" value="${escapeHtml(entry.rescheduledTo||'')}" data-fitness-rescheduled-to="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}" aria-label="New date for ${escapeHtml(item.name)}"></label>` : ''}
       </div>
       ${metricFields(item, 'log', entry)}
       <label class="field-stack fitness-log-note"><span>Optional note</span><textarea rows="2" maxlength="800" data-fitness-log-note="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}" placeholder="How it felt, conditions, result or anything worth remembering">${escapeHtml(entry.note || '')}</textarea></label>
@@ -689,7 +690,8 @@
     if (!target) return;
 
     const entries = ensureLogDate(state.selectedDate);
-    const dueItems = state.activities.filter((item) => dueStatus(item, state.selectedDate).due || entries[item.id]?.completed || (entries[item.id]?.status && entries[item.id]?.status !== 'planned'));
+    const isRescheduledDue = (id) => Object.entries(state.logs).some(([date,records]) => date !== state.selectedDate && records?.[id]?.status==='rescheduled' && records[id].rescheduledTo===state.selectedDate);
+    const dueItems = state.activities.filter((item) => dueStatus(item, state.selectedDate).due || entries[item.id]?.completed || (entries[item.id]?.status && entries[item.id]?.status !== 'planned') || isRescheduledDue(item.id));
     const weeklyActivityGoals = state.activities.filter((item) => item.frequency.mode === 'weekly').map((item) => weeklyGoalStatus(item, state.selectedDate));
     const weeklyPlanGoals = global.BASELINE_fitnessPlans?.getWeeklyGoalsForDate?.(state.selectedDate) || [];
     const weeklyGoals = weeklyActivityGoals.concat(weeklyPlanGoals);
@@ -854,6 +856,11 @@
       entry.status = ['partial','skipped','rescheduled'].includes(value) ? value : 'planned';
       entry.completed = false;
       entry.completedAt = '';
+      if(entry.status !== 'rescheduled')entry.rescheduledTo='';
+    }
+    if (field === 'rescheduledTo' && entry.status==='rescheduled') {
+      const next=String(value||'');
+      entry.rescheduledTo=/^\d{4}-\d{2}-\d{2}$/.test(next) && next>date ? next : '';
     }
     if (field === 'note') entry.note = cleanText(value, 800);
     if (field === 'metric') {
@@ -1073,6 +1080,8 @@
         renderCalendar();
         return;
       }
+      const rescheduled = event.target.closest('[data-fitness-rescheduled-to]');
+      if(rescheduled){updateLog(rescheduled.dataset.fitnessRescheduledTo,'rescheduledTo',rescheduled.value,'',rescheduled.dataset.fitnessLogDate);renderLog();renderCalendar();return;}
       const logStatus = event.target.closest('[data-fitness-log-status]');
       if (logStatus) {
         updateLog(logStatus.dataset.fitnessLogStatus,'status',logStatus.value,'',logStatus.dataset.fitnessLogDate);

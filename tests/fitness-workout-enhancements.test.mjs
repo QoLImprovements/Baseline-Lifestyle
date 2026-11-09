@@ -101,3 +101,13 @@ test('one read-only workout model preserves source identity and counts only comp
     globalThis.BASELINE_FITNESS_LINKED_BADMINTON=oldLinked;
   }
 });
+
+test('rescheduled activity retains a validated future date and is due on the target date',()=>{
+  const workspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  const api=read('systems/baseline-fitness/api/routine_state.php');
+  assert.match(workspace,/data-fitness-rescheduled-to/);
+  assert.match(workspace,/records\?\.\[id\]\?\.status==='rescheduled'/);
+  assert.match(workspace,/field === 'rescheduledTo'/);
+  assert.match(api,/'rescheduledTo'=>\$rescheduledTo/);
+  assert.match(api,/\$rescheduledTo <= \$date/);
+});
