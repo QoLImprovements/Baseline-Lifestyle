@@ -120,16 +120,16 @@ test('calendar uses one workout-history scan rather than repeating it for every 
   assert.match(code,/calendarDayButton\(date, date\.getMonth\(\) === month\.getMonth\(\),completionCounts\)/);
 });
 
-test('Fitness Saved Data writes are serialised and retry revision conflicts',()=>{
+test('Fitness Saved Data writes are serialised and refuse stale revision retries',()=>{
   const bridge=read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   assert.match(bridge,/let pendingWrite=Promise\.resolve\(\)/);
   assert.match(bridge,/const result=pendingWrite\.then\(write,write\)/);
-  assert.match(bridge,/if\(data\?\.error==='revision_conflict'\)/);
-  assert.match(bridge,/rememberRevision\(fresh\)/);
+  assert.doesNotMatch(bridge,/if\(data\?\.error==='revision_conflict'\)/);
+  assert.match(bridge,/blockSaving\(data\?\.error\|\|'save_failed'\)/);
   assert.doesNotMatch(bridge,/if\(!enabled\|\|syncing\|\|saveBlocked\)return null/);
 });
 
-test('overlapping Fitness Saved Data writes preserve both changes under revision conflict',async()=>{
+test('overlapping Fitness Saved Data writes serialise while external conflicts stop unsafe writes',async()=>{
   const {runInNewContext}=require('node:vm');
   const writes=[];
   let revision=0;
@@ -151,15 +151,20 @@ test('overlapping Fitness Saved Data writes preserve both changes under revision
   for(let i=0;i<12;i+=1)await Promise.resolve();
   const bridge=win.BASELINE_FITNESS_SAVED_DATA;
   assert.equal(bridge.enabled,true);
-  revision=1; // another server write happened before these two operations
   const outcomes=await Promise.all([
     bridge.saveProgressionHistory({outcomes:[],failures:[]}),
     bridge.saveSelectedPlanId(0)
   ]);
   assert.deepEqual(outcomes.map(value=>value.ok),[true,true]);
-  assert.deepEqual(writes,[['save_progression_history',0],['save_progression_history',1],['save_selected_plan',2]]);
-  assert.equal(revision,3);
+  assert.deepEqual(writes,[['save_progression_history',0],['save_selected_plan',1]]);
+  assert.equal(revision,2);
   assert.equal(bridge.saveBlocked,false);
+  revision=3; // concurrent external change made the local revision stale
+  const conflict=await bridge.saveSelectedPlanId(0);
+  assert.equal(conflict.ok,false);
+  assert.equal(conflict.error,'revision_conflict');
+  assert.equal(bridge.saveBlocked,true);
+  assert.deepEqual(writes.at(-1),['save_selected_plan',2]);
 });
 
 test('a Body Profile reports saved only after a confirmed server write',()=>{

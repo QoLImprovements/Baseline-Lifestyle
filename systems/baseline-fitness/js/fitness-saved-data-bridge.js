@@ -141,16 +141,7 @@
       if(!enabled||saveBlocked||normalise(queuedOwner)!==normalise(authName))return null;
       syncing=true;
       try{
-        let data=await request({method:'POST',body:revisionedBody(body)});
-        if(data?.error==='revision_conflict'){
-          const fresh=await request();
-          if(!fresh?.ok){
-            if(normalise(queuedOwner)===normalise(authName))blockSaving(fresh?.error||'fitness_reload_failed');
-            return fresh;
-          }
-          rememberRevision(fresh);
-          data=await request({method:'POST',body:revisionedBody(body)});
-        }
+        const data=await request({method:'POST',body:revisionedBody(body)});
         if(normalise(queuedOwner)!==normalise(authName))return null;
         if(data?.ok){
           applyServer(data,'save');
@@ -200,15 +191,7 @@
     const next=Math.max(0,Number(value)||0);
     selectedPlanId=next;
     emit('selected-plan-memory');
-    let result=await post({action:'save_selected_plan',selectedPlanId:next});
-    if(result?.error==='revision_conflict'){
-      const refreshed=await reload();
-      if(!refreshed?.ok)return result;
-      selectedPlanId=next;
-      emit('selected-plan-memory');
-      result=await post({action:'save_selected_plan',selectedPlanId:next});
-    }
-    return result;
+    return post({action:'save_selected_plan',selectedPlanId:next});
   }
   async function saveProgressionHistory(value){
     const history=value&&typeof value==='object'?value:{};
