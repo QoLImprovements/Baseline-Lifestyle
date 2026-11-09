@@ -1062,7 +1062,9 @@
     const activitiesById=new Map((routine.activities||[]).map(item=>[item.id,item]));
     const categories=new Set(logs.map(entry=>activitiesById.get(entry.id)?.section).filter(Boolean));
     if(planDone)categories.add('calisthenics');
-    const total=planDone+logs.length;
+    const linked=global.BASELINE_FITNESS_LINKED_BADMINTON?.getAll?.()||[];
+    if(linked.length)categories.add('sports');
+    const total=planDone+logs.length+linked.length;
     const completePlan=plans.some(plan=>plan.sessions?.length && plan.sessions.every(session=>session.status==='done'));
     const measurementDates=(global.BASELINE_FITNESS_SAVED_DATA?.getBodyHistory?.()||[]).length;
     const items=[
@@ -1075,7 +1077,7 @@
       ['Three activity categories',categories.size>=3,categories.size+'/3 categories'],
       ['Recorded body trend',measurementDates>=2,Math.min(measurementDates,2)+'/2 measurement dates']
     ];
-    summary.innerHTML='<strong>Recorded workouts:</strong> '+total+' · <strong>Calisthenics:</strong> '+planDone+' · <strong>Other fitness:</strong> '+logs.length+' · <strong>Milestones:</strong> '+items.filter(item=>item[1]).length+'/'+items.length;
+    summary.innerHTML='<strong>Recorded workouts:</strong> '+total+' · <strong>Calisthenics:</strong> '+planDone+' · <strong>Other fitness:</strong> '+(logs.length+linked.length)+' · <strong>Milestones:</strong> '+items.filter(item=>item[1]).length+'/'+items.length;
     grid.innerHTML=items.map(([name,unlocked,detail])=>'<div class="ach-card '+(unlocked?'unlocked':'')+'"><div class="ach-icon">'+(unlocked?'✓':'○')+'</div><div class="ach-meta"><div class="name">'+escapeHtml(name)+'</div><div class="prog">'+escapeHtml(detail)+'</div></div></div>').join('');
   }
   function exerciseGuidance(item) {
@@ -1196,6 +1198,7 @@
     $('#exerciseLibrary')?.addEventListener('click',event=>{const button=event.target.closest('[data-fitness-library-use]');if(!button)return;const name=button.dataset.fitnessLibraryUse;global.BASELINE_fitnessPlans?.createPlan?.();const select=$('#exerciseList .ex-row .ex-select');if(select){select.value=name;select.dispatchEvent(new Event('change',{bubbles:true}));}});
     document.addEventListener('baseline:fitness-routine-updated', renderAchievements);
     document.addEventListener('baseline:fitness-plans-updated', renderAchievements);
+    document.addEventListener('baseline:fitness-linked-badminton-updated', renderAchievements);
     $('#closeTimerModalBtn')?.addEventListener('click', closeTimerModal);
     $('#cancelDeletePlanBtn')?.addEventListener('click', closeDeletePlanModal);
     $('#deletePlanConfirmInput')?.addEventListener('input', (event) => { if ($('#confirmDeletePlanBtn')) $('#confirmDeletePlanBtn').disabled = String(event.currentTarget.value || '').trim() !== 'DELETE'; });

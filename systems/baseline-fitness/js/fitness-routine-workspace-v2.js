@@ -672,6 +672,11 @@
     </article>`;
   }
 
+  function linkedBadmintonHtml() {
+    const linked=global.BASELINE_FITNESS_LINKED_BADMINTON?.getForDate?.(state.selectedDate);
+    if(!linked)return '';
+    return '<section class="fitness-routine-log-group"><h3>Badminton · Linked session</h3><article class="session-card fitness-calisthenics-log-card"><div><strong class="session-title">Baseline Badminton Session</strong><small>'+escapeHtml(String(linked.games))+' recorded game'+(linked.games===1?'':'s')+' · Source-linked; not duplicated in your Fitness records</small></div><a class="tiny-btn" href="/baseline-badminton-session/system">Open Badminton Session</a></article></section>';
+  }
   function renderLog() {
     state.selectedDate = clampLogDate(state.selectedDate);
     const dateInput = $('#fitnessRoutineLogDate');
@@ -704,14 +709,15 @@
       return items.length ? `<section class="fitness-routine-log-group"><h3>${label}</h3>${items.map(renderLogItem).join('')}</section>` : '';
     }).join('');
 
-    target.innerHTML = `${calisthenicsLogHtml()}${activityHtml || '<div class="fitness-routine-empty">No non-calisthenics activities are due for this date.</div>'}`;
+    target.innerHTML = `${calisthenicsLogHtml()}${activityHtml}${linkedBadmintonHtml() || ''}${(!activityHtml && !linkedBadmintonHtml()) ? '<div class="fitness-routine-empty">No non-calisthenics activities are due for this date.</div>' : ''}`;
   }
 
   function completedActivityCount(date) {
     const entries = state.logs[date] || {};
     const activities = Object.values(entries).filter((entry) => entry?.completed).length;
     const calisthenics = (global.BASELINE_fitnessPlans?.getPlansForDate?.(date) || []).filter((entry) => entry.status === 'done').length;
-    return activities + calisthenics;
+    const linked=global.BASELINE_FITNESS_LINKED_BADMINTON?.getForDate?.(date)?1:0;
+    return activities + calisthenics + linked;
   }
 
   function calendarDayButton(date, inCurrentMonth = true) {
@@ -1199,6 +1205,7 @@
     makeWorkspace();
     bindEvents();
     document.addEventListener('baseline:fitness-plans-updated', () => { renderLog(); renderCalendar(); });
+    document.addEventListener('baseline:fitness-linked-badminton-updated', () => { renderLog();renderCalendar(); });
     document.addEventListener('baseline:fitness-routine-groups-updated',(event)=>{
       const revision=Number(event.detail?.revision);
       if(Number.isFinite(revision) && revision>=0) state.revision=revision;
