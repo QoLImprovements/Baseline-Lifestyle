@@ -1115,7 +1115,7 @@
     if(planDone)categories.add('calisthenics');
     const linked=global.BASELINE_FITNESS_LINKED_BADMINTON?.getAll?.()||[];
     if(linked.length)categories.add('sports');
-    const total=planDone+logs.length+linked.length;
+    const total=global.BASELINE_FITNESS_WORKOUT_RECORDS?.getAll?.().filter(record=>record.status==='done').length ?? (planDone+logs.length+linked.length);
     const completePlan=plans.some(plan=>plan.sessions?.length && plan.sessions.every(session=>session.status==='done'));
     const measurementDates=(global.BASELINE_FITNESS_SAVED_DATA?.getBodyHistory?.()||[]).length;
     const items=[

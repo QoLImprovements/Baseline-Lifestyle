@@ -713,6 +713,8 @@
   }
 
   function completedActivityCount(date) {
+    const records=global.BASELINE_FITNESS_WORKOUT_RECORDS;
+    if(records?.completedCount)return records.completedCount(date);
     const entries = state.logs[date] || {};
     const activities = Object.values(entries).filter((entry) => entry?.completed).length;
     const calisthenics = (global.BASELINE_fitnessPlans?.getPlansForDate?.(date) || []).filter((entry) => entry.status === 'done').length;

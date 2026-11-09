@@ -10,7 +10,7 @@
   const emit=()=>{try{document.dispatchEvent(new CustomEvent('baseline:fitness-linked-badminton-updated'));}catch(_error){}};
   function manualRecorded(date){
     const routine=global.BASELINE_fitnessRoutine?.getState?.()||{};
-    const names=new Set((routine.activities||[]).filter(item=>item.activityId==='badminton').map(item=>String(item.id)));
+    const names=new Set((routine.activities||[]).filter(item=>/badminton/i.test(String(item.activityId||'')+' '+String(item.name||''))).map(item=>String(item.id)));
     const entries=routine.logs?.[date]||{};
     return Array.from(names).some(id=>entries[id]?.completed);
   }

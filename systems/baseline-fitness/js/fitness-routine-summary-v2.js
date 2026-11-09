@@ -570,8 +570,9 @@
     };
     const today=new Date(),start=new Date(today.getFullYear(),today.getMonth(),today.getDate());
     start.setDate(start.getDate()-((start.getDay()+6)%7));
-    const completedPlans=plans().flatMap(plan=>(plan.sessions||[]).filter(session=>session.status==='done').map(session=>({date:toIso(session.completed_at||session.completedAt)}))).filter(row=>row.date);
-    const activityRows=Object.entries(routine.logs||{}).flatMap(([date,entries])=>Object.entries(entries||{}).filter(([,entry])=>entry?.completed).map(([id,entry])=>({date,section:byId.get(id)?.section||'other',minutes:Math.max(0,Number(entry.metrics?.durationMinutes)||0)}))).concat((global.BASELINE_FITNESS_LINKED_BADMINTON?.getAll?.()||[]).map(entry=>({date:entry.date,section:'sports',minutes:0})));
+    const unified=global.BASELINE_FITNESS_WORKOUT_RECORDS?.getAll?.();
+    const completedPlans=unified?unified.filter(row=>row.status==='done'&&row.section==='calisthenics'):plans().flatMap(plan=>(plan.sessions||[]).filter(session=>session.status==='done').map(session=>({date:toIso(session.completed_at||session.completedAt)}))).filter(row=>row.date);
+    const activityRows=unified?unified.filter(row=>row.status==='done'&&row.section!=='calisthenics').map(row=>({...row,minutes:row.durationMinutes||0})):Object.entries(routine.logs||{}).flatMap(([date,entries])=>Object.entries(entries||{}).filter(([,entry])=>entry?.completed).map(([id,entry])=>({date,section:byId.get(id)?.section||'other',minutes:Math.max(0,Number(entry.metrics?.durationMinutes)||0)}))).concat((global.BASELINE_FITNESS_LINKED_BADMINTON?.getAll?.()||[]).map(entry=>({date:entry.date,section:'sports',minutes:0})));
     const weeks=Array.from({length:4},(_,offset)=>{
       const first=new Date(start);first.setDate(first.getDate()-7*(3-offset));
       const end=new Date(first);end.setDate(end.getDate()+6);

@@ -80,3 +80,24 @@ test('recovery, maintenance and reassessment are optional explicit plan rules',(
   assert.match(read('systems/baseline-fitness/js/fitness-live-policy-v1.js'),/outcome\.maintenance===true\?0:/);
   assert.match(read('systems/baseline-fitness/api/fitness_state.php'),/\$record\['maintenance'\] = !empty\(\$raw\['maintenance'\]\)/);
 });
+
+test('one read-only workout model preserves source identity and counts only completed sessions',()=>{
+  const model=require('../systems/baseline-fitness/js/fitness-workout-records-v1.js');
+  const oldPlans=globalThis.BASELINE_fitnessPlans,oldRoutine=globalThis.BASELINE_fitnessRoutine,oldLinked=globalThis.BASELINE_FITNESS_LINKED_BADMINTON;
+  try{
+    globalThis.BASELINE_fitnessPlans={getPlans:()=>[{planId:2,planJson:{name:'Strength'},sessions:[{sessionIndex:1,status:'done',completedAt:'2026-11-08T12:00:00Z'},{sessionIndex:2,status:'rescheduled',scheduledDate:'2026-11-09'}]}]};
+    globalThis.BASELINE_fitnessRoutine={getState:()=>({activities:[{id:'yoga1',section:'other',name:'Yin Yoga'}],logs:{'2026-11-08':{yoga1:{completed:true,metrics:{durationMinutes:'60'}}}}})};
+    globalThis.BASELINE_FITNESS_LINKED_BADMINTON={getAll:()=>[{date:'2026-11-08',games:4}]};
+    const rows=model.getAll();
+    assert.equal(rows.length,4);
+    assert.equal(model.completedCount('2026-11-08'),3);
+    assert.equal(model.completedCount('2026-11-09'),0);
+    assert.deepEqual(new Set(rows.map(row=>row.source)),new Set(['calisthenics','fitness-routine','baseline-badminton-session']));
+    assert.equal(rows.find(row=>row.source==='fitness-routine').durationMinutes,60);
+    assert.equal(model.completedBetween('2026-11-08','2026-11-08').length,3);
+  } finally{
+    globalThis.BASELINE_fitnessPlans=oldPlans;
+    globalThis.BASELINE_fitnessRoutine=oldRoutine;
+    globalThis.BASELINE_FITNESS_LINKED_BADMINTON=oldLinked;
+  }
+});
