@@ -52,7 +52,7 @@ test('Body Profile calculates and saves BMI and BMR', async ({ page }) => {
   await page.locator('#bodyWaist').fill('85');
   await page.locator('#bodyHips').fill('95');
   await page.getByRole('button',{name:'Save Body Profile',exact:true}).click();
-  await expect(page.locator('#bodyProfileStatus')).toHaveText('Body profile save queued.');
+  await expect(page.locator('#bodyProfileStatus')).toHaveText(/Body profile (save queued|saved)\./);
   await page.getByRole('button',{name:'Overall Summary',exact:true}).click();
   await expect(page.locator('#bodyOverallSummary')).toContainText('24.7');
   await expect(page.locator('#bodyOverallSummary')).toContainText('1730');

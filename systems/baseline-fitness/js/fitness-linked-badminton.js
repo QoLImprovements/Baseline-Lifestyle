@@ -49,7 +49,8 @@
         const team1=Array.isArray(match.side1PlayerIds)?match.side1PlayerIds:[];
         const team2=Array.isArray(match.side2PlayerIds)?match.side2PlayerIds:[];
         if(!team1.concat(team2).some(playerId=>ids.has(String(playerId))))return;
-        const date=String(match.createdAt||'').slice(0,10);
+        const timestamp=Date.parse(String(match.createdAt||''));
+        const date=Number.isFinite(timestamp)?new Date(timestamp).toLocaleDateString('sv-SE'):String(match.createdAt||'').slice(0,10);
         if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;
         const current=grouped.get(date)||{date,source:'baseline-badminton-session',games:0};
         current.games+=1;grouped.set(date,current);

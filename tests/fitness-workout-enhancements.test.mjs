@@ -161,3 +161,11 @@ test('overlapping Fitness Saved Data writes preserve both changes under revision
   assert.equal(revision,3);
   assert.equal(bridge.saveBlocked,false);
 });
+
+test('a Body Profile reports saved only after a confirmed server write',()=>{
+  const bridge=read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
+  const app=read('systems/baseline-fitness/js/baseline-fitness-app.js');
+  assert.match(bridge,/if\(body\.action==='save_profile'\)try\{document\.dispatchEvent\(new CustomEvent\('baseline:fitness-profile-saved'\)\)/);
+  assert.match(app,/baseline:fitness-profile-saved/);
+  assert.match(app,/Body profile saved\./);
+});

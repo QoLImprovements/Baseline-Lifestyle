@@ -152,8 +152,13 @@
           data=await request({method:'POST',body:revisionedBody(body)});
         }
         if(normalise(queuedOwner)!==normalise(authName))return null;
-        if(data?.ok){applyServer(data,'save');return data;}
+        if(data?.ok){
+          applyServer(data,'save');
+          if(body.action==='save_profile')try{document.dispatchEvent(new CustomEvent('baseline:fitness-profile-saved'));}catch(_error){}
+          return data;
+        }
         blockSaving(data?.error||'save_failed');
+        if(body.action==='save_profile')try{document.dispatchEvent(new CustomEvent('baseline:fitness-profile-save-failed'));}catch(_error){}
         return data;
       }finally{syncing=false;}
     };

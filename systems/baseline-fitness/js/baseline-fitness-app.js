@@ -1232,6 +1232,8 @@
     $$('.my-plan-subtab').forEach((button) => button.addEventListener('click', () => renderPlanSubtab(button.dataset.planView, 'push')));
     $$('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView, 'push')));
     $('#bodyProfileForm')?.addEventListener('input', () => renderBodyCalculations(profileFromForm()));
+    document.addEventListener('baseline:fitness-profile-saved',()=>{const status=$('#bodyProfileStatus');if(status)status.textContent='Body profile saved.';});
+    document.addEventListener('baseline:fitness-profile-save-failed',()=>{const status=$('#bodyProfileStatus');if(status)status.textContent='Body profile save failed. Your account copy has not been updated.';});
     $('#bodyTrendMetric')?.addEventListener('change', renderBodyTrends);
     $('#bodyProfileForm')?.addEventListener('submit',(event)=>{event.preventDefault();const profile=profileFromForm();bodyProfileMemory=profile;global.BASELINE_FITNESS_SAVED_DATA?.saveProfile?.(profile);renderBodyCalculations(profile);renderBodySummary();if($('#bodyProfileStatus'))$('#bodyProfileStatus').textContent='Body profile save queued.';});
     $('#connectGarminBtn')?.addEventListener('click', () => { if ($('#garminConnectionStatus')) $('#garminConnectionStatus').textContent = 'Garmin OAuth credentials are not configured on the server yet.'; });
