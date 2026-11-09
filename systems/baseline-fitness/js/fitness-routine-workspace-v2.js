@@ -200,6 +200,7 @@
         const definition = activity ? definitionFor(activity) : CATALOGUE.ACTIVITIES[0];
         entries[cleanText(id, 100)] = {
           completed:Boolean(raw.completed),
+          status:raw.completed?'done':(['partial','skipped','rescheduled'].includes(raw.status)?raw.status:'planned'),
           note:cleanText(raw.note, 800),
           metrics:normaliseMetricValues(raw.metrics, definition, raw.actual, activity?.measure),
           completedAt:cleanText(raw.completedAt, 40)
@@ -654,7 +655,7 @@
   }
 
   function renderLogItem(item) {
-    const entry = ensureLogDate(state.selectedDate)[item.id] || { completed:false, note:'', metrics:{}, completedAt:'' };
+    const entry = ensureLogDate(state.selectedDate)[item.id] || { completed:false, status:'planned', note:'', metrics:{}, completedAt:'' };
     const targetSummary = (definitionFor(item).metrics || [])
       .map((metric) => item.targetMetrics?.[metric.key] !== undefined && item.targetMetrics?.[metric.key] !== ''
         ? `${item.targetMetrics[metric.key]}${metric.unit ? ` ${metric.unit === 'minutes' ? 'min' : metric.unit}` : ''}`
@@ -664,7 +665,7 @@
     const metaSummary = [item.timeOfDay && item.timeOfDay !== 'anytime' ? timeLabel(item.timeOfDay) : '', targetSummary].filter(Boolean).join(' · ');
     return `<article class="session-card fitness-routine-log-item${entry.completed ? ' complete' : ''}">
       <div class="fitness-log-item-head">
-        <label class="fitness-log-completion"><input type="checkbox" data-fitness-log-complete="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.name)}</strong>${metaSummary ? `<small>${escapeHtml(metaSummary)}</small>` : ''}</span></label>
+        <label class="fitness-log-completion"><input type="checkbox" data-fitness-log-complete="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.name)}</strong>${metaSummary ? `<small>${escapeHtml(metaSummary)}</small>` : ''}</span></label><label class="field-stack fitness-log-status" ${entry.completed ? 'hidden' : ''}><span>When not completed</span><select data-fitness-log-status="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"><option value="planned"${(!entry.status || entry.status === 'planned') ? ' selected' : ''}>Not completed</option><option value="partial"${entry.status === 'partial' ? ' selected' : ''}>Partially completed</option><option value="skipped"${entry.status === 'skipped' ? ' selected' : ''}>Skipped</option><option value="rescheduled"${entry.status === 'rescheduled' ? ' selected' : ''}>Rescheduled</option></select></label>
       </div>
       ${metricFields(item, 'log', entry)}
       <label class="field-stack fitness-log-note"><span>Optional note</span><textarea rows="2" maxlength="800" data-fitness-log-note="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}" placeholder="How it felt, conditions, result or anything worth remembering">${escapeHtml(entry.note || '')}</textarea></label>
@@ -683,14 +684,14 @@
     if (!target) return;
 
     const entries = ensureLogDate(state.selectedDate);
-    const dueItems = state.activities.filter((item) => dueStatus(item, state.selectedDate).due || entries[item.id]?.completed);
+    const dueItems = state.activities.filter((item) => dueStatus(item, state.selectedDate).due || entries[item.id]?.completed || (entries[item.id]?.status && entries[item.id]?.status !== 'planned'));
     const weeklyActivityGoals = state.activities.filter((item) => item.frequency.mode === 'weekly').map((item) => weeklyGoalStatus(item, state.selectedDate));
     const weeklyPlanGoals = global.BASELINE_fitnessPlans?.getWeeklyGoalsForDate?.(state.selectedDate) || [];
     const weeklyGoals = weeklyActivityGoals.concat(weeklyPlanGoals);
     const goalsMet = weeklyGoals.filter((goal) => goal.goalMet).length;
     const extras = weeklyGoals.reduce((total, goal) => total + Math.max(0, Number(goal.extra) || 0), 0);
     if (progress) progress.textContent = weeklyGoals.length
-      ? `Weekly goals met: ${goalsMet}/${weeklyGoals.length} routine activities · ${extras} extra completion${extras === 1 ? '' : 's'}`
+      ? `Weekly goals met: ${goalsMet}/${weeklyGoals.length} workout targets · ${extras} extra completion${extras === 1 ? '' : 's'}`
       : 'No weekly activity goals are configured.';
 
     const sections = [
@@ -708,7 +709,9 @@
 
   function completedActivityCount(date) {
     const entries = state.logs[date] || {};
-    return Object.values(entries).filter((entry) => entry?.completed).length;
+    const activities = Object.values(entries).filter((entry) => entry?.completed).length;
+    const calisthenics = (global.BASELINE_fitnessPlans?.getPlansForDate?.(date) || []).filter((entry) => entry.status === 'done').length;
+    return activities + calisthenics;
   }
 
   function calendarDayButton(date, inCurrentMonth = true) {
@@ -833,10 +836,16 @@
     const item = itemById(id);
     if (!item) return;
     const definition = definitionFor(item);
-    const entry = ensureLogDate(date)[id] || { completed:false, note:'', metrics:{}, completedAt:'' };
+    const entry = ensureLogDate(date)[id] || { completed:false, status:'planned', note:'', metrics:{}, completedAt:'' };
     if (field === 'completed') {
       entry.completed = Boolean(value);
+      entry.status = entry.completed ? 'done' : 'planned';
       entry.completedAt = value ? new Date().toISOString() : '';
+    }
+    if (field === 'status') {
+      entry.status = ['partial','skipped','rescheduled'].includes(value) ? value : 'planned';
+      entry.completed = false;
+      entry.completedAt = '';
     }
     if (field === 'note') entry.note = cleanText(value, 800);
     if (field === 'metric') {
@@ -1055,6 +1064,11 @@
         renderLog();
         renderCalendar();
         return;
+      }
+      const logStatus = event.target.closest('[data-fitness-log-status]');
+      if (logStatus) {
+        updateLog(logStatus.dataset.fitnessLogStatus,'status',logStatus.value,'',logStatus.dataset.fitnessLogDate);
+        renderLog(); renderCalendar(); return;
       }
       const logMetric = event.target.closest('[data-log-metric]');
       if (logMetric) {

@@ -107,6 +107,7 @@ function bl_fitness_routine_logs($value): array {
       if($completedAt !== '' && strtotime($completedAt) === false) $completedAt = '';
       $entries[$key] = [
         'completed'=>!empty($raw['completed']),
+        'status'=>!empty($raw['completed'])?'done':(in_array((string)($raw['status'] ?? ''),['partial','skipped','rescheduled'],true)?(string)$raw['status']:'planned'),
         'note'=>bl_fitness_routine_text($raw['note'] ?? '', 800),
         'metrics'=>bl_fitness_metric_values($raw['metrics'] ?? []),
         'actual'=>max(0.0, min(100000.0, (float)($raw['actual'] ?? 0))),
