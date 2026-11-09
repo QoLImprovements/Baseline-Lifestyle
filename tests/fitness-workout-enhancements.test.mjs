@@ -49,7 +49,7 @@ test('Body Trends uses real server-backed dated snapshots',()=>{
 });
 test('summary and achievements integrate all activity categories',()=>{
   assert.match(summary,/weeklyTrainingOverview/);
-  assert.match(summary,/completedPlans=plans\(\)/);
+  assert.match(summary,/const completedPlans=unified\?unified\.filter/);
   assert.match(app,/Two activity categories/);
   assert.match(app,/getBodyHistory\?\.\(\)/);
 });

@@ -170,9 +170,12 @@ test('Routine Groups are born collapsed rather than corrected after paint',()=>{
 });
 
 
-test('Fitness single-authority assets use a fresh shared cache key',()=>{
-  for(const asset of ['baseline-fitness.css','fitness-routine-workspace.css','fitness-multiple-plans.js','baseline-fitness-app.js','fitness-routine-structure-v4.js','fitness-routine-workspace-v2.js','fitness-routine-groups-v2.js']){
-    assert.ok(page.includes(asset+'?v=FITNESS_SINGLE_AUTHORITY_20261016_2'),asset+' should use the current Fitness cache key');
+test('Fitness modified assets use a release cache key while unchanged owners retain theirs',()=>{
+  for(const asset of ['baseline-fitness.css','fitness-routine-workspace.css','fitness-multiple-plans.js','fitness-routine-groups-v2.js']){
+    assert.ok(page.includes(asset+'?v=FITNESS_SINGLE_AUTHORITY_20261016_2'),asset+' should retain the unchanged asset key');
+  }
+  for(const asset of ['baseline-fitness-app.js','fitness-routine-structure-v4.js','fitness-routine-workspace-v2.js','fitness-routine-summary-v2.js','fitness-saved-data-bridge.js','fitness-generator-progression-v1.js','fitness-live-policy-v1.js','fitness-workout-records-v1.js']){
+    assert.ok(page.includes(asset+'?v=FITNESS_MY_WORKOUT_20261109_3'),asset+' should use the new workout release key');
   }
 });
 
