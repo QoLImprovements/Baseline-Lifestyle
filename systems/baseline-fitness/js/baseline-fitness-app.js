@@ -162,7 +162,32 @@
     if (plan.scheduleMode === 'specific-days' && plan.days.length) plan.frequency = `${plan.days.length}x`;
     plan.timerStartDelay = Math.round(clamp(plan.timerStartDelay || 5, 1, 10));
     plan.executionOrder = plan.executionOrder === 'straight' ? 'straight' : 'alternating';
+    Object.assign(plan, normaliseTrainingLoad(plan));
     return plan;
+  }
+  function normaliseTrainingLoad(raw = {}) {
+    const every = Number(raw.deloadEvery);
+    const percent = Number(raw.deloadPercent);
+    const reassess = Number(raw.reassessEvery);
+    return {
+      deloadEvery:[0,4,6,8,12].includes(every) ? every : 0,
+      deloadPercent:[60,70,80,90].includes(percent) ? percent : 70,
+      reassessEvery:[0,4,8,12].includes(reassess) ? reassess : 0
+    };
+  }
+  function isRecoverySession(plan, sessionIndex) {
+    const config = normaliseTrainingLoad(plan);
+    return config.deloadEvery > 0 && sessionIndex > 0 && sessionIndex % config.deloadEvery === 0;
+  }
+  function isBaselineCheckIn(plan, sessionIndex) {
+    const config = normaliseTrainingLoad(plan);
+    return config.reassessEvery > 0 && sessionIndex > 0 && sessionIndex % config.reassessEvery === 0;
+  }
+  function applyTrainingLoad(value, plan, sessionIndex) {
+    const target = Math.max(1, Math.round(Number(value) || 1));
+    return isRecoverySession(plan, sessionIndex)
+      ? Math.max(1, Math.round(target * normaliseTrainingLoad(plan).deloadPercent / 100))
+      : target;
   }
   function setValues(baseline, count) {
     const max = Math.max(1, Math.round(Number(baseline) || 1));
@@ -187,12 +212,12 @@
     const increments = progressionIncrements(type, count);
     return setValues(baseline, count).map((value, index) => value + ((session - 1) * increments[index]));
   }
-  function planSetValues(itemValue, definitionValue, sessionIndex) {
+  function planSetValues(itemValue, definitionValue, sessionIndex, plan = {}) {
     const item = itemValue && typeof itemValue === 'object' ? itemValue : {};
     const definition = definitionValue && typeof definitionValue === 'object' ? definitionValue : exerciseDefinition(item.exercise);
     const mode = String(item.progressionMode || '');
     if (![PROGRESSION_MODES.LINEAR, PROGRESSION_MODES.STRAIGHT].includes(mode)) {
-      return progressedSetValues(item.baseline, item.sets, sessionIndex, item.progressionType);
+      return progressedSetValues(item.baseline, item.sets, sessionIndex, item.progressionType).map(value => applyTrainingLoad(value, plan, sessionIndex));
     }
     const sets = setCount(item.sets || 3);
     const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
@@ -204,7 +229,7 @@
     const initial = mode === PROGRESSION_MODES.STRAIGHT
       ? Array(sets).fill(finalSet)
       : offsets.map((offset) => Math.max(1, finalSet + (offset * increase)));
-    return initial.map((value) => value + ((session - 1) * increase));
+    return initial.map((value) => applyTrainingLoad(value + ((session - 1) * increase), plan, sessionIndex));
   }
   function holdIncrement(seconds) {
     return Math.max(1, Math.round(Number(seconds) || 1)) >= 90 ? 2 : 3;
@@ -214,13 +239,13 @@
     for (let session = 2; session <= Math.max(1, Math.round(Number(sessionIndex) || 1)); session += 1) seconds += holdIncrement(seconds);
     return seconds;
   }
-  function workForSession(items, sessionIndex) {
+  function workForSession(items, sessionIndex, plan = {}) {
     return (items || []).map((raw) => {
       const item = normaliseItem(raw);
       const definition = exerciseDefinition(item.exercise);
       return definition.unit === 'seconds'
-        ? { item: definition, unit: 'seconds', hold: holdValue(Math.max(1, Math.round(item.baseline * item.workingPercent / 100)), sessionIndex), progressionType: TYPES.TIMED }
-        : { item: definition, unit: 'reps', sets: item.sets, values: planSetValues(item, definition, sessionIndex), progressionType: item.progressionType };
+        ? { item: definition, unit: 'seconds', hold: applyTrainingLoad(holdValue(Math.max(1, Math.round(item.baseline * item.workingPercent / 100)), sessionIndex), plan, sessionIndex), progressionType: TYPES.TIMED }
+        : { item: definition, unit: 'reps', sets: item.sets, values: planSetValues(item, definition, sessionIndex, plan), progressionType: item.progressionType };
     });
   }
   function executionSteps(work, order = 'alternating') {
@@ -531,7 +556,8 @@
     const startDate = $('#startDate')?.value && $('#startDate').value >= today() ? $('#startDate').value : today();
     const days = scheduleMode === 'specific-days' ? (selectedDays.length ? selectedDays : [['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][parseDate(startDate).getDay()]]) : [];
     const frequency = scheduleMode === 'specific-days' ? `${days.length}x` : ($('#freq')?.value || '3x');
-    const plan = { version: 9, startDate, frequency, scheduleMode, sessions: totalSessionsForUi(items), lengthMode, items, days, executionOrder:$('#executionOrder')?.value === 'straight' ? 'straight' : 'alternating', timerStartDelay: Math.round(clamp(existing.timerStartDelay || 5, 1, 10)) };
+    const loadSettings=normaliseTrainingLoad({deloadEvery:$('#deloadEvery')?.value,deloadPercent:$('#deloadPercent')?.value,reassessEvery:$('#reassessEvery')?.value});
+    const plan = { version: 9, startDate, frequency, scheduleMode, sessions: totalSessionsForUi(items), lengthMode, items, days, executionOrder:$('#executionOrder')?.value === 'straight' ? 'straight' : 'alternating', ...loadSettings, timerStartDelay: Math.round(clamp(existing.timerStartDelay || 5, 1, 10)) };
     if (lengthMode === 'goal') plan.goal = { exercise: $('#goalExercise')?.value || '', amount: Math.round(clamp($('#goalAmount')?.value || 1, 1, 99999)) };
     return plan;
   }
@@ -545,6 +571,9 @@
       if ($('#freq')) $('#freq').value = '3x';
       if ($('#scheduleMode')) $('#scheduleMode').value = 'weekly-count';
       if ($('#executionOrder')) $('#executionOrder').value = 'alternating';
+      if ($('#deloadEvery')) $('#deloadEvery').value = '0';
+      if ($('#deloadPercent')) $('#deloadPercent').value = '70';
+      if ($('#reassessEvery')) $('#reassessEvery').value = '0';
       $$('#specificDayControls input[data-plan-day]').forEach((control) => { control.checked = false; });
       global.BASELINE_syncCalisthenicsSchedule?.();
       if ($('#lengthMode')) $('#lengthMode').value = 'sessions';
@@ -565,6 +594,9 @@
       if ($('#freq')) $('#freq').value = plan.frequency;
       if ($('#scheduleMode')) $('#scheduleMode').value = plan.scheduleMode;
       if ($('#executionOrder')) $('#executionOrder').value = plan.executionOrder;
+      if ($('#deloadEvery')) $('#deloadEvery').value = String(plan.deloadEvery);
+      if ($('#deloadPercent')) $('#deloadPercent').value = String(plan.deloadPercent);
+      if ($('#reassessEvery')) $('#reassessEvery').value = String(plan.reassessEvery);
       $$('#specificDayControls input[data-plan-day]').forEach((control) => { control.checked = plan.days.includes(control.dataset.planDay); });
       global.BASELINE_syncCalisthenicsSchedule?.();
       if ($('#lengthMode')) $('#lengthMode').value = plan.lengthMode;
@@ -591,7 +623,7 @@
   }
 
   function planExerciseRows(plan, sessionIndex) {
-    return workForSession(plan.items, sessionIndex).map((entry) => {
+    return workForSession(plan.items, sessionIndex, plan).map((entry) => {
       const detail = entry.unit === 'seconds'
         ? `Hold for <b>${entry.hold}</b> seconds${entry.item.laterality === 'separate-left-right' ? ' on each side.' : '.'}`
         : `Sets (${entry.sets}): ${entry.values.map((value) => `<b>${value}</b>`).join(' / ')} reps.`;
@@ -603,10 +635,12 @@
     const completed = row.status === 'done';
     const completionDate = completionDateValue(row) || row.scheduled_date || today();
     const dateDisplay = completed ? `Completed: ${niceDate(completionDate)}` : `Workout date: ${niceDate(row.scheduled_date)}`;
+    const recoveryLabel=isRecoverySession(plan,index) ? `<span class="badge">Recovery target: ${normaliseTrainingLoad(plan).deloadPercent}%</span>` : '';
+    const checkInLabel=isBaselineCheckIn(plan,index) ? '<span class="badge">Baseline check-in due</span>' : '';
     const dateEditor = suffix === 'Completed'
       ? `<div class="actions-inline session-completion-date-editor"><label class="field-stack"><span>Completion date</span><input type="date" max="${today()}" value="${escapeHtml(completionDate)}" data-session-completion-date="${index}"></label><button type="button" class="compact-action compact-action--primary" data-save-session-completion-date="${index}">Save date</button><span class="status" data-session-completion-date-status="${index}"></span></div>`
       : '';
-    return `<div class="card session-card"><div class="top" style="display:flex;justify-content:space-between;gap:12px"><div><div class="title">Session ${index}${suffix ? ` - ${escapeHtml(suffix)}` : ''}</div><div class="muted">${escapeHtml(dateDisplay)}</div></div>${completed ? '' : '<span class="badge">Planned</span>'}</div>${dateEditor}<div class="divider"></div>${planExerciseRows(plan, index)}</div>`;
+    return `<div class="card session-card"><div class="top" style="display:flex;justify-content:space-between;gap:12px"><div><div class="title">Session ${index}${suffix ? ` - ${escapeHtml(suffix)}` : ''}</div><div class="muted">${escapeHtml(dateDisplay)}</div></div>${completed ? '' : '<span class="badge">Planned</span>'}${recoveryLabel}${checkInLabel}</div>${dateEditor}<div class="divider"></div>${planExerciseRows(plan, index)}</div>`;
   }
   async function saveSessionCompletionDate(button, target) {
     const sessionIndex = Number(button.dataset.saveSessionCompletionDate || 0);
@@ -689,7 +723,8 @@
     const plan = current.planJson;
     if (!target || !plan) return;
     const scheduleBadge = plan.scheduleMode === 'specific-days' ? `<span class="badge">Schedule begins: ${escapeHtml(niceDate(plan.startDate))}</span>` : '';
-    target.innerHTML = `<div class="card"><div class="my-plan-saved-head"><div><h2 style="margin:0 0 12px">Saved plan</h2><div class="session-plan-meta">${scheduleBadge}<span class="badge">Frequency: ${escapeHtml(plan.frequency)} Weekly</span><span class="badge">Sessions: ${plan.sessions}</span><span class="badge">Progress: ${current.progress?.done || 0}/${current.progress?.total || plan.sessions}</span></div></div><div class="saved-plan-actions"><button class="compact-action compact-action--ghost" type="button" id="editOptionsBtn">Edit Plan</button><button class="compact-action compact-action--danger" type="button" id="deletePlanBtn">Delete Plan</button></div></div></div>`;
+    const loadBadge = isRecoverySession(plan,normaliseTrainingLoad(plan).deloadEvery) ? `<span class="badge">Recovery every ${plan.deloadEvery} sessions · ${plan.deloadPercent}%</span>` : '';
+    target.innerHTML = `<div class="card"><div class="my-plan-saved-head"><div><h2 style="margin:0 0 12px">Saved plan</h2><div class="session-plan-meta">${scheduleBadge}<span class="badge">Frequency: ${escapeHtml(plan.frequency)} Weekly</span><span class="badge">Sessions: ${plan.sessions}</span>${loadBadge}<span class="badge">Progress: ${current.progress?.done || 0}/${current.progress?.total || plan.sessions}</span></div></div><div class="saved-plan-actions"><button class="compact-action compact-action--ghost" type="button" id="editOptionsBtn">Edit Plan</button><button class="compact-action compact-action--danger" type="button" id="deletePlanBtn">Delete Plan</button></div></div></div>`;
     $('#editOptionsBtn', target)?.addEventListener('click', () => { generatorMode = 'edit'; hydrateGenerator(plan); syncPlanShells(); });
     $('#deletePlanBtn', target)?.addEventListener('click', openDeletePlanModal);
   }
@@ -746,7 +781,7 @@
     const sessionIndex = Number(current.progress?.nextIndex || 0);
     const row = current.sessions.find((item) => Number(item.session_index) === sessionIndex);
     if (!row) return Object.assign(empty, { available: true, allComplete: true, planComplete: true });
-    const steps = executionSteps(workForSession(current.planJson.items, sessionIndex), current.planJson.executionOrder);
+    const steps = executionSteps(workForSession(current.planJson.items, sessionIndex, current.planJson), current.planJson.executionOrder);
     const state = readStepState(sessionIndex);
     const completed = Math.round(clamp(state.completedSteps || 0, 0, steps.length));
     const access = accessFor(row, sessionIndex);
@@ -882,6 +917,7 @@
     if (context.planComplete) { out.innerHTML = '<div class="card"><h3 style="margin:0">Plan complete</h3><p class="note">All sessions in this plan have been completed.</p></div>'; if (status) status.textContent = ''; notifyWorkout(); return; }
     const row = current.sessions.find((item) => Number(item.session_index) === context.sessionIndex);
     const state = readStepState(context.sessionIndex);
+    const trainingNotice = [isRecoverySession(current.planJson,context.sessionIndex) ? `Recovery session — targets reduced to ${normaliseTrainingLoad(current.planJson).deloadPercent}%.` : '',isBaselineCheckIn(current.planJson,context.sessionIndex) ? 'Baseline check-in: consider reassessing your maximum separately after this session.' : ''].filter(Boolean).join(' ');
     if (status) status.textContent = context.access.can ? 'Current workout ready.' : context.access.due ? 'Complete earlier sessions first.' : `Next workout unlocks on ${niceDate(row.scheduled_date)}.`;
 
     const stepsHtml = context.steps.map((step, index) => {
@@ -905,7 +941,7 @@
 
     const scheduleBadge = current.planJson.scheduleMode === 'specific-days' ? `<span class="badge">Workout date: ${escapeHtml(niceDate(row.scheduled_date))}</span>` : '';
     const completionDate = /^\d{4}-\d{2}-\d{2}$/.test(String(state.completionDate || '')) ? state.completionDate : today();
-    out.innerHTML = `<div class="card session-card"><div class="section-head-actions"><div><h3 style="margin:0">Session ${context.sessionIndex} - Current</h3><div class="session-plan-meta" style="margin-top:12px">${scheduleBadge}<span class="badge">${context.completedSteps}/${context.totalSteps} steps done</span></div></div><div class="workout-start-actions"><button class="action secondary voice-workout-start" type="button" id="startVoiceWorkoutBtn" ${context.access.can ? '' : 'disabled'}>Start (Voice Activated)</button><button class="action" type="button" id="startWorkoutBtn" ${context.access.can ? '' : 'disabled'}>${state.started ? 'Continue Workout' : 'Start Workout'}</button></div></div><div class="actions-inline session-completion-date-editor"><label class="field-stack"><span>Workout completion date</span><input id="currentWorkoutCompletionDate" type="date" max="${today()}" value="${escapeHtml(completionDate)}"></label><span class="note">This date is used when you finish the workout and in Routine Log.</span></div><div class="session-step-list">${stepsHtml}</div><div class="actions-inline" style="margin-top:14px"><button class="compact-action compact-action--primary" id="finishWorkout" ${context.access.can && context.allComplete ? '' : 'disabled'}>Finish workout</button><button class="compact-action compact-action--ghost" id="resetWorkout" ${context.access.can ? '' : 'disabled'}>Reset workout steps</button></div></div>`;
+    out.innerHTML = `<div class="card session-card"><div class="section-head-actions"><div><h3 style="margin:0">Session ${context.sessionIndex} - Current</h3><div class="session-plan-meta" style="margin-top:12px">${scheduleBadge}<span class="badge">${context.completedSteps}/${context.totalSteps} steps done</span></div></div><div class="workout-start-actions"><button class="action secondary voice-workout-start" type="button" id="startVoiceWorkoutBtn" ${context.access.can ? '' : 'disabled'}>Start (Voice Activated)</button><button class="action" type="button" id="startWorkoutBtn" ${context.access.can ? '' : 'disabled'}>${state.started ? 'Continue Workout' : 'Start Workout'}</button></div></div><div class="actions-inline session-completion-date-editor"><label class="field-stack"><span>Workout completion date</span><input id="currentWorkoutCompletionDate" type="date" max="${today()}" value="${escapeHtml(completionDate)}"></label><span class="note">This date is used when you finish the workout and in Routine Log.</span></div>${trainingNotice ? `<p class="note fitness-load-notice">${escapeHtml(trainingNotice)}</p>` : ''}<div class="session-step-list">${stepsHtml}</div><div class="actions-inline" style="margin-top:14px"><button class="compact-action compact-action--primary" id="finishWorkout" ${context.access.can && context.allComplete ? '' : 'disabled'}>Finish workout</button><button class="compact-action compact-action--ghost" id="resetWorkout" ${context.access.can ? '' : 'disabled'}>Reset workout steps</button></div></div>`;
     $('#currentWorkoutCompletionDate', out)?.addEventListener('change', (event) => {
       const next = readStepState(context.sessionIndex);
       next.completionDate = String(event.currentTarget.value || '') <= today() ? String(event.currentTarget.value || '') : today();
@@ -1193,7 +1229,7 @@
     $('#addExerciseBtn')?.addEventListener('click', () => { markDirty(); const used = new Set(itemsFromUi().map((item) => item.exercise)); const next = EXERCISES.find((item) => !used.has(item.name)) || EXERCISES[0]; $('#exerciseList')?.append(makeExerciseRow(next.name)); syncGoalControls(); });
     $('#lengthMode')?.addEventListener('change', () => { markDirty(); syncLengthMode(); });
     $('#goalExercise')?.addEventListener('change', () => { markDirty(); syncGoalControls(); });
-    ['startDate', 'freq', 'sessions', 'goalAmount','executionOrder'].forEach((id) => { const control = $(`#${id}`); control?.addEventListener('input', markDirty); control?.addEventListener('change', markDirty); });
+    ['startDate', 'freq', 'sessions', 'goalAmount','executionOrder','deloadEvery','deloadPercent','reassessEvery'].forEach((id) => { const control = $(`#${id}`); control?.addEventListener('input', markDirty); control?.addEventListener('change', markDirty); });
     $('#genBtn')?.addEventListener('click', renderPreview);
     $('#savePlanBtn')?.addEventListener('click', savePlan);
     $('#cancelEditPlanBtn')?.addEventListener('click', () => { generatorMode = 'view'; syncPlanShells(); });
@@ -1249,7 +1285,7 @@
     startNewPlan,
     onChange(listener) { workoutListeners.add(listener); return () => workoutListeners.delete(listener); }
   });
-  global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, PROGRESSION_MODES, setValues, progressionIncrements, progressedSetValues, planSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
+  global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, PROGRESSION_MODES, normaliseTrainingLoad, isRecoverySession, isBaselineCheckIn, applyTrainingLoad, setValues, progressionIncrements, progressedSetValues, planSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
   if (typeof module !== 'undefined' && module.exports) module.exports = global.BASELINE_FITNESS_DEBUG;
   if (typeof document === 'undefined' || typeof global.addEventListener !== 'function') return;
 

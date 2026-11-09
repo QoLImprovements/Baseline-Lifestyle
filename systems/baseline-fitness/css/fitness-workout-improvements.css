@@ -22,3 +22,9 @@ html[data-app="fitness"] #exerciseLibrary .exercise-card [data-fitness-library-u
 html[data-app="fitness"] #connectGarminBtn:disabled{opacity:.65;cursor:not-allowed}
 @media(max-width:960px){html[data-app="fitness"] .fitness-overview-cards,html[data-app="fitness"] .fitness-overview-weeks{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){html[data-app="fitness"] .fitness-overview-cards,html[data-app="fitness"] .fitness-overview-weeks{grid-template-columns:1fr}html[data-app="fitness"] .fitness-trend-chart{height:160px}html[data-app="fitness"] .fitness-log-status{width:100%}}
+
+html[data-app="fitness"] .fitness-load-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end;margin:12px 0}
+html[data-app="fitness"] .fitness-load-help{margin:6px 0 14px}
+html[data-app="fitness"] .fitness-load-settings :is(select,label){min-width:0;width:100%}
+html[data-app="fitness"] .fitness-load-notice{border-left:3px solid var(--border-2,var(--border));padding:8px 12px;margin:12px 0;background:var(--filter-bg)}
+@media(max-width:850px){html[data-app="fitness"] .fitness-load-settings{grid-template-columns:1fr}}

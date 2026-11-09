@@ -154,7 +154,7 @@
     const baseline=Math.max(1,Math.round(Number(row.querySelector('.ex-baseline')?.value) || definition?.base || 1));const sets=setCount(row.querySelector('.ex-sets')?.value || 3);
     if (mode===MODES.TIMED) { const working=Math.max(1,Math.round(baseline*(Number(row.querySelector('.ex-working-percent')?.value ?? 100)/100)));return { start:`${working} sec working target`,progression:working>=90?'Next target +2 sec':'Next target +3 sec',rule:'Record the achieved hold duration' }; }
     const increase=repIncreaseForRow(row,definition);const targets=progressedTargets({ baseline,sets,repIncrease:increase,progressionMode:mode,workingPercent:Number(row.querySelector('.ex-working-percent')?.value ?? 80) },definition,1);
-    return { start:targets.join(' / '),progression:`+${increase} to every set after success`,rule:mode===MODES.LINEAR?'Final starting set = 80% of Max Baseline':'Equal working sets start at 80% of Max Baseline' };
+    return { start:targets.join(' / '),progression:`+${increase} to every set after success`,rule:mode===MODES.LINEAR?'Final starting set = '+(Number(row.querySelector('.ex-working-percent')?.value ?? 80))+'% of Max Baseline':'Equal working sets start at '+(Number(row.querySelector('.ex-working-percent')?.value ?? 80))+'% of Max Baseline' };
   }
   function muscleFocus(definition) {
     const family=String(definition?.familyKey || '').toLowerCase();const movement=String(definition?.movementCategory || '').toLowerCase();
@@ -289,7 +289,10 @@
   }
   function sessionIndexFromCard(card) { const text=String(card?.querySelector?.('.title,h3,.session-title')?.textContent || card?.textContent || '');const match=text.match(/Session\s+(\d+)/i);return match?Math.max(1,Number(match[1])):1; }
   function patchRows(root,useUi) {
-    Array.from(root?.querySelectorAll?.('.plan-exercise-row') || []).forEach((row) => { const exercise=canonicalName(row.firstElementChild?.textContent || '');const source=useUi?uiItem(exercise):savedItem(exercise);const definition=definitionFor(exercise);if (!source || !definition || validMode(source.progressionMode,definition)===MODES.TIMED) return;const targets=progressedTargets(source,definition,sessionIndexFromCard(row.closest('.session-card')));const details=Array.from(row.children).find((child) => child.tagName==='DIV');Array.from(details?.querySelectorAll?.('b') || []).forEach((node,index) => { node.textContent=String(targets[Math.min(index,targets.length-1)]); }); });
+    Array.from(root?.querySelectorAll?.('.plan-exercise-row') || []).forEach((row) => { const exercise=canonicalName(row.firstElementChild?.textContent || '');const source=useUi?uiItem(exercise):savedItem(exercise);const definition=definitionFor(exercise);if (!source || !definition || validMode(source.progressionMode,definition)===MODES.TIMED) return;const sessionIndex=sessionIndexFromCard(row.closest('.session-card'));
+      const rawTargets=progressedTargets(source,definition,sessionIndex);
+      const config=useUi?{deloadEvery:Number($('#deloadEvery')?.value||0),deloadPercent:Number($('#deloadPercent')?.value||70)}:selectedPlan()?.planJson||{};
+      const targets=rawTargets.map(value=>global.BASELINE_FITNESS_DEBUG?.applyTrainingLoad?.(value,config,sessionIndex)??value);const details=Array.from(row.children).find((child) => child.tagName==='DIV');Array.from(details?.querySelectorAll?.('b') || []).forEach((node,index) => { node.textContent=String(targets[Math.min(index,targets.length-1)]); }); });
   }
   function patchPlanDisplays() { patchRows($('#planOut'),true);patchRows($('#myPlanSavedWrap'),false); }
 

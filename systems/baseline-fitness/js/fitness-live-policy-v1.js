@@ -182,9 +182,10 @@
     steps.forEach((step,index) => { const name=canonicalExercise(step?.exercise || step?.name);if (!name) return;if (!positions.has(name)) positions.set(name,[]);positions.get(name).push(index); });
     positions.forEach((indexes,exercise) => {
       const item=sharedItem(exercise);const def=definition(exercise);if (!item || !def) return;const progressionSession=progressLevel(exercise)+1;
-      if (def.unit==='seconds') { const target=holdTarget(Math.max(1,Math.round(Number(item.baseline) * Number(item.workingPercent ?? 100) / 100)),progressionSession);indexes.forEach((index) => { steps[index]=relabelStep(steps[index],target); });return; }
+      const adjust=target=>global.BASELINE_FITNESS_DEBUG?.applyTrainingLoad?.(target,planJson(),context.sessionIndex)||target;
+      if (def.unit==='seconds') { const target=holdTarget(Math.max(1,Math.round(Number(item.baseline) * Number(item.workingPercent ?? 100) / 100)),progressionSession);indexes.forEach((index) => { steps[index]=relabelStep(steps[index],adjust(target)); });return; }
       const progression=global.BASELINE_FITNESS_EXERCISE_PROGRESSION;const targets=typeof progression?.progressedTargets==='function'?progression.progressedTargets(item,def,progressionSession):[];if (!targets.length) return;
-      indexes.forEach((index,position) => { steps[index]=relabelStep(steps[index],targets[Math.min(position,targets.length-1)]); });
+      indexes.forEach((index,position) => { steps[index]=relabelStep(steps[index],adjust(targets[Math.min(position,targets.length-1)])); });
     });
     next.steps=steps;next.step=steps[Math.max(0,Number(context.stepIndex || 0))] || null;next.sharedExerciseProgression=true;return next;
   }
