@@ -8,8 +8,8 @@
   const ALIASES = Object.freeze({ 'exercise-library': 'library', 'workout-routine': 'my-plan' });
   const ROUTE_BASE = '/baseline-fitness';
   const ROUTE_RE = /^\/baseline-fitness\/(system|my-plan|my-body|library|exercise-library|workout-routine|achievements)\/?$/i;
-  const BODY_ROUTE_RE = /^\/baseline-fitness\/my-body(?:\/(?:profile|services))?\/?$/i;
-  const BODY_VIEWS = Object.freeze(['overall', 'profile', 'services']);
+  const BODY_ROUTE_RE = /^\/baseline-fitness\/my-body(?:\/(?:profile|trends|services))?\/?$/i;
+  const BODY_VIEWS = Object.freeze(['overall', 'profile', 'trends', 'services']);
   const PLAN_VIEWS = Object.freeze(['current', 'completed', 'future']);
   const PLAN_ROUTE_RE = /^\/baseline-fitness\/my-plan(?:\/(?:completed|future))?\/?$/i;
   const ROUTINE_ROUTE_RE = /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?\/?$/i;
@@ -360,7 +360,7 @@
   }
   function bodyViewFromPath() {
     const path = String(location.pathname || '').replace(/\/+$/, '');
-    const match = path.match(/^\/baseline-fitness\/my-body\/(profile|services)$/i);
+    const match = path.match(/^\/baseline-fitness\/my-body\/(profile|trends|services)$/i);
     return match ? String(match[1]).toLowerCase() : 'overall';
   }
   function bodyRoutePath(view) {
@@ -1096,10 +1096,27 @@
     const healthy = calc.healthyMin && calc.healthyMax ? `${calc.healthyMin.toFixed(1)}–${calc.healthyMax.toFixed(1)} kg` : '—';
     target.innerHTML = `<div class="card"><h2>Overall Summary</h2><p class="note">Your latest saved body profile and calculated indicators.</p><div class="body-summary-grid">${metricCard('Weight', formatMetric(calc.weight, 1, ' kg'))}${metricCard('BMI', formatMetric(calc.bmi, 1), calc.bmiCategory)}${metricCard('BMR', formatMetric(calc.bmr, 0, ' kcal/day'), 'Estimated resting energy')}${metricCard('Daily energy', formatMetric(calc.tdee, 0, ' kcal/day'), 'Estimated from activity level')}${metricCard('Healthy BMI weight range', healthy)}${metricCard('Waist-to-height', formatMetric(calc.waistHeight, 2))}${metricCard('Waist-to-hip', formatMetric(calc.waistHip, 2))}${metricCard('Body surface area', formatMetric(calc.bodySurface, 2, ' m²'))}${metricCard('Resting heart rate', positive(profile.restingHeartRate) ? `${Math.round(profile.restingHeartRate)} bpm` : '—')}</div></div>`;
   }
+
+  function renderBodyTrends() {
+    const target=$('#bodyTrendDisplay');if(!target)return;
+    const history=global.BASELINE_FITNESS_SAVED_DATA?.getBodyHistory?.()||[];
+    const metric=$('#bodyTrendMetric')?.value||'weight';
+    const units={weight:'kg',waist:'cm',restingHeartRate:'bpm',chest:'cm',hips:'cm',upperArm:'cm',thigh:'cm'};
+    const points=history.map(entry=>({date:String(entry.date||''),value:Number(entry.profile?.[metric])})).filter(entry=>/^\d{4}-\d{2}-\d{2}$/.test(entry.date)&&Number.isFinite(entry.value)&&entry.value>0).sort((a,b)=>a.date.localeCompare(b.date));
+    if(!points.length){target.innerHTML='<p class="note">No dated measurements for this metric yet. Save your Body Profile to begin its history.</p>';return;}
+    const recent=points.slice(-24),numbers=recent.map(entry=>entry.value);
+    const minimum=Math.min(...numbers),maximum=Math.max(...numbers),range=Math.max(.1,maximum-minimum);
+    const coordinates=recent.map((entry,index)=>(index/Math.max(1,recent.length-1)*100).toFixed(1)+','+(88-(entry.value-minimum)/range*76).toFixed(1)).join(' ');
+    const first=recent[0],last=recent[recent.length-1],change=last.value-first.value,unit=units[metric]||'';
+    const chart=recent.length>1?'<svg class="fitness-trend-chart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Measurement trend" ><line x1="0" y1="88" x2="100" y2="88" stroke="currentColor" opacity=".22" stroke-width=".8"/><polyline fill="none" stroke="currentColor" stroke-linejoin="round" stroke-linecap="round" stroke-width="1.8" points="'+coordinates+'"/></svg>':'';
+    const rows=recent.slice().reverse().map(entry=>'<tr><td>'+escapeHtml(entry.date)+'</td><td>'+entry.value.toFixed(1)+' '+unit+'</td></tr>').join('');
+    target.innerHTML='<div class="fitness-trend-summary"><strong>Latest: '+last.value.toFixed(1)+' '+unit+'</strong><span>Change across available records: '+(change>=0?'+':'')+change.toFixed(1)+' '+unit+'</span><span>'+recent.length+' dated records</span></div>'+chart+'<div class="fitness-trend-history"><table><thead><tr><th scope="col">Date</th><th scope="col">Measured value</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+
   function fillBodyProfile() {
     const profile = readBodyProfile(); const form = $('#bodyProfileForm');
     if (form) Array.from(form.elements).forEach((field) => { if (field.name && Object.prototype.hasOwnProperty.call(profile, field.name)) field.value = profile[field.name]; });
-    renderBodyCalculations(profile); renderBodySummary();
+    renderBodyCalculations(profile); renderBodySummary(); renderBodyTrends();
   }
   function setBodySubtab(view, historyMode = 'none') {
     if (!BODY_VIEWS.includes(view)) view = 'overall';
@@ -1119,6 +1136,7 @@
     $$('.my-plan-subtab').forEach((button) => button.addEventListener('click', () => renderPlanSubtab(button.dataset.planView, 'push')));
     $$('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView, 'push')));
     $('#bodyProfileForm')?.addEventListener('input', () => renderBodyCalculations(profileFromForm()));
+    $('#bodyTrendMetric')?.addEventListener('change', renderBodyTrends);
     $('#bodyProfileForm')?.addEventListener('submit',(event)=>{event.preventDefault();const profile=profileFromForm();bodyProfileMemory=profile;global.BASELINE_FITNESS_SAVED_DATA?.saveProfile?.(profile);renderBodyCalculations(profile);renderBodySummary();if($('#bodyProfileStatus'))$('#bodyProfileStatus').textContent='Body profile save queued.';});
     $('#connectGarminBtn')?.addEventListener('click', () => { if ($('#garminConnectionStatus')) $('#garminConnectionStatus').textContent = 'Garmin OAuth credentials are not configured on the server yet.'; });
     $('#addExerciseBtn')?.addEventListener('click', () => { markDirty(); const used = new Set(itemsFromUi().map((item) => item.exercise)); const next = EXERCISES.find((item) => !used.has(item.name)) || EXERCISES[0]; $('#exerciseList')?.append(makeExerciseRow(next.name)); syncGoalControls(); });
