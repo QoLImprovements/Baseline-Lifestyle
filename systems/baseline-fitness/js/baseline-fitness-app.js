@@ -481,7 +481,13 @@
       if (seen.has(definition.name)) return;
       seen.add(definition.name);
       const item = { exercise: definition.name, baseline: Math.round(clamp($('.ex-baseline', row)?.value || definition.base, 1, 9999)), progressionType: definition.progressionType, workingPercent: Math.round(clamp($('.ex-working-percent', row)?.value ?? (definition.unit === 'seconds' ? 100 : 80), 30, 100)) };
-      if (definition.unit === 'reps') item.sets = setCount($('.ex-sets', row)?.value || $('.ex-sets', row)?.dataset.lastSets);
+      if (definition.unit === 'reps') {
+        item.sets = setCount($('.ex-sets', row)?.value || $('.ex-sets', row)?.dataset.lastSets);
+        const mode = String($('.ex-progression-mode', row)?.value || row.dataset.progressionMode || '');
+        if ([PROGRESSION_MODES.LINEAR, PROGRESSION_MODES.STRAIGHT].includes(mode)) item.progressionMode = mode;
+        const increase = Number($('.ex-rep-increase', row)?.value);
+        if (Number.isFinite(increase) && increase >= 0) item.repIncrease = Math.round(clamp(increase, 0, 1000));
+      }
       items.push(item);
     });
     return items;
