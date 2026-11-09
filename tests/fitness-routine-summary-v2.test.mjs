@@ -47,8 +47,8 @@ test('user-facing Summary headings do not expose implementation terminology',()=
 });
 
 test('dropdown distinguishes My Routine first and then contains complete catalogues',()=>{
-  const mine=summary.indexOf('My Routine — Routine Groups');
-  const mineCalisthenics=summary.indexOf('My Routine — Calisthenics');
+  const mine=summary.indexOf('My Workout — Routine Groups');
+  const mineCalisthenics=summary.indexOf('My Workout — Calisthenics');
   const exerciseLibrary=summary.indexOf('Exercise Library — ${esc(category)}');
   const activityLibrary=summary.indexOf('Activity Library — ${esc(activitySectionTitle(section))}');
   assert.ok(mine>=0 && mine<mineCalisthenics && mineCalisthenics<exerciseLibrary && exerciseLibrary<activityLibrary);
