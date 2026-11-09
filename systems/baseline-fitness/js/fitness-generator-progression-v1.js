@@ -72,18 +72,18 @@
     const patterns={ 1:[0],2:[-1,0],3:[-1,-2,0],4:[-2,-3,-1,0],5:[-3,-4,-2,-1,0] };
     return patterns[setCount(count)];
   }
-  function linearInitialTargets(baseline,count,increment) {
-    const max=Math.max(1,Math.round(Number(baseline) || 1));const step=Math.max(0,Math.round(Number(increment) || 0));const finalSet=Math.max(1,Math.round(max*0.80));
+  function linearInitialTargets(baseline,count,increment,percent=80) {
+    const max=Math.max(1,Math.round(Number(baseline) || 1));const step=Math.max(0,Math.round(Number(increment) || 0));const finalSet=Math.max(1,Math.round(max*(Number(percent)/100)));
     return linearOffsets(count).map((offset) => Math.max(1,finalSet+(offset*step)));
   }
-  function straightInitialTargets(baseline,count) {
-    const max=Math.max(1,Math.round(Number(baseline) || 1));const working=Math.max(1,Math.round(max*0.80));return Array(setCount(count)).fill(working);
+  function straightInitialTargets(baseline,count,percent=80) {
+    const max=Math.max(1,Math.round(Number(baseline) || 1));const working=Math.max(1,Math.round(max*(Number(percent)/100)));return Array(setCount(count)).fill(working);
   }
   function progressedTargets(item,definition,sessionIndex) {
     const source=item && typeof item==='object'?item:{};const session=Math.max(1,Math.round(Number(sessionIndex) || 1));const sets=setCount(source.sets || 3);
     const increase=Number.isFinite(Number(source.repIncrease)) && Number(source.repIncrease)>=0?Math.round(Number(source.repIncrease)):defaultRepIncrease(definition);
     const mode=validMode(source.progressionMode,definition);if (mode===MODES.TIMED) return [];
-    const initial=mode===MODES.STRAIGHT?straightInitialTargets(source.baseline,sets):linearInitialTargets(source.baseline,sets,increase);
+    const initial=mode===MODES.STRAIGHT?straightInitialTargets(source.baseline,sets,source.workingPercent ?? 80):linearInitialTargets(source.baseline,sets,increase,source.workingPercent ?? 80);
     return initial.map((value) => value+((session-1)*increase));
   }
 
@@ -152,8 +152,8 @@
 
   function detailText(row,definition,mode) {
     const baseline=Math.max(1,Math.round(Number(row.querySelector('.ex-baseline')?.value) || definition?.base || 1));const sets=setCount(row.querySelector('.ex-sets')?.value || 3);
-    if (mode===MODES.TIMED) return { start:`${baseline} sec target`,progression:baseline>=90?'Next target +2 sec':'Next target +3 sec',rule:'Complete the countdown' };
-    const increase=repIncreaseForRow(row,definition);const targets=progressedTargets({ baseline,sets,repIncrease:increase,progressionMode:mode },definition,1);
+    if (mode===MODES.TIMED) { const working=Math.max(1,Math.round(baseline*(Number(row.querySelector('.ex-working-percent')?.value ?? 100)/100)));return { start:`${working} sec working target`,progression:working>=90?'Next target +2 sec':'Next target +3 sec',rule:'Record the achieved hold duration' }; }
+    const increase=repIncreaseForRow(row,definition);const targets=progressedTargets({ baseline,sets,repIncrease:increase,progressionMode:mode,workingPercent:Number(row.querySelector('.ex-working-percent')?.value ?? 80) },definition,1);
     return { start:targets.join(' / '),progression:`+${increase} to every set after success`,rule:mode===MODES.LINEAR?'Final starting set = 80% of Max Baseline':'Equal working sets start at 80% of Max Baseline' };
   }
   function muscleFocus(definition) {
@@ -281,11 +281,11 @@
   }
 
   function generatorValues() {
-    const output=new Map();$$('#exerciseList .ex-row').forEach((row) => { const name=exerciseNameForRow(row);if (!name) return;output.set(name,{ progressionMode:currentMode(row),repIncrease:repIncreaseForRow(row),baseline:Math.max(1,Math.round(Number(row.querySelector('.ex-baseline')?.value) || 1)),sets:setCount(row.querySelector('.ex-sets')?.value || 3) }); });return output;
+    const output=new Map();$$('#exerciseList .ex-row').forEach((row) => { const name=exerciseNameForRow(row);if (!name) return;output.set(name,{ progressionMode:currentMode(row),repIncrease:repIncreaseForRow(row),baseline:Math.max(1,Math.round(Number(row.querySelector('.ex-baseline')?.value) || 1)),workingPercent:Number(row.querySelector('.ex-working-percent')?.value ?? 80),sets:setCount(row.querySelector('.ex-sets')?.value || 3) }); });return output;
   }
   function uiItem(exercise) {
     const row=$$('#exerciseList .ex-row').find((candidate) => exerciseNameForRow(candidate).localeCompare(canonicalName(exercise),'en-GB',{ sensitivity:'base' })===0);if (!row) return null;
-    return { exercise:exerciseNameForRow(row),progressionMode:currentMode(row),baseline:Math.max(1,Math.round(Number(row.querySelector('.ex-baseline')?.value) || 1)),sets:setCount(row.querySelector('.ex-sets')?.value || 3),repIncrease:repIncreaseForRow(row) };
+    return { exercise:exerciseNameForRow(row),progressionMode:currentMode(row),baseline:Math.max(1,Math.round(Number(row.querySelector('.ex-baseline')?.value) || 1)),workingPercent:Number(row.querySelector('.ex-working-percent')?.value ?? 80),sets:setCount(row.querySelector('.ex-sets')?.value || 3),repIncrease:repIncreaseForRow(row) };
   }
   function sessionIndexFromCard(card) { const text=String(card?.querySelector?.('.title,h3,.session-title')?.textContent || card?.textContent || '');const match=text.match(/Session\s+(\d+)/i);return match?Math.max(1,Number(match[1])):1; }
   function patchRows(root,useUi) {
@@ -301,7 +301,7 @@
     publishProgressionApi();patch();const list=$('#exerciseList');
     if (list && typeof MutationObserver!=='undefined') { listObserver=new MutationObserver(schedule);listObserver.observe(list,{ childList:true,subtree:false }); }
     document.addEventListener('change',(event) => { if (event.target?.matches?.('#lengthMode,#scheduleMode,#freq,#goalExercise,#startDate') || event.target?.closest?.('#exerciseList')) schedule(); },true);
-    document.addEventListener('input',(event) => { if (event.target?.closest?.('#exerciseList') || event.target?.id==='startDate') schedule(); },true);
+    document.addEventListener('input',(event) => { if (event.target?.closest?.('#exerciseList') || event.target?.id==='startDate' || event.target?.id==='executionOrder') schedule(); },true);
     document.addEventListener('click',(event) => { if (event.target?.closest?.('#genBtn,#savePlanBtn,#editOptionsBtn,[data-open-calisthenics-plan]')) schedule(); },true);
     document.addEventListener('baseline:fitness-plans-updated',schedule);document.addEventListener('baseline:fitness-workout-updated',schedule);
   }

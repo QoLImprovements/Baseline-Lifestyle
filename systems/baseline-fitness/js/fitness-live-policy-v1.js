@@ -182,7 +182,7 @@
     steps.forEach((step,index) => { const name=canonicalExercise(step?.exercise || step?.name);if (!name) return;if (!positions.has(name)) positions.set(name,[]);positions.get(name).push(index); });
     positions.forEach((indexes,exercise) => {
       const item=sharedItem(exercise);const def=definition(exercise);if (!item || !def) return;const progressionSession=progressLevel(exercise)+1;
-      if (def.unit==='seconds') { const target=holdTarget(item.baseline,progressionSession);indexes.forEach((index) => { steps[index]=relabelStep(steps[index],target); });return; }
+      if (def.unit==='seconds') { const target=holdTarget(Math.max(1,Math.round(Number(item.baseline) * Number(item.workingPercent ?? 100) / 100)),progressionSession);indexes.forEach((index) => { steps[index]=relabelStep(steps[index],target); });return; }
       const progression=global.BASELINE_FITNESS_EXERCISE_PROGRESSION;const targets=typeof progression?.progressedTargets==='function'?progression.progressedTargets(item,def,progressionSession):[];if (!targets.length) return;
       indexes.forEach((index,position) => { steps[index]=relabelStep(steps[index],targets[Math.min(position,targets.length-1)]); });
     });

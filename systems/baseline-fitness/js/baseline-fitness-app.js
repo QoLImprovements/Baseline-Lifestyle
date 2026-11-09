@@ -131,7 +131,7 @@
     const definition = exerciseDefinition(source.exercise);
     const rawType = String(source.progressionType || '');
     const type = rawType === LEGACY_TIMED_TYPE ? TYPES.TIMED : Object.values(TYPES).includes(rawType) ? rawType : definition.progressionType;
-    const item = { exercise: definition.name, baseline: Math.round(clamp(source.baseline || definition.base, 1, 9999)), progressionType: type };
+    const item = { exercise: definition.name, baseline: Math.round(clamp(source.baseline || definition.base, 1, 9999)), progressionType: type, workingPercent: Math.round(clamp(source.workingPercent ?? (definition.unit === 'seconds' ? 100 : 80), 30, 100)) };
     const rawMode = String(source.progressionMode || '');
     const savedMode = rawMode === 'linear-percent' ? PROGRESSION_MODES.LINEAR : rawMode;
     if (definition.unit === 'seconds') item.progressionMode = PROGRESSION_MODES.TIMED;
@@ -199,7 +199,7 @@
     const fallbackIncrease = String(definition.progressionType || '') === String(TYPES.LEG) ? 3 : 1;
     const rawIncrease = Number(item.repIncrease);
     const increase = Number.isFinite(rawIncrease) && rawIncrease >= 0 ? Math.round(rawIncrease) : fallbackIncrease;
-    const finalSet = Math.max(1, Math.round((Number(item.baseline) || 1) * 0.80));
+    const finalSet = Math.max(1, Math.round((Number(item.baseline) || 1) * (Number(item.workingPercent ?? 80) / 100)));
     const offsets = { 1:[0], 2:[-1,0], 3:[-1,-2,0], 4:[-2,-3,-1,0], 5:[-3,-4,-2,-1,0] }[sets];
     const initial = mode === PROGRESSION_MODES.STRAIGHT
       ? Array(sets).fill(finalSet)
@@ -219,7 +219,7 @@
       const item = normaliseItem(raw);
       const definition = exerciseDefinition(item.exercise);
       return definition.unit === 'seconds'
-        ? { item: definition, unit: 'seconds', hold: holdValue(item.baseline, sessionIndex), progressionType: TYPES.TIMED }
+        ? { item: definition, unit: 'seconds', hold: holdValue(Math.max(1, Math.round(item.baseline * item.workingPercent / 100)), sessionIndex), progressionType: TYPES.TIMED }
         : { item: definition, unit: 'reps', sets: item.sets, values: planSetValues(item, definition, sessionIndex), progressionType: item.progressionType };
     });
   }
@@ -428,6 +428,11 @@
     const baseline = $('.ex-baseline', row);
     const info = $('.exercise-info-button', row);
     const source = $('.exercise-caption-source', row);
+    const workingInput = $('.ex-working-percent', row);
+    if (workingInput && workingInput.dataset.workUnit !== definition.unit) {
+      workingInput.value = String(definition.unit === 'seconds' ? 100 : 80);
+      workingInput.dataset.workUnit = definition.unit;
+    }
     row.dataset.progressionType = definition.progressionType;
     row.dataset.familyKey = definition.familyKey;
     row.dataset.laterality = definition.laterality;
@@ -454,10 +459,11 @@
     const row = document.createElement('div');
     const captionId = `exercise-caption-${++captionSequence}`;
     row.className = 'ex-row';
-    row.innerHTML = `<div class="ex-exercise-block"><div class="field-stack ex-field-exercise"><label>Exercise</label><select class="ex-select field-select-fixed" data-native-select="true">${exerciseOptions(definition.name)}</select></div><div class="exercise-info-wrap bl-info-wrap"><button class="exercise-info-button bl-info-button" data-bl-info-button type="button" aria-expanded="false" aria-controls="${captionId}"><span aria-hidden="true">i</span></button><div class="exercise-caption exercise-caption-source bl-info-source" id="${captionId}"></div></div></div><div class="field-stack ex-field-baseline"><label class="baseline-label">${baselineLabel(definition)}</label><input class="ex-baseline field-input-fixed" type="number" min="1" inputmode="numeric" value="${definition.base}"></div><div class="field-stack ex-field-sets"><label class="sets-label">Sets</label><select class="ex-sets field-select-fixed" data-native-select="true"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div><div class="ex-remove-wrap"><button class="action secondary ex-remove" type="button" aria-label="Remove exercise">×</button></div>`;
+    row.innerHTML = `<div class="ex-exercise-block"><div class="field-stack ex-field-exercise"><label>Exercise</label><select class="ex-select field-select-fixed" data-native-select="true">${exerciseOptions(definition.name)}</select></div><div class="exercise-info-wrap bl-info-wrap"><button class="exercise-info-button bl-info-button" data-bl-info-button type="button" aria-expanded="false" aria-controls="${captionId}"><span aria-hidden="true">i</span></button><div class="exercise-caption exercise-caption-source bl-info-source" id="${captionId}"></div></div></div><div class="field-stack ex-field-baseline"><label class="baseline-label">${baselineLabel(definition)}</label><input class="ex-baseline field-input-fixed" type="number" min="1" inputmode="numeric" value="${definition.base}"></div><div class="field-stack ex-field-working"><label>Working target (%)</label><input class="ex-working-percent field-input-fixed" type="number" min="30" max="100" step="5" value="${definition.unit === 'seconds' ? 100 : 80}" inputmode="numeric"></div><div class="field-stack ex-field-sets"><label class="sets-label">Sets</label><select class="ex-sets field-select-fixed" data-native-select="true"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div><div class="ex-remove-wrap"><button class="action secondary ex-remove" type="button" aria-label="Remove exercise">×</button></div>`;
     syncExerciseRow(row);
     $('.ex-select', row)?.addEventListener('change', () => { markDirty(); syncExerciseRow(row); syncGoalControls(); });
     $('.ex-baseline', row)?.addEventListener('input', markDirty);
+    $('.ex-working-percent', row)?.addEventListener('input', markDirty);
     $('.ex-sets', row)?.addEventListener('change', (event) => { markDirty(); event.currentTarget.dataset.lastSets = event.currentTarget.value; });
     $('.ex-remove', row)?.addEventListener('click', () => {
       markDirty(); row.remove();
@@ -474,7 +480,7 @@
       const definition = exerciseDefinition($('.ex-select', row)?.value);
       if (seen.has(definition.name)) return;
       seen.add(definition.name);
-      const item = { exercise: definition.name, baseline: Math.round(clamp($('.ex-baseline', row)?.value || definition.base, 1, 9999)), progressionType: definition.progressionType };
+      const item = { exercise: definition.name, baseline: Math.round(clamp($('.ex-baseline', row)?.value || definition.base, 1, 9999)), progressionType: definition.progressionType, workingPercent: Math.round(clamp($('.ex-working-percent', row)?.value ?? (definition.unit === 'seconds' ? 100 : 80), 30, 100)) };
       if (definition.unit === 'reps') item.sets = setCount($('.ex-sets', row)?.value || $('.ex-sets', row)?.dataset.lastSets);
       items.push(item);
     });
@@ -505,8 +511,8 @@
     const target = clamp($('#goalAmount')?.value || definition.base, 1, 99999);
     const source = normaliseItem(items.find((item) => item.exercise === definition.name) || { exercise: definition.name, baseline: definition.base });
     for (let index = 1; index <= 120; index += 1) {
-      if (definition.unit === 'seconds' && holdValue(source.baseline, index) >= target) return index;
-      if (definition.unit === 'reps' && Math.max(...progressedSetValues(source.baseline, source.sets, index, source.progressionType)) >= target) return index;
+      if (definition.unit === 'seconds' && holdValue(Math.max(1, Math.round(source.baseline * source.workingPercent / 100)), index) >= target) return index;
+      if (definition.unit === 'reps' && Math.max(...planSetValues(source, definition, index)) >= target) return index;
     }
     return 120;
   }
@@ -563,6 +569,7 @@
         plan.items.forEach((item) => {
           const row = makeExerciseRow(item.exercise);
           const baseline = $('.ex-baseline', row); if (baseline) baseline.value = String(item.baseline);
+          const working = $('.ex-working-percent', row); if (working) working.value = String(item.workingPercent);
           const setsSelect = $('.ex-sets', row);
           if (setsSelect && item.sets) { setsSelect.dataset.lastSets = String(item.sets); syncExerciseRow(row); if (!setsSelect.disabled) setsSelect.value = String(item.sets); }
           list.append(row);
