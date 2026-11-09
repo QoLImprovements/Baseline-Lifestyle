@@ -559,6 +559,37 @@
     });
   }
 
+
+  function weeklyTrainingOverview() {
+    const routine=routineState();
+    const byId=new Map((routine.activities||[]).map(item=>[String(item.id),item]));
+    const iso=(date)=>date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+    const toIso=(value)=>{
+      if(typeof value==='number'||/^\d+$/.test(String(value||''))){const n=Number(value);const d=new Date(n>9999999999?n:n*1000);return Number.isNaN(d.getTime())?'':iso(d);}
+      const valueText=String(value||'');return /^\d{4}-\d{2}-\d{2}/.test(valueText)?valueText.slice(0,10):'';
+    };
+    const today=new Date(),start=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+    start.setDate(start.getDate()-((start.getDay()+6)%7));
+    const completedPlans=plans().flatMap(plan=>(plan.sessions||[]).filter(session=>session.status==='done').map(session=>({date:toIso(session.completed_at||session.completedAt)}))).filter(row=>row.date);
+    const activityRows=Object.entries(routine.logs||{}).flatMap(([date,entries])=>Object.entries(entries||{}).filter(([,entry])=>entry?.completed).map(([id,entry])=>({date,section:byId.get(id)?.section||'other',minutes:Math.max(0,Number(entry.metrics?.durationMinutes)||0)})));
+    const weeks=Array.from({length:4},(_,offset)=>{
+      const first=new Date(start);first.setDate(first.getDate()-7*(3-offset));
+      const end=new Date(first);end.setDate(end.getDate()+6);
+      const min=iso(first),max=iso(end);
+      const sessionCount=completedPlans.filter(row=>row.date>=min&&row.date<=max).length;
+      const matches=activityRows.filter(row=>row.date>=min&&row.date<=max);
+      const minutes=matches.reduce((sum,row)=>sum+row.minutes,0);
+      return {label:first.toLocaleDateString('en-GB',{day:'numeric',month:'short'}),sessions:sessionCount+matches.length,calisthenics:sessionCount,activities:matches.length,minutes,sections:new Set(matches.map(row=>row.section)).size+(sessionCount?1:0)};
+    });
+    const current=weeks[3];
+    return '<section class="fitness-weekly-overview" aria-label="Recent workout record"><h3>Training overview</h3><p class="note">Actual recorded sessions across all workout categories, by week. Minutes count only activities with a duration entered; different activities are not treated as equivalent training loads.</p><div class="fitness-overview-cards">'+[
+      ['This week',String(current.sessions)+' completed sessions'],
+      ['Calisthenics',String(current.calisthenics)+' completed this week'],
+      ['Other activities',String(current.activities)+' completed this week'],
+      ['Recorded duration',String(current.minutes)+' minutes (where entered)']
+    ].map(([title,value])=>'<div class="fitness-overview-card"><span>'+esc(title)+'</span><strong>'+esc(value)+'</strong></div>').join('')+'</div><div class="fitness-overview-weeks">'+weeks.map(week=>'<div class="fitness-overview-week"><span>Week of '+esc(week.label)+'</span><strong>'+week.sessions+' sessions</strong><small>'+week.calisthenics+' calisthenics · '+week.activities+' other</small></div>').join('')+'</div></section>';
+  }
+
   function renderSummary() {
     if (rendering) return;
     const target=$('#fitnessExerciseSummary');if (!target) return;
@@ -576,7 +607,7 @@
       sections.push(categorySection('Cardio','cardio',unassigned.filter((entity)=>entity.section==='cardio')));
       sections.push(categorySection('Sports','sports',unassigned.filter((entity)=>entity.section==='sports')));
       sections.push(categorySection('Other Fitness Activities','other',unassigned.filter((entity)=>entity.section==='other')));
-      target.innerHTML=sections.filter(Boolean).join('') || '<div class="fitness-routine-empty">No fitness routines or activities are currently available to summarise.</div>';
+      target.innerHTML=weeklyTrainingOverview()+(sections.filter(Boolean).join('') || '<div class="fitness-routine-empty">No saved plans or activities are currently available to summarise.</div>');
       renderFilter(data,grouping);
       applyFilter(data);
     } finally { rendering=false; }
