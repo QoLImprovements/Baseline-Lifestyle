@@ -1,4 +1,4 @@
-/* Baseline Fitness — site-coherent My Routine workspace. */
+/* Baseline Fitness — site-coherent My Workout workspace. */
 (function (global) {
   'use strict';
 
@@ -340,7 +340,7 @@
     const shell = document.createElement('div');
     shell.className = 'fitness-routine-shell';
     shell.innerHTML = `
-      <nav class="fitness-routine-subtabs" role="tablist" aria-label="My Routine views">
+      <nav class="fitness-routine-subtabs" role="tablist" aria-label="My Workout views">
         <button type="button" class="tab fitness-routine-subtab" role="tab" aria-selected="false" data-fitness-routine-view="log">Routine Log</button>
         <button type="button" class="tab fitness-routine-subtab" role="tab" aria-selected="false" data-fitness-routine-view="summary">Routine Summary</button>
         <button type="button" class="tab fitness-routine-subtab" role="tab" aria-selected="false" data-fitness-routine-view="plan">Routine Plan</button>
@@ -391,8 +391,8 @@
       <div class="fitness-routine-panel bl-routine-panel" data-fitness-routine-panel="public" hidden>
         <div class="card fitness-routine-card bl-routine-card">
           <div class="section-head-actions">
-            <div><h2>Public Routines</h2><p class="note">Choose a public profile to view their My Routine in View Only format.</p></div>
-            <label class="field-stack bl-routine-visibility-control"><span>My Routine Visibility</span><select id="fitnessRoutineVisibility"><option value="private">Private</option><option value="public">Public</option></select></label>
+            <div><h2>Public Routines</h2><p class="note">Choose a public profile to view their My Workout in View Only format.</p></div>
+            <label class="field-stack bl-routine-visibility-control"><span>My Workout Visibility</span><select id="fitnessRoutineVisibility"><option value="private">Private</option><option value="public">Public</option></select></label>
           </div>
           <div class="divider"></div>
           <div class="bl-public-profile-row"><label class="field-stack"><span>Public profile</span><select id="fitnessPublicRoutineName"><option value="">Choose a public profile…</option></select></label><button class="action" type="button" id="fitnessViewPublicRoutine">View Routine</button></div>

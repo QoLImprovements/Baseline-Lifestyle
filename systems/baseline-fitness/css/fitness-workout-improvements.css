@@ -1,0 +1,24 @@
+/* Baseline Fitness: coherent refinement for the expanded workout features. */
+html[data-app="fitness"] .fitness-trend-select{max-width:360px;margin:12px 0 18px}
+html[data-app="fitness"] .fitness-trend-summary{display:flex;align-items:center;gap:12px 24px;flex-wrap:wrap;margin:12px 0 14px;font-size:16px}
+html[data-app="fitness"] .fitness-trend-chart{display:block;width:100%;height:210px;max-height:33vh;margin:12px 0 18px;color:var(--ink);border:1px solid var(--border);border-radius:12px;background:var(--filter-bg)}
+html[data-app="fitness"] .fitness-trend-history{overflow-x:auto;max-width:100%}
+html[data-app="fitness"] .fitness-trend-history table{width:100%;border-collapse:collapse;text-align:left}
+html[data-app="fitness"] .fitness-trend-history th,html[data-app="fitness"] .fitness-trend-history td{padding:10px;border-bottom:1px solid var(--border)}
+html[data-app="fitness"] .fitness-log-status{width:min(230px,100%);min-width:0}
+html[data-app="fitness"] .fitness-log-status select{width:100%;min-height:44px}
+html[data-app="fitness"] .fitness-log-status[hidden]{display:none!important}
+html[data-app="fitness"] .fitness-weekly-overview{margin:0 0 22px;padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--card-bg);color:var(--ink)}
+html[data-app="fitness"] .fitness-weekly-overview h3{margin:0 0 8px}
+html[data-app="fitness"] .fitness-overview-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:15px}
+html[data-app="fitness"] .fitness-overview-card{padding:12px;border:1px solid var(--border);border-radius:12px;display:grid;gap:7px;background:var(--filter-bg)}
+html[data-app="fitness"] .fitness-overview-card span{font-size:14px;color:var(--muted)}
+html[data-app="fitness"] .fitness-overview-card strong{font-size:17px;overflow-wrap:anywhere}
+html[data-app="fitness"] .fitness-overview-weeks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+html[data-app="fitness"] .fitness-overview-week{display:grid;gap:5px;border-top:1px solid var(--border);padding-top:9px;font-size:14px}
+html[data-app="fitness"] .fitness-overview-week small{color:var(--muted)}
+html[data-app="fitness"] #exerciseLibrary .exercise-card p{line-height:1.45}
+html[data-app="fitness"] #exerciseLibrary .exercise-card [data-fitness-library-use]{margin-top:7px}
+html[data-app="fitness"] #connectGarminBtn:disabled{opacity:.65;cursor:not-allowed}
+@media(max-width:960px){html[data-app="fitness"] .fitness-overview-cards,html[data-app="fitness"] .fitness-overview-weeks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){html[data-app="fitness"] .fitness-overview-cards,html[data-app="fitness"] .fitness-overview-weeks{grid-template-columns:1fr}html[data-app="fitness"] .fitness-trend-chart{height:160px}html[data-app="fitness"] .fitness-log-status{width:100%}}

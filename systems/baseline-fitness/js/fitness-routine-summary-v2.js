@@ -5,7 +5,7 @@
    The structure adapter creates the Routine Summary shell. This module is the
    single Fitness owner for Summary contents, hierarchy, badges and filtering.
 
-   My Routine dropdown hierarchy:
+   My Workout dropdown hierarchy:
    - Groups: one option for each saved Routine Group.
    - Calisthenic Plans: one option for each saved Calisthenics plan.
    - Cardio / Sports / Other Fitness Activities: one option per saved activity.
@@ -15,7 +15,7 @@
    Summary and are never extra dropdown options. Individual exercises remain
    available later in the complete Exercise Library.
 
-   Complete libraries follow My Routine and remain alphabetised by sub-category.
+   Complete libraries follow My Workout and remain alphabetised by sub-category.
    Every plan, exercise and activity Summary uses the same two-column shell.
    Summary selection is transient session state; the public URL remains the clean
    /baseline-fitness/my-routine/summary route.
@@ -487,7 +487,7 @@
       ).join('')
     ).join('');
 
-    select.innerHTML=`<option value="all" data-filter-key="all">All My Routine</option>${groupOptions?`<optgroup label="Groups">${groupOptions}</optgroup>`:''}${planOptions?`<optgroup label="Calisthenic Plans">${planOptions}</optgroup>`:''}${myActivities('cardio')?`<optgroup label="Cardio">${myActivities('cardio')}</optgroup>`:''}${myActivities('sports')?`<optgroup label="Sports">${myActivities('sports')}</optgroup>`:''}${myActivities('other')?`<optgroup label="Other Fitness Activities">${myActivities('other')}</optgroup>`:''}${libraryExerciseGroups}${libraryActivityGroups}`;
+    select.innerHTML=`<option value="all" data-filter-key="all">All My Workout</option>${groupOptions?`<optgroup label="Groups">${groupOptions}</optgroup>`:''}${planOptions?`<optgroup label="Calisthenic Plans">${planOptions}</optgroup>`:''}${myActivities('cardio')?`<optgroup label="Cardio">${myActivities('cardio')}</optgroup>`:''}${myActivities('sports')?`<optgroup label="Sports">${myActivities('sports')}</optgroup>`:''}${myActivities('other')?`<optgroup label="Other Fitness Activities">${myActivities('other')}</optgroup>`:''}${libraryExerciseGroups}${libraryActivityGroups}`;
     const desired=Array.from(select.options || []).find((option)=>String(option.dataset.filterKey || option.value)===current) || select.options[0];
     if (desired) desired.selected=true;
     refreshThemedSelect(select);
