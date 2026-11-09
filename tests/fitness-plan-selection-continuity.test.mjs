@@ -110,7 +110,7 @@ test('Fitness My Routine has one route and visibility owner',()=>{
 
   assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-routine-workspace.js')),false);
   assert.doesNotMatch(page,/fitness-routine-workspace\.js/);
-  assert.match(structure,/canonical My Routine structure adapter/);
+  assert.match(structure,/canonical My Workout structure adapter/);
   assert.doesNotMatch(workspace,/\$\$\('\.fitness-routine-panel'\).*panel\.hidden/);
   assert.match(workspace,/BASELINE_fitnessRoutineStructure\.activateTopView/);
 });
