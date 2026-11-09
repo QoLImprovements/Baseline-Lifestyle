@@ -17,6 +17,7 @@
   let revision=0;
   let authName='';
   let syncing=false;
+  let pendingWrite=Promise.resolve();
   let saveBlocked=false;
   let lastError='';
   let profile=null;
@@ -133,17 +134,32 @@
     else blockSaving(data?.error||'fitness_load_failed');
     return data;
   }
-  async function post(body){
-    if(!enabled||syncing||saveBlocked)return null;
-    syncing=true;
-    try{
-      const data=await request({method:'POST',body:revisionedBody(body)});
-      if(data?.ok){applyServer(data,'save');return data;}
-      blockSaving(data?.error||'save_failed');
-      return data;
-    }finally{
-      syncing=false;
-    }
+  function post(body){
+    if(!enabled||saveBlocked)return Promise.resolve(null);
+    const queuedOwner=authName;
+    const write=async()=>{
+      if(!enabled||saveBlocked||normalise(queuedOwner)!==normalise(authName))return null;
+      syncing=true;
+      try{
+        let data=await request({method:'POST',body:revisionedBody(body)});
+        if(data?.error==='revision_conflict'){
+          const fresh=await request();
+          if(!fresh?.ok){
+            if(normalise(queuedOwner)===normalise(authName))blockSaving(fresh?.error||'fitness_reload_failed');
+            return fresh;
+          }
+          rememberRevision(fresh);
+          data=await request({method:'POST',body:revisionedBody(body)});
+        }
+        if(normalise(queuedOwner)!==normalise(authName))return null;
+        if(data?.ok){applyServer(data,'save');return data;}
+        blockSaving(data?.error||'save_failed');
+        return data;
+      }finally{syncing=false;}
+    };
+    const result=pendingWrite.then(write,write);
+    pendingWrite=result.then(()=>undefined,()=>undefined);
+    return result;
   }
   function queue(name,body,delay=180){
     if(!enabled||saveBlocked)return false;

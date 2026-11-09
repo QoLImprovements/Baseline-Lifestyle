@@ -119,3 +119,12 @@ test('calendar uses one workout-history scan rather than repeating it for every 
   assert.match(code,/calendarDayButton\(date,true,completionCounts\)/);
   assert.match(code,/calendarDayButton\(date, date\.getMonth\(\) === month\.getMonth\(\),completionCounts\)/);
 });
+
+test('Fitness Saved Data writes are serialised and retry revision conflicts',()=>{
+  const bridge=read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
+  assert.match(bridge,/let pendingWrite=Promise\.resolve\(\)/);
+  assert.match(bridge,/const result=pendingWrite\.then\(write,write\)/);
+  assert.match(bridge,/if\(data\?\.error==='revision_conflict'\)/);
+  assert.match(bridge,/rememberRevision\(fresh\)/);
+  assert.doesNotMatch(bridge,/if\(!enabled\|\|syncing\|\|saveBlocked\)return null/);
+});
