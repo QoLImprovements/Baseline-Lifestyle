@@ -1051,22 +1051,65 @@
     const scheduleBadge = plan.scheduleMode === 'specific-days' ? `<span class="badge">Schedule begins: ${escapeHtml(niceDate(plan.startDate))}</span>` : '';
     target.innerHTML = `<div class="card"><h2>${escapeHtml(name)}’s plan</h2><div class="session-plan-meta">${scheduleBadge}<span class="badge">Sessions: ${plan.sessions}</span></div></div>${rows.map((row) => sessionCard(row, plan)).join('')}${plan.sessions > rows.length ? `<p class="note">Showing the first ${rows.length} sessions.</p>` : ''}`;
   }
+
   function renderAchievements() {
-    const summary = $('#achSummary'); const grid = $('#achGrid'); if (!summary || !grid) return;
-    if (!auth.authed) { summary.textContent = 'Log in to track milestones.'; grid.innerHTML = ''; return; }
-    const done = Number(current.progress?.done || 0); const total = Number(current.progress?.total || 0);
-    summary.innerHTML = `<strong>Sessions done:</strong> ${done} • <strong>Plan progress:</strong> ${done}/${total}`;
-    const items = [['First Session', done >= 1], ['10 Sessions', done >= 10], ['30 Sessions', done >= 30], ['Plan Completed', total > 0 && done === total]];
-    grid.innerHTML = items.map(([name, on]) => `<div class="ach-card ${on ? 'unlocked' : ''}"><div class="ach-icon">${on ? '✓' : '○'}</div><div class="ach-meta"><div class="name">${name}</div><div class="prog">${on ? 'Unlocked' : 'Locked'}</div></div></div>`).join('');
+    const summary=$('#achSummary'),grid=$('#achGrid');if(!summary||!grid)return;
+    if(!auth.authed){summary.textContent='Log in to see milestones based on recorded sessions.';grid.innerHTML='';return;}
+    const plans=global.BASELINE_fitnessPlans?.getPlans?.()||[];
+    const routine=global.BASELINE_fitnessRoutine?.getState?.()||{activities:[],logs:{}};
+    const planDone=plans.reduce((sum,plan)=>sum+(plan.sessions||[]).filter(session=>session.status==='done').length,0);
+    const logs=Object.entries(routine.logs||{}).flatMap(([date,entries])=>Object.entries(entries||{}).filter(([,entry])=>entry?.completed).map(([id,entry])=>({date,id,entry})));
+    const activitiesById=new Map((routine.activities||[]).map(item=>[item.id,item]));
+    const categories=new Set(logs.map(entry=>activitiesById.get(entry.id)?.section).filter(Boolean));
+    if(planDone)categories.add('calisthenics');
+    const total=planDone+logs.length;
+    const completePlan=plans.some(plan=>plan.sessions?.length && plan.sessions.every(session=>session.status==='done'));
+    const measurementDates=(global.BASELINE_FITNESS_SAVED_DATA?.getBodyHistory?.()||[]).length;
+    const items=[
+      ['First recorded session',total>=1,'1 completed workout'],
+      ['10 recorded sessions',total>=10,Math.min(total,10)+'/10 workouts'],
+      ['30 recorded sessions',total>=30,Math.min(total,30)+'/30 workouts'],
+      ['100 recorded sessions',total>=100,Math.min(total,100)+'/100 workouts'],
+      ['Calisthenics plan completed',completePlan,'All scheduled sessions in a saved plan'],
+      ['Two activity categories',categories.size>=2,categories.size+'/2 categories'],
+      ['Three activity categories',categories.size>=3,categories.size+'/3 categories'],
+      ['Recorded body trend',measurementDates>=2,Math.min(measurementDates,2)+'/2 measurement dates']
+    ];
+    summary.innerHTML='<strong>Recorded workouts:</strong> '+total+' · <strong>Calisthenics:</strong> '+planDone+' · <strong>Other fitness:</strong> '+logs.length+' · <strong>Milestones:</strong> '+items.filter(item=>item[1]).length+'/'+items.length;
+    grid.innerHTML=items.map(([name,unlocked,detail])=>'<div class="ach-card '+(unlocked?'unlocked':'')+'"><div class="ach-icon">'+(unlocked?'✓':'○')+'</div><div class="ach-meta"><div class="name">'+escapeHtml(name)+'</div><div class="prog">'+escapeHtml(detail)+'</div></div></div>').join('');
+  }
+  function exerciseGuidance(item) {
+    const text=String(item.how||'').trim();
+    const generic=/^Use a controlled range and keep the working joints aligned\.$/i.test(text);
+    const category=String(item.movementCategory||'').toLowerCase();
+    const family=String(item.familyKey||'').toLowerCase();
+    const movement=String(item.name||'').toLowerCase();
+    const groups=[
+      [/squat|sit-to-stand/,['Move through a depth you can control, keeping the foot grounded and tracking the knee along the toes.','Avoid collapsing the knees inward or losing foot contact.']],
+      [/lunge|split|step-up/,['Transfer weight into the working leg with a stable pelvis and controlled descent.','Avoid pushing off the trailing leg to conceal the working-leg demand.']],
+      [/push|dip|triceps/,['Brace the trunk, control shoulder motion and press through the intended range without jerking.','Avoid letting the shoulder roll forward or the body sag.']],
+      [/pull|row|hang/,['Begin with controlled shoulder-blade engagement and move smoothly through the pulling range.','Avoid swinging or shortening the range to complete extra repetitions.']],
+      [/hinge|bridge|hip thrust|glute/,['Initiate through the hips while keeping the trunk stable; avoid using a large lower-back arch to finish.','Avoid replacing hip motion with lumbar extension.']],
+      [/hamstring|nordic/,['Control the lowering phase slowly and maintain hip alignment throughout.','Avoid dropping rapidly into the hardest portion of the movement.']],
+      [/calf|pogo|tibialis|heel walk/,['Move deliberately at the ankle through the controlled available range.','Avoid bouncing unless the selected exercise explicitly involves elastic hops.']],
+      [/plank|dead bug|bird dog|hollow|core|climber/,['Brace without holding your breath, keep the pelvis controlled and adjust leverage when form breaks down.','Avoid compensating with an excessive lower-back arch or uncontrolled rotation.']],
+      [/crawl|inchworm|walk/,['Keep weight transitions smooth and control the trunk during each step.','Avoid rushing at the expense of position and coordination.']],
+      [/jump|burpee|squat thrust|high knee/,['Use controlled take-off and landing mechanics while managing pace and fatigue.','Avoid stiff uncontrolled landings or losing technique as speed rises.']]
+    ];
+    const match=groups.find(([pattern])=>pattern.test(category+' '+family+' '+movement));
+    return { technique:generic?(match?.[1]?.[0]||'Use an appropriate range and controlled tempo for this movement, and stop the set when the required form is lost.'):text,
+      commonError:match?.[1]?.[1]||'Avoid compensating with momentum or a reduced range solely to reach the repetition target.' };
   }
   function renderLibrary() {
-    const target = $('#exerciseLibrary'); if (!target) return;
-    const query = String($('#exSearch')?.value || '').toLowerCase();
-    const group = $('#exGroup')?.value || 'all';
-    target.innerHTML = EXERCISES
-      .filter((item) => (group === 'all' || item.familyKey === group) && (!query || `${item.name} ${item.family} ${item.section} ${item.movementCategory} ${item.unit}`.toLowerCase().includes(query)))
-      .map((item) => `<div class="card exercise-card"><div class="title">${escapeHtml(item.name)}</div><div class="muted">${escapeHtml(item.family)} • ${escapeHtml(item.movementCategory)} • ${escapeHtml(item.variationLevel)}</div><div class="divider"></div><p>${escapeHtml(item.how)}</p><p class="note"><b>Progression:</b> ${escapeHtml(progressionDescription(item))}</p></div>`)
-      .join('');
+    const target=$('#exerciseLibrary');if(!target)return;
+    const query=String($('#exSearch')?.value||'').toLowerCase();
+    const group=$('#exGroup')?.value||'all';
+    target.innerHTML=EXERCISES
+      .filter(item=>(group==='all'||item.familyKey===group||item.family===group)&&(!query||[item.name,item.family,item.section,item.movementCategory,item.unit,item.goodFor].join(' ').toLowerCase().includes(query)))
+      .map(item=>{
+        const guidance=exerciseGuidance(item);
+        return '<article class="card exercise-card"><div class="title">'+escapeHtml(item.name)+'</div><div class="muted">'+escapeHtml(item.family)+' · '+escapeHtml(item.movementCategory)+' · '+escapeHtml(item.variationLevel)+'</div><div class="divider"></div><p><strong>Technique:</strong> '+escapeHtml(guidance.technique)+'</p><p><strong>Common error:</strong> '+escapeHtml(guidance.commonError)+'</p><p><strong>Primary role:</strong> '+escapeHtml(item.goodFor)+'</p><p class="note"><strong>Progression:</strong> '+escapeHtml(progressionDescription(item))+'</p><button type="button" class="action secondary" data-fitness-library-use="'+escapeHtml(item.name)+'">Use in new plan</button></article>';
+      }).join('')||'<p class="note">No exercises match this filter.</p>';
   }
 
   function positive(value) { const number = Number(value); return Number.isFinite(number) && number > 0 ? number : null; }
@@ -1150,6 +1193,9 @@
     $('#profileSelect')?.addEventListener('change', (event) => renderProfilePlan(event.currentTarget.value));
     $('#exSearch')?.addEventListener('input', renderLibrary);
     $('#exGroup')?.addEventListener('change', renderLibrary);
+    $('#exerciseLibrary')?.addEventListener('click',event=>{const button=event.target.closest('[data-fitness-library-use]');if(!button)return;const name=button.dataset.fitnessLibraryUse;global.BASELINE_fitnessPlans?.createPlan?.();const select=$('#exerciseList .ex-row .ex-select');if(select){select.value=name;select.dispatchEvent(new Event('change',{bubbles:true}));}});
+    document.addEventListener('baseline:fitness-routine-updated', renderAchievements);
+    document.addEventListener('baseline:fitness-plans-updated', renderAchievements);
     $('#closeTimerModalBtn')?.addEventListener('click', closeTimerModal);
     $('#cancelDeletePlanBtn')?.addEventListener('click', closeDeletePlanModal);
     $('#deletePlanConfirmInput')?.addEventListener('input', (event) => { if ($('#confirmDeletePlanBtn')) $('#confirmDeletePlanBtn').disabled = String(event.currentTarget.value || '').trim() !== 'DELETE'; });
