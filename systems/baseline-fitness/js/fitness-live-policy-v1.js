@@ -163,7 +163,7 @@
     const outcomes=readOutcomes();const legacyFailures=readFailures();
     return completedExerciseSessions(exercise).reduce((total,session) => {
       const outcome=outcomes.find((record) => sameOutcome(record,session,exerciseKey));
-      if (outcome) return total+(outcome.success===true?1:0);
+      if (outcome) return total+(outcome.maintenance===true?0:(outcome.success===true?1:0));
       const failed=legacyFailures.some((record) => sameOutcome(record,session,exerciseKey));
       return total+(failed?0:1);
     },0);
@@ -199,7 +199,8 @@
     if (!context?.planId || !context?.sessionIndex) return false;
     const sessionKey=`${Number(context.planId)}:${Number(context.sessionIndex)}`;const outcomes=sessionExerciseOutcomes(context);const exerciseKeys=new Set(outcomes.map((entry) => entry.exercise.toLocaleLowerCase('en-GB')));const at=new Date().toISOString();
     const nextOutcomes=readOutcomes().filter((record) => !(record.sessionKey===sessionKey && exerciseKeys.has(record.exercise)));
-    outcomes.forEach((entry) => nextOutcomes.push({ sessionKey,planId:Number(context.planId),sessionIndex:Number(context.sessionIndex),exercise:entry.exercise.toLocaleLowerCase('en-GB'),success:entry.success,at }));
+    const maintenance=Boolean(global.BASELINE_FITNESS_DEBUG?.isMaintenanceSession?.(planJson(),context.sessionIndex));
+    outcomes.forEach((entry) => nextOutcomes.push({ sessionKey,planId:Number(context.planId),sessionIndex:Number(context.sessionIndex),exercise:entry.exercise.toLocaleLowerCase('en-GB'),success:entry.success,maintenance,at }));
     const nextFailures=readFailures().filter((record) => !(record.sessionKey===sessionKey && exerciseKeys.has(record.exercise)));
     outcomes.forEach((entry) => { if (!entry.success) nextFailures.push({ sessionKey,planId:Number(context.planId),sessionIndex:Number(context.sessionIndex),exercise:entry.exercise.toLocaleLowerCase('en-GB'),failed:true,at }); });
     return persistProgressionHistory(nextOutcomes,nextFailures);
