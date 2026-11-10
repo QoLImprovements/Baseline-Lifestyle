@@ -45,7 +45,7 @@
 #myPlanGeneratorWrap .ex-row,[data-fitness-routine-panel="calisthenics"] .ex-row{
   display:grid!important;
   grid-template-columns:minmax(280px,.9fr) minmax(360px,1.1fr)!important;
-  grid-template-areas:"exercise exercise" "progression details" "baseline details" "sets details" "rep details" "remove details"!important;
+  grid-template-areas:"exercise exercise" "progression details" "baseline details" "working details" "sets details" "rep details" "remove details"!important;
   gap:12px 22px!important;align-items:start!important;width:100%;min-width:0;padding:18px!important;border:1px solid var(--border)!important;border-radius:20px!important;background:var(--card-bg)!important;color:var(--ink)!important;
 }
 .ex-row>*{min-width:0}
@@ -54,14 +54,15 @@
 .ex-field-exercise>label,.ex-field-exercise>span:not(.ex-picker-control):not(.bl-input-with-unit){display:none!important}
 .ex-field-progression-mode{grid-area:progression}
 .ex-field-baseline{grid-area:baseline}
+.ex-field-working{grid-area:working}
 .ex-field-sets{grid-area:sets}
 .ex-field-rep-increase{grid-area:rep}
 .ex-remove-wrap{grid-area:remove}
 .ex-details-card{grid-area:details}
 
-.ex-field-progression-mode,.ex-field-baseline,.ex-field-sets,.ex-field-rep-increase{display:grid!important;align-content:start!important;gap:7px!important;min-width:0;width:100%!important;margin:0!important}
-.ex-field-progression-mode>span,.ex-field-baseline>label,.ex-field-sets>label,.ex-field-rep-increase>span{display:flex!important;align-items:center!important;min-height:27px!important;margin:0!important;font-weight:850!important;line-height:1.25!important;color:var(--ink)!important}
-.ex-search-input,.ex-progression-mode,.ex-baseline,.ex-sets,.ex-rep-increase{width:100%!important;min-width:0!important;min-height:52px!important;margin:0!important}
+.ex-field-progression-mode,.ex-field-baseline,.ex-field-working,.ex-field-sets,.ex-field-rep-increase{display:grid!important;align-content:start!important;gap:7px!important;min-width:0;width:100%!important;margin:0!important}
+.ex-field-progression-mode>span,.ex-field-baseline>label,.ex-field-working>label,.ex-field-sets>label,.ex-field-rep-increase>span{display:flex!important;align-items:center!important;min-height:27px!important;margin:0!important;font-weight:850!important;line-height:1.25!important;color:var(--ink)!important}
+.ex-search-input,.ex-progression-mode,.ex-baseline,.ex-working-percent,.ex-sets,.ex-rep-increase{width:100%!important;min-width:0!important;min-height:52px!important;margin:0!important}
 /* Once the searchable picker exists, the original native exercise select is never a second visible control. */
 #myPlanGeneratorWrap .ex-field-exercise>.ex-select,
 #myPlanGeneratorWrap .ex-field-exercise>.ex-select-source,
@@ -106,9 +107,15 @@
 
 @media(max-width:980px){
   #myPlanGeneratorWrap .bl-generator-settings-grid{grid-template-columns:1fr!important}
-  #myPlanGeneratorWrap .ex-row,[data-fitness-routine-panel="calisthenics"] .ex-row{grid-template-columns:1fr!important;grid-template-areas:"exercise" "progression" "baseline" "sets" "rep" "details" "remove"!important;padding:14px!important}
+  #myPlanGeneratorWrap .ex-row,[data-fitness-routine-panel="calisthenics"] .ex-row{grid-template-columns:1fr!important;grid-template-areas:"exercise" "progression" "baseline" "working" "sets" "rep" "details" "remove"!important;padding:14px!important}
   .ex-field-exercise{width:100%!important}.ex-remove-wrap{justify-self:start!important}
 }
 @media(max-width:680px){
   .ex-picker-control .ex-search-input{font-size:21px!important}.ex-picker-option{grid-template-columns:1fr!important}.ex-picker-option small{white-space:normal}.ex-details-card>span{grid-template-columns:1fr!important;gap:3px!important}.fitness-calisthenics-plan-manager .section-head-actions{display:grid}.fitness-calisthenics-plan-manager .action{width:100%}.calisthenics-saved-plan-head{display:grid}.calisthenics-saved-plan-head .saved-plan-actions{margin-left:0;justify-content:start}
 }
+
+/* Fitness working-intensity and exercise-order controls use the existing card and field system. */
+html[data-app="fitness"] #exerciseList .ex-working-percent{box-sizing:border-box;width:100%;min-height:52px;}
+html[data-app="fitness"] .fitness-execution-row{align-items:end;gap:12px;}
+html[data-app="fitness"] .fitness-execution-row .note{align-self:center;margin:0;}
+@media(max-width:680px){html[data-app="fitness"] .fitness-execution-row{display:grid;grid-template-columns:1fr;}}

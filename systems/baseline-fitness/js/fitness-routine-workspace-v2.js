@@ -1,4 +1,4 @@
-/* Baseline Fitness — site-coherent My Routine workspace. */
+/* Baseline Fitness — site-coherent My Workout workspace. */
 (function (global) {
   'use strict';
 
@@ -200,9 +200,11 @@
         const definition = activity ? definitionFor(activity) : CATALOGUE.ACTIVITIES[0];
         entries[cleanText(id, 100)] = {
           completed:Boolean(raw.completed),
+          status:raw.completed?'done':(['partial','skipped','rescheduled'].includes(raw.status)?raw.status:'planned'),
           note:cleanText(raw.note, 800),
           metrics:normaliseMetricValues(raw.metrics, definition, raw.actual, activity?.measure),
-          completedAt:cleanText(raw.completedAt, 40)
+          completedAt:cleanText(raw.completedAt, 40),
+          rescheduledTo:raw.status==='rescheduled' && /^\d{4}-\d{2}-\d{2}$/.test(String(raw.rescheduledTo||'')) && raw.rescheduledTo>date ? String(raw.rescheduledTo) : ''
         };
       });
       logs[date] = entries;
@@ -333,13 +335,13 @@
     const section = $('#my-plan');
     if (!section || section.dataset.routineWorkspaceV2 === 'true') return;
     const topTab = $('.tab[data-target="my-plan"]');
-    if (topTab) topTab.textContent = 'My Routine';
+    if (topTab) topTab.textContent = 'My Workout';
 
     const original = Array.from(section.childNodes);
     const shell = document.createElement('div');
     shell.className = 'fitness-routine-shell';
     shell.innerHTML = `
-      <nav class="fitness-routine-subtabs" role="tablist" aria-label="My Routine views">
+      <nav class="fitness-routine-subtabs" role="tablist" aria-label="My Workout views">
         <button type="button" class="tab fitness-routine-subtab" role="tab" aria-selected="false" data-fitness-routine-view="log">Routine Log</button>
         <button type="button" class="tab fitness-routine-subtab" role="tab" aria-selected="false" data-fitness-routine-view="summary">Routine Summary</button>
         <button type="button" class="tab fitness-routine-subtab" role="tab" aria-selected="false" data-fitness-routine-view="plan">Routine Plan</button>
@@ -390,8 +392,8 @@
       <div class="fitness-routine-panel bl-routine-panel" data-fitness-routine-panel="public" hidden>
         <div class="card fitness-routine-card bl-routine-card">
           <div class="section-head-actions">
-            <div><h2>Public Routines</h2><p class="note">Choose a public profile to view their My Routine in View Only format.</p></div>
-            <label class="field-stack bl-routine-visibility-control"><span>My Routine Visibility</span><select id="fitnessRoutineVisibility"><option value="private">Private</option><option value="public">Public</option></select></label>
+            <div><h2>Public Routines</h2><p class="note">Choose a public profile to view their My Workout in View Only format.</p></div>
+            <label class="field-stack bl-routine-visibility-control"><span>My Workout Visibility</span><select id="fitnessRoutineVisibility"><option value="private">Private</option><option value="public">Public</option></select></label>
           </div>
           <div class="divider"></div>
           <div class="bl-public-profile-row"><label class="field-stack"><span>Public profile</span><select id="fitnessPublicRoutineName"><option value="">Choose a public profile…</option></select></label><button class="action" type="button" id="fitnessViewPublicRoutine">View Routine</button></div>
@@ -654,7 +656,7 @@
   }
 
   function renderLogItem(item) {
-    const entry = ensureLogDate(state.selectedDate)[item.id] || { completed:false, note:'', metrics:{}, completedAt:'' };
+    const entry = ensureLogDate(state.selectedDate)[item.id] || { completed:false, status:'planned', note:'', metrics:{}, completedAt:'' };
     const targetSummary = (definitionFor(item).metrics || [])
       .map((metric) => item.targetMetrics?.[metric.key] !== undefined && item.targetMetrics?.[metric.key] !== ''
         ? `${item.targetMetrics[metric.key]}${metric.unit ? ` ${metric.unit === 'minutes' ? 'min' : metric.unit}` : ''}`
@@ -664,13 +666,18 @@
     const metaSummary = [item.timeOfDay && item.timeOfDay !== 'anytime' ? timeLabel(item.timeOfDay) : '', targetSummary].filter(Boolean).join(' · ');
     return `<article class="session-card fitness-routine-log-item${entry.completed ? ' complete' : ''}">
       <div class="fitness-log-item-head">
-        <label class="fitness-log-completion"><input type="checkbox" data-fitness-log-complete="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.name)}</strong>${metaSummary ? `<small>${escapeHtml(metaSummary)}</small>` : ''}</span></label>
+        <label class="fitness-log-completion"><input type="checkbox" data-fitness-log-complete="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.name)}</strong>${metaSummary ? `<small>${escapeHtml(metaSummary)}</small>` : ''}</span></label><label class="field-stack fitness-log-status" ${entry.completed ? 'hidden' : ''}><span>When not completed</span><select data-fitness-log-status="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"><option value="planned"${(!entry.status || entry.status === 'planned') ? ' selected' : ''}>Not completed</option><option value="partial"${entry.status === 'partial' ? ' selected' : ''}>Partially completed</option><option value="skipped"${entry.status === 'skipped' ? ' selected' : ''}>Skipped</option><option value="rescheduled"${entry.status === 'rescheduled' ? ' selected' : ''}>Rescheduled</option></select></label>${entry.status === 'rescheduled' && !entry.completed ? `<label class="field-stack fitness-log-reschedule"><span>Rescheduled to</span><input type="date" min="${escapeHtml(state.selectedDate)}" value="${escapeHtml(entry.rescheduledTo||'')}" data-fitness-rescheduled-to="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}" aria-label="New date for ${escapeHtml(item.name)}"></label>` : ''}
       </div>
       ${metricFields(item, 'log', entry)}
       <label class="field-stack fitness-log-note"><span>Optional note</span><textarea rows="2" maxlength="800" data-fitness-log-note="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}" placeholder="How it felt, conditions, result or anything worth remembering">${escapeHtml(entry.note || '')}</textarea></label>
     </article>`;
   }
 
+  function linkedBadmintonHtml() {
+    const linked=global.BASELINE_FITNESS_LINKED_BADMINTON?.getForDate?.(state.selectedDate);
+    if(!linked)return '';
+    return '<section class="fitness-routine-log-group"><h3>Badminton · Linked session</h3><article class="session-card fitness-calisthenics-log-card"><div><strong class="session-title">Baseline Badminton Session</strong><small>'+escapeHtml(String(linked.games))+' recorded game'+(linked.games===1?'':'s')+' · Source-linked; not duplicated in your Fitness records</small></div><a class="tiny-btn" href="/baseline-badminton-session/system">Open Badminton Session</a></article></section>';
+  }
   function renderLog() {
     state.selectedDate = clampLogDate(state.selectedDate);
     const dateInput = $('#fitnessRoutineLogDate');
@@ -683,14 +690,15 @@
     if (!target) return;
 
     const entries = ensureLogDate(state.selectedDate);
-    const dueItems = state.activities.filter((item) => dueStatus(item, state.selectedDate).due || entries[item.id]?.completed);
+    const isRescheduledDue = (id) => Object.entries(state.logs).some(([date,records]) => date !== state.selectedDate && records?.[id]?.status==='rescheduled' && records[id].rescheduledTo===state.selectedDate);
+    const dueItems = state.activities.filter((item) => dueStatus(item, state.selectedDate).due || entries[item.id]?.completed || (entries[item.id]?.status && entries[item.id]?.status !== 'planned') || isRescheduledDue(item.id));
     const weeklyActivityGoals = state.activities.filter((item) => item.frequency.mode === 'weekly').map((item) => weeklyGoalStatus(item, state.selectedDate));
     const weeklyPlanGoals = global.BASELINE_fitnessPlans?.getWeeklyGoalsForDate?.(state.selectedDate) || [];
     const weeklyGoals = weeklyActivityGoals.concat(weeklyPlanGoals);
     const goalsMet = weeklyGoals.filter((goal) => goal.goalMet).length;
     const extras = weeklyGoals.reduce((total, goal) => total + Math.max(0, Number(goal.extra) || 0), 0);
     if (progress) progress.textContent = weeklyGoals.length
-      ? `Weekly goals met: ${goalsMet}/${weeklyGoals.length} routine activities · ${extras} extra completion${extras === 1 ? '' : 's'}`
+      ? `Weekly goals met: ${goalsMet}/${weeklyGoals.length} workout targets · ${extras} extra completion${extras === 1 ? '' : 's'}`
       : 'No weekly activity goals are configured.';
 
     const sections = [
@@ -703,17 +711,23 @@
       return items.length ? `<section class="fitness-routine-log-group"><h3>${label}</h3>${items.map(renderLogItem).join('')}</section>` : '';
     }).join('');
 
-    target.innerHTML = `${calisthenicsLogHtml()}${activityHtml || '<div class="fitness-routine-empty">No non-calisthenics activities are due for this date.</div>'}`;
+    const linkedHtml=linkedBadmintonHtml();
+    target.innerHTML = `${calisthenicsLogHtml()}${activityHtml}${linkedHtml}${(!activityHtml && !linkedHtml) ? '<div class="fitness-routine-empty">No non-calisthenics activities are due for this date.</div>' : ''}`;
   }
 
   function completedActivityCount(date) {
+    const records=global.BASELINE_FITNESS_WORKOUT_RECORDS;
+    if(records?.completedCount)return records.completedCount(date);
     const entries = state.logs[date] || {};
-    return Object.values(entries).filter((entry) => entry?.completed).length;
+    const activities = Object.values(entries).filter((entry) => entry?.completed).length;
+    const calisthenics = (global.BASELINE_fitnessPlans?.getPlansForDate?.(date) || []).filter((entry) => entry.status === 'done').length;
+    const linked=global.BASELINE_FITNESS_LINKED_BADMINTON?.getForDate?.(date)?1:0;
+    return activities + calisthenics + linked;
   }
 
-  function calendarDayButton(date, inCurrentMonth = true) {
+  function calendarDayButton(date, inCurrentMonth = true, completionCounts = null) {
     const iso = isoDate(date);
-    const count = completedActivityCount(iso);
+    const count = completionCounts ? (completionCounts.get(iso) || 0) : completedActivityCount(iso);
     const selected = iso === state.selectedDate;
     const today = iso === todayIso();
     const future = isFutureDate(iso);
@@ -730,6 +744,13 @@
       const selected = button.dataset.calendarView === state.calendarView;
       button.setAttribute('aria-selected', selected ? 'true' : 'false');
     });
+    const completionCounts = new Map();
+    const unified=global.BASELINE_FITNESS_WORKOUT_RECORDS?.getAll?.();
+    if(unified){for(const item of unified){if(item.status==='done')completionCounts.set(item.date,(completionCounts.get(item.date)||0)+1);}}
+    else {
+      const relevantMonth=firstOfMonth(state.calendarAnchor);
+      for(let offset=-7;offset<45;offset+=1){const date=new Date(relevantMonth);date.setDate(date.getDate()+offset);const key=isoDate(date);completionCounts.set(key,completedActivityCount(key));}
+    }
     const orderedWeekdays = global.BASELINE_RoutineSystem?.orderedDays?.(DAYS) || DAYS;
     weekdays.innerHTML = orderedWeekdays.map((day) => `<span>${day.slice(0, 3)}</span>`).join('');
 
@@ -741,7 +762,7 @@
       for (let index = 0; index < 7; index += 1) {
         const date = new Date(bounds.startDate);
         date.setDate(date.getDate() + index);
-        days.push(calendarDayButton(date));
+        days.push(calendarDayButton(date,true,completionCounts));
       }
       grid.innerHTML = days.join('');
       return;
@@ -758,7 +779,7 @@
     for (let index = 0; index < 42; index += 1) {
       const date = new Date(first);
       date.setDate(date.getDate() + index);
-      buttons.push(calendarDayButton(date, date.getMonth() === month.getMonth()));
+      buttons.push(calendarDayButton(date, date.getMonth() === month.getMonth(),completionCounts));
     }
     grid.innerHTML = buttons.join('');
   }
@@ -833,10 +854,21 @@
     const item = itemById(id);
     if (!item) return;
     const definition = definitionFor(item);
-    const entry = ensureLogDate(date)[id] || { completed:false, note:'', metrics:{}, completedAt:'' };
+    const entry = ensureLogDate(date)[id] || { completed:false, status:'planned', note:'', metrics:{}, completedAt:'' };
     if (field === 'completed') {
       entry.completed = Boolean(value);
+      entry.status = entry.completed ? 'done' : 'planned';
       entry.completedAt = value ? new Date().toISOString() : '';
+    }
+    if (field === 'status') {
+      entry.status = ['partial','skipped','rescheduled'].includes(value) ? value : 'planned';
+      entry.completed = false;
+      entry.completedAt = '';
+      if(entry.status !== 'rescheduled')entry.rescheduledTo='';
+    }
+    if (field === 'rescheduledTo' && entry.status==='rescheduled') {
+      const next=String(value||'');
+      entry.rescheduledTo=/^\d{4}-\d{2}-\d{2}$/.test(next) && next>date ? next : '';
     }
     if (field === 'note') entry.note = cleanText(value, 800);
     if (field === 'metric') {
@@ -1056,6 +1088,13 @@
         renderCalendar();
         return;
       }
+      const rescheduled = event.target.closest('[data-fitness-rescheduled-to]');
+      if(rescheduled){updateLog(rescheduled.dataset.fitnessRescheduledTo,'rescheduledTo',rescheduled.value,'',rescheduled.dataset.fitnessLogDate);renderLog();renderCalendar();return;}
+      const logStatus = event.target.closest('[data-fitness-log-status]');
+      if (logStatus) {
+        updateLog(logStatus.dataset.fitnessLogStatus,'status',logStatus.value,'',logStatus.dataset.fitnessLogDate);
+        renderLog(); renderCalendar(); return;
+      }
       const logMetric = event.target.closest('[data-log-metric]');
       if (logMetric) {
         updateLog(logMetric.dataset.fitnessLogId, 'metric', logMetric.value, logMetric.dataset.logMetric, logMetric.dataset.fitnessLogDate);
@@ -1185,6 +1224,7 @@
     makeWorkspace();
     bindEvents();
     document.addEventListener('baseline:fitness-plans-updated', () => { renderLog(); renderCalendar(); });
+    document.addEventListener('baseline:fitness-linked-badminton-updated', () => { renderLog();renderCalendar(); });
     document.addEventListener('baseline:fitness-routine-groups-updated',(event)=>{
       const revision=Number(event.detail?.revision);
       if(Number.isFinite(revision) && revision>=0) state.revision=revision;

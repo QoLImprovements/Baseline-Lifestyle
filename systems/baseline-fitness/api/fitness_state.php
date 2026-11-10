@@ -142,7 +142,10 @@ function bl_fitness_progression_records_validate($value, bool $failures=false): 
       'at'=>mb_substr(trim((string)($raw['at'] ?? '')), 0, 64),
     ];
     if($failures) $record['failed'] = true;
-    else $record['success'] = !empty($raw['success']);
+    else {
+      $record['success'] = !empty($raw['success']);
+      $record['maintenance'] = !empty($raw['maintenance']);
+    }
     $records[] = $record;
   }
   return $records;
@@ -165,6 +168,7 @@ function bl_fitness_state_response(array $resource): array {
   return [
     'ok'=>true,
     'profile'=>is_array($resource['data']['profile'] ?? null) ? $resource['data']['profile'] : null,
+    'bodyHistory'=>array_values(array_slice(is_array($resource['data']['bodyHistory'] ?? null) ? $resource['data']['bodyHistory'] : [], -3650)),
     'activeWorkout'=>is_array($resource['data']['activeWorkout'] ?? null) ? $resource['data']['activeWorkout'] : null,
     'progressionHistory'=>bl_fitness_progression_history_validate($resource['data']['progressionHistory'] ?? []),
     'selectedPlanId'=>max(0, (int)($resource['data']['selectedPlanId'] ?? 0)),
@@ -187,8 +191,15 @@ try{
 
   if($action === 'save_profile' && array_key_exists('profile', $input)){
     $profile = bl_fitness_profile_validate($input['profile']);
-    if(bl_fitness_profile_has_values($profile)) $resource['data']['profile'] = $profile;
-    else unset($resource['data']['profile']);
+    if(bl_fitness_profile_has_values($profile)){
+      $resource['data']['profile'] = $profile;
+      $history = is_array($resource['data']['bodyHistory'] ?? null) ? $resource['data']['bodyHistory'] : [];
+      $date = gmdate('Y-m-d');
+      $history = array_values(array_filter($history, static fn($entry): bool => is_array($entry) && ($entry['date'] ?? '') !== $date));
+      $history[] = ['date'=>$date,'profile'=>$profile];
+      usort($history, static fn($a,$b): int => strcmp((string)($a['date'] ?? ''),(string)($b['date'] ?? '')));
+      $resource['data']['bodyHistory'] = array_slice($history,-3650);
+    }else unset($resource['data']['profile']);
   }
 
   if($action === 'save_active_workout' && array_key_exists('activeWorkout', $input) && $input['activeWorkout'] !== null){

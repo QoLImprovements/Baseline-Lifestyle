@@ -327,7 +327,7 @@ Options -Indexes
 
   RewriteRule ^baseline-fitness/(system|workout-routine|library|exercise-library|achievements|my-plan|my-body)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
   RewriteRule ^baseline-fitness/my-plan/(completed|future)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
-  RewriteRule ^baseline-fitness/my-body/(profile|services)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
+  RewriteRule ^baseline-fitness/my-body/(profile|trends|services)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
 
   # Baseline Recreation canonical hierarchy.
   # Legacy Games Hub public URLs are compatibility redirects only.

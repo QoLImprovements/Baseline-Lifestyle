@@ -17,9 +17,11 @@
   let revision=0;
   let authName='';
   let syncing=false;
+  let pendingWrite=Promise.resolve();
   let saveBlocked=false;
   let lastError='';
   let profile=null;
+  let bodyHistory=[];
   let activeWorkout=null;
   let progressionHistory={outcomes:[],failures:[]};
   let selectedPlanId=0;
@@ -46,6 +48,7 @@
         enabled,
         saveBlocked,
         profile:clone(profile),
+        bodyHistory:clone(bodyHistory),
         activeWorkout:clone(activeWorkout),
         progressionHistory:clone(progressionHistory),
         selectedPlanId
@@ -97,6 +100,7 @@
     if(!data?.ok)return false;
     rememberRevision(data);
     profile=data.profile&&typeof data.profile==='object'?clone(data.profile):null;
+    bodyHistory=Array.isArray(data.bodyHistory)?clone(data.bodyHistory):[];
     activeWorkout=data.activeWorkout&&typeof data.activeWorkout==='object'?clone(data.activeWorkout):null;
     const history=data.progressionHistory&&typeof data.progressionHistory==='object'?data.progressionHistory:{};
     progressionHistory={
@@ -117,6 +121,7 @@
       enabled=false;
       savedDataDisabled=true;
       profile=null;
+      bodyHistory=[];
       activeWorkout=null;
       progressionHistory={outcomes:[],failures:[]};
       selectedPlanId=0;
@@ -129,17 +134,28 @@
     else blockSaving(data?.error||'fitness_load_failed');
     return data;
   }
-  async function post(body){
-    if(!enabled||syncing||saveBlocked)return null;
-    syncing=true;
-    try{
-      const data=await request({method:'POST',body:revisionedBody(body)});
-      if(data?.ok){applyServer(data,'save');return data;}
-      blockSaving(data?.error||'save_failed');
-      return data;
-    }finally{
-      syncing=false;
-    }
+  function post(body){
+    if(!enabled||saveBlocked)return Promise.resolve(null);
+    const queuedOwner=authName;
+    const write=async()=>{
+      if(!enabled||saveBlocked||normalise(queuedOwner)!==normalise(authName))return null;
+      syncing=true;
+      try{
+        const data=await request({method:'POST',body:revisionedBody(body)});
+        if(normalise(queuedOwner)!==normalise(authName))return null;
+        if(data?.ok){
+          applyServer(data,'save');
+          if(body.action==='save_profile')try{document.dispatchEvent(new CustomEvent('baseline:fitness-profile-saved'));}catch(_error){}
+          return data;
+        }
+        blockSaving(data?.error||'save_failed');
+        if(body.action==='save_profile')try{document.dispatchEvent(new CustomEvent('baseline:fitness-profile-save-failed'));}catch(_error){}
+        return data;
+      }finally{syncing=false;}
+    };
+    const result=pendingWrite.then(write,write);
+    pendingWrite=result.then(()=>undefined,()=>undefined);
+    return result;
   }
   function queue(name,body,delay=180){
     if(!enabled||saveBlocked)return false;
@@ -151,6 +167,7 @@
     return true;
   }
   function getProfile(){return clone(profile);}
+  function getBodyHistory(){return clone(bodyHistory);}
   function getActiveWorkout(){return clone(activeWorkout);}
   function getProgressionHistory(){return clone(progressionHistory);}
   function getSelectedPlanId(){return selectedPlanId;}
@@ -174,15 +191,7 @@
     const next=Math.max(0,Number(value)||0);
     selectedPlanId=next;
     emit('selected-plan-memory');
-    let result=await post({action:'save_selected_plan',selectedPlanId:next});
-    if(result?.error==='revision_conflict'){
-      const refreshed=await reload();
-      if(!refreshed?.ok)return result;
-      selectedPlanId=next;
-      emit('selected-plan-memory');
-      result=await post({action:'save_selected_plan',selectedPlanId:next});
-    }
-    return result;
+    return post({action:'save_selected_plan',selectedPlanId:next});
   }
   async function saveProgressionHistory(value){
     const history=value&&typeof value==='object'?value:{};
@@ -203,6 +212,7 @@
       authName='';
       revision=0;
       profile=null;
+      bodyHistory=[];
       activeWorkout=null;
       progressionHistory={outcomes:[],failures:[]};
       selectedPlanId=0;
@@ -217,6 +227,7 @@
       timers.clear();
       revision=0;
       profile=null;
+      bodyHistory=[];
       activeWorkout=null;
       progressionHistory={outcomes:[],failures:[]};
       selectedPlanId=0;
@@ -240,6 +251,7 @@
     reload,
     syncForAuth,
     getProfile,
+    getBodyHistory,
     getActiveWorkout,
     getProgressionHistory,
     getSelectedPlanId,

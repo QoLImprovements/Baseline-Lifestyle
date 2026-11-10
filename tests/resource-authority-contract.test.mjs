@@ -84,7 +84,9 @@ test('Fitness browser Saved Data conflicts stop stale retries and block unsafe w
   assert.match(bridge, /saveBlocked=true/);
   assert.match(bridge, /Fitness saving has stopped/);
   assert.match(bridge, /Reload account Fitness data/);
-  assert.match(bridge, /if\(!enabled\|\|syncing\|\|saveBlocked\)return null/);
+  assert.match(bridge, /if\(!enabled\|\|saveBlocked\)return Promise\.resolve\(null\)/);
+  assert.match(bridge, /const result=pendingWrite\.then\(write,write\)/);
+  assert.doesNotMatch(bridge, /if\(data\?\.error==='revision_conflict'\)/);
   assert.match(bridge, /if\(!enabled\|\|saveBlocked\)return false/);
 });
 

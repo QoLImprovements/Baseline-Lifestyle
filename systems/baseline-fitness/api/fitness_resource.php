@@ -97,6 +97,7 @@ function bl_fitness_resource_normalise(array $data): array {
   $data['plans'] = is_array($data['plans'] ?? null) ? array_values($data['plans']) : [];
   $data['achievements'] = is_array($data['achievements'] ?? null) ? array_values($data['achievements']) : [];
   if(isset($data['profile']) && !is_array($data['profile'])) unset($data['profile']);
+  $data['bodyHistory'] = array_slice(array_values(array_filter(is_array($data['bodyHistory'] ?? null) ? $data['bodyHistory'] : [],static fn($entry): bool => is_array($entry) && preg_match('/^\\d{4}-\\d{2}-\\d{2}$/',(string)($entry['date'] ?? '')) === 1 && is_array($entry['profile'] ?? null))),-3650);
   if(isset($data['activeWorkout']) && !is_array($data['activeWorkout'])) unset($data['activeWorkout']);
   if(isset($data['progressionHistory']) && !is_array($data['progressionHistory'])) unset($data['progressionHistory']);
   $selectedPlanId = max(0, (int)($data['selectedPlanId'] ?? 0));
@@ -116,6 +117,7 @@ function bl_fitness_resource_is_empty(array $data): bool {
   return ($data['plans'] ?? []) === []
     && ($data['achievements'] ?? []) === []
     && empty($data['profile'])
+    && empty($data['bodyHistory'])
     && empty($data['activeWorkout'])
     && empty($data['progressionHistory'])
     && empty($data['selectedPlanId']);
@@ -326,7 +328,7 @@ function bl_fitness_mirror_sqlite(PDO $db, int $uid): void {
   $path = bl_fitness_resource_path($uid);
   $existing = bl_fitness_resource_read($uid);
   $snapshot = bl_fitness_sqlite_snapshot($db, $uid);
-  foreach(['profile','activeWorkout','progressionHistory','selectedPlanId'] as $optional){
+  foreach(['profile','bodyHistory','activeWorkout','progressionHistory','selectedPlanId'] as $optional){
     if(isset($existing['data'][$optional])) $snapshot[$optional] = $existing['data'][$optional];
   }
   bl_fitness_resource_write($uid, $snapshot, $existing['revision']);

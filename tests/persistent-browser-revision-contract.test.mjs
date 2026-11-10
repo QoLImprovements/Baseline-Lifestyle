@@ -122,7 +122,7 @@ test('Fitness exercise progression history uses revisioned Saved Data authority'
   const policy=read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
   const rollback=read('sitewide/migration/build_sqlite_rollback_copy.php');
   assert.match(resource,/progressionHistory/);
-  assert.match(resource,/\['profile','activeWorkout','progressionHistory','selectedPlanId'\]/);
+  assert.match(resource,/\['profile','bodyHistory','activeWorkout','progressionHistory','selectedPlanId'\]/);
   assert.match(endpoint,/save_progression_history/);
   assert.doesNotMatch(endpoint,/progression_history_conflict|import_local/);
   assert.match(endpoint,/bl_resource_required_revision_from_input/);

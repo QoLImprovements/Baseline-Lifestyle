@@ -1,11 +1,11 @@
-/* Baseline Fitness — canonical My Routine structure adapter v7.
+/* Baseline Fitness — canonical My Workout structure adapter v7.
 
    OWNERSHIP CONTRACT
    ------------------
    The base Fitness workspace owns activity/log data. fitness-multiple-plans.js
-   owns saved Calisthenics plans. This adapter owns only the four-view My Routine
+   owns saved Calisthenics plans. This adapter owns only the four-view My Workout
    shell, the single-page Routine Plan category cards, Public visibility/profile
-   controls and nested My Routine clean paths. The top-level Fitness router owns
+   controls and nested My Workout clean paths. The top-level Fitness router owns
    /system, /my-plan, /my-body, /library and /achievements history entries.
 
    ROUTINE PLAN CONTRACT — DO NOT REINTRODUCE SUBTABS
@@ -221,7 +221,7 @@
       panel.className='fitness-routine-panel bl-routine-panel';
       panel.dataset.fitnessRoutinePanel='public';
       panel.hidden=true;
-      panel.innerHTML=`<div class="card fitness-routine-card bl-routine-card"><div class="section-head-actions"><div><h2>Public Routines</h2><p class="note">Choose a public profile to view their My Routine in View Only format.</p></div><label class="field-stack bl-routine-visibility-control"><span>My Routine Visibility</span><select id="fitnessRoutineVisibility"><option value="private">Private</option><option value="public">Public</option></select></label></div><div class="divider"></div><div class="bl-public-profile-row"><label class="field-stack"><span>Public profile</span><select id="fitnessPublicRoutineName"><option value="">Choose a public profile…</option></select></label><button class="action" type="button" id="fitnessViewPublicRoutine">View Routine</button></div><div id="fitnessPublicRoutineResult" aria-live="polite"></div></div>`;
+      panel.innerHTML=`<div class="card fitness-routine-card bl-routine-card"><div class="section-head-actions"><div><h2>Public Routines</h2><p class="note">Choose a public profile to view their My Workout in View Only format.</p></div><label class="field-stack bl-routine-visibility-control"><span>My Workout Visibility</span><select id="fitnessRoutineVisibility"><option value="private">Private</option><option value="public">Public</option></select></label></div><div class="divider"></div><div class="bl-public-profile-row"><label class="field-stack"><span>Public profile</span><select id="fitnessPublicRoutineName"><option value="">Choose a public profile…</option></select></label><button class="action" type="button" id="fitnessViewPublicRoutine">View Routine</button></div><div id="fitnessPublicRoutineResult" aria-live="polite"></div></div>`;
       planPanel.insertAdjacentElement('afterend',panel);
     }
     return panel;

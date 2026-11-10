@@ -44,11 +44,12 @@ test('plan-name writes are bound to the selected plan identity',()=>{
 });
 
 
-test('selected-plan persistence refreshes and retries after a Saved Data revision conflict',()=>{
+test('selected-plan persistence does not replay a stale Saved Data revision',()=>{
   const bridge=read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
-  assert.match(bridge,/if\(result\?\.error==='revision_conflict'\)/);
-  assert.match(bridge,/const refreshed=await reload\(\)/);
-  assert.match(bridge,/result=await post\(\{action:'save_selected_plan',selectedPlanId:next\}\)/);
+  assert.match(bridge,/return post\(\{action:'save_selected_plan',selectedPlanId:next\}\)/);
+  assert.match(bridge,/const result=pendingWrite\.then\(write,write\)/);
+  assert.match(bridge,/blockSaving\(data\?\.error\|\|'save_failed'\)/);
+  assert.doesNotMatch(bridge,/if\(result\?\.error==='revision_conflict'\)/);
 });
 
 
@@ -110,7 +111,7 @@ test('Fitness My Routine has one route and visibility owner',()=>{
 
   assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-routine-workspace.js')),false);
   assert.doesNotMatch(page,/fitness-routine-workspace\.js/);
-  assert.match(structure,/canonical My Routine structure adapter/);
+  assert.match(structure,/canonical My Workout structure adapter/);
   assert.doesNotMatch(workspace,/\$\$\('\.fitness-routine-panel'\).*panel\.hidden/);
   assert.match(workspace,/BASELINE_fitnessRoutineStructure\.activateTopView/);
 });
@@ -170,9 +171,12 @@ test('Routine Groups are born collapsed rather than corrected after paint',()=>{
 });
 
 
-test('Fitness single-authority assets use a fresh shared cache key',()=>{
-  for(const asset of ['baseline-fitness.css','fitness-routine-workspace.css','fitness-multiple-plans.js','baseline-fitness-app.js','fitness-routine-structure-v4.js','fitness-routine-workspace-v2.js','fitness-routine-groups-v2.js']){
-    assert.ok(page.includes(asset+'?v=FITNESS_SINGLE_AUTHORITY_20261016_2'),asset+' should use the current Fitness cache key');
+test('Fitness modified assets use a release cache key while unchanged owners retain theirs',()=>{
+  for(const asset of ['baseline-fitness.css','fitness-routine-workspace.css','fitness-multiple-plans.js','fitness-routine-groups-v2.js']){
+    assert.ok(page.includes(asset+'?v=FITNESS_SINGLE_AUTHORITY_20261016_2'),asset+' should retain the unchanged asset key');
+  }
+  for(const asset of ['baseline-fitness-app.js','fitness-routine-structure-v4.js','fitness-routine-workspace-v2.js','fitness-routine-summary-v2.js','fitness-saved-data-bridge.js','fitness-generator-progression-v1.js','fitness-live-policy-v1.js','fitness-workout-records-v1.js']){
+    assert.ok(page.includes(asset+'?v=FITNESS_MY_WORKOUT_20261109_3'),asset+' should use the new workout release key');
   }
 });
 

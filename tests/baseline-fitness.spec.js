@@ -14,7 +14,7 @@ test('Fitness exposes a working in-page account control', async ({ page }) => {
 
 test('Fitness tabs remain stationary on hover', async ({ page }) => {
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
-  const tab=page.getByRole('button',{name:'My Plan',exact:true});
+  const tab=page.getByRole('button',{name:'My Workout',exact:true});
   await expect(tab).toBeVisible();
   const before=await tab.boundingBox();
   await tab.hover();
@@ -30,7 +30,7 @@ test('My Body sits between My Plan and Exercise Library and supports routed subt
   await page.waitForFunction(() => Boolean(document.querySelector('.tab[data-target="my-body"]')));
 
   const labels=await page.locator('.tabs .tab').allTextContents();
-  expect(labels).toEqual(['System','My Plan','My Body','Exercise Library','Achievements']);
+  expect(labels).toEqual(['System','My Workout','My Body','Exercise Library','Achievements']);
 
   await page.getByRole('button',{name:'My Body',exact:true}).click();
   await expect(page).toHaveURL(/\/baseline-fitness\/my-body$/);
@@ -52,7 +52,7 @@ test('Body Profile calculates and saves BMI and BMR', async ({ page }) => {
   await page.locator('#bodyWaist').fill('85');
   await page.locator('#bodyHips').fill('95');
   await page.getByRole('button',{name:'Save Body Profile',exact:true}).click();
-  await expect(page.locator('#bodyProfileStatus')).toHaveText('Body profile saved.');
+  await expect(page.locator('#bodyProfileStatus')).toHaveText(/Body profile (save queued|saved|preview only)\./);
   await page.getByRole('button',{name:'Overall Summary',exact:true}).click();
   await expect(page.locator('#bodyOverallSummary')).toContainText('24.7');
   await expect(page.locator('#bodyOverallSummary')).toContainText('1730');
@@ -64,8 +64,8 @@ test('Garmin is presented as a full-sync connected service without claiming a li
   await page.getByRole('button',{name:'Connected Services',exact:true}).click();
   await expect(page.locator('#my-body')).toContainText('Import available activity history');
   await expect(page.locator('#my-body')).toContainText('Automatically sync future Garmin activities');
-  await page.getByRole('button',{name:'Connect Garmin',exact:true}).click();
-  await expect(page.locator('#garminConnectionStatus')).toContainText('OAuth credentials are not configured');
+  await expect(page.getByRole('button',{name:'Connection unavailable',exact:true})).toBeDisabled();
+  await expect(page.locator('#my-body')).toContainText('Planned integration');
 });
 
 test('every rep set increases by one between sessions', async ({ page }) => {
@@ -148,7 +148,7 @@ test('My Plan remains responsive after Fitness DOM updates', async ({ page }) =>
     }
   });
 
-  await page.getByRole('button',{name:'My Plan',exact:true}).click();
+  await page.getByRole('button',{name:'My Workout',exact:true}).click();
   await expect(page).toHaveURL(/\/baseline-fitness\/my-plan$/);
   await expect(page.locator('#my-plan')).toHaveClass(/active/);
   await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
