@@ -48,7 +48,7 @@ test('new players start with music off and on/off controls are initially consist
   assert.equal(player.api.settings().enabled,false);
   assert.equal(player.writes.length,0,'opening the hub must not create a music preference');
   assert.match(html,/data-games-music-toggle type="button" aria-pressed="false">Off<\/button>/);
-  assert.match(source,/data-games-music-toggle aria-pressed=\\"false\\">Off<\/button>/);
+  assert.match(source,/data-games-music-toggle aria-pressed="false">Off<\/button>/);
 });
 
 test('explicit account preference is restored, while legacy profiles without music are off',()=>{
