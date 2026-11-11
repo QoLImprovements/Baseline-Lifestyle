@@ -2,7 +2,7 @@
   'use strict';
 
   var MIX_VERSION = 8;
-  var DEFAULTS = { enabled:true, volume:0.58 };
+  var DEFAULTS = { enabled:false, volume:0.58 };
   var MUSIC_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
   var ctx = null;
   var master = null;
@@ -29,7 +29,8 @@
     try{ profile=settingsAuthority()?.getProfile?.('hubsettings') || {}; }catch(_error){ profile={}; }
     var music=profile.music && typeof profile.music==='object' ? profile.music : {};
     return {
-      enabled: music.enabled !== false,
+      // An unset preference is opt-out; preserve explicit account-level On/Off choices.
+      enabled: music.enabled === true,
       volume: clamp(music.volume == null ? DEFAULTS.volume : music.volume, 0, 1),
       mixVersion:MIX_VERSION,
       textScale: profile.textScale && typeof profile.textScale==='object' ? profile.textScale : { detectword:1, make24:1 }
@@ -540,7 +541,7 @@
       '<section class="games-music-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="gamesMusicSettingsTitle">' +
         '<header><div><small>Baseline Recreation</small><h3 id="gamesMusicSettingsTitle">Settings</h3></div><button class="games-music-settings-close" type="button" data-games-settings-close aria-label="Close settings">×</button></header>' +
         '<div class="games-music-settings-list">' +
-          '<section class="games-music-setting-row"><div><strong>Music</strong><small>Play the unique music collection for this game.</small></div><button class="action ghost" type="button" data-games-music-toggle aria-pressed="true">On</button></section>' +
+          '<section class="games-music-setting-row"><div><strong>Music</strong><small>Off initially. Your choice is saved to your account when signed in.</small></div><button class="action ghost" type="button" data-games-music-toggle aria-pressed="false">Off</button></section>' +
           '<label class="games-music-setting-row games-music-setting-row--slider"><span><strong>Music volume</strong><small>Game music level. 100% is the full normalized mix.</small></span><input data-games-music-volume type="range" min="0" max="1" step="0.05" value="0.58" aria-label="Game music volume"></label>' +
           '<label class="games-music-setting-row games-music-setting-row--slider" data-games-text-size-row hidden><span><strong>Game text size</strong><small>Adjust text and keypad sizing for this game.</small></span><input data-games-text-size type="range" min="0.82" max="1.24" step="0.06" value="1" aria-label="Game text size"></label>' +
         '</div>' +
