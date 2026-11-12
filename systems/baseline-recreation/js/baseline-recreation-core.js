@@ -1524,7 +1524,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     const darts = dartsFocusedProfile();
     const badminton = badmintonFocusedProfile();
     const crossnumber = crossnumberProfile();
-    return (profiles.pairs ? profiles.pairs.bank : 0) + (profiles.make24 ? profiles.make24.bank : 0) + (profiles.detectword ? profiles.detectword.bank : 0) + (profiles.trackcoin ? profiles.trackcoin.coins : 0) + (profiles.ruleshift ? profiles.ruleshift.bank : 0) + Math.max(0, Number(darts && darts.bank || 0)) + Math.max(0, Number(badminton && badminton.bank || 0)) + Math.max(0, Number(crossnumber && crossnumber.bank || 0)) + ['pathrecall','combatsequence'].reduce(function(total,app){return total + Math.max(0,Number(serverStorageAuthority()?.getProfile?.(app)?.bank||0));},0);
+    return (profiles.pairs ? profiles.pairs.bank : 0) + (profiles.make24 ? profiles.make24.bank : 0) + (profiles.detectword ? profiles.detectword.bank : 0) + (profiles.trackcoin ? profiles.trackcoin.coins : 0) + (profiles.ruleshift ? profiles.ruleshift.bank : 0) + Math.max(0, Number(darts && darts.bank || 0)) + Math.max(0, Number(badminton && badminton.bank || 0)) + Math.max(0, Number(crossnumber && crossnumber.bank || 0)) + ['pathrecall','combatsequence','blockgrid','coloursort'].reduce(function(total,app){return total + Math.max(0,Number(serverStorageAuthority()?.getProfile?.(app)?.bank||0));},0);
   }
   function renderAuthState(){
     if(!refs.authStateNote) return;
