@@ -37,3 +37,13 @@
 @media(prefers-reduced-motion:reduce){
  .sequence-game-panel .sequence-cell {transition:none;transform:none!important;}
 }
+
+/* Shared Rank/XP and fullscreen presentation for both memory titles. */
+.sequence-game-panel .sequence-xp-track{height:8px;margin:-.45rem 0 .9rem;border-radius:999px;overflow:hidden;background:rgba(199,134,103,.25);border:1px solid rgba(172,110,78,.4)}
+.sequence-game-panel .sequence-xp-track>div{height:100%;width:0;background:linear-gradient(90deg,#9c3f47,#d48a52);transition:width .15s ease}
+.sequence-game-panel [data-sequence-view="game"].recreation-mobile-pseudo-fullscreen{
+  box-sizing:border-box!important;position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;margin:0!important;padding:clamp(12px,3vw,28px)!important;z-index:10050!important;overflow:auto!important;background:#e6c4b7!important;color:#452032!important;
+}
+.sequence-game-panel [data-sequence-view="game"].recreation-mobile-pseudo-fullscreen .sequence-grid{max-width:min(88vw,440px)}
+.sequence-game-panel [data-sequence-view="game"].recreation-mobile-pseudo-fullscreen .sequence-moves{max-width:min(94vw,720px)}
+@media(prefers-reduced-motion:reduce){.sequence-game-panel .sequence-xp-track>div{transition:none}}
