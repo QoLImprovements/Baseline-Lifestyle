@@ -549,11 +549,6 @@ html.bl-pages-dd-ready .bl-homebar-inner{
   }
 }
 @media (max-width:900px){
-  .bl-homebar,
-  .bl-homebar-inner,
-  .bl-pages-dd{
-    overflow:visible!important;
-  }
   .bl-homebar-right > .bl-mini-btn{
     display:none!important;
   }
