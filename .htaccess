@@ -333,13 +333,13 @@ Options -Indexes
   # Legacy Games Hub public URLs are compatibility redirects only.
   RewriteRule ^baseline-games-hub/games-hub/games-list/?$ /baseline-recreation/games [R=301,L,NE]
   RewriteRule ^baseline-games-hub/games-hub/puzzles/?$ /baseline-recreation/puzzles [R=301,L,NE]
-  RewriteRule ^baseline-games-hub/games-hub/(pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm)/?$ /baseline-recreation/games/$1 [R=301,L,NE]
+  RewriteRule ^baseline-games-hub/games-hub/(pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|path-recall|combat-sequence|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm)/?$ /baseline-recreation/games/$1 [R=301,L,NE]
   RewriteRule ^baseline-games-hub(?:/games-hub)?/?$ /baseline-recreation/system [R=301,L,NE]
 
   RewriteRule ^baseline-recreation/concepts/(?:stoop-effect|the-stoop-effect|the-stroop-effect)/?$ /baseline-recreation/concepts/stroop-effect [R=301,L,NE]
 
   RewriteRule ^baseline-recreation/(system|games|puzzles|concepts)/?$ systems/baseline-recreation/baseline-recreation.html [L,QSA]
-  RewriteRule ^baseline-recreation/games/(pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm)/?$ systems/baseline-recreation/baseline-recreation.html [L,QSA]
+  RewriteRule ^baseline-recreation/games/(pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|path-recall|combat-sequence|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm)/?$ systems/baseline-recreation/baseline-recreation.html [L,QSA]
   RewriteRule ^baseline-recreation/puzzles/(jigsaws|crossnumber)/?$ systems/baseline-recreation/baseline-recreation.html [L,QSA]
   RewriteRule ^baseline-recreation/puzzles/jigsaws/[^/]+/?$ systems/baseline-recreation/baseline-recreation.html [L,QSA]
   RewriteRule ^baseline-recreation/concepts/[^/]+/?$ systems/baseline-recreation/baseline-recreation.html [L,QSA]
