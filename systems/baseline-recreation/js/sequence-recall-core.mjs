@@ -313,7 +313,7 @@ export function mountSequenceGame(config){
       '<p class="sequence-profile" data-sequence-profile aria-live="polite"></p>'+
       '<div class="game-toggle-row" role="tablist" aria-label="'+escapeHtml(name)+' views">'+
       ['game','round','skills','tiers','progress'].map(view=>'<button class="action ghost game-toggle-btn'+(view==='game'?' is-active':'')+'" type="button" data-sequence-tab="'+view+'" role="tab" aria-selected="'+(view==='game')+'">'+view.charAt(0).toUpperCase()+view.slice(1)+'</button>').join('')+'</div>'+
-      '<div class="game-panel-stack"><section class="card game-card game-play-root" id="'+id.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())+'GameCard" data-game-play-root="'+id+'" data-sequence-view="game"><div class="sequence-game-actions game-window-actions">'+
+      '<div class="game-panel-stack"><section class="card game-card game-play-root" id="'+id.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())+'GameCard" data-game-play-root="'+id+'" data-sequence-view="game"><div class="sequence-game-actions game-window-actions game-common-actions">'+
       '<button class="action ghost start-new-game-toggle game-shell-action" data-sequence-start type="button" title="New Game · Alt+N" aria-label="New Game"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button>'+
       '<button class="action ghost auto-next-toggle game-shell-action" data-auto-next-toggle="'+app+'" aria-pressed="false" type="button" title="Auto New Game · Alt+A">A</button>'+
       '<button class="action ghost game-fullscreen-toggle game-shell-action" data-sequence-fullscreen type="button" title="Fullscreen · Alt+F" aria-label="Fullscreen">⛶</button></div><div data-sequence-board></div></section>'+
