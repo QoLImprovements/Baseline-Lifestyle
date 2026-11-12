@@ -428,8 +428,8 @@ test('extension-game routes clear stale core selection without surrendering exte
   assert.match(extensionSupport,/document\.dispatchEvent\(new CustomEvent\('baseline:game-extension-open'/);
   assert.match(extensionSupport,/detail:\{ id:config\.id, panelId:config\.panelId \}/);
   assert.match(core,/document\.addEventListener\('baseline:game-extension-open'[\s\S]*?selectedGame='';[\s\S]*?renderGamesList\(\)/);
-  assert.match(blockGrid,/game-extension-support\.mjs\?v=MOBILE_GAME_COHERENCE_20261103_1/);
-  assert.match(colourSort,/game-extension-support\.mjs\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(blockGrid,/game-extension-support\.mjs\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
+  assert.match(colourSort,/game-extension-support\.mjs\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
   assert.match(extensionSupport,/baseline:recreation:core-ready/);
   assert.match(extensionSupport,/BASELINE_RECREATION_CORE_READY === true/);
 });
