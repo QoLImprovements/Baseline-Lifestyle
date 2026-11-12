@@ -1,0 +1,42 @@
+name: Core Games coherence checks
+
+on:
+  pull_request:
+    paths:
+      - 'systems/baseline-recreation/**'
+      - 'tests/sequence-memory-games.*'
+      - 'tests/games-registry.test.mjs'
+      - 'tests/recreation-games-review-regression.test.mjs'
+      - 'tests/recreation-theme.test.mjs'
+      - '.htaccess'
+      - '.github/workflows/core-games-coherence.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'systems/baseline-recreation/**'
+      - 'tests/sequence-memory-games.*'
+      - 'tests/games-registry.test.mjs'
+      - 'tests/recreation-games-review-regression.test.mjs'
+      - 'tests/recreation-theme.test.mjs'
+      - '.htaccess'
+      - '.github/workflows/core-games-coherence.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  game-coherence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify Games metadata, rewards, routes and regressions
+        run: node --test tests/sequence-memory-games.test.mjs tests/games-registry.test.mjs tests/recreation-games-review-regression.test.mjs tests/recreation-theme.test.mjs
+      - run: npx playwright install --with-deps chromium
+      - name: Verify Core Games interaction on desktop and mobile
+        run: npx playwright test tests/sequence-memory-games.spec.js --workers=1 --reporter=line
