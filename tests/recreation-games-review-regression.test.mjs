@@ -109,7 +109,7 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
 });
 
 test('extension game routes remain owned by their extension shells during core startup',()=>{
-  assert.match(core,/EXTERNAL_GAME_ROUTE_SLUGS = new Set\(\['block-grid','colour-sort','darts-focused','badminton-focused'\]\)/);
+  assert.match(core,/EXTERNAL_GAME_ROUTE_SLUGS = new Set\(\['block-grid','colour-sort','path-recall','combat-sequence','darts-focused','badminton-focused'\]\)/);
   assert.match(core,/if\(EXTERNAL_GAME_ROUTE_SLUGS\.has\(routeSlug\)\) return \{ tab:'games', game:'', panel:'', externalGame:routeSlug \}/);
   assert.match(core,/const restoredState=applyHashState\(\)[\s\S]*?if\(!restoredState\?\.externalGame\) selectGame\(routedGame\)/);
   assert.match(core,/function externalGameRouteSlugFromLocation\(\)[\s\S]*?return EXTERNAL_GAME_ROUTE_SLUGS\.has\(routeSlug\) \? routeSlug : ''/);
@@ -136,7 +136,7 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_UNIFIED_20261104_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=SEQUENCE_CORE_20261112_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
   assert.match(html,/block-grid\.js\?v=RECREATION_UNIFIED_20261104_1/);
   assert.match(html,/colour-sort\.js\?v=RECREATION_UNIFIED_20261104_1/);
