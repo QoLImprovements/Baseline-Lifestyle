@@ -32,19 +32,25 @@
       id:'combat-sequence',runtimeId:'combatsequence',route:'combat-sequence',profileApp:'combatsequence',core:true,group:'core',runtimeOwner:'module',name:'Combat Sequence',
       overview:overview({order:7,group:'Core Games',art:'/systems/baseline-recreation/games/overview-art/combat-sequence.svg?v=SEQUENCE_CORE_20261112_1',note:'Memorise and reproduce ordered MMA movement cues, with longer combinations at higher tiers.',brainBenefit:'Working memory, motor-sequence recall, movement vocabulary and focused attention.'})
     }),
-    Object.freeze({ id:'block-grid', runtimeId:'block-grid', route:'block-grid', profileApp:'blockgrid', core:false, group:'extension', name:'Block Grid' }),
-    Object.freeze({ id:'colour-sort', runtimeId:'colour-sort', route:'colour-sort', profileApp:'coloursort', core:false, group:'extension', name:'Colour Sort' }),
+    Object.freeze({
+      id:'block-grid',runtimeId:'block-grid',route:'block-grid',profileApp:'blockgrid',core:true,group:'core',runtimeOwner:'module',name:'Block Grid',
+      overview:overview({order:8,group:'Core Games',art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',note:'Fit geometric pieces on an 8 × 8 board and clear full rows or columns.',brainBenefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.'})
+    }),
+    Object.freeze({
+      id:'colour-sort',runtimeId:'colour-sort',route:'colour-sort',profileApp:'coloursort',core:true,group:'core',runtimeOwner:'module',name:'Colour Sort',
+      overview:overview({order:9,group:'Core Games',art:'/systems/baseline-recreation/games/colour-sort/art/colour-sort-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',note:'Move coloured layers between bottles until each bottle contains one colour.',brainBenefit:'Categorisation, planning, inhibition and step-by-step reasoning.'})
+    }),
     Object.freeze({
       id:'baseline-realm', runtimeId:'ninja', route:'baseline-realm', profileApp:'ninja', core:true, group:'realm', name:'Baseline Realm', legacyIds:Object.freeze(['ninja']),
-      overview:overview({ order:10, group:'Testing', featured:true, art:'/systems/baseline-recreation/games/overview-art/baseline-realm.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'Experimental Basecamp/RPG layer with Ninja Training, exploration, and settlement systems.', brainBenefit:'Long-term planning, reward tracking, routine engagement, and strategic progression.' })
+      overview:overview({ order:12, group:'Testing', featured:true, art:'/systems/baseline-recreation/games/overview-art/baseline-realm.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'Experimental Basecamp/RPG layer with Ninja Training, exploration, and settlement systems.', brainBenefit:'Long-term planning, reward tracking, routine engagement, and strategic progression.' })
     }),
     Object.freeze({
       id:'darts-focused', runtimeId:'darts-focused', route:'darts-focused', profileApp:'dartsfocused', core:false, group:'focused', name:'Darts Focused',
-      overview:overview({ order:8, group:'Testing', featured:true, art:'/systems/baseline-recreation/games/darts-focused/art/realistic-dartboard.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'10 distinct games played entirely on the website, each with selectable tiers, experience and mastery linked to Baseline Realm.', brainBenefit:'Darts-specific calculation, selective attention, visual memory, pressure control, strategic flexibility and recovery after mistakes.' })
+      overview:overview({ order:10, group:'Testing', featured:true, art:'/systems/baseline-recreation/games/darts-focused/art/realistic-dartboard.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'10 distinct games played entirely on the website, each with selectable tiers, experience and mastery linked to Baseline Realm.', brainBenefit:'Darts-specific calculation, selective attention, visual memory, pressure control, strategic flexibility and recovery after mistakes.' })
     }),
     Object.freeze({
       id:'badminton-focused', runtimeId:'badminton-focused', route:'badminton-focused', profileApp:'badmintonfocused', core:false, group:'focused', name:'Badminton Focused',
-      overview:overview({ order:9, group:'Testing', featured:true, art:'/systems/baseline-recreation/games/badminton-focused/art/badminton-focused-overview.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'15 website-based perceptual, attention and decision-training games grounded in the mental demands of real badminton.', brainBenefit:'Shuttle tracking, anticipation, reaction control, tactical judgement, court awareness, recovery and performance under pressure.' })
+      overview:overview({ order:11, group:'Testing', featured:true, art:'/systems/baseline-recreation/games/badminton-focused/art/badminton-focused-overview.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'15 website-based perceptual, attention and decision-training games grounded in the mental demands of real badminton.', brainBenefit:'Shuttle tracking, anticipation, reaction control, tactical judgement, court awareness, recovery and performance under pressure.' })
     })
   ]);
 
