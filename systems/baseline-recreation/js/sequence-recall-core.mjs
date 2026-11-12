@@ -103,7 +103,7 @@ export function mountSequenceGame(config){
   function persist(){
     saveStoredProfile(app,profile);
     shell.refreshOverview();
-    document.dispatchEvent(new CustomEvent('baseline:game-storage',{detail:{app,sequenceGame:true}}));
+    document.dispatchEvent(new CustomEvent('baseline:sequence-game-progress',{detail:{app}}));
   }
   function xpLabel(){
     const needed=xpNeededForLevel(profile.level);
