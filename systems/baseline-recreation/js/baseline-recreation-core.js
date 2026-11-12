@@ -4240,6 +4240,9 @@ function toggleGameFullscreen(gameId){
   document.addEventListener('baseline:game-storage', function(){
     try{ renderSystemSummary(); }catch(_error){}
   });
+  document.addEventListener('baseline:sequence-game-progress', function(){
+    try{ renderSystemSummary(); }catch(_error){}
+  });
 
   function cacheRefs(){
     [
