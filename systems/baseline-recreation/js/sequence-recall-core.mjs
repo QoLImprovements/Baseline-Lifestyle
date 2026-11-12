@@ -313,7 +313,7 @@ export function mountSequenceGame(config){
       '<p class="sequence-profile" data-sequence-profile aria-live="polite"></p>'+
       '<div class="game-toggle-row" role="tablist" aria-label="'+escapeHtml(name)+' views">'+
       ['game','round','skills','tiers','progress'].map(view=>'<button class="action ghost game-toggle-btn'+(view==='game'?' is-active':'')+'" type="button" data-sequence-tab="'+view+'" role="tab" aria-selected="'+(view==='game')+'">'+view.charAt(0).toUpperCase()+view.slice(1)+'</button>').join('')+'</div>'+
-      '<div class="game-panel-stack"><section class="card game-card game-play-root" data-game-play-root="'+id+'" data-sequence-view="game"><div class="sequence-game-actions"><strong>'+escapeHtml(name)+'</strong><button class="action secondary" data-sequence-start type="button" title="New Game (Alt+N)">＋ New Game</button></div><div data-sequence-board></div></section>'+
+      '<div class="game-panel-stack"><section class="card game-card game-play-root" id="'+id.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())+'GameCard" data-game-play-root="'+id+'" data-sequence-view="game"><div class="sequence-game-actions game-window-actions"><strong>'+escapeHtml(name)+'</strong><button class="action secondary" data-sequence-start type="button" title="New Game (Alt+N)">＋ New Game</button></div><div data-sequence-board></div></section>'+
       '<section class="card game-card recreation-round-panel" data-sequence-view="round" hidden><div data-sequence-round></div></section>'+
       '<section class="card game-card" data-sequence-view="skills" hidden><div data-sequence-skills></div></section>'+
       '<section class="card game-card" data-sequence-view="tiers" hidden><div data-sequence-tiers></div></section>'+
