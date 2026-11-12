@@ -136,10 +136,10 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=SEQUENCE_CORE_20261112_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=RECREATION_UNIFIED_20261104_1/);
-  assert.match(html,/colour-sort\.js\?v=RECREATION_UNIFIED_20261104_1/);
+  assert.match(html,/block-grid\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
+  assert.match(html,/colour-sort\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
