@@ -193,7 +193,7 @@ export function mountSequenceGame(config){
       message='Sequence interrupted at step '+(round.index+1)+'.'+(penalty?' Bank -'+penalty+'.':'')+' Review the sequence or start again.';
     }
     persist();render();
-    try{globalThis.BaselineGamesAutoNext?.sync?.();}catch(_){}
+    try{globalThis.BaselineGamesAutoNext?.complete?.(app);}catch(_){}
   }
   function buySkill(skillId){
     const skill=SEQUENCE_SKILLS.find(entry=>entry.id===skillId);
@@ -308,12 +308,15 @@ export function mountSequenceGame(config){
       '<div class="game-shell"><div class="game-header"><div><h2 tabindex="-1" id="'+id+'Title">'+escapeHtml(name)+'</h2><p class="note">'+escapeHtml(note)+'</p></div>'+
       '<div class="link-actions game-shell-actions" data-nonrealm-game-toolbar="'+id+'">'+
       '<button class="action secondary game-shell-action" type="button" data-bl-info-button data-bl-info-title="How to Play" data-bl-info-text="'+escapeHtml(kind==='path'?'Watch adjacent tiles light up one at a time, then tap the identical route in order.':'Observe the movement cues in order, then tap the same movements in sequence. Mental recall only; no physical strikes are required.')+'"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>'+
-      '<button class="action secondary game-shell-action" type="button" data-sequence-fullscreen><span class="game-shell-action__icon" aria-hidden="true">⛶</span><span class="game-shell-action__label">Fullscreen</span></button>'+
+
       '<button class="action secondary game-shell-action" type="button" data-close-game-extension="'+id+'"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button></div></div>'+
       '<p class="sequence-profile" data-sequence-profile aria-live="polite"></p>'+
       '<div class="game-toggle-row" role="tablist" aria-label="'+escapeHtml(name)+' views">'+
       ['game','round','skills','tiers','progress'].map(view=>'<button class="action ghost game-toggle-btn'+(view==='game'?' is-active':'')+'" type="button" data-sequence-tab="'+view+'" role="tab" aria-selected="'+(view==='game')+'">'+view.charAt(0).toUpperCase()+view.slice(1)+'</button>').join('')+'</div>'+
-      '<div class="game-panel-stack"><section class="card game-card game-play-root" id="'+id.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())+'GameCard" data-game-play-root="'+id+'" data-sequence-view="game"><div class="sequence-game-actions game-window-actions"><strong>'+escapeHtml(name)+'</strong><button class="action secondary" data-sequence-start type="button" title="New Game (Alt+N)">＋ New Game</button></div><div data-sequence-board></div></section>'+
+      '<div class="game-panel-stack"><section class="card game-card game-play-root" id="'+id.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())+'GameCard" data-game-play-root="'+id+'" data-sequence-view="game"><div class="sequence-game-actions game-window-actions">'+
+      '<button class="action ghost start-new-game-toggle game-shell-action" data-sequence-start type="button" title="New Game · Alt+N" aria-label="New Game"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button>'+
+      '<button class="action ghost auto-next-toggle game-shell-action" data-auto-next-toggle="'+app+'" aria-pressed="false" type="button" title="Auto New Game · Alt+A">A</button>'+
+      '<button class="action ghost game-fullscreen-toggle game-shell-action" data-sequence-fullscreen type="button" title="Fullscreen · Alt+F" aria-label="Fullscreen">⛶</button></div><div data-sequence-board></div></section>'+
       '<section class="card game-card recreation-round-panel" data-sequence-view="round" hidden><div data-sequence-round></div></section>'+
       '<section class="card game-card" data-sequence-view="skills" hidden><div data-sequence-skills></div></section>'+
       '<section class="card game-card" data-sequence-view="tiers" hidden><div data-sequence-tiers></div></section>'+
@@ -324,12 +327,13 @@ export function mountSequenceGame(config){
     styleUrl:'/systems/baseline-recreation/css/sequence-games.css?v=SEQUENCE_CORE_20261112_1',
     progressText,panelHtml,
     onOpen:()=>{globalThis.BaselineGamesMusic?.selectGame?.(id);render();},
-    onClose:()=>{cancelPreview();if(round&&round.phase==='preview'){round=null;message='Start a new round when ready.';}globalThis.BaselineGamesMusic?.selectGame?.('');}
+    onClose:()=>{try{globalThis.BaselineGamesAutoNext?.clear?.(app);}catch(_){}cancelPreview();if(round&&round.phase==='preview'){round=null;message='Start a new round when ready.';}globalThis.BaselineGamesMusic?.selectGame?.('');}
   });
   function init(){
     profile=loadStoredProfile(app,defaultProfile,normalise);
     storageAuth=Boolean(globalThis.BaselineGameStorage?.isAuthenticated?.());
     shell.init();render();
+    try{globalThis.BaselineGamesAutoNext?.sync?.();}catch(_){}
     document.addEventListener('click',handleClick);
     document.addEventListener('keydown',event=>{
       if(!document.getElementById(panelId)?.classList.contains('is-active')||event.ctrlKey||event.metaKey||!event.altKey||event.isComposing)return;
