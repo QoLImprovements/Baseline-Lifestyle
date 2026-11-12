@@ -1550,7 +1550,10 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     }
     if(game?.runtimeOwner==='module'){
       const stored=serverStorageAuthority()?.getProfile?.(game.profileApp) || {};
-      return 'Player Rank '+Math.max(1,Number(stored.level)||1)+' · '+Math.max(0,Number(stored.roundsWon)||0)+' cleared';
+      const rank='Player Rank '+Math.max(1,Number(stored.level)||1);
+      if(id==='block-grid') return rank+' · Best '+Math.max(0,Number(stored.bestScore)||0);
+      if(id==='colour-sort') return rank+' · '+Math.max(0,Number(stored.completedLevels)||0)+' cleared';
+      return rank+' · '+Math.max(0,Number(stored.roundsWon)||0)+' cleared';
     }
     const profile=profileOrDefault(game && game.profileApp || id);
     if(id==='detectword') return 'Player Rank ' + profile.level + ' · ' + profile.wordsSolved + ' solved';
@@ -1786,7 +1789,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   function renderSystemSummary(){
     const existing = refs.gamesSummaryWrap ? Array.from(refs.gamesSummaryWrap.querySelectorAll('details[open][data-summary]')).map(function(el){ return el.getAttribute('data-summary'); }) : [];
     openSummaryIds.clear(); existing.forEach(function(id){ openSummaryIds.add(id); });
-    refs.bankSummary.innerHTML = '<strong>Bank Coins</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Core games, Cross Number, Darts Focused and Badminton Focused feed the shared Recreation Bank Coins. Baseline Realm uses its own connected campaign coin economy.</span>';
+    refs.bankSummary.innerHTML = '<strong>Bank Coins</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Bank-earning Core Games, Cross Number, Darts Focused and Badminton Focused contribute to Recreation Bank Coins. Baseline Realm uses its own connected campaign coin economy.</span>';
     refs.gamesSummaryWrap.innerHTML = [renderDetectWordSummary(), renderMake24Summary(), renderPairsSummary(), renderTrackCoinSummary(), renderRuleShiftSummary(), renderCrossnumberSummary(), renderNinjaSummary()].join('');
     Array.from(refs.gamesSummaryWrap.querySelectorAll('details[data-summary]')).forEach(function(el){ el.open = openSummaryIds.has(el.getAttribute('data-summary')); });
   }
