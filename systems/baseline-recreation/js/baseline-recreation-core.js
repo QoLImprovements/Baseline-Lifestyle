@@ -876,6 +876,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
         : activePanel.id === 'ruleshiftPanel' ? 'ruleshift'
         : activePanel.id === 'blockGridPanel' ? 'blockgrid'
         : activePanel.id === 'colourSortPanel' ? 'coloursort'
+        : activePanel.id === 'pathRecallPanel' ? 'pathrecall'
+        : activePanel.id === 'combatSequencePanel' ? 'combatsequence'
         : activePanel.id === 'ninjaPanel' ? 'ninja'
         : '';
     }
@@ -954,7 +956,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     const query = params.toString();
     return query ? (route + '?' + query) : route;
   }
-  const EXTERNAL_GAME_ROUTE_SLUGS = new Set(['block-grid','colour-sort','darts-focused','badminton-focused']);
+  const EXTERNAL_GAME_ROUTE_SLUGS = new Set(['block-grid','colour-sort','path-recall','combat-sequence','darts-focused','badminton-focused']);
   function recreationStateFromCleanPath(){
     try{
       const path = String(window.location.pathname || '').toLowerCase().replace(/\/+$/,'');
