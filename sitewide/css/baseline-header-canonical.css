@@ -502,8 +502,7 @@ html.bl-pages-dd-ready .bl-homebar-inner{
    the page-title button may clip its own text, but the dropdown container/menu
    must not be clipped by the fixed banner. */
 .bl-homebar,
-.bl-homebar-inner,
-.bl-pages-dd{
+.bl-homebar-inner{
   overflow:visible!important;
 }
 .bl-pages-menu[hidden]{
