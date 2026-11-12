@@ -45,8 +45,8 @@ test('Recreation registry exposes canonical identities with legacy compatibility
   assert.equal(registry.canonicalId('colour-sort'), 'colour-sort');
   assert.equal(registry.resolve('block-grid').profileApp, 'blockgrid');
   assert.equal(registry.resolve('colour-sort').profileApp, 'coloursort');
-  assert.equal(registry.resolve('block-grid').group, 'extension');
-  assert.equal(registry.resolve('colour-sort').group, 'extension');
+  assert.equal(registry.resolve('block-grid').group, 'core');
+  assert.equal(registry.resolve('colour-sort').group, 'core');
   assert.equal(registry.resolve('path-recall').profileApp, 'pathrecall');
   assert.equal(registry.resolve('combat-sequence').profileApp, 'combatsequence');
   assert.equal(registry.resolve('path-recall').runtimeOwner, 'module');
@@ -55,17 +55,17 @@ test('Recreation registry exposes canonical identities with legacy compatibility
   const core = registry.coreGames();
   assert.deepEqual(
     Array.from(core, game => game.runtimeId),
-    ['pairs','detectword','make24','trackcoin','ruleshift','pathrecall','combatsequence','ninja']
+    ['pairs','detectword','make24','trackcoin','ruleshift','pathrecall','combatsequence','block-grid','colour-sort','ninja']
   );
 
   const overview = registry.overviewGames();
   assert.deepEqual(
     Array.from(overview, game => game.runtimeId),
-    ['detectword','make24','pairs','ruleshift','trackcoin','pathrecall','combatsequence','darts-focused','badminton-focused','ninja']
+    ['detectword','make24','pairs','ruleshift','trackcoin','pathrecall','combatsequence','block-grid','colour-sort','darts-focused','badminton-focused','ninja']
   );
   for (const game of overview) {
     assert.equal(typeof game.overview.group, 'string');
-    assert.match(game.overview.art, /RECREATION_BURGUNDY_ROSE_COPPER_20261022_1|SEQUENCE_CORE_20261112_1/);
+    assert.match(game.overview.art, /RECREATION_BURGUNDY_ROSE_COPPER_20261022_1|RECREATION_BURGUNDY_BURNT_COPPER_20261022_2|SEQUENCE_CORE_20261112_1/);
     assert.ok(game.overview.note.length > 20);
     assert.ok(game.overview.brainBenefit.length > 20);
   }
