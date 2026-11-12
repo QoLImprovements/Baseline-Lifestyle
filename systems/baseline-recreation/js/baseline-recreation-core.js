@@ -1552,7 +1552,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       const stored=serverStorageAuthority()?.getProfile?.(game.profileApp) || {};
       const rank='Player Rank '+Math.max(1,Number(stored.level)||1);
       if(id==='block-grid') return rank+' · Best '+Math.max(0,Number(stored.bestScore)||0);
-      if(id==='colour-sort') return rank+' · '+Math.max(0,Number(stored.completedLevels)||0)+' cleared';
+      if(id==='colour-sort') return rank+' · '+(Array.isArray(stored.completedLevels)?stored.completedLevels.length:0)+' cleared';
       return rank+' · '+Math.max(0,Number(stored.roundsWon)||0)+' cleared';
     }
     const profile=profileOrDefault(game && game.profileApp || id);
