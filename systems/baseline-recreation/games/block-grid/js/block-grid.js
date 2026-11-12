@@ -17,7 +17,7 @@ import {
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/game-extension-support.mjs?v=MOBILE_GAME_COHERENCE_20261103_1';
+} from '../../../js/game-extension-support.mjs?v=SEQUENCE_COHERENT_GAMES_20261112_1';
 
 const BUILD = 'BLOCK_GRID_MOBILE_COHERENCE_20261026_1';
 const APP = 'blockgrid';
@@ -29,11 +29,13 @@ const DEFAULT_PROFILE = Object.freeze({
   app:APP,
   level:1,
   xp:0,
+  bank:0,
   bestScore:0,
   gamesPlayed:0,
   totalLines:0,
   totalPieces:0,
   lastRoundXp:0,
+  lastRoundBank:0,
   lastRunScore:0,
   selectedMode:'classic',
   activeRun:null
@@ -87,11 +89,13 @@ function normaliseProfile(value) {
     app:APP,
     level:Math.max(1, number(source.level, 1)),
     xp:number(source.xp),
+    bank:number(source.bank),
     bestScore:number(source.bestScore),
     gamesPlayed:number(source.gamesPlayed),
     totalLines:number(source.totalLines),
     totalPieces:number(source.totalPieces),
     lastRoundXp:number(source.lastRoundXp),
+    lastRoundBank:number(source.lastRoundBank),
     lastRunScore:Object.prototype.hasOwnProperty.call(source,'lastRunScore') ? number(source.lastRunScore) : (source.activeRun?.gameOver ? number(source.activeRun.score) : 0),
     selectedMode:mode,
     activeRun:null
@@ -140,6 +144,9 @@ function settleRunXp(active) {
   active.xpEarned=gained;
   profile.lastRoundXp=gained;
   profile.lastRunScore=number(active.score);
+  const coins=gained>0?Math.max(1,Math.round(gained/3)):0;
+  profile.lastRoundBank=coins;
+  profile.bank+=coins;
   if(gained > 0) awardXp(profile,gained);
   return gained;
 }
@@ -147,6 +154,7 @@ function settleRunXp(active) {
 function persist() {
   if (!profile) return;
   saveStoredProfile(APP, profile);
+  document.dispatchEvent(new CustomEvent('baseline:sequence-game-progress',{detail:{app:APP}}));
   shell.refreshOverview();
 }
 
@@ -394,6 +402,8 @@ function renderProgress() {
       <div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${needed}" aria-valuenow="${profile.xp}"><span style="width:${pct}%"></span></div>
     </section>
     <div class="coherent-progress-grid">
+      <div class="coherent-progress-stat"><span>Bank Coins</span><strong>${profile.bank}</strong></div>
+      <div class="coherent-progress-stat"><span>Last Bank reward</span><strong>${profile.lastRoundBank}</strong></div>
       <div class="coherent-progress-stat"><span>Best score</span><strong>${profile.bestScore}</strong></div>
       <div class="coherent-progress-stat"><span>Games started</span><strong>${profile.gamesPlayed}</strong></div>
       <div class="coherent-progress-stat"><span>Lines cleared</span><strong>${profile.totalLines}</strong></div>

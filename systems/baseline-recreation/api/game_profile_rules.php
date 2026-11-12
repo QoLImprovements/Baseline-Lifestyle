@@ -9,6 +9,8 @@ function bl_profile_aliases(string $app): array {
     'ninja'=>['ninja','baselineninja'],
     'trackcoin'=>['trackcoin'],
     'ruleshift'=>['ruleshift'],
+    'pathrecall'=>['pathrecall'],
+    'combatsequence'=>['combatsequence'],
     'crossnumber'=>['crossnumber'],
   ][$app] ?? [];
 }
@@ -47,6 +49,18 @@ function bl_default_game_profile(string $app): array {
       'app'=>'ruleshift','bank'=>0,'xp'=>0,'level'=>1,'skillPoints'=>1,'gamesPlayed'=>0,'correctAnswers'=>0,
       'wrongAnswers'=>0,'currentStreak'=>0,'bestStreak'=>0,'cleanWinStreak'=>0,'selectedTier'=>'starter',
       'skills'=>['focus'=>0,'banker'=>0,'recovery'=>0,'adapt'=>0],
+    ],
+    'pathrecall'=>[
+      'app'=>'pathrecall','level'=>1,'xp'=>0,'bank'=>0,'skillPoints'=>1,'selectedTier'=>'starter',
+      'roundsPlayed'=>0,'roundsWon'=>0,'bestStreak'=>0,'streak'=>0,'cleanStreak'=>0,
+      'bestLength'=>0,'totalCorrect'=>0,'totalMistakes'=>0,'lastXp'=>0,'lastBank'=>0,
+      'skills'=>['focus'=>0,'banker'=>0,'rehearsal'=>0,'recovery'=>0],
+    ],
+    'combatsequence'=>[
+      'app'=>'combatsequence','level'=>1,'xp'=>0,'bank'=>0,'skillPoints'=>1,'selectedTier'=>'starter',
+      'roundsPlayed'=>0,'roundsWon'=>0,'bestStreak'=>0,'streak'=>0,'cleanStreak'=>0,
+      'bestLength'=>0,'totalCorrect'=>0,'totalMistakes'=>0,'lastXp'=>0,'lastBank'=>0,
+      'skills'=>['focus'=>0,'banker'=>0,'rehearsal'=>0,'recovery'=>0],
     ],
     'crossnumber'=>[
       'app'=>'crossnumber','bank'=>0,'xp'=>0,'level'=>1,'skillPoints'=>1,'puzzlesSolved'=>0,'gamesPlayed'=>0,
@@ -141,6 +155,25 @@ function bl_normalise_game_profile(string $app, array $profile): array {
     $tiers = ['starter','switch','opposite','mixed','pressure'];
     $unlock = ['starter'=>1,'switch'=>4,'opposite'=>9,'mixed'=>16,'pressure'=>26];
     $merged['selectedTier'] = bl_game_allowed_tier(trim((string)($merged['selectedTier'] ?? 'starter')), $tiers, $unlock, $merged['level']);
+    return $merged;
+  }
+
+  if($app === 'pathrecall' || $app === 'combatsequence'){
+    foreach(['xp','bank','skillPoints','roundsPlayed','roundsWon','bestStreak','streak','cleanStreak',
+      'bestLength','totalCorrect','totalMistakes','lastXp','lastBank'] as $key){
+      $merged[$key] = bl_round_nonneg($merged[$key] ?? 0);
+    }
+    $merged['level'] = max(1,(int)round((float)($merged['level'] ?? 1)));
+    $skills = is_array($merged['skills'] ?? null) ? $merged['skills'] : [];
+    $merged['skills'] = bl_clamp_skill_set(
+      $base['skills'],$skills,
+      ['focus'=>5,'banker'=>5,'rehearsal'=>1,'recovery'=>3],
+      ['focus'=>1,'banker'=>1,'rehearsal'=>3,'recovery'=>5],
+      $merged['level'],$merged['skillPoints']
+    );
+    $tiers=['starter','field','forge','citadel'];
+    $unlock=['starter'=>1,'field'=>4,'forge'=>9,'citadel'=>16];
+    $merged['selectedTier']=bl_game_allowed_tier(trim((string)($merged['selectedTier'] ?? 'starter')),$tiers,$unlock,$merged['level']);
     return $merged;
   }
 

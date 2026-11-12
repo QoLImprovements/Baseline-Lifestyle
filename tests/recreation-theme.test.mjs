@@ -136,8 +136,8 @@ test('Block Grid and Colour Sort asset URLs are versioned for the new palette',a
   assert.match(blockJs,/block-grid\.css\?v=RECREATION_UNIFIED_20261104_1/);
   assert.match(colourJs,/colour-sort-overview\.svg\?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2/);
   assert.match(colourJs,/colour-sort\.css\?v=RECREATION_UNIFIED_20261104_1/);
-  assert.match(hub,/block-grid\.js\?v=RECREATION_UNIFIED_20261104_1/);
-  assert.match(hub,/colour-sort\.js\?v=RECREATION_UNIFIED_20261104_1/);
+  assert.match(hub,/block-grid\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
+  assert.match(hub,/colour-sort\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
 });
 
 test('normal text passes WCAG AA at every mirror-gradient stop',()=>{

@@ -95,6 +95,18 @@ function showGamesSection() {
 }
 
 export function createGameExtensionShell(config) {
+  // The shared registry owns public identity, grouping, art, benefit and order.
+  // Module configurations only supply runtime behaviour and fallbacks.
+  const canonical = globalThis.BASELINE_GAMES_REGISTRY?.resolve?.(config.id);
+  const overview = canonical?.overview;
+  if (overview) config = {
+    ...config,
+    name:canonical.name || config.name,
+    order:overview.order,
+    art:overview.art,
+    note:overview.note,
+    benefit:overview.brainBenefit
+  };
   let observer = null;
   let fullscreenObserver = null;
 
@@ -325,7 +337,10 @@ export function createGameExtensionShell(config) {
 
 export function xpNeededForLevel(level) {
   const value = Math.max(1, Math.floor(Number(level) || 1));
-  return 80 + ((value - 1) * 35) + Math.floor(((value - 1) * (value - 1)) * 2.5);
+  // There is one XP curve for every Core Game, regardless of its runtime type.
+  const authority = globalThis.BASELINE_GAMES_PROGRESSION?.xpNeededForLevel;
+  if (typeof authority === 'function') return authority(value);
+  return 60 + ((value - 1) * 35) + ((value - 1) * (value - 1) * 4);
 }
 
 export function awardXp(profile, amount) {

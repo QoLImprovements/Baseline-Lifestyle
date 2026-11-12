@@ -109,7 +109,7 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
 });
 
 test('extension game routes remain owned by their extension shells during core startup',()=>{
-  assert.match(core,/EXTERNAL_GAME_ROUTE_SLUGS = new Set\(\['block-grid','colour-sort','darts-focused','badminton-focused'\]\)/);
+  assert.match(core,/EXTERNAL_GAME_ROUTE_SLUGS = new Set\(\['block-grid','colour-sort','path-recall','combat-sequence','darts-focused','badminton-focused'\]\)/);
   assert.match(core,/if\(EXTERNAL_GAME_ROUTE_SLUGS\.has\(routeSlug\)\) return \{ tab:'games', game:'', panel:'', externalGame:routeSlug \}/);
   assert.match(core,/const restoredState=applyHashState\(\)[\s\S]*?if\(!restoredState\?\.externalGame\) selectGame\(routedGame\)/);
   assert.match(core,/function externalGameRouteSlugFromLocation\(\)[\s\S]*?return EXTERNAL_GAME_ROUTE_SLUGS\.has\(routeSlug\) \? routeSlug : ''/);
@@ -117,7 +117,7 @@ test('extension game routes remain owned by their extension shells during core s
 });
 
 test('Auto-next has one registered terminal-state authority across all supported Recreation games and puzzles',()=>{
-  assert.match(core,/AUTO_NEXT_GAMES = \['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'blockgrid', 'coloursort', 'crossnumber'\]/);
+  assert.match(core,/AUTO_NEXT_GAMES = \['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'pathrecall', 'combatsequence', 'blockgrid', 'coloursort', 'crossnumber'\]/);
   assert.match(core,/trackcoin:1500/);
   assert.doesNotMatch(core,/trackcoin:6500/);
   assert.match(core,/function registerAutoNextGame\(gameId,starter,isTerminal,delayMs\)/);
@@ -136,10 +136,10 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_UNIFIED_20261104_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
   assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=RECREATION_UNIFIED_20261104_1/);
-  assert.match(html,/colour-sort\.js\?v=RECREATION_UNIFIED_20261104_1/);
+  assert.match(html,/block-grid\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
+  assert.match(html,/colour-sort\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -223,7 +223,7 @@ test('Recreation music preferences are server-side and quick controls stay insid
   assert.match(music,/function mutationAddsElement\(records\)[\s\S]*?node\.nodeType===1/);
   assert.match(music,/new MutationObserver\(function\(records\)\{[\s\S]*?if\(!mutationAddsElement\(records\)\) return;[\s\S]*?injectSettingsButtons\(\);[\s\S]*?syncUi\(\)/);
   assert.doesNotMatch(music,/new MutationObserver\(function\(\)\{\s*injectSettingsButtons\(\);\s*syncUi\(\);\s*\}\)/);
-  assert.match(music,/var roots = \['pairsGameCard','wordGameCard','make24GameCard','trackCoinGamePanel','ruleShiftGameCard','blockGridGameCard','colourSortGameCard','crossnumberGamePanel'\]/);
+  assert.match(music,/var roots = \['pairsGameCard','wordGameCard','make24GameCard','trackCoinGamePanel','ruleShiftGameCard','pathRecallGameCard','combatSequenceGameCard','blockGridGameCard','colourSortGameCard','crossnumberGamePanel'\]/);
   assert.match(music,/#weightCoherenceWorkspace \.weight-coherence-actions/);
   assert.doesNotMatch(music,/#ninjaPanel \.realm-utility/);
   assert.match(core,/if\(id !== 'ninja' && !q\(':scope > \.mobile-game-exit', root\)\)/);
@@ -428,8 +428,8 @@ test('extension-game routes clear stale core selection without surrendering exte
   assert.match(extensionSupport,/document\.dispatchEvent\(new CustomEvent\('baseline:game-extension-open'/);
   assert.match(extensionSupport,/detail:\{ id:config\.id, panelId:config\.panelId \}/);
   assert.match(core,/document\.addEventListener\('baseline:game-extension-open'[\s\S]*?selectedGame='';[\s\S]*?renderGamesList\(\)/);
-  assert.match(blockGrid,/game-extension-support\.mjs\?v=MOBILE_GAME_COHERENCE_20261103_1/);
-  assert.match(colourSort,/game-extension-support\.mjs\?v=MOBILE_GAME_COHERENCE_20261103_1/);
+  assert.match(blockGrid,/game-extension-support\.mjs\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
+  assert.match(colourSort,/game-extension-support\.mjs\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
   assert.match(extensionSupport,/baseline:recreation:core-ready/);
   assert.match(extensionSupport,/BASELINE_RECREATION_CORE_READY === true/);
 });
@@ -648,8 +648,8 @@ test('mobile Recreation uses a game-first single-column authority in windowed an
 });
 
 test('canonical and legacy recreation routes preserve direct game destinations on refresh',()=>{
-  assert.match(htaccess,/baseline-games-hub\/games-hub\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|block-grid\|colour-sort/);
-  assert.match(htaccess,/baseline-recreation\/games\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|block-grid\|colour-sort/);
+  assert.match(htaccess,/baseline-games-hub\/games-hub\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|path-recall\|combat-sequence\|block-grid\|colour-sort/);
+  assert.match(htaccess,/baseline-recreation\/games\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|path-recall\|combat-sequence\|block-grid\|colour-sort/);
   assert.match(core,/function recreationStateFromCleanPath\(\)/);
   assert.match(core,/base \+ '\/games\/'/);
   assert.match(core,/const routeSlug = String\(rest\.split\('\/'\)\[0\] \|\| ''\)\.toLowerCase\(\)/);

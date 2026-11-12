@@ -1,0 +1,49 @@
+
+/* Shared layout authority for the two independently registered sequence games. */
+.sequence-game-panel .sequence-profile { margin: .55rem 0 .85rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sequence-game-panel .sequence-game-actions { display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem; }
+.sequence-game-panel .sequence-round-counter { display:flex;justify-content:space-between;gap:1rem;align-items:center;font-variant-numeric:tabular-nums;margin-bottom:.75rem; }
+.sequence-game-panel .sequence-status { min-height:2.75em;margin:.5rem 0 1rem;line-height:1.45; }
+.sequence-game-panel .sequence-grid { display:grid;grid-template-columns:repeat(var(--sequence-cols),minmax(0,1fr));gap:clamp(6px,1.3vw,12px);width:min(100%,440px);margin:1rem auto 1.35rem; }
+.sequence-game-panel .sequence-cell { appearance:none;aspect-ratio:1;min-height:46px;border-radius:12px;border:2px solid #b77a65;background:linear-gradient(145deg,#f7ded5,#e2b9a8);color:#502238;font-size:1.35rem;font-weight:800;cursor:pointer;touch-action:manipulation;transition:background-color .12s,transform .12s,border-color .12s; }
+.sequence-game-panel .sequence-cell.is-lit { background:#8a243e;color:white;border-color:#fff4ed;transform:scale(1.045);box-shadow:0 0 0 3px #c97856; }
+.sequence-game-panel .sequence-cell.is-done { background:#bcd6a4;color:#213e28;border-color:#6e9550; }
+.sequence-game-panel .sequence-cell.is-wrong { background:#f0b0a2;border-color:#a23636; }
+.sequence-game-panel .sequence-moves { display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:.7rem;max-width:720px;margin:1rem auto 1.35rem; }
+.sequence-game-panel .sequence-move { border:2px solid #a66a5a;border-radius:12px;background:linear-gradient(145deg,#f9e6de,#ebc3b0);color:#482130;padding:.9rem .5rem;display:flex;flex-direction:column;align-items:center;gap:.3rem;font:inherit;cursor:pointer;touch-action:manipulation; }
+.sequence-game-panel .sequence-move span { font-size:1.6rem; }
+.sequence-game-panel .sequence-move strong { font-size:.95rem; }
+.sequence-game-panel .sequence-move.is-lit { background:#872b4c;color:white;border-color:#fff0e5;box-shadow:0 0 0 3px #c97856; }
+.sequence-game-panel .sequence-move.is-wrong { background:#eeb7a4;border-color:#b33333; }
+.sequence-game-panel button:focus-visible { outline:3px solid #c57947;outline-offset:3px; }
+.sequence-game-panel .sequence-option-list {display:grid;gap:.75rem;margin-top:1rem;}
+.sequence-game-panel .sequence-option {display:flex;align-items:center;justify-content:space-between;gap:1rem;border:1px solid currentColor;border-radius:12px;padding:.8rem;}
+.sequence-game-panel .sequence-option p {margin:.3rem 0;font-size:.95rem;}
+.sequence-game-panel .sequence-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-top:1rem;}
+.sequence-game-panel .sequence-stats>div {border:1px solid currentColor;border-radius:10px;padding:.75rem;display:flex;flex-direction:column;gap:.3rem;}
+.sequence-game-panel .sequence-answer {padding:1rem;border:1px solid currentColor;border-radius:10px;line-height:1.9;overflow-wrap:anywhere;}
+.sequence-game-panel [hidden] {display:none!important;}
+.sequence-game-panel :is(.sequence-cell,.sequence-move):disabled {cursor:default;opacity:.88;}
+.sequence-game-panel :is(.sequence-cell,.sequence-move).is-lit:disabled {opacity:1;}
+.sequence-game-panel [data-sequence-view="game"]:fullscreen {box-sizing:border-box;overflow:auto;width:100vw;height:100dvh;max-width:none;padding:clamp(12px,3vw,32px);background:#e6c4b7;color:#452032;}
+@media(max-width:600px){
+ .sequence-game-panel .sequence-grid {gap:6px;max-width:min(95vw,380px);}
+ .sequence-game-panel .sequence-cell {min-height:0;border-radius:8px;}
+ .sequence-game-panel .sequence-moves {grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;}
+ .sequence-game-panel .sequence-option {align-items:flex-start;flex-direction:column;}
+ .sequence-game-panel .sequence-option .action {align-self:flex-end;}
+ .sequence-game-panel .game-toggle-row {overflow-x:auto;}
+}
+@media(prefers-reduced-motion:reduce){
+ .sequence-game-panel .sequence-cell {transition:none;transform:none!important;}
+}
+
+/* Shared Rank/XP and fullscreen presentation for both memory titles. */
+.sequence-game-panel .sequence-xp-track{height:8px;margin:-.45rem 0 .9rem;border-radius:999px;overflow:hidden;background:rgba(199,134,103,.25);border:1px solid rgba(172,110,78,.4)}
+.sequence-game-panel .sequence-xp-track>div{height:100%;width:0;background:linear-gradient(90deg,#9c3f47,#d48a52);transition:width .15s ease}
+.sequence-game-panel [data-sequence-view="game"].recreation-mobile-pseudo-fullscreen{
+  box-sizing:border-box!important;position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;margin:0!important;padding:clamp(12px,3vw,28px)!important;z-index:10050!important;overflow:auto!important;background:#e6c4b7!important;color:#452032!important;
+}
+.sequence-game-panel [data-sequence-view="game"].recreation-mobile-pseudo-fullscreen .sequence-grid{max-width:min(88vw,440px)}
+.sequence-game-panel [data-sequence-view="game"].recreation-mobile-pseudo-fullscreen .sequence-moves{max-width:min(94vw,720px)}
+@media(prefers-reduced-motion:reduce){.sequence-game-panel .sequence-xp-track>div{transition:none}}

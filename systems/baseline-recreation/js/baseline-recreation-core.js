@@ -9,7 +9,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
 
   const API_PATH = '/systems/baseline-recreation/api/games_profile.php';
   const GAME_REGISTRY = window.BASELINE_GAMES_REGISTRY || null;
-  const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
+  const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames().filter(function(game){ return game.runtimeOwner !== 'module'; }) : [];
   const REGISTERED_OVERVIEW_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.overviewGames === 'function' ? GAME_REGISTRY.overviewGames() : [];
   const GAMES_HELP_MODAL = window.BaselineGamesHelpModal || null;
   if(!GAMES_HELP_MODAL || typeof GAMES_HELP_MODAL.open !== 'function' || typeof GAMES_HELP_MODAL.close !== 'function') throw new Error('games_help_modal_authority_missing');
@@ -21,8 +21,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   const refundLockedSkills = PROGRESSION_RULES.refundLockedSkills;
   const reconcileSkillPoints = PROGRESSION_RULES.reconcileSkillPoints;
   const GAME_APPS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.profileApp; }).filter(Boolean) : ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
-  const AUTO_NEXT_GAMES = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'blockgrid', 'coloursort', 'crossnumber'];
-  const AUTO_NEXT_DELAYS = Object.freeze({ pairs:900, detectword:900, make24:900, trackcoin:1500, ruleshift:900, blockgrid:1200, coloursort:1200, crossnumber:1200 });
+  const AUTO_NEXT_GAMES = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'pathrecall', 'combatsequence', 'blockgrid', 'coloursort', 'crossnumber'];
+  const AUTO_NEXT_DELAYS = Object.freeze({ pairs:900, detectword:900, make24:900, trackcoin:1500, ruleshift:900, pathrecall:1200, combatsequence:1200, blockgrid:1200, coloursort:1200, crossnumber:1200 });
   const SITEWIDE_START_HOTKEY_LABEL = 'Alt+N';
   const SITEWIDE_AUTONEXT_HOTKEY_LABEL = 'Alt+A';
   const SITEWIDE_KEYBOARD_HOTKEY_LABEL = 'Alt+K';
@@ -876,6 +876,8 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
         : activePanel.id === 'ruleshiftPanel' ? 'ruleshift'
         : activePanel.id === 'blockGridPanel' ? 'blockgrid'
         : activePanel.id === 'colourSortPanel' ? 'coloursort'
+        : activePanel.id === 'pathRecallPanel' ? 'pathrecall'
+        : activePanel.id === 'combatSequencePanel' ? 'combatsequence'
         : activePanel.id === 'ninjaPanel' ? 'ninja'
         : '';
     }
@@ -954,7 +956,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     const query = params.toString();
     return query ? (route + '?' + query) : route;
   }
-  const EXTERNAL_GAME_ROUTE_SLUGS = new Set(['block-grid','colour-sort','darts-focused','badminton-focused']);
+  const EXTERNAL_GAME_ROUTE_SLUGS = new Set(['block-grid','colour-sort','path-recall','combat-sequence','darts-focused','badminton-focused']);
   function recreationStateFromCleanPath(){
     try{
       const path = String(window.location.pathname || '').toLowerCase().replace(/\/+$/,'');
@@ -1522,7 +1524,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     const darts = dartsFocusedProfile();
     const badminton = badmintonFocusedProfile();
     const crossnumber = crossnumberProfile();
-    return (profiles.pairs ? profiles.pairs.bank : 0) + (profiles.make24 ? profiles.make24.bank : 0) + (profiles.detectword ? profiles.detectword.bank : 0) + (profiles.trackcoin ? profiles.trackcoin.coins : 0) + (profiles.ruleshift ? profiles.ruleshift.bank : 0) + Math.max(0, Number(darts && darts.bank || 0)) + Math.max(0, Number(badminton && badminton.bank || 0)) + Math.max(0, Number(crossnumber && crossnumber.bank || 0));
+    return (profiles.pairs ? profiles.pairs.bank : 0) + (profiles.make24 ? profiles.make24.bank : 0) + (profiles.detectword ? profiles.detectword.bank : 0) + (profiles.trackcoin ? profiles.trackcoin.coins : 0) + (profiles.ruleshift ? profiles.ruleshift.bank : 0) + Math.max(0, Number(darts && darts.bank || 0)) + Math.max(0, Number(badminton && badminton.bank || 0)) + Math.max(0, Number(crossnumber && crossnumber.bank || 0)) + ['pathrecall','combatsequence','blockgrid','coloursort'].reduce(function(total,app){return total + Math.max(0,Number(serverStorageAuthority()?.getProfile?.(app)?.bank||0));},0);
   }
   function renderAuthState(){
     if(!refs.authStateNote) return;
@@ -1546,6 +1548,13 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       const badminton=badmintonFocusedProfile();
       return 'Player Rank ' + Math.max(1,Number(badminton && badminton.level || 1)) + ' · 15 games';
     }
+    if(game?.runtimeOwner==='module'){
+      const stored=serverStorageAuthority()?.getProfile?.(game.profileApp) || {};
+      const rank='Player Rank '+Math.max(1,Number(stored.level)||1);
+      if(id==='block-grid') return rank+' · Best '+Math.max(0,Number(stored.bestScore)||0);
+      if(id==='colour-sort') return rank+' · '+(Array.isArray(stored.completedLevels)?stored.completedLevels.length:0)+' cleared';
+      return rank+' · '+Math.max(0,Number(stored.roundsWon)||0)+' cleared';
+    }
     const profile=profileOrDefault(game && game.profileApp || id);
     if(id==='detectword') return 'Player Rank ' + profile.level + ' · ' + profile.wordsSolved + ' solved';
     if(id==='make24') return 'Player Rank ' + profile.level + ' · ' + profile.puzzlesSolved + ' solved';
@@ -1560,13 +1569,14 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       const overview=game.overview || {};
       return {
         id:game.runtimeId,
+        route:game.route,
         group:overview.group || 'Games',
         name:game.name,
         art:overview.art || '',
         note:overview.note || '',
         brainBenefit:overview.brainBenefit || '',
         featured:Boolean(overview.featured),
-        externalModule:game.group === 'focused' ? game.runtimeId : '',
+        externalModule:game.runtimeOwner === 'module' ? 'extension' : (game.group === 'focused' ? game.runtimeId : ''),
         progress:function(){ return overviewProgress(game); }
       };
     });
@@ -1577,6 +1587,16 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       const group = meta.group || 'Games';
       const heading = group !== currentGroup ? (currentGroup = group, '<div class="games-list-group" role="presentation"><span>' + escapeHtml(group) + '</span></div>') : '';
       const featured = !!meta.featured;
+      if(meta.externalModule === 'extension'){
+        return heading + '<div class="game-row-wrap game-extension-overview-row" data-game-card="' + escapeHtml(meta.route) + '" data-game-extension-overview-row="' + escapeHtml(meta.route) + '">' +
+          '<button class="game-row" data-open-game-extension="' + escapeHtml(meta.route) + '" type="button">' +
+            '<img class="game-card-art" src="' + escapeHtml(meta.art) + '" alt="">' +
+            '<div class="game-row-copy"><h3>' + escapeHtml(meta.name) + '</h3><p>' + escapeHtml(meta.note) + '</p></div>' +
+            '<div class="game-row-meta"><strong data-game-extension-progress="' + escapeHtml(meta.route) + '">' + escapeHtml(meta.progress()) + '</strong><span class="inline-note">Open game</span></div>' +
+          '</button>' +
+          '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="' + escapeHtml(meta.brainBenefit) + '" type="button" aria-label="What ' + escapeHtml(meta.name) + ' develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
+        '</div>';
+      }
       if(meta.externalModule === 'darts-focused'){
         return heading + '<div class="game-row-wrap game-row-wrap--featured darts-focused-overview-row" data-game-card="darts-focused">' +
           '<button class="game-row darts-overview-row" data-open-darts-focused type="button">' +
@@ -1769,7 +1789,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   function renderSystemSummary(){
     const existing = refs.gamesSummaryWrap ? Array.from(refs.gamesSummaryWrap.querySelectorAll('details[open][data-summary]')).map(function(el){ return el.getAttribute('data-summary'); }) : [];
     openSummaryIds.clear(); existing.forEach(function(id){ openSummaryIds.add(id); });
-    refs.bankSummary.innerHTML = '<strong>Bank Coins</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Core games, Cross Number, Darts Focused and Badminton Focused feed the shared Recreation Bank Coins. Baseline Realm uses its own connected campaign coin economy.</span>';
+    refs.bankSummary.innerHTML = '<strong>Bank Coins</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Bank-earning Core Games, Cross Number, Darts Focused and Badminton Focused contribute to Recreation Bank Coins. Baseline Realm uses its own connected campaign coin economy.</span>';
     refs.gamesSummaryWrap.innerHTML = [renderDetectWordSummary(), renderMake24Summary(), renderPairsSummary(), renderTrackCoinSummary(), renderRuleShiftSummary(), renderCrossnumberSummary(), renderNinjaSummary()].join('');
     Array.from(refs.gamesSummaryWrap.querySelectorAll('details[data-summary]')).forEach(function(el){ el.open = openSummaryIds.has(el.getAttribute('data-summary')); });
   }
@@ -4221,6 +4241,9 @@ function toggleGameFullscreen(gameId){
     try{ renderSystemSummary(); }catch(_error){}
   });
   document.addEventListener('baseline:game-storage', function(){
+    try{ renderSystemSummary(); }catch(_error){}
+  });
+  document.addEventListener('baseline:sequence-game-progress', function(){
     try{ renderSystemSummary(); }catch(_error){}
   });
 

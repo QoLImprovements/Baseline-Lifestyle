@@ -3,7 +3,7 @@
 
   var MIX_VERSION = 8;
   var DEFAULTS = { enabled:false, volume:0.58 };
-  var MUSIC_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
+  var MUSIC_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','path-recall','combat-sequence','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
   var ctx = null;
   var master = null;
   var normalizedOutput = null;
@@ -230,6 +230,23 @@
   var DISTINCT_RECOVERED_MELODIES = {"detectword":[[69,66,64,62],[71,69,66,64,62,66],[62,69,66,64],[74,71,69,66,71,69],[69,64,66,62]],"crossnumber":[[69,65,72,67],[74,72,69,65,67,69],[65,72,69,67],[77,74,72,69,65,72],[72,69,67,65]],"ruleshift":[[74,71,67,69,76,74,71,67],[79,74,71,76,81,76,69,71],[69,71,74,67,76,71,69,67],[81,79,74,76,71,74,83,79],[74,69,67,71,76,74,69,67]],"block-grid":[[62,69,66,74,71,66,64,62],[67,74,69,71,67,66,64,69],[62,66,71,69,64,67,66,62],[76,74,69,71,66,74,71,69],[62,64,69,74,66,69,64,62]],"colour-sort":[[72,65,69,74,77,74,69,65],[77,74,72,69,70,74,77,70],[69,65,72,67,74,69,65,67],[79,77,72,74,69,77,74,72],[65,72,74,69,77,72,69,65]]};
   var RECENT_PROFILES = {"pairs":{"lead":"mallet","beats":[0,1,2.4,3.25],"bass":[0,2.5],"kick":[],"pad":0.0062,"level":0.01,"form":[0,1,2,3,4]},"detectword":{"lead":"flute","beats":[0,0.5,1.5,2.5,3.15,3.6],"bass":[0,3],"kick":[0],"pad":0.0055,"level":0.009,"form":[0,1,2,3,4]},"make24":{"lead":"pluck","beats":[0,0.45,0.9,1.5,2.1,2.8,3.5],"bass":[0,2],"kick":[0,2.5],"pad":0.0042,"level":0.0085,"form":[0,1,2,3,4]},"trackcoin":{"lead":"bell","beats":[0,0.75,1.25,1.9,2.55,3.1,3.6],"bass":[0,1.5,3],"kick":[0,2.5],"pad":0.0046,"level":0.0085,"form":[0,1,2,3,4]},"ruleshift":{"lead":"lead","beats":[0,0.6,1.4,2.25,3.25],"bass":[0,2.75],"kick":[0,3],"pad":0.0045,"level":0.0085,"form":[0,1,2,3,4]},"block-grid":{"lead":"mallet","beats":[0,1,1.75,2.75,3.35],"bass":[0,2],"kick":[0],"pad":0.0061,"level":0.01,"form":[0,1,2,3,4]},"colour-sort":{"lead":"flute","beats":[0,1.25,2.2,3.25],"bass":[0,2.5],"kick":[],"pad":0.0065,"level":0.009,"form":[0,1,2,3,4]},"jigsaw":{"lead":"bell","beats":[0,1.5,3],"bass":[0],"kick":[],"pad":0.0065,"level":0.009,"form":[0,1,2,3,4]},"crossnumber":{"lead":"pluck","beats":[0,0.5,1.15,2.05,2.7,3.35],"bass":[0,3],"kick":[0],"pad":0.005,"level":0.009,"form":[0,1,2,3,4]}};
   var MODERN_PHRASE_FORMS = {"pairs":[0,1,2,3,1,2,0],"detectword":[0,2,1,3,2,0,3],"make24":[0,1,3,2,1,3,0],"trackcoin":[0,2,3,1,2,3,0],"ruleshift":[0,3,1,2,3,1,0],"block-grid":[0,1,2,3,1,0,3],"colour-sort":[0,2,1,3,2,0,1],"jigsaw":[0,1,2,3,0,2,0],"crossnumber":[0,3,2,1,3,0,1],"ninja":[0,1,3,2,3,1,0]};
+  // Original themes for the two sequence games; no reused melody or tempo-only variant.
+  TRACKS['path-recall']={
+    bpm:98,bars:40,lead:'mallet',
+    chords:[[57,60,64],[53,57,60],[55,59,62],[60,64,67]],
+    beats:[0,1.25,2.2,3.1],
+    phrases:[[69,72,76,74,69,67],[72,76,79,76,72,69],[67,71,74,79,74,71],[76,72,69,72,67,69]],
+    bassBeats:[0,2.5],kickBeats:[],pad:.010,leadLevel:.011
+  };
+  TRACKS['combat-sequence']={
+    bpm:112,bars:40,lead:'pluck',
+    chords:[[50,57,62],[55,62,67],[58,65,70],[53,60,65]],
+    beats:[0,.75,1.5,2.5,3.25],
+    phrases:[[74,69,77,72,67,74],[79,74,72,81,77,74],[82,77,70,74,79,72],[77,72,65,69,74,77]],
+    bassBeats:[0,1.5,3],kickBeats:[0,2.5],pad:.005,leadLevel:.009
+  };
+  MODERN_PHRASE_FORMS['path-recall']=[0,1,0,2,3,1,3];
+  MODERN_PHRASE_FORMS['combat-sequence']=[0,2,1,3,2,0,3];
   var PLAYLISTS = Object.create(null);
   MUSIC_GAMES.forEach(function(game){
     var playlist=[];
@@ -574,7 +591,7 @@
     return btn;
   }
   function injectSettingsButtons(){
-    var roots = ['pairsGameCard','wordGameCard','make24GameCard','trackCoinGamePanel','ruleShiftGameCard','blockGridGameCard','colourSortGameCard','crossnumberGamePanel'];
+    var roots = ['pairsGameCard','wordGameCard','make24GameCard','trackCoinGamePanel','ruleShiftGameCard','pathRecallGameCard','combatSequenceGameCard','blockGridGameCard','colourSortGameCard','crossnumberGamePanel'];
     roots.forEach(function(id){
       var root = document.getElementById(id);
       if(!root) return;
