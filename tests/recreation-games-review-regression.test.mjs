@@ -117,7 +117,7 @@ test('extension game routes remain owned by their extension shells during core s
 });
 
 test('Auto-next has one registered terminal-state authority across all supported Recreation games and puzzles',()=>{
-  assert.match(core,/AUTO_NEXT_GAMES = \['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'blockgrid', 'coloursort', 'crossnumber'\]/);
+  assert.match(core,/AUTO_NEXT_GAMES = \['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'pathrecall', 'combatsequence', 'blockgrid', 'coloursort', 'crossnumber'\]/);
   assert.match(core,/trackcoin:1500/);
   assert.doesNotMatch(core,/trackcoin:6500/);
   assert.match(core,/function registerAutoNextGame\(gameId,starter,isTerminal,delayMs\)/);
@@ -223,7 +223,7 @@ test('Recreation music preferences are server-side and quick controls stay insid
   assert.match(music,/function mutationAddsElement\(records\)[\s\S]*?node\.nodeType===1/);
   assert.match(music,/new MutationObserver\(function\(records\)\{[\s\S]*?if\(!mutationAddsElement\(records\)\) return;[\s\S]*?injectSettingsButtons\(\);[\s\S]*?syncUi\(\)/);
   assert.doesNotMatch(music,/new MutationObserver\(function\(\)\{\s*injectSettingsButtons\(\);\s*syncUi\(\);\s*\}\)/);
-  assert.match(music,/var roots = \['pairsGameCard','wordGameCard','make24GameCard','trackCoinGamePanel','ruleShiftGameCard','blockGridGameCard','colourSortGameCard','crossnumberGamePanel'\]/);
+  assert.match(music,/var roots = \['pairsGameCard','wordGameCard','make24GameCard','trackCoinGamePanel','ruleShiftGameCard','pathRecallGameCard','combatSequenceGameCard','blockGridGameCard','colourSortGameCard','crossnumberGamePanel'\]/);
   assert.match(music,/#weightCoherenceWorkspace \.weight-coherence-actions/);
   assert.doesNotMatch(music,/#ninjaPanel \.realm-utility/);
   assert.match(core,/if\(id !== 'ninja' && !q\(':scope > \.mobile-game-exit', root\)\)/);
