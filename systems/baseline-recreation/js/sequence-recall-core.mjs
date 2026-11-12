@@ -1,7 +1,7 @@
 import {
   awardXp, clone, createGameExtensionShell, escapeHtml,
   loadStoredProfile, saveStoredProfile, xpNeededForLevel
-} from './game-extension-support.mjs?v=MOBILE_GAME_COHERENCE_20261103_1';
+} from './game-extension-support.mjs?v=SEQUENCE_COHERENT_GAMES_20261112_1';
 
 export const SEQUENCE_TIERS = Object.freeze([
   {id:'starter',name:'Starter',unlockLevel:1,length:3,grid:4,moveCount:4,pace:950,xp:24,bank:9},
