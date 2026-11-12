@@ -648,8 +648,8 @@ test('mobile Recreation uses a game-first single-column authority in windowed an
 });
 
 test('canonical and legacy recreation routes preserve direct game destinations on refresh',()=>{
-  assert.match(htaccess,/baseline-games-hub\/games-hub\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|block-grid\|colour-sort/);
-  assert.match(htaccess,/baseline-recreation\/games\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|block-grid\|colour-sort/);
+  assert.match(htaccess,/baseline-games-hub\/games-hub\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|path-recall\|combat-sequence\|block-grid\|colour-sort/);
+  assert.match(htaccess,/baseline-recreation\/games\/\(pairs\|detect-the-word\|make-the-number\|track-the-coin\|rule-shift\|path-recall\|combat-sequence\|block-grid\|colour-sort/);
   assert.match(core,/function recreationStateFromCleanPath\(\)/);
   assert.match(core,/base \+ '\/games\/'/);
   assert.match(core,/const routeSlug = String\(rest\.split\('\/'\)\[0\] \|\| ''\)\.toLowerCase\(\)/);
