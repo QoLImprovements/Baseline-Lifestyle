@@ -210,6 +210,7 @@ export function mountSequenceGame(config){
   }
   function showTab(next){
     if(!['game','round','skills','tiers','progress'].includes(next))return;
+    if(next!=='game')exitPseudoFullscreen();
     tab=next;
     const panel=document.getElementById(panelId);
     if(!panel)return;
@@ -218,6 +219,27 @@ export function mountSequenceGame(config){
       btn.setAttribute('aria-selected',String(btn.dataset.sequenceTab===tab));
     });
     panel.querySelectorAll('[data-sequence-view]').forEach(node=>{node.hidden=node.dataset.sequenceView!==tab;});
+  }
+  function fullscreenTarget(){return $('[data-sequence-view="game"]');}
+  function exitPseudoFullscreen(){
+    const target=fullscreenTarget();
+    if(target?.classList.contains('recreation-mobile-pseudo-fullscreen')){
+      target.classList.remove('recreation-mobile-pseudo-fullscreen');
+      document.body.classList.remove('recreation-mobile-pseudo-fullscreen-active');
+    }
+  }
+  function toggleFullscreen(){
+    const target=fullscreenTarget();
+    if(!target)return;
+    if(target.classList.contains('recreation-mobile-pseudo-fullscreen')){exitPseudoFullscreen();return;}
+    if(document.fullscreenElement){document.exitFullscreen?.().catch(()=>{});return;}
+    const touch=window.matchMedia?.('(max-width:820px), (hover:none) and (pointer:coarse)').matches;
+    if(touch||!document.fullscreenEnabled||!target.requestFullscreen){
+      target.classList.add('recreation-mobile-pseudo-fullscreen');
+      document.body.classList.add('recreation-mobile-pseudo-fullscreen-active');
+      return;
+    }
+    target.requestFullscreen().catch(()=>{target.classList.add('recreation-mobile-pseudo-fullscreen');document.body.classList.add('recreation-mobile-pseudo-fullscreen-active');});
   }
   function moveButton(move,active){
     const lit=round?.lit===move.id;
@@ -238,8 +260,11 @@ export function mountSequenceGame(config){
     const board=kind==='path'?gridHtml(t,active):
       '<div class="sequence-moves" role="group" aria-label="Combat movement options">'+COMBAT_MOVES.slice(0,t.moveCount).map(move=>moveButton(move,active)).join('')+'</div>';
     const phase=round?(round.phase==='preview'?'Observe':round.phase==='input'?'Your turn':'Round finished'):'Ready';
+    const cue=round?.phase==='preview'&&round.lit!==null
+      ?(kind==='path'?'Row '+(Math.floor(round.lit/t.grid)+1)+', column '+(round.lit%t.grid+1):COMBAT_MOVES.find(move=>move.id===round.lit)?.name||'')
+      :'';
     el.innerHTML='<div class="sequence-round-counter"><strong>'+escapeHtml(phase)+'</strong><span>'+(round?round.index+' / '+round.sequence.length+' recalled':t.length+' steps')+'</span></div>'+
-      '<div class="sequence-status" role="status" aria-live="polite">'+escapeHtml(message)+'</div>'+board+
+      '<div class="sequence-status" role="status" aria-live="polite">'+escapeHtml(message)+'</div><span class="sr-only" role="status" aria-live="polite">'+escapeHtml(cue)+'</span>'+board+
       (round&&round.phase==='input'&&profile.skills.rehearsal?
       '<button class="action ghost" data-sequence-replay type="button" '+(round.replays?'disabled':'')+'>↻ Replay demonstration'+(round.replays?' (used)':'')+'</button>':'')+
       (round&&round.phase==='finished'?'<p class="inline-note">Use New Game for a new sequence. The Round tab shows the completed demonstration.</p>':'');
@@ -282,6 +307,13 @@ export function mountSequenceGame(config){
     if(!p)return;
     const status=$('[data-sequence-profile]');
     if(status)status.textContent=xpLabel()+' · Bank '+profile.bank+' · Streak '+profile.streak;
+    const bar=$('[data-sequence-xp-fill]');
+    if(bar){
+      const fraction=Math.min(1,profile.xp/xpNeededForLevel(profile.level));
+      bar.style.width=(fraction*100).toFixed(1)+'%';
+      bar.parentElement.setAttribute('aria-valuenow',String(profile.xp));
+      bar.parentElement.setAttribute('aria-valuemax',String(xpNeededForLevel(profile.level)));
+    }
     renderGame();renderRound();renderSkills();renderTiers();renderProgress();showTab(tab);
     globalThis.BaselineGamesMusic?.refreshControls?.();
     globalThis.BaselineFullscreenTabs?.sync?.(app);
@@ -297,11 +329,7 @@ export function mountSequenceGame(config){
     if(button.matches('[data-sequence-tab]')){showTab(button.dataset.sequenceTab);return;}
     if(button.matches('[data-sequence-tier]')){changeTier(button.dataset.sequenceTier);return;}
     if(button.matches('[data-sequence-skill]')){buySkill(button.dataset.sequenceSkill);return;}
-    if(button.matches('[data-sequence-fullscreen]')){
-      const target=$('[data-sequence-view="game"]');
-      if(document.fullscreenElement){document.exitFullscreen?.();}
-      else target?.requestFullscreen?.().catch(()=>{});
-    }
+    if(button.matches('[data-sequence-fullscreen]')){toggleFullscreen();}
   }
   function panelHtml(){
     return '<section class="card game-panel sequence-game-panel" id="'+panelId+'" hidden aria-hidden="true" aria-labelledby="'+id+'Title">'+
@@ -310,7 +338,7 @@ export function mountSequenceGame(config){
       '<button class="action secondary game-shell-action" type="button" data-bl-info-button data-bl-info-title="How to Play" data-bl-info-text="'+escapeHtml(kind==='path'?'Watch adjacent tiles light up one at a time, then tap the identical route in order.':'Observe the movement cues in order, then tap the same movements in sequence. Mental recall only; no physical strikes are required.')+'"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>'+
 
       '<button class="action secondary game-shell-action" type="button" data-close-game-extension="'+id+'"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button></div></div>'+
-      '<p class="sequence-profile" data-sequence-profile aria-live="polite"></p>'+
+      '<p class="sequence-profile" data-sequence-profile aria-live="polite"></p><div class="sequence-xp-track" role="progressbar" aria-label="Experience points towards the next rank" aria-valuemin="0" aria-valuemax="80" aria-valuenow="0"><div data-sequence-xp-fill></div></div>'+
       '<div class="game-toggle-row" role="tablist" aria-label="'+escapeHtml(name)+' views">'+
       ['game','round','skills','tiers','progress'].map(view=>'<button class="action ghost game-toggle-btn'+(view==='game'?' is-active':'')+'" type="button" data-sequence-tab="'+view+'" role="tab" aria-selected="'+(view==='game')+'">'+view.charAt(0).toUpperCase()+view.slice(1)+'</button>').join('')+'</div>'+
       '<div class="game-panel-stack"><section class="card game-card game-play-root" id="'+id.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())+'GameCard" data-game-play-root="'+id+'" data-sequence-view="game"><div class="sequence-game-actions game-window-actions game-common-actions">'+
@@ -327,7 +355,7 @@ export function mountSequenceGame(config){
     styleUrl:'/systems/baseline-recreation/css/sequence-games.css?v=SEQUENCE_CORE_20261112_1',
     progressText,panelHtml,
     onOpen:()=>{globalThis.BaselineGamesMusic?.selectGame?.(id);render();},
-    onClose:()=>{try{globalThis.BaselineGamesAutoNext?.clear?.(app);}catch(_){}cancelPreview();if(round&&round.phase==='preview'){round=null;message='Start a new round when ready.';}globalThis.BaselineGamesMusic?.selectGame?.('');}
+    onClose:()=>{try{globalThis.BaselineGamesAutoNext?.clear?.(app);}catch(_){}exitPseudoFullscreen();cancelPreview();if(round&&round.phase==='preview'){round=null;message='Start a new round when ready.';}globalThis.BaselineGamesMusic?.selectGame?.('');}
   });
   function init(){
     profile=loadStoredProfile(app,defaultProfile,normalise);
@@ -339,7 +367,10 @@ export function mountSequenceGame(config){
       if(!document.getElementById(panelId)?.classList.contains('is-active')||event.ctrlKey||event.metaKey||!event.altKey||event.isComposing)return;
       const key=event.key.toLowerCase();
       if(key==='n'){event.preventDefault();start();}
-      if(key==='f'){event.preventDefault();const el=$('[data-sequence-view="game"]');if(document.fullscreenElement)document.exitFullscreen?.();else el?.requestFullscreen?.().catch(()=>{});}
+      if(key==='f'){event.preventDefault();toggleFullscreen();}
+    });
+    document.addEventListener('keydown',event=>{
+      if(event.key==='Escape'&&fullscreenTarget()?.classList.contains('recreation-mobile-pseudo-fullscreen'))exitPseudoFullscreen();
     });
     document.addEventListener('baseline:game-storage',event=>{
       if(event.detail?.sequenceGame)return;
