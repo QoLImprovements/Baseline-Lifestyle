@@ -95,6 +95,18 @@ function showGamesSection() {
 }
 
 export function createGameExtensionShell(config) {
+  // The shared registry owns public identity, grouping, art, benefit and order.
+  // Module configurations only supply runtime behaviour and fallbacks.
+  const canonical = globalThis.BASELINE_GAMES_REGISTRY?.resolve?.(config.id);
+  const overview = canonical?.overview;
+  if (overview) config = {
+    ...config,
+    name:canonical.name || config.name,
+    order:overview.order,
+    art:overview.art,
+    note:overview.note,
+    benefit:overview.brainBenefit
+  };
   let observer = null;
   let fullscreenObserver = null;
 
