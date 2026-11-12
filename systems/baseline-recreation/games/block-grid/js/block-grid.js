@@ -17,7 +17,7 @@ import {
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/game-extension-support.mjs?v=MOBILE_GAME_COHERENCE_20261103_1';
+} from '../../../js/game-extension-support.mjs?v=SEQUENCE_COHERENT_GAMES_20261112_1';
 
 const BUILD = 'BLOCK_GRID_MOBILE_COHERENCE_20261026_1';
 const APP = 'blockgrid';
