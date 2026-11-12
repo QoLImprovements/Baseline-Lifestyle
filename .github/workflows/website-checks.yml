@@ -103,6 +103,7 @@ jobs:
             tests/skincare-recipe-runtime.spec.js \
             tests/stability-release-smoke.spec.js \
             tests/navigation-state-browser.spec.js \
+            --workers=1 \
             --reporter=line
 
       - name: Run Phase 3 migration and cutover PHP verification
@@ -111,7 +112,7 @@ jobs:
       - name: Run finite stability, release and routine interaction smoke tests
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-results.json
-        run: npx playwright test tests/stability-release-smoke.spec.js tests/routine-system-browser.spec.js tests/fitness-saved-plan-reload-browser.spec.js tests/skincare-testing-recipes-browser.spec.js tests/universal-recipe-template.spec.js --reporter=line,json
+        run: npx playwright test tests/stability-release-smoke.spec.js tests/routine-system-browser.spec.js tests/fitness-saved-plan-reload-browser.spec.js tests/skincare-testing-recipes-browser.spec.js tests/universal-recipe-template.spec.js --workers=1 --reporter=line,json
 
       - name: Preserve browser failure report
         if: failure()
