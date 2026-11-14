@@ -1,29 +1,41 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {makePath,makeCombat,SEQUENCE_TIERS,COMBAT_MOVES,cleanBonusPct} from '../systems/baseline-recreation/js/sequence-recall-core.mjs';
+import {makePath,makeCombat,SEQUENCE_TIERS,COMBAT_MOVES,cleanBonusPct,pathRecallChallenge} from '../systems/baseline-recreation/js/sequence-recall-core.mjs';
 
 const at=(file)=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const root='systems/baseline-recreation/';
 
-test('Path Recall generates only contiguous, non-repeating paths at every tier',()=>{
+test('Path Recall makes unpredictable non-repeating jumps rather than adjacent-only paths',()=>{
   for(const tier of SEQUENCE_TIERS){
-    for(let repetition=0;repetition<200;repetition++){
-      const path=makePath(tier.grid,tier.length);
-      assert.equal(path.length,tier.length);
-      assert.equal(new Set(path).size,path.length);
-      path.forEach((cell,i)=>{
-        assert.ok(Number.isInteger(cell)&&cell>=0&&cell<tier.grid*tier.grid);
-        if(i===0)return;
-        const prev=path[i-1];
-        assert.equal(
-          Math.abs(Math.floor(cell/tier.grid)-Math.floor(prev/tier.grid))+
-          Math.abs((cell%tier.grid)-(prev%tier.grid)),1
-        );
-      });
+    for(const streak of [0,2,6,10]){
+      const challenge=pathRecallChallenge(tier,streak);
+      for(let repetition=0;repetition<100;repetition++){
+        const path=makePath(tier.grid,challenge.length);
+        assert.equal(path.length,challenge.length);
+        assert.equal(new Set(path).size,path.length);
+        path.forEach(cell=>assert.ok(Number.isInteger(cell)&&cell>=0&&cell<tier.grid*tier.grid));
+        const jumps=path.slice(1).filter((cell,index)=>{
+          const previous=path[index];
+          const dist=Math.abs(Math.floor(cell/tier.grid)-Math.floor(previous/tier.grid))+
+                     Math.abs(cell%tier.grid-previous%tier.grid);
+          return dist>1;
+        }).length;
+        assert.ok(jumps>=Math.floor((path.length-1)/2),'Most transitions should be separated by at least two cells');
+      }
     }
   }
   assert.throws(()=>makePath(2,5),RangeError);
+});
+
+test('Path Recall starts with five locations, adds cues after clears and accelerates through a tier',()=>{
+  const starter=SEQUENCE_TIERS[0];
+  assert.deepEqual(pathRecallChallenge(starter,0),{length:5,paceMs:950});
+  assert.deepEqual(pathRecallChallenge(starter,1),{length:5,paceMs:885});
+  assert.deepEqual(pathRecallChallenge(starter,2),{length:6,paceMs:820});
+  assert.deepEqual(pathRecallChallenge(starter,8),{length:9,paceMs:430});
+  assert.deepEqual(pathRecallChallenge(starter,20),{length:9,paceMs:390});
+  assert.equal(SEQUENCE_TIERS[0].length,3,'Combat Sequence starter tier remains three movements');
 });
 
 test('Combat Sequence uses selectable movement vocabulary and avoids triple repetition',()=>{
