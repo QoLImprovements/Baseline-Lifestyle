@@ -291,10 +291,18 @@ export function mountSequenceGame(config){
       :'';
     el.innerHTML='<div class="sequence-mission"><span>'+escapeHtml(missionName())+'</span><strong>'+escapeHtml(t.name)+' · '+totalCues+' cues'+(kind==='path'?' · '+(paceMs/1000).toFixed(2)+'s / cue':'')+'</strong></div>'+
       '<div class="sequence-round-counter"><strong>'+escapeHtml(phase)+'</strong><span>'+(round?round.index+' / '+round.sequence.length+' recalled':totalCues+' steps')+'</span></div>'+
-      '<div class="sequence-status" role="status" aria-live="polite">'+escapeHtml(message)+'</div>'+(kind==='path'?'<div class="sequence-tempo" aria-label="Path challenge progression">Next clear: faster cues · Every 2 clears: longer route · Current streak '+profile.streak+'</div>':'')+'<div class="sequence-challenge"><span>Clean Streak <strong>'+profile.cleanStreak+'</strong></span><span>Clean Bonus <strong>+'+cleanBonusPct(profile.cleanStreak)+'%</strong></span><button type="button" class="action secondary" data-sequence-reverse aria-pressed="'+String(profile.reverseEnabled)+'" '+(profile.level<4 || (round && (round.phase==='preview'||round.phase==='input'))?'disabled':'')+'>'+(kind==='path'?'Reverse Trail':'Counter Sequence')+' · '+(profile.level<4?'Unlock Rank 4':profile.reverseEnabled?'ON':'OFF')+'</button></div><span class="sr-only" role="status" aria-live="polite">'+escapeHtml(cue)+'</span>'+board+
+      '<div class="sequence-status" role="status" aria-live="polite">'+escapeHtml(message)+'</div>'+(kind==='path'?'<div class="sequence-tempo" aria-label="Path challenge progression">Next clear: faster cues · Every 2 clears: longer route · Current streak '+profile.streak+'</div>':'')+'<div class="sequence-challenge"><span>Clean Streak <strong>'+profile.cleanStreak+'</strong></span><span>Clean Bonus <strong>+'+cleanBonusPct(profile.cleanStreak)+'%</strong></span></div><span class="sr-only" role="status" aria-live="polite">'+escapeHtml(cue)+'</span>'+board+
       (round&&round.phase==='input'&&profile.skills.rehearsal?
       '<button class="action ghost" data-sequence-replay type="button" '+(round.replays?'disabled':'')+'>↻ Replay demonstration'+(round.replays?' (used)':'')+'</button>':'')+
       (round&&round.phase==='finished'?'<p class="inline-note">Use New Game for a new sequence. The Round tab shows the completed demonstration.</p>':'');
+  }
+  function renderSpecificActions(){
+    const btn=$('[data-sequence-reverse]');
+    if(!btn)return;
+    const busy=round && (round.phase==='preview'||round.phase==='input');
+    btn.disabled=profile.level<4 || !!busy;
+    btn.setAttribute('aria-pressed',String(profile.reverseEnabled));
+    btn.textContent=(kind==='path'?'Reverse Trail':'Counter Sequence')+' · '+(profile.level<4?'Unlock Rank 4':profile.reverseEnabled?'ON':'OFF');
   }
   function renderRound(){
     const el=$('[data-sequence-round]');if(!el)return;
@@ -341,7 +349,7 @@ export function mountSequenceGame(config){
       bar.parentElement.setAttribute('aria-valuenow',String(profile.xp));
       bar.parentElement.setAttribute('aria-valuemax',String(xpNeededForLevel(profile.level)));
     }
-    renderGame();renderRound();renderSkills();renderTiers();renderProgress();showTab(tab);
+    renderGame();renderSpecificActions();renderRound();renderSkills();renderTiers();renderProgress();showTab(tab);
     globalThis.BaselineGamesMusic?.refreshControls?.();
     globalThis.BaselineFullscreenTabs?.sync?.(app);
     shell.refreshOverview();
@@ -369,10 +377,13 @@ export function mountSequenceGame(config){
       '<p class="sequence-profile" data-sequence-profile aria-live="polite"></p><div class="sequence-xp-track" role="progressbar" aria-label="Experience points towards the next rank" aria-valuemin="0" aria-valuemax="80" aria-valuenow="0"><div data-sequence-xp-fill></div></div>'+
       '<div class="game-toggle-row" role="tablist" aria-label="'+escapeHtml(name)+' views">'+
       ['game','round','skills','tiers','progress'].map(view=>'<button class="action ghost game-toggle-btn'+(view==='game'?' is-active':'')+'" type="button" data-sequence-tab="'+view+'" role="tab" aria-selected="'+(view==='game')+'">'+view.charAt(0).toUpperCase()+view.slice(1)+'</button>').join('')+'</div>'+
-      '<div class="game-panel-stack"><section class="card game-card game-play-root" id="'+id.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())+'GameCard" data-game-play-root="'+id+'" data-sequence-view="game"><div class="sequence-game-actions game-window-actions game-common-actions">'+
-      '<button class="action ghost start-new-game-toggle game-shell-action" data-sequence-start type="button" title="New Game · Alt+N" aria-label="New Game"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button>'+
-      '<button class="action ghost auto-next-toggle game-shell-action" data-auto-next-toggle="'+app+'" aria-pressed="false" type="button" title="Auto New Game · Alt+A">A</button>'+
-      '<button class="action ghost game-fullscreen-toggle game-shell-action" data-sequence-fullscreen type="button" title="Fullscreen · Alt+F" aria-label="Fullscreen">⛶</button></div><div data-sequence-board></div></section>'+
+      '<div class="game-panel-stack"><section class="card game-card game-play-root" id="'+id.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())+'GameCard" data-game-play-root="'+id+'" data-sequence-view="game">'+
+      '<div data-sequence-board></div>'+
+      '<div class="game-specific-actions sequence-specific-actions" aria-label="'+escapeHtml(name)+' game-specific controls"><button type="button" class="action secondary" data-sequence-reverse disabled aria-pressed="false">'+(kind==='path'?'Reverse Trail':'Counter Sequence')+' · Unlock Rank 4</button></div>'+
+      '<div class="sequence-game-actions game-window-actions game-common-actions recreation-unified-controls">'+
+      '<button class="action ghost start-new-game-toggle game-control-icon game-shell-action game-shell-action--icon" data-sequence-start type="button" title="New Game · Alt+N" aria-label="New Game"><span aria-hidden="true">＋</span><span class="sr-only">New Game</span></button>'+
+      '<button class="action ghost auto-next-toggle game-control-icon" data-auto-next-toggle="'+app+'" aria-pressed="false" type="button" aria-label="Auto New Game off" title="Auto New Game · Alt+A"><span aria-hidden="true">A</span><span class="sr-only">Auto New Game</span></button>'+
+      '<button class="action ghost game-fullscreen-toggle game-shell-action game-shell-action--icon" data-sequence-fullscreen type="button" title="Full screen · Alt+F" aria-label="Full screen"><svg class="game-shell-action__svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg><span class="sr-only">Full screen</span></button></div></section>'+
       '<section class="card game-card recreation-round-panel" data-sequence-view="round" hidden><div data-sequence-round></div></section>'+
       '<section class="card game-card" data-sequence-view="skills" hidden><div data-sequence-skills></div></section>'+
       '<section class="card game-card" data-sequence-view="tiers" hidden><div data-sequence-tiers></div></section>'+
@@ -380,7 +391,7 @@ export function mountSequenceGame(config){
   }
   const shell=createGameExtensionShell({
     id,panelId,name,order:config.order,art:config.art,note,benefit,
-    styleUrl:'/systems/baseline-recreation/css/sequence-games.css?v=RECREATION_SEQUENCE_PALETTE_AND_PACE_20261114_1',
+    styleUrl:'/systems/baseline-recreation/css/sequence-games.css?v=RECREATION_COHERENT_DOCK_20261114_1',
     progressText,panelHtml,
     onOpen:()=>{globalThis.BaselineGamesMusic?.selectGame?.(id);render();},
     onClose:()=>{try{globalThis.BaselineGamesAutoNext?.clear?.(app);}catch(_){}exitPseudoFullscreen();cancelPreview();if(round&&round.phase==='preview'){round=null;message='Start a new round when ready.';}globalThis.BaselineGamesMusic?.selectGame?.('');}

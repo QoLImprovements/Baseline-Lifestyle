@@ -185,3 +185,68 @@ html body[data-app="recreation"] .sequence-game-panel [data-sequence-view="game"
 @media(prefers-reduced-motion:reduce){
   html body[data-app="recreation"] .sequence-game-panel :is(.sequence-move,.sequence-cell){transition:none!important;transform:none!important}
 }
+
+
+/* Shared Recreation control layout: identical to the canonical Pairs/Word/Number
+   bottom dock. New Game above Auto, Settings above Music/Fullscreen. */
+html body[data-app="recreation"] .sequence-game-panel :is(#pathRecallGameCard,#combatSequenceGameCard){
+  display:flex!important;flex-direction:column!important;min-width:0!important;
+  gap:10px!important;box-sizing:border-box!important;
+}
+html body[data-app="recreation"] .sequence-game-panel :is(#pathRecallGameCard,#combatSequenceGameCard) > [data-sequence-board]{
+  flex:1 1 auto!important;min-height:0!important;min-width:0!important;
+}
+html body[data-app="recreation"] .sequence-game-panel .sequence-specific-actions{
+  flex:0 0 auto!important;display:flex!important;justify-content:center!important;
+  align-items:center!important;flex-wrap:wrap!important;gap:8px!important;
+  min-height:38px!important;width:100%!important;max-width:100%!important;
+  margin:0!important;padding:0!important;
+}
+html body[data-app="recreation"] .sequence-game-panel .sequence-specific-actions [data-sequence-reverse]{
+  min-height:38px!important;max-width:100%!important;padding:8px 14px!important;
+  border-radius:12px!important;font-size:12px!important;line-height:1.2!important;
+  background:var(--recreation-mirror)!important;border:1px solid var(--games-border)!important;
+  color:var(--recreation-ink)!important;
+}
+html body[data-app="recreation"] .sequence-game-panel .sequence-specific-actions [data-sequence-reverse][aria-pressed="true"]{
+  border-color:var(--recreation-copper-light)!important;
+  box-shadow:0 0 0 1px var(--recreation-copper-light)!important;
+}
+html body[data-app="recreation"] .sequence-game-panel :is(#pathRecallGameCard,#combatSequenceGameCard) > .sequence-game-actions.game-window-actions.game-common-actions.recreation-unified-controls{
+  flex:0 0 auto!important;display:grid!important;
+  grid-template-columns:var(--bl-icon-size,44px) minmax(0,1fr) var(--bl-icon-size,44px) var(--bl-icon-size,44px)!important;
+  grid-template-rows:var(--bl-icon-size,44px) var(--bl-icon-size,44px)!important;
+  gap:7px!important;align-content:center!important;align-items:center!important;
+  justify-content:stretch!important;position:relative!important;
+  width:100%!important;max-width:100%!important;
+  min-width:0!important;min-height:calc(var(--bl-icon-size,44px) * 2 + 7px)!important;
+  margin:0!important;padding:0!important;overflow:visible!important;
+}
+html body[data-app="recreation"] .sequence-game-panel .sequence-game-actions.game-window-actions.game-common-actions.recreation-unified-controls > .action{
+  box-sizing:border-box!important;display:grid!important;place-items:center!important;
+  width:var(--bl-icon-size,44px)!important;min-width:var(--bl-icon-size,44px)!important;max-width:var(--bl-icon-size,44px)!important;
+  height:var(--bl-icon-size,44px)!important;min-height:var(--bl-icon-size,44px)!important;max-height:var(--bl-icon-size,44px)!important;
+  margin:0!important;padding:0!important;position:relative!important;
+}
+html body[data-app="recreation"] .sequence-game-panel .sequence-game-actions > .start-new-game-toggle{
+  grid-column:1!important;grid-row:1!important;justify-self:start!important;
+}
+html body[data-app="recreation"] .sequence-game-panel .sequence-game-actions > .auto-next-toggle{
+  grid-column:1!important;grid-row:2!important;justify-self:start!important;
+}
+html body[data-app="recreation"] .sequence-game-panel .sequence-game-actions > .games-settings-trigger{
+  grid-column:4!important;grid-row:1!important;justify-self:end!important;
+}
+html body[data-app="recreation"] .sequence-game-panel .sequence-game-actions > .games-music-quick-toggle{
+  grid-column:3!important;grid-row:2!important;justify-self:end!important;
+}
+html body[data-app="recreation"] .sequence-game-panel .sequence-game-actions > .game-fullscreen-toggle{
+  grid-column:4!important;grid-row:2!important;justify-self:end!important;
+}
+html body[data-app="recreation"] .sequence-game-panel :is(#pathRecallGameCard,#combatSequenceGameCard):is(:fullscreen,.recreation-mobile-pseudo-fullscreen){
+  min-height:100dvh!important;height:100dvh!important;overflow:auto!important;
+  --bl-icon-size:44px;
+}
+@media(max-width:820px){
+  html body[data-app="recreation"] .sequence-game-panel :is(#pathRecallGameCard,#combatSequenceGameCard){--bl-icon-size:42px}
+}

@@ -132,12 +132,12 @@ test('Block Grid and Colour Sort asset URLs are versioned for the new palette',a
   const [hub,blockJs,colourJs] = await Promise.all([
     read(files.hub),read(files.blockJs),read(files.colourJs)
   ]);
-  assert.match(blockJs,/block-grid-overview\.svg\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(blockJs,/block-grid-overview\.svg\?v=RECREATION_ICON_CLEANUP_20261114_1/);
   assert.match(blockJs,/block-grid\.css\?v=RECREATION_COHERENCE_20261114_1/);
-  assert.match(colourJs,/colour-sort-overview\.svg\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(colourJs,/colour-sort-overview\.svg\?v=RECREATION_ICON_CLEANUP_20261114_1/);
   assert.match(colourJs,/colour-sort\.css\?v=RECREATION_UNIFIED_20261104_1/);
-  assert.match(hub,/block-grid\.js\?v=RECREATION_COHERENCE_20261114_1/);
-  assert.match(hub,/colour-sort\.js\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(hub,/block-grid\.js\?v=RECREATION_ICON_CLEANUP_20261114_1/);
+  assert.match(hub,/colour-sort\.js\?v=RECREATION_ICON_CLEANUP_20261114_1/);
 });
 
 test('normal text passes WCAG AA at every mirror-gradient stop',()=>{

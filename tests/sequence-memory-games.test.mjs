@@ -95,3 +95,36 @@ test('sequence games use the shared clean-streak bonus curve and unlock reverse 
   assert.match(source,/profile\.cleanStreak\+1/);
   assert.match(source,/challengeMultiplier=round\.reverse\?1\.2:1/);
 });
+
+test('Path Recall and Combat Sequence preserve the exact shared bottom control positions and icon',()=>{
+  const core=at(root+'js/sequence-recall-core.mjs');
+  const css=at(root+'css/sequence-games.css');
+  assert.ok(core.indexOf("'<div data-sequence-board></div>'")<core.indexOf("'<div class=\"sequence-game-actions game-window-actions"));
+  assert.match(core,/game-specific-actions sequence-specific-actions/);
+  assert.match(core,/game-window-actions game-common-actions recreation-unified-controls/);
+  assert.match(core,/M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5/);
+  for(const [selector,row,column] of [
+    ['start-new-game-toggle','1','1'],['auto-next-toggle','2','1'],
+    ['games-settings-trigger','1','4'],['games-music-quick-toggle','2','3'],
+    ['game-fullscreen-toggle','2','4']
+  ]){
+    const block=css.slice(css.lastIndexOf('.sequence-game-actions > .'+selector));
+    assert.match(block,new RegExp('grid-column:'+column+'!important;grid-row:'+row+'!important;'),selector);
+  }
+});
+test('Core icon art has no decorative footer strokes and Path Recall uses the common copper palette',()=>{
+  const paths=[
+    'games/overview-art/pairs.svg','games/overview-art/detect-the-word.svg',
+    'games/overview-art/make-the-number.svg','games/overview-art/track-the-coin.svg',
+    'games/overview-art/rule-shift.svg','games/overview-art/path-recall.svg',
+    'games/overview-art/combat-sequence.svg','games/block-grid/art/block-grid-overview.svg',
+    'games/colour-sort/art/colour-sort-overview.svg','puzzles/shared/art/crossnumber.svg'
+  ];
+  for(const name of paths){
+    const svg=at(root+name);
+    assert.doesNotMatch(svg,/M79 214H161|M27 54Q120 1 214 53|cx="67" cy="214"/,name);
+  }
+  const pathArt=at(root+'games/overview-art/path-recall.svg');
+  assert.doesNotMatch(pathArt,/#355259|#a1dbb3|#a4dfc0|#2d293b/i);
+  assert.match(pathArt,/#d8895f/i);
+});
