@@ -97,3 +97,41 @@ test('Path Recall mobile fullscreen is usable and can exit',async({browser})=>{
   await expect(game).not.toHaveClass(/recreation-mobile-pseudo-fullscreen/);
   await context.close();
 });
+
+
+test('Alt+F can fullscreen only the visible game window, never the Recreation page',async({page})=>{
+  await openHub(page);
+  await page.evaluate(()=>{
+    const targets=[];
+    window.__recreationAltFFullscreenTargets=targets;
+    Element.prototype.requestFullscreen=function(){
+      targets.push(this.id||this.tagName);
+      return Promise.resolve();
+    };
+  });
+  const altF=selector=>page.locator(selector).first().evaluate(node=>
+    node.dispatchEvent(new KeyboardEvent('keydown',{key:'f',altKey:true,bubbles:true,cancelable:true}))
+  );
+
+  // No game is active: neither the page nor an invisible game may fullscreen.
+  await altF('#gamesOverviewCard');
+  expect(await page.evaluate(()=>window.__recreationAltFFullscreenTargets)).toEqual([]);
+
+  await page.locator('[data-select-game="pairs"]:visible').first().click();
+  await expect(page.locator('#pairsPanel')).toHaveClass(/is-active/);
+  await altF('#pairsGameCard');
+  expect(await page.evaluate(()=>window.__recreationAltFFullscreenTargets)).toEqual(['pairsGameCard']);
+
+  // An extension taking over must not trigger the previous core game's shortcut.
+  await page.locator('#pairsPanel [data-select-game=""]').first().click();
+  await page.locator('[data-open-game-extension="path-recall"]:visible').first().click();
+  await expect(page.locator('#pathRecallPanel')).toHaveClass(/is-active/);
+  await altF('#pathRecallGameCard');
+  expect(await page.evaluate(()=>window.__recreationAltFFullscreenTargets)).toEqual(['pairsGameCard','pathRecallGameCard']);
+
+  await page.locator('#pathRecallPanel [data-close-game-extension]').first().click();
+  await page.locator('[data-open-game-extension="block-grid"]:visible').first().click();
+  await expect(page.locator('#blockGridPanel')).toHaveClass(/is-active/);
+  await altF('#blockGridGameCard');
+  expect(await page.evaluate(()=>window.__recreationAltFFullscreenTargets)).toEqual(['pairsGameCard','pathRecallGameCard','blockGridGameCard']);
+});
