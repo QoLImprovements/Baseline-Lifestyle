@@ -30,6 +30,10 @@ function accountCopy(state){
     html:'<strong>Account saving failed.</strong><span class="inline-note">Your latest changes remain in this open tab but are not yet stored on the server.</span> <button type="button" class="action secondary" data-games-retry-save>Retry saving</button>',
     description:'Saving stopped after a server or network error. Retry without refreshing the page.'
   };
+  if(!state.authenticated && state.unsavedCount>0)return{
+    html:'<strong>Account connection interrupted.</strong><span class="inline-note">Unsaved progress is still in this open tab. Sign back into the same account without closing this page.</span>',
+    description:'Pending changes are not on the server yet. Signing back in will check the saved revision before a retry.'
+  };
   if(state.status==='signed-out')return{
     html:'<strong>Temporary play is active.</strong><span class="inline-note">Games and puzzles remain playable. Sign in to save progress to your Baseline Lifestyle account.</span>',
     description:'You can play without signing in. Progress from this temporary session is not saved or written to account data.'
@@ -51,6 +55,7 @@ function saveStatusLabel(state){
   if(state.canSave)return 'Account saving is available. No unsaved changes are pending.';
   if(state.status==='conflict')return 'Save conflict. Unsaved progress is held in this tab; do not refresh.';
   if(state.authenticated && state.unsavedCount>0)return 'Save failed. Unsaved progress remains in this tab. Click this icon to retry saving.';
+  if(state.status==='signed-out' && state.unsavedCount>0)return 'Account session interrupted. Unsaved changes are still in this open tab; sign back into the same account.';
   if(state.status==='signed-out')return 'Sign in to save progress to your Baseline Lifestyle account.';
   return 'Server saving is currently unavailable. Progress from this page session is temporary.';
 }
