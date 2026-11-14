@@ -391,7 +391,7 @@ export function mountSequenceGame(config){
   }
   const shell=createGameExtensionShell({
     id,panelId,name,order:config.order,art:config.art,note,benefit,
-    styleUrl:'/systems/baseline-recreation/css/sequence-games.css?v=RECREATION_SEQUENCE_PALETTE_AND_PACE_20261114_1',
+    styleUrl:'/systems/baseline-recreation/css/sequence-games.css?v=RECREATION_COHERENT_DOCK_20261114_1',
     progressText,panelHtml,
     onOpen:()=>{globalThis.BaselineGamesMusic?.selectGame?.(id);render();},
     onClose:()=>{try{globalThis.BaselineGamesAutoNext?.clear?.(app);}catch(_){}exitPseudoFullscreen();cancelPreview();if(round&&round.phase==='preview'){round=null;message='Start a new round when ready.';}globalThis.BaselineGamesMusic?.selectGame?.('');}
