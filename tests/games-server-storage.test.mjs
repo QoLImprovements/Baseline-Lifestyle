@@ -275,3 +275,15 @@ test('save status describes unconfirmed writes and exposes an in-page retry, not
   assert.match(storageUi,/No unsaved changes are pending/);
   assert.match(guard,/getUnsavedCount:unsavedCount/);
 });
+
+
+test('unchanged authenticated account events do not cancel queued game saves',async()=>{
+  const {context,listeners}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{pairs:{level:4}},revisions:{pairs:9}}});
+  assert.equal(await context.BaselineGameStorage.saveProfile('pairs',{level:5}),true);
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
+  listeners.document['baseline:auth'][0]({detail:{authed:true}});
+  assert.equal(context.BaselineGameStorage.canSave(),true);
+  assert.equal(context.BaselineGameStorage.getStatus(),'ready');
+  assert.equal(context.BaselineGameStorage.getProfile('pairs').level,5);
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
+});
