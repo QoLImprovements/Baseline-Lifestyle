@@ -171,3 +171,45 @@ test('Both sequence games use the canonical bottom dock: plus over A, Settings o
     await panel.locator('[data-close-game-extension]').first().click();
   }
 });
+
+
+test('Account game saving recovers after an API failure and survives a complete page reload',async({page})=>{
+  const profiles={};
+  const revisions={};
+  let failedPathWrite=false;
+  let successfulPathWrites=0;
+  await page.route('**/systems/baseline-recreation/api/games_data.php**',async route=>{
+    const request=route.request();
+    const send=(status,data)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)});
+    if(request.method()==='GET')return send(200,{
+      ok:true,authed:true,accountId:42,profiles,revisions
+    });
+    const data=request.postDataJSON();
+    if(data?.action!=='save')return send(400,{ok:false,error:'invalid_action'});
+    if(data.app==='pathrecall'&&!failedPathWrite){
+      failedPathWrite=true;
+      return send(503,{ok:false,error:'temporary_unavailable'});
+    }
+    const current=revisions[data.app]||0;
+    if(data.expectedRevision!==current)return send(409,{ok:false,error:'revision_conflict'});
+    revisions[data.app]=current+1;
+    profiles[data.app]=data.profile;
+    if(data.app==='pathrecall')successfulPathWrites++;
+    return send(200,{ok:true,app:data.app,profile:data.profile,revision:revisions[data.app]});
+  });
+  await page.goto('/baseline-recreation/games',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY&&globalThis.BaselinePathRecall);
+  await page.locator('[data-open-game-extension="path-recall"]:visible').first().click();
+  await page.locator('#pathRecallPanel [data-sequence-start]').click();
+  await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='unavailable',{timeout:12000});
+  expect(await page.evaluate(()=>globalThis.BaselineGameStorage.getUnsavedCount())).toBeGreaterThan(0);
+  const unsaved=await page.evaluate(()=>globalThis.BaselineGameStorage.getProfile('pathrecall'));
+  expect(unsaved.roundsPlayed).toBe(1);
+  await page.locator('#pathRecallPanel [data-save-status-icon]').first().click();
+  await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='ready'&&globalThis.BaselineGameStorage.getUnsavedCount()===0,{timeout:12000});
+  expect(successfulPathWrites).toBeGreaterThanOrEqual(1);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY&&globalThis.BaselineGameStorage?.canSave());
+  const restored=await page.evaluate(()=>globalThis.BaselineGameStorage.getProfile('pathrecall'));
+  expect(restored.roundsPlayed).toBe(1);
+});
