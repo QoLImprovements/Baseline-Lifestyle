@@ -32,7 +32,7 @@ async function playObservedSequence(page,id){
   await root.locator('[data-sequence-start]').click();
   await expect(root.locator('.sequence-status')).toContainText('Your turn',{timeout:17000});
   const sequence=await page.evaluate(()=>window.__recallObserved.recorded.slice());
-  expect(sequence).toHaveLength(3);
+  expect(sequence).toHaveLength(id==='pathRecall'?5:3);
   for(const choice of sequence)await root.locator('[data-sequence-choice="'+choice+'"]').click();
   await expect(root.locator('.sequence-status')).toContainText('Sequence complete');
   const profile=await page.evaluate(slug=>
@@ -41,7 +41,7 @@ async function playObservedSequence(page,id){
   );
   expect(profile.roundsWon).toBe(1);
   expect(profile.roundsPlayed).toBe(1);
-  expect(profile.totalCorrect).toBe(3);
+  expect(profile.totalCorrect).toBe(sequence.length);
   expect(profile.bank).toBeGreaterThan(0);
   expect(profile.xp).toBeGreaterThan(0);
   await root.locator('[data-sequence-tab="round"]').click();
