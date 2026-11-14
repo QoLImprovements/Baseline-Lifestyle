@@ -34,20 +34,26 @@ export const SHAPES = Object.freeze([
 
 const SHAPE_MAP = new Map(SHAPES.map(item => [item.id, item]));
 
+/* Legacy Relaxed/Classic/Challenge saves are migrated by the Block Grid controller. */
 export const MODES = Object.freeze({
-  relaxed:Object.freeze({ id:'relaxed', name:'Relaxed', description:'Smaller pieces and a gentler shape pool.' }),
-  classic:Object.freeze({ id:'classic', name:'Classic', description:'Balanced shapes with the full everyday piece set.' }),
-  challenge:Object.freeze({ id:'challenge', name:'Challenge', description:'Adds long, dense and awkward shapes that demand more planning.' })
+  starter:Object.freeze({ id:'starter', name:'Starter', unlockLevel:1, description:'Small shapes and space to learn placements.' }),
+  field:Object.freeze({ id:'field', name:'Field', unlockLevel:4, description:'Introduce four-block shapes and more planning.' }),
+  forge:Object.freeze({ id:'forge', name:'Forge', unlockLevel:9, description:'Longer five-block pieces and tighter decisions.' }),
+  citadel:Object.freeze({ id:'citadel', name:'Citadel', unlockLevel:16, description:'Full five-block selection and demanding combinations.' }),
+  master:Object.freeze({ id:'master', name:'Master', unlockLevel:26, description:'All shapes, including the dense nine-block square.' })
 });
 
 export function shapeById(id) {
   return SHAPE_MAP.get(String(id || '')) || null;
 }
 
-export function shapePool(mode = 'classic') {
-  const key = MODES[mode] ? mode : 'classic';
-  if (key === 'relaxed') return SHAPES.filter(item => item.tier === 'relaxed');
-  if (key === 'classic') return SHAPES.filter(item => item.tier !== 'challenge');
+export function shapePool(mode = 'starter') {
+  const legacy={relaxed:'starter',classic:'field',challenge:'master'};
+  const key=MODES[mode]?mode:(legacy[mode]||'starter');
+  if(key==='starter') return SHAPES.filter(item => item.tier==='relaxed');
+  if(key==='field') return SHAPES.filter(item => item.tier!=='challenge');
+  if(key==='forge') return SHAPES.filter(item => item.tier!=='challenge'||item.cells.length===5&&item.id.startsWith('line'));
+  if(key==='citadel') return SHAPES.filter(item => item.cells.length<=5);
   return [...SHAPES];
 }
 
@@ -173,7 +179,7 @@ function randomPick(items, random) {
   return items[index];
 }
 
-export function createTray(board, mode = 'classic', random = Math.random) {
+export function createTray(board, mode = 'starter', random = Math.random) {
   const pool = shapePool(mode);
   const tray = Array.from({ length:3 }, () => randomPick(pool, random)?.id).filter(Boolean);
   if (hasAnyPlacement(board, tray)) return tray;
