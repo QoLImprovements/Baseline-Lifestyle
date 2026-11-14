@@ -1,31 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
-  <title id="title">Block Grid overview</title>
-  <desc id="desc">An original Baseline-style eight by eight block puzzle board with geometric pieces.</desc>
-  <defs>
-    <linearGradient id="bg" x1="0" x2="1"><stop stop-color="#2A0B16"/><stop offset=".52" stop-color="#9E4D38"/><stop offset="1" stop-color="#2A0B16"/></linearGradient>
-    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#B86A50"/><stop offset="1" stop-color="#9E4D38"/></linearGradient>
-    <pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="30" height="30" rx="5" fill="#FFF4EF" fill-opacity=".055" stroke="#B86A50" stroke-opacity=".2"/></pattern>
-    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".3"/></filter>
-  </defs>
-  <rect width="640" height="360" rx="28" fill="url(#bg)"/>
-  <circle cx="565" cy="45" r="120" fill="#B86A50" fill-opacity=".09"/>
-  <g transform="translate(66 38)" filter="url(#shadow)">
-    <rect width="284" height="284" rx="24" fill="#2A0B16" fill-opacity=".82" stroke="#B86A50" stroke-opacity=".3"/>
-    <rect x="10" y="10" width="272" height="272" fill="url(#grid)"/>
-    <g fill="url(#tile)" stroke="#FFF4EF" stroke-opacity=".82">
-      <rect x="11" y="215" width="30" height="30" rx="5"/><rect x="45" y="215" width="30" height="30" rx="5"/><rect x="79" y="215" width="30" height="30" rx="5"/><rect x="113" y="215" width="30" height="30" rx="5"/>
-      <rect x="147" y="215" width="30" height="30" rx="5"/><rect x="181" y="215" width="30" height="30" rx="5"/><rect x="215" y="215" width="30" height="30" rx="5"/>
-      <rect x="11" y="249" width="30" height="30" rx="5"/><rect x="45" y="249" width="30" height="30" rx="5"/><rect x="79" y="249" width="30" height="30" rx="5"/>
-      <rect x="147" y="147" width="30" height="30" rx="5"/><rect x="181" y="147" width="30" height="30" rx="5"/><rect x="181" y="181" width="30" height="30" rx="5"/>
-      <rect x="249" y="113" width="30" height="30" rx="5"/><rect x="249" y="147" width="30" height="30" rx="5"/><rect x="249" y="181" width="30" height="30" rx="5"/>
-    </g>
-  </g>
-  <g transform="translate(410 78)" filter="url(#shadow)">
-    <rect x="0" y="0" width="38" height="38" rx="7" fill="url(#tile)"/><rect x="42" y="0" width="38" height="38" rx="7" fill="url(#tile)"/><rect x="84" y="0" width="38" height="38" rx="7" fill="url(#tile)"/>
-    <rect x="42" y="42" width="38" height="38" rx="7" fill="url(#tile)"/>
-  </g>
-  <g transform="translate(438 196)" filter="url(#shadow)">
-    <rect x="0" y="0" width="38" height="38" rx="7" fill="url(#tile)"/><rect x="0" y="42" width="38" height="38" rx="7" fill="url(#tile)"/><rect x="42" y="42" width="38" height="38" rx="7" fill="url(#tile)"/>
-  </g>
-  <g fill="#FFF4EF"><text x="397" y="48" font-family="system-ui,sans-serif" font-size="28" font-weight="800">BLOCK GRID</text><text x="397" y="326" font-family="system-ui,sans-serif" font-size="17" opacity=".75">PLACE · CLEAR · PLAN</text></g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Block Grid Overview">
+<title>Block Grid Overview</title>
+<defs>
+<radialGradient id="bg" cx=".42" cy=".24" r=".94"><stop stop-color="#904a4d"/><stop offset=".5" stop-color="#572038"/><stop offset="1" stop-color="#240b18"/></radialGradient>
+<linearGradient id="copper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffdab0"/><stop offset=".45" stop-color="#d88c63"/><stop offset="1" stop-color="#884135"/></linearGradient>
+<linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#863a4d"/><stop offset="1" stop-color="#431b33"/></linearGradient>
+<linearGradient id="light" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffeac5"/><stop offset="1" stop-color="#a96854"/></linearGradient>
+<filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#190813" flood-opacity=".65"/></filter>
+</defs>
+<rect width="240" height="240" rx="32" fill="url(#bg)"/>
+<circle cx="120" cy="118" r="86" fill="#cb7658" opacity=".19" filter="url(#glow)"/>
+<rect x="10" y="10" width="220" height="220" rx="25" fill="none" stroke="#e59f7d" stroke-opacity=".44" stroke-width="2"/>
+<path d="M27 54Q120 1 214 53" fill="none" stroke="#ffd5a6" stroke-opacity=".24" stroke-width="2"/>
+<g filter="url(#shadow)">
+<g transform="translate(41 39)">
+<rect width="158" height="158" rx="14" fill="#2c1426" stroke="#dd9f85" stroke-width="3"/>
+<g fill="#753b48" stroke="#9c5964" stroke-width="1"><rect x="8" y="8" width="20" height="20" rx="4"/><rect x="32" y="8" width="20" height="20" rx="4"/><rect x="56" y="8" width="20" height="20" rx="4"/><rect x="80" y="8" width="20" height="20" rx="4"/><rect x="104" y="8" width="20" height="20" rx="4"/><rect x="128" y="8" width="20" height="20" rx="4"/><rect x="8" y="32" width="20" height="20" rx="4"/><rect x="32" y="32" width="20" height="20" rx="4"/><rect x="56" y="32" width="20" height="20" rx="4"/><rect x="80" y="32" width="20" height="20" rx="4"/><rect x="104" y="32" width="20" height="20" rx="4"/><rect x="128" y="32" width="20" height="20" rx="4"/><rect x="8" y="56" width="20" height="20" rx="4"/><rect x="32" y="56" width="20" height="20" rx="4"/><rect x="56" y="56" width="20" height="20" rx="4"/><rect x="80" y="56" width="20" height="20" rx="4"/><rect x="104" y="56" width="20" height="20" rx="4"/><rect x="128" y="56" width="20" height="20" rx="4"/><rect x="8" y="80" width="20" height="20" rx="4"/><rect x="32" y="80" width="20" height="20" rx="4"/><rect x="56" y="80" width="20" height="20" rx="4"/><rect x="80" y="80" width="20" height="20" rx="4"/><rect x="104" y="80" width="20" height="20" rx="4"/><rect x="128" y="80" width="20" height="20" rx="4"/><rect x="8" y="104" width="20" height="20" rx="4"/><rect x="32" y="104" width="20" height="20" rx="4"/><rect x="56" y="104" width="20" height="20" rx="4"/><rect x="80" y="104" width="20" height="20" rx="4"/><rect x="104" y="104" width="20" height="20" rx="4"/><rect x="128" y="104" width="20" height="20" rx="4"/><rect x="8" y="128" width="20" height="20" rx="4"/><rect x="32" y="128" width="20" height="20" rx="4"/><rect x="56" y="128" width="20" height="20" rx="4"/><rect x="80" y="128" width="20" height="20" rx="4"/><rect x="104" y="128" width="20" height="20" rx="4"/><rect x="128" y="128" width="20" height="20" rx="4"/></g>
+<g fill="url(#copper)" stroke="#ffd5a6" stroke-width="1.4">
+<rect x="8" y="8" width="20" height="20" rx="4"/><rect x="8" y="32" width="20" height="20" rx="4"/><rect x="8" y="56" width="20" height="20" rx="4"/><rect x="32" y="56" width="20" height="20" rx="4"/><rect x="8" y="104" width="20" height="20" rx="4"/><rect x="32" y="104" width="20" height="20" rx="4"/><rect x="56" y="104" width="20" height="20" rx="4"/><rect x="80" y="80" width="20" height="20" rx="4"/><rect x="104" y="80" width="20" height="20" rx="4"/><rect x="104" y="104" width="20" height="20" rx="4"/><rect x="128" y="80" width="20" height="20" rx="4"/><rect x="128" y="56" width="20" height="20" rx="4"/><rect x="128" y="32" width="20" height="20" rx="4"/><rect x="128" y="8" width="20" height="20" rx="4"/><rect x="104" y="8" width="20" height="20" rx="4"/><rect x="80" y="8" width="20" height="20" rx="4"/>
+</g><path d="M57 177h48m-24-10v20" stroke="#eac396" stroke-width="5" stroke-linecap="round"/>
+</g></g>
+<path d="M79 214H161" stroke="#e8b08a" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"/>
+<circle cx="67" cy="214" r="3" fill="#f3bc8d"/><circle cx="173" cy="214" r="3" fill="#f3bc8d"/>
 </svg>
