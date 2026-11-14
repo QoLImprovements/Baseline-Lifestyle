@@ -11,7 +11,6 @@
 <rect width="240" height="240" rx="32" fill="url(#bg)"/>
 <circle cx="120" cy="118" r="86" fill="#cb7658" opacity=".19" filter="url(#glow)"/>
 <rect x="10" y="10" width="220" height="220" rx="25" fill="none" stroke="#e59f7d" stroke-opacity=".44" stroke-width="2"/>
-<path d="M27 54Q120 1 214 53" fill="none" stroke="#ffd5a6" stroke-opacity=".24" stroke-width="2"/>
 <g filter="url(#shadow)">
 <g transform="translate(34 35)">
 <rect x="6" y="8" width="73" height="73" rx="13" fill="#843d52" stroke="#ffd2ac" stroke-width="2"/><circle cx="42" cy="44" r="22" fill="#dd8665"/>
@@ -21,6 +20,4 @@
 <path d="M81 38Q91 22 103 38" fill="none" stroke="#f9d08c" stroke-width="6" stroke-linecap="round"/><path d="M92 22L104 38 87 41" fill="none" stroke="#f9d08c" stroke-width="4"/>
 <path d="M101 139Q91 156 79 138" fill="none" stroke="#f9d08c" stroke-width="6" stroke-linecap="round"/><path d="M88 157L77 138 95 137" fill="none" stroke="#f9d08c" stroke-width="4"/>
 </g></g>
-<path d="M79 214H161" stroke="#e8b08a" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"/>
-<circle cx="67" cy="214" r="3" fill="#f3bc8d"/><circle cx="173" cy="214" r="3" fill="#f3bc8d"/>
 </svg>
