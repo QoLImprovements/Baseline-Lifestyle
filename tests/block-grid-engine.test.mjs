@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   emptyBoard, canPlace, resolvePlacement, createTray, shapeById, SHAPES, boundsForShape,
-  legalPlacements, validBoard, runLevel
+  legalPlacements, validBoard, runLevel, MODES, shapePool
 } from '../systems/baseline-recreation/games/block-grid/js/block-grid-engine.mjs';
 
 test('block grid places pieces without mutating the source board', () => {
@@ -65,4 +65,18 @@ test('every shape rejects anchors that would overhang the board', () => {
     assert.equal(canPlace(board, piece, -1, 0), false, `${piece.id} top overhang`);
     assert.equal(canPlace(board, piece, 0, -1), false, `${piece.id} left overhang`);
   }
+});
+
+test('Block Grid has five rank-unlocked tiers without a game-type menu',()=>{
+  assert.deepEqual(Object.keys(MODES),['starter','field','forge','citadel','master']);
+  assert.deepEqual(Object.values(MODES).map(t=>t.unlockLevel),[1,4,9,16,26]);
+  assert.deepEqual(shapePool('relaxed'),shapePool('starter'));
+  assert.deepEqual(shapePool('classic'),shapePool('field'));
+  assert.deepEqual(shapePool('challenge'),shapePool('master'));
+});
+test('Block Grid distinguishes an unplaceable tray piece from a fitting one',()=>{
+  const board=Array.from({length:8},()=>Array(8).fill(1));
+  board[0][0]=0;board[0][1]=0;
+  assert.equal(legalPlacements(board,'square2').length,0);
+  assert.equal(legalPlacements(board,'domino-h').length,1);
 });
