@@ -21,10 +21,10 @@
 <rect x="75" y="91" width="36" height="36" rx="7"/><rect x="131" y="91" width="36" height="36" rx="7"/>
 </g><g font-family="system-ui,sans-serif" font-weight="900" text-anchor="middle" font-size="22" fill="#fff2dd">
 <text x="37" y="61">9</text><text x="93" y="61">5</text><text x="149" y="61">4</text>
-<text x="37" y="117">3</text><text x="93" y="117">6</text><text x="149" y="117">2</text>
+<text x="37" y="117">3</text><text x="93" y="117">1</text><text x="149" y="117">2</text>
 <text x="37" y="164" font-size="16">6</text>
 </g><g font-family="system-ui,sans-serif" font-size="24" font-weight="900" text-anchor="middle" fill="#e7b18b">
-<text x="65" y="61">−</text><text x="120" y="61">=</text><text x="37" y="88">−</text><text x="37" y="142">=</text><text x="65" y="117">+</text><text x="120" y="117">=</text>
+<text x="65" y="61">−</text><text x="120" y="61">=</text><text x="37" y="88">−</text><text x="37" y="142">=</text><text x="65" y="117">−</text><text x="120" y="117">=</text>
 </g>
 </g></g>
 <path d="M79 214H161" stroke="#e8b08a" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"/>
