@@ -19,7 +19,7 @@ import {
   xpNeededForLevel
 } from '../../../js/game-extension-support.mjs?v=SEQUENCE_COHERENT_GAMES_20261112_1';
 
-const BUILD = 'BLOCK_GRID_MOBILE_COHERENCE_20261026_1';
+const BUILD = 'BLOCK_GRID_TIER_COHERENCE_20261114_1';
 const APP = 'blockgrid';
 const BLOCK_SKILLS = Object.freeze([
   { id:'blast', name:'Bomb', icon:'💣', unlockLevel:2, description:'Drag onto the board to clear a 4 × 4 area.' },
@@ -37,7 +37,7 @@ const DEFAULT_PROFILE = Object.freeze({
   lastRoundXp:0,
   lastRoundBank:0,
   lastRunScore:0,
-  selectedMode:'classic',
+  selectedMode:'starter',
   activeRun:null
 });
 
@@ -77,14 +77,18 @@ function normaliseRun(value) {
     xpSettled:Object.prototype.hasOwnProperty.call(value,'xpSettled') ? Boolean(value.xpSettled) : true,
     xpEarned:number(value.xpEarned)
   };
-  if (!run.gameOver && run.tray.length === 0) run.tray = createTray(run.board, profile?.selectedMode || 'classic');
+  if (!run.gameOver && run.tray.length === 0) run.tray = createTray(run.board, profile?.selectedMode || 'starter');
   if (!run.gameOver && run.tray.length && !hasAnyPlacement(run.board, run.tray)) run.gameOver = true;
   return run;
 }
 
 function normaliseProfile(value) {
   const source = value && typeof value === 'object' ? value : {};
-  const mode = MODES[source.selectedMode] ? source.selectedMode : 'classic';
+  const legacyMode={relaxed:'starter',classic:'field',challenge:'master'};
+  const requested=MODES[source.selectedMode]?source.selectedMode:(legacyMode[source.selectedMode]||'starter');
+  const playerRank=Math.max(1,number(source.level,1));
+  const mode=MODES[requested].unlockLevel<=playerRank
+    ?requested:Object.values(MODES).filter(t=>t.unlockLevel<=playerRank).at(-1).id;
   const next = {
     app:APP,
     level:Math.max(1, number(source.level, 1)),
@@ -172,7 +176,7 @@ function startNewGame() {
 }
 
 function currentMode() {
-  return MODES[profile.selectedMode] || MODES.classic;
+  return MODES[profile.selectedMode] || MODES.starter;
 }
 
 function pieceMiniHtml(id) {
@@ -196,8 +200,9 @@ function trayHtml() {
   return active.tray.map((id, index) => {
     const selected = index === selectedPiece;
     const fits = !active.gameOver && hasAnyPlacement(active.board, [id]);
-    return `<button class="block-grid-piece${selected ? ' is-selected' : ''}${fits ? '' : ' is-blocked'}${boardMotion.newTray ? ' is-tray-arrival' : ''}" style="--piece-index:${index}" data-block-piece="${index}" type="button" aria-pressed="${selected}" ${active.gameOver ? 'disabled' : ''}>
+    return `<button class="block-grid-piece${selected ? ' is-selected' : ''}${fits ? '' : ' is-blocked'}${boardMotion.newTray ? ' is-tray-arrival' : ''}" style="--piece-index:${index}" data-block-piece="${index}" type="button" aria-pressed="${selected}" ${active.gameOver || !fits ? 'disabled aria-disabled="true" title="No legal placement for this piece"' : ''}>
       ${pieceMiniHtml(id)}
+      ${fits ? '' : '<span class="block-grid-piece-no-fit" aria-hidden="true">No fit</span>'}
       <span class="sr-only">Piece ${index + 1}${fits ? '' : ', no legal placement'}</span>
     </button>`;
   }).join('');
@@ -373,11 +378,15 @@ function renderGame() {
 function renderModes() {
   const root = document.getElementById('blockGridModesCard');
   if (!root) return;
-  root.innerHTML = `<div class="block-grid-mode-list">${Object.values(MODES).map(mode => `
-    <button class="block-grid-mode${profile.selectedMode === mode.id ? ' is-active' : ''}" data-block-mode="${mode.id}" type="button" aria-pressed="${profile.selectedMode === mode.id}">
-      <strong>${escapeHtml(mode.name)} Tier</strong><span>${escapeHtml(mode.description)}</span>
-    </button>`).join('')}</div>
-    <div class="summary-box"><strong>Difficulty tiers</strong><span class="inline-note">Each tier produces many unpredictable games from random piece trays. Difficulty comes from the tier rules, not a fixed sequence of levels.</span></div>`;
+  root.innerHTML = `<div class="block-grid-mode-list">${Object.values(MODES).map(mode => {
+    const locked=profile.level<mode.unlockLevel;
+    const active=profile.selectedMode===mode.id;
+    return `<button class="block-grid-mode${active?' is-active':''}" data-block-mode="${mode.id}" type="button" aria-pressed="${active}" ${locked?'disabled aria-disabled="true"':''}>
+      <strong>${escapeHtml(mode.name)}</strong><span>${escapeHtml(mode.description)}</span>
+      <small>${locked?'Unlock at Player Rank '+mode.unlockLevel:active?'Selected · Unlocked':'Unlocked'}</small>
+    </button>`;
+  }).join('')}</div>
+    <div class="summary-box"><strong>Difficulty tiers</strong><span class="inline-note">Five rank-unlocked difficulty tiers share one Block Grid game. Every tier changes the shapes available, not the objective.</span></div>`;
 }
 
 function renderSkills() {
@@ -413,13 +422,13 @@ function renderProgress() {
     </div>`;
 }
 
-const BLOCK_TABS = Object.freeze(['game','round','skills','modes','progress']);
+const BLOCK_TABS = Object.freeze(['game','round','skills','tiers','progress']);
 
 function blockTabFromLocation() {
   if (!/^\/baseline-recreation\/games\/block-grid\/?$/i.test(String(location.pathname || ''))) return 'game';
   try {
     const requested = String(new URLSearchParams(location.search || '').get('view') || '').toLowerCase();
-    return BLOCK_TABS.includes(requested) ? requested : 'game';
+    return requested==='modes'?'tiers':(BLOCK_TABS.includes(requested) ? requested : 'game');
   } catch (_) { return 'game'; }
 }
 
@@ -439,7 +448,7 @@ function setTab(name, historyMode = 'none') {
     game:'blockGridGameCard',
     round:'blockGridRoundCard',
     skills:'blockGridSkillsCard',
-    modes:'blockGridModesCard',
+    tiers:'blockGridModesCard',
     progress:'blockGridProgressCard'
   };
   document.querySelectorAll('[data-block-tab]').forEach(button => {
@@ -687,6 +696,11 @@ function destroySpecialDrag() {
 function choosePiece(index) {
   const active = run();
   if (!active || active.gameOver || !active.tray[index]) return;
+  if(!hasAnyPlacement(active.board,[active.tray[index]])){
+    selectedPiece=-1;previewAnchor=null;
+    statusMessage='This piece cannot fit anywhere on the current board. Choose another available piece.';
+    renderGame();return;
+  }
   selectedPiece = selectedPiece === index ? -1 : index;
   previewAnchor = null;
   statusMessage = selectedPiece >= 0 ? 'Choose an empty board cell as the piece anchor.' : 'Choose a piece, then place it on the board.';
@@ -799,7 +813,7 @@ function clearSpecialRows(row) {
   return true;
 }
 function changeMode(mode) {
-  if (!MODES[mode] || profile.selectedMode === mode) return;
+  if (!MODES[mode] || MODES[mode].unlockLevel>profile.level || profile.selectedMode === mode) return;
   profile.selectedMode = mode;
   profile.activeRun = null;
   selectedPiece = -1;
@@ -883,7 +897,7 @@ function handlePointerDown(event) {
   const piece = rawTarget ? rawTarget.closest('[data-block-piece]') : null;
   if (!piece || !document.getElementById('blockGridPanel')?.classList.contains('is-active')) return;
   const index = Number(piece.dataset.blockPiece);
-  if (!run()?.tray[index]) return;
+  if (!run()?.tray[index] || !hasAnyPlacement(run().board,[run().tray[index]])) return;
   selectedPiece = index;
   const pieceId=run()?.tray[index];
   const shape=pieceId ? shapeById(pieceId) : null;
@@ -1047,7 +1061,7 @@ function panelHtml() {
         <button class="action ghost game-toggle-btn is-active" data-block-tab="game" type="button">Game</button>
         <button class="action ghost game-toggle-btn" data-block-tab="round" type="button">Round</button>
         <button class="action ghost game-toggle-btn" data-block-tab="skills" type="button">Skills</button>
-        <button class="action ghost game-toggle-btn" data-block-tab="modes" type="button">Tiers</button>
+        <button class="action ghost game-toggle-btn" data-block-tab="tiers" type="button">Tiers</button>
         <button class="action ghost game-toggle-btn" data-block-tab="progress" type="button">Progress</button>
       </div>
       <div class="game-panel-stack">
