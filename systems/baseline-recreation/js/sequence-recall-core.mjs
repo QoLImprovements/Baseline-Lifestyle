@@ -38,25 +38,31 @@ function shuffled(items, random) {
 }
 export function makePath(size, length, random=Math.random){
   if(!Number.isInteger(size)||size<2||!Number.isInteger(length)||length<1||length>size*size)throw new RangeError('Invalid path dimensions');
-  const solve=(path,visited)=>{
-    if(path.length===length)return path.slice();
-    const here=path[path.length-1], row=Math.floor(here/size),col=here%size;
-    const next=[[row-1,col],[row+1,col],[row,col-1],[row,col+1]]
-      .filter(([r,c])=>r>=0&&r<size&&c>=0&&c<size)
-      .map(([r,c])=>r*size+c).filter(id=>!visited.has(id));
-    for(const cell of shuffled(next,random)){
-      path.push(cell);visited.add(cell);
-      const found=solve(path,visited);
-      if(found)return found;
-      visited.delete(cell);path.pop();
-    }
-    return null;
-  };
-  for(const first of shuffled(Array.from({length:size*size},(_,i)=>i),random)){
-    const found=solve([first],new Set([first]));
-    if(found)return found;
+  // Route recall includes deliberate jumps: adjacent-only paths were predictable
+  // because every next choice was one of at most four neighbouring tiles.
+  const cells=Array.from({length:size*size},(_,i)=>i), path=[];
+  const distance=(a,b)=>Math.abs(Math.floor(a/size)-Math.floor(b/size))+Math.abs(a%size-b%size);
+  while(path.length<length){
+    const available=cells.filter(cell=>!path.includes(cell));
+    const last=path.at(-1);
+    // Two out of every three transitions favour a non-neighbouring location.
+    // The third allows a local step so it still feels like a winding route.
+    const jumps=last===undefined?[]:available.filter(cell=>distance(last,cell)>=2);
+    const choices=path.length%3!==0&&jumps.length?jumps:available;
+    const index=Math.min(choices.length-1,Math.floor(Math.max(0,Math.min(.999999,random()))*choices.length));
+    path.push(choices[index]);
   }
-  throw new Error('Unable to construct a path');
+  return path;
+}
+// Difficulty escalates within each unlocked tier, independently of Combat Sequence.
+// A new player sees five locations; each consecutive clear raises the pace,
+// and every two clears add another location (up to four additional locations).
+export function pathRecallChallenge(tier,streak=0){
+  const completed=Math.max(0,Math.floor(Number(streak)||0));
+  return Object.freeze({
+    length:Math.min(tier.grid*tier.grid,tier.length+2+Math.min(4,Math.floor(completed/2))),
+    paceMs:Math.max(390,tier.pace-Math.min(10,completed)*65)
+  });
 }
 export function makeCombat(moveIds, length, random=Math.random){
   if(!Array.isArray(moveIds)||!moveIds.length||!Number.isInteger(length)||length<1)throw new RangeError('Invalid combat sequence');
@@ -114,14 +120,15 @@ export function mountSequenceGame(config){
     return 'Rank '+profile.level+' · '+profile.xp+'/'+needed+' XP';
   }
   function progressText(){return 'Player Rank '+profile.level+' · '+profile.roundsWon+' cleared';}
-  function currentSequence(){
+  function currentSequence(settings){
     const t=tier();
-    return kind==='path'?makePath(t.grid,t.length):makeCombat(COMBAT_MOVES.slice(0,t.moveCount).map(move=>move.id),t.length);
+    return kind==='path'?makePath(t.grid,settings.length):makeCombat(COMBAT_MOVES.slice(0,t.moveCount).map(move=>move.id),t.length);
   }
   function start(){
     cancelPreview();
     const t=tier();
-    round={sequence:currentSequence(),index:0,phase:'preview',lit:null,wrong:null,replays:0,startedTier:t.id,reverse:profile.reverseEnabled&&profile.level>=4};
+    const settings=kind==='path'?pathRecallChallenge(t,profile.streak):{length:t.length,paceMs:t.pace};
+    round={sequence:currentSequence(settings),paceMs:settings.paceMs,index:0,phase:'preview',lit:null,wrong:null,replays:0,startedTier:t.id,reverse:profile.reverseEnabled&&profile.level>=4};
     profile.roundsPlayed++;
     message=round.reverse?'Observe the sequence, then recall the entire order backwards.':'Observe the sequence, then reproduce it in the same order.';
     persist();
@@ -131,7 +138,7 @@ export function mountSequenceGame(config){
     if(!round)return;
     cancelPreview();
     const token=previewToken;
-    const t=tierById(round.startedTier);
+    const t=tierById(round.startedTier),pace=round.paceMs||t.pace;
     round.phase='preview';round.index=0;round.lit=null;round.wrong=null;
     message='Watch the sequence, then reproduce it from memory.';
     render();
@@ -140,19 +147,19 @@ export function mountSequenceGame(config){
         if(token!==previewToken||!round)return;
         round.lit=step;
         renderGame();
-      },i*t.pace));
+      },i*pace));
       previewTimers.push(setTimeout(()=>{
         if(token!==previewToken||!round)return;
         round.lit=null;
         renderGame();
-      },i*t.pace+Math.round(t.pace*.72)));
+      },i*pace+Math.round(pace*.72)));
     });
     previewTimers.push(setTimeout(()=>{
       if(token!==previewToken||!round)return;
       round.phase='input';round.lit=null;
       message='Your turn: recall '+round.sequence.length+' steps '+(round.reverse?'in reverse order.':'in the original order.');
       render();
-    },round.sequence.length*t.pace+200));
+    },round.sequence.length*pace+200));
   }
   function replay(){
     if(!round||round.phase!=='input'||!profile.skills.rehearsal||round.replays>0)return;
@@ -273,15 +280,18 @@ export function mountSequenceGame(config){
   function renderGame(){
     const el=$('[data-sequence-board]');if(!el)return;
     const active=round?.phase==='input',t=round?tierById(round.startedTier):tier();
+    const nextSettings=kind==='path'?pathRecallChallenge(t,profile.streak):{length:t.length,paceMs:t.pace};
+    const totalCues=round?.sequence.length||nextSettings.length;
+    const paceMs=round?.paceMs||nextSettings.paceMs;
     const board=kind==='path'?gridHtml(t,active):
       '<div class="sequence-moves" role="group" aria-label="Combat movement options">'+COMBAT_MOVES.slice(0,t.moveCount).map(move=>moveButton(move,active)).join('')+'</div>';
     const phase=round?(round.phase==='preview'?'Observe':round.phase==='input'?'Your turn':'Round finished'):'Ready';
     const cue=round?.phase==='preview'&&round.lit!==null
       ?(kind==='path'?'Row '+(Math.floor(round.lit/t.grid)+1)+', column '+(round.lit%t.grid+1):COMBAT_MOVES.find(move=>move.id===round.lit)?.name||'')
       :'';
-    el.innerHTML='<div class="sequence-mission"><span>'+escapeHtml(missionName())+'</span><strong>'+escapeHtml(t.name)+' · '+t.length+' cues</strong></div>'+
-      '<div class="sequence-round-counter"><strong>'+escapeHtml(phase)+'</strong><span>'+(round?round.index+' / '+round.sequence.length+' recalled':t.length+' steps')+'</span></div>'+
-      '<div class="sequence-status" role="status" aria-live="polite">'+escapeHtml(message)+'</div><div class="sequence-challenge"><span>Clean Streak <strong>'+profile.cleanStreak+'</strong></span><span>Clean Bonus <strong>+'+cleanBonusPct(profile.cleanStreak)+'%</strong></span><button type="button" class="action secondary" data-sequence-reverse aria-pressed="'+String(profile.reverseEnabled)+'" '+(profile.level<4 || (round && (round.phase==='preview'||round.phase==='input'))?'disabled':'')+'>'+(kind==='path'?'Reverse Trail':'Counter Sequence')+' · '+(profile.level<4?'Unlock Rank 4':profile.reverseEnabled?'ON':'OFF')+'</button></div><span class="sr-only" role="status" aria-live="polite">'+escapeHtml(cue)+'</span>'+board+
+    el.innerHTML='<div class="sequence-mission"><span>'+escapeHtml(missionName())+'</span><strong>'+escapeHtml(t.name)+' · '+totalCues+' cues'+(kind==='path'?' · '+(paceMs/1000).toFixed(2)+'s / cue':'')+'</strong></div>'+
+      '<div class="sequence-round-counter"><strong>'+escapeHtml(phase)+'</strong><span>'+(round?round.index+' / '+round.sequence.length+' recalled':totalCues+' steps')+'</span></div>'+
+      '<div class="sequence-status" role="status" aria-live="polite">'+escapeHtml(message)+'</div>'+(kind==='path'?'<div class="sequence-tempo" aria-label="Path challenge progression">Next clear: faster cues · Every 2 clears: longer route · Current streak '+profile.streak+'</div>':'')+'<div class="sequence-challenge"><span>Clean Streak <strong>'+profile.cleanStreak+'</strong></span><span>Clean Bonus <strong>+'+cleanBonusPct(profile.cleanStreak)+'%</strong></span><button type="button" class="action secondary" data-sequence-reverse aria-pressed="'+String(profile.reverseEnabled)+'" '+(profile.level<4 || (round && (round.phase==='preview'||round.phase==='input'))?'disabled':'')+'>'+(kind==='path'?'Reverse Trail':'Counter Sequence')+' · '+(profile.level<4?'Unlock Rank 4':profile.reverseEnabled?'ON':'OFF')+'</button></div><span class="sr-only" role="status" aria-live="polite">'+escapeHtml(cue)+'</span>'+board+
       (round&&round.phase==='input'&&profile.skills.rehearsal?
       '<button class="action ghost" data-sequence-replay type="button" '+(round.replays?'disabled':'')+'>↻ Replay demonstration'+(round.replays?' (used)':'')+'</button>':'')+
       (round&&round.phase==='finished'?'<p class="inline-note">Use New Game for a new sequence. The Round tab shows the completed demonstration.</p>':'');
@@ -310,7 +320,7 @@ export function mountSequenceGame(config){
     const el=$('[data-sequence-tiers]');if(!el)return;
     el.innerHTML='<h3>Difficulty tiers</h3><div class="sequence-option-list">'+SEQUENCE_TIERS.map(t=>{
       const locked=t.unlockLevel>profile.level,selected=profile.selectedTier===t.id;
-      return '<div class="sequence-option"><div><strong>'+escapeHtml(t.name)+'</strong><p>'+t.length+' steps · '+(kind==='path'?t.grid+' × '+t.grid+' grid':t.moveCount+' movements')+'</p><span class="inline-note">'+(locked?'Unlocks at Rank '+t.unlockLevel:'Unlocked')+'</span></div>'+
+      return '<div class="sequence-option"><div><strong>'+escapeHtml(t.name)+'</strong><p>'+(kind==='path'?(t.length+2)+'–'+(t.length+6)+' steps · '+t.grid+' × '+t.grid+' grid · pace accelerates':t.length+' steps · '+t.moveCount+' movements')+'</p><span class="inline-note">'+(locked?'Unlocks at Rank '+t.unlockLevel:'Unlocked')+'</span></div>'+
       '<button class="action '+(selected?'primary':'secondary')+'" type="button" data-sequence-tier="'+t.id+'" '+(locked||selected?'disabled':'')+'>'+(selected?'Selected':locked?'Locked':'Select')+'</button></div>';
     }).join('')+'</div>';
   }
@@ -353,7 +363,7 @@ export function mountSequenceGame(config){
     return '<section class="card game-panel sequence-game-panel" id="'+panelId+'" hidden aria-hidden="true" aria-labelledby="'+id+'Title">'+
       '<div class="game-shell" data-sequence-kind="'+kind+'"><div class="game-header"><div><h2 tabindex="-1" id="'+id+'Title">'+escapeHtml(name)+'</h2><p class="note">'+escapeHtml(note)+'</p></div>'+
       '<div class="link-actions game-shell-actions" data-nonrealm-game-toolbar="'+id+'">'+
-      '<button class="action secondary game-shell-action" type="button" data-bl-info-button data-bl-info-title="How to Play" data-bl-info-text="'+escapeHtml(kind==='path'?'Watch adjacent tiles light up one at a time, then tap the identical route in order.':'Observe the movement cues in order, then tap the same movements in sequence. Mental recall only; no physical strikes are required.')+'"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>'+
+      '<button class="action secondary game-shell-action" type="button" data-bl-info-button data-bl-info-title="How to Play" data-bl-info-text="'+escapeHtml(kind==='path'?'Watch a route jump between different grid locations, then tap the same locations in order. Completing rounds accelerates the display and adds more locations.':'Observe the movement cues in order, then tap the same movements in sequence. Mental recall only; no physical strikes are required.')+'"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>'+
 
       '<button class="action secondary game-shell-action" type="button" data-close-game-extension="'+id+'"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button></div></div>'+
       '<p class="sequence-profile" data-sequence-profile aria-live="polite"></p><div class="sequence-xp-track" role="progressbar" aria-label="Experience points towards the next rank" aria-valuemin="0" aria-valuemax="80" aria-valuenow="0"><div data-sequence-xp-fill></div></div>'+
@@ -370,7 +380,7 @@ export function mountSequenceGame(config){
   }
   const shell=createGameExtensionShell({
     id,panelId,name,order:config.order,art:config.art,note,benefit,
-    styleUrl:'/systems/baseline-recreation/css/sequence-games.css?v=RECREATION_COHERENCE_20261114_1',
+    styleUrl:'/systems/baseline-recreation/css/sequence-games.css?v=RECREATION_SEQUENCE_PALETTE_AND_PACE_20261114_1',
     progressText,panelHtml,
     onOpen:()=>{globalThis.BaselineGamesMusic?.selectGame?.(id);render();},
     onClose:()=>{try{globalThis.BaselineGamesAutoNext?.clear?.(app);}catch(_){}exitPseudoFullscreen();cancelPreview();if(round&&round.phase==='preview'){round=null;message='Start a new round when ready.';}globalThis.BaselineGamesMusic?.selectGame?.('');}
