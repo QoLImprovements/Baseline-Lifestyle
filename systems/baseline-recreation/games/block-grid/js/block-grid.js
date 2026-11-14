@@ -8,7 +8,7 @@ import {
   resolvePlacement,
   shapeById,
   validBoard
-} from './block-grid-engine.mjs?v=PUZZLE_GAMES_20261016_1';
+} from './block-grid-engine.mjs?v=RECREATION_COHERENCE_20261114_1';
 import {
   awardXp,
   clone,
@@ -1080,8 +1080,8 @@ const shell = createGameExtensionShell({
   panelId:'blockGridPanel',
   name:'Block Grid',
   order:10,
-  art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',
-  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=RECREATION_UNIFIED_20261104_1',
+  art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_COHERENCE_20261114_1',
+  styleUrl:'/systems/baseline-recreation/games/block-grid/css/block-grid.css?v=RECREATION_COHERENCE_20261114_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `${currentMode().name} Tier · Best ${profile.bestScore}` : 'Ready',
