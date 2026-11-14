@@ -104,7 +104,7 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(nonRealmCss,/> \.game-fullscreen-toggle\{[\s\S]*?grid-column:5!important[\s\S]*?grid-row:2!important/);
   assert.match(html,/game-specific-actions" aria-label="Detect The Word game controls"[\s\S]*?data-desktop-keypad-toggle="detectword"[\s\S]*?game-window-actions game-common-actions/);
   assert.match(html,/game-specific-actions" aria-label="Make The Number game controls"[\s\S]*?data-desktop-keypad-toggle="make24"[\s\S]*?game-window-actions game-common-actions/);
-  assert.match(core,/let keypadHost = specificActions[\s\S]*?if\(keyboardBtn\.parentElement!==keypadHost\) keypadHost\.appendChild\(keyboardBtn\)/);
+  assert.match(core,/let keypadHost = windowActions || specificActions[\s\S]*?if\(keyboardBtn\.parentElement!==keypadHost\) keypadHost\.appendChild\(keyboardBtn\)/);
   assert.match(nonRealmCss,/\.round-status-card\{[\s\S]*?align-content:start!important/);
 });
 
@@ -136,10 +136,10 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
-  assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
-  assert.match(html,/colour-sort\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(html,/games-profile-rules\.js\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(html,/block-grid\.js\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(html,/colour-sort\.js\?v=RECREATION_COHERENCE_20261114_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -428,8 +428,8 @@ test('extension-game routes clear stale core selection without surrendering exte
   assert.match(extensionSupport,/document\.dispatchEvent\(new CustomEvent\('baseline:game-extension-open'/);
   assert.match(extensionSupport,/detail:\{ id:config\.id, panelId:config\.panelId \}/);
   assert.match(core,/document\.addEventListener\('baseline:game-extension-open'[\s\S]*?selectedGame='';[\s\S]*?renderGamesList\(\)/);
-  assert.match(blockGrid,/game-extension-support\.mjs\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
-  assert.match(colourSort,/game-extension-support\.mjs\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
+  assert.match(blockGrid,/game-extension-support\.mjs\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(colourSort,/game-extension-support\.mjs\?v=RECREATION_COHERENCE_20261114_1/);
   assert.match(extensionSupport,/baseline:recreation:core-ready/);
   assert.match(extensionSupport,/BASELINE_RECREATION_CORE_READY === true/);
 });
