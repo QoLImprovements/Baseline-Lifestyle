@@ -989,10 +989,11 @@ function showHint() {
 }
 
 function toggleFullscreen() {
+  const panel = document.getElementById('colourSortPanel');
   const card = document.getElementById('colourSortGameCard');
-  if (!card) return;
+  if (!panel || panel.hidden || !panel.classList.contains('is-active') || !card || !panel.contains(card)) return;
   if (document.fullscreenElement === card) document.exitFullscreen?.().catch(() => {});
-  else card.requestFullscreen?.().catch(() => {});
+  else if (!document.fullscreenElement) card.requestFullscreen?.().catch(() => {});
 }
 
 function handleClick(event) {
@@ -1029,14 +1030,16 @@ function handleClick(event) {
 }
 
 function handleKeydown(event) {
-  if (!document.getElementById('colourSortPanel')?.classList.contains('is-active')) return;
+  const panel=document.getElementById('colourSortPanel');
+  if(event.defaultPrevented || event.isComposing || !panel || panel.hidden || !panel.classList.contains('is-active')
+    || document.documentElement.getAttribute('data-game-extension-open')!=='colour-sort') return;
   const key=String(event.key||'').toLowerCase();
   if(event.altKey && !event.ctrlKey && !event.metaKey && !event.isComposing){
     if(key==='n'){ event.preventDefault(); startTierGame(profile.selectedTier); return; }
     if(key==='u'){ event.preventDefault(); undo(); return; }
     if(key==='h'){ event.preventDefault(); showHint(); return; }
     if(key==='r'){ event.preventDefault(); startLevel(puzzle()?.level || randomLevelForTier(profile.selectedTier)); return; }
-    if(key==='f'){ event.preventDefault(); toggleFullscreen(); return; }
+    if(key==='f' && !event.shiftKey){ event.preventDefault(); if(!event.repeat) toggleFullscreen(); return; }
   }
   if (event.key === 'Escape' && document.fullscreenElement === document.getElementById('colourSortGameCard')) return;
   if (event.key === 'Escape') shell.close();

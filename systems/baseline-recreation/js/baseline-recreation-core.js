@@ -853,6 +853,17 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     if(GAME_IDS.includes(value)) return value;
     return GAME_ROUTE_SLUG_TO_ID[value] || '';
   }
+  function coreFullscreenHotkeyGameId(){
+    // Alt+F belongs only to the visibly selected core game. Never reuse a
+    // stored/hash selection while an extension, overview or another tab owns the screen.
+    const games=document.getElementById('games');
+    if(!games?.classList.contains('active') || document.documentElement.hasAttribute('data-game-extension-open')) return '';
+    const id=normaliseGameId(activeGameIdForHotkeys());
+    if(!['pairs','detectword','make24','trackcoin','ruleshift'].includes(id)) return '';
+    const panel=gamePanelElement(id);
+    const playRoot=panel?.querySelector('[data-game-play-root="'+id+'"].game-play-root');
+    return panel && !panel.hidden && panel.classList.contains('is-active') && playRoot && !playRoot.hidden ? id : '';
+  }
   function activeGameIdForHotkeys(){
     const selected = normaliseGameId(selectedGame);
     if(selected) return selected;
@@ -4099,8 +4110,10 @@ function toggleGameFullscreen(gameId){
     if(!id) return;
     if(id==='ninja'){ toggleRealmFullscreen(); return; }
     ensureGamePlayContract();
-    const target=gamePlayRootElement(id)||gamePlaySurfaceElement(id);
-    if(!target) return;
+    const panel=gamePanelElement(id);
+    // A panel or a page is never a legal native fullscreen target for a core game.
+    const target=panel?.querySelector('[data-game-play-root="'+id+'"].game-play-root');
+    if(!target || panel.hidden || !panel.classList.contains('is-active')) return;
     if(target.classList.contains('recreation-mobile-pseudo-fullscreen')){
       target.classList.remove('recreation-mobile-pseudo-fullscreen');
       document.body.classList.remove('recreation-mobile-pseudo-fullscreen-active');
@@ -4110,7 +4123,8 @@ function toggleGameFullscreen(gameId){
       return;
     }
     if(document.fullscreenElement){
-      document.exitFullscreen?.().catch(function(){});
+      // Do not exit or replace fullscreen owned by the page or another game.
+      if(document.fullscreenElement===target) document.exitFullscreen?.().catch(function(){});
       return;
     }
     if(isTouchOnlyGameDevice() || !document.fullscreenEnabled || !target.requestFullscreen){
@@ -4542,11 +4556,11 @@ function toggleGameFullscreen(gameId){
         toggleDesktopKeypad(hotkeyGame);
         return;
       }
-      if(event.altKey && key === 'f'){
-        const id=normaliseGameId(hotkeyGame);
-        if(['pairs','detectword','make24','trackcoin','ruleshift'].includes(id)){
+      if(event.altKey && key === 'f' && !event.shiftKey){
+        const id=coreFullscreenHotkeyGameId();
+        if(id){
           event.preventDefault();
-          toggleGameFullscreen(id);
+          if(!event.repeat) toggleGameFullscreen(id);
         }
         return;
       }

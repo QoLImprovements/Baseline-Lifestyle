@@ -517,7 +517,7 @@ test('Colour Sort exposes difficulty tiers while keeping the 60 authored layouts
   assert.match(colourSort,/id>=49\?2:\(id>=37\?1:0\)/);
   assert.match(colourSort,/blockedIndices:lockedBottleIndices\(active\)/);
   assert.match(colourSort,/const fullscreenHost = document\.fullscreenElement;[\s\S]*?fullscreenHost\.contains\(source\)[\s\S]*?host\.appendChild\(layer\)/);
-  assert.match(colourSort,/if\(key==='f'\)\{ event\.preventDefault\(\); toggleFullscreen\(\); return; \}/);
+  assert.match(colourSort,/if\(key==='f' && !event\.shiftKey\)\{ event\.preventDefault\(\); if\(!event\.repeat\) toggleFullscreen\(\); return; \}/);
   const solved=[[0,0,0,0],[1,1,1,1],[],[]];
   assert.equal(hintMove(solved),null);
 });

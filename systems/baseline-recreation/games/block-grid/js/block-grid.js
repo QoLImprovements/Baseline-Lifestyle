@@ -825,10 +825,11 @@ function changeMode(mode) {
 }
 
 function toggleFullscreen() {
+  const panel = document.getElementById('blockGridPanel');
   const card = document.getElementById('blockGridGameCard');
-  if (!card) return;
+  if (!panel || panel.hidden || !panel.classList.contains('is-active') || !card || !panel.contains(card)) return;
   if (document.fullscreenElement === card) document.exitFullscreen?.().catch(() => {});
-  else card.requestFullscreen?.().catch(() => {});
+  else if (!document.fullscreenElement) card.requestFullscreen?.().catch(() => {});
 }
 
 function cellCoordinates(target) {
@@ -1033,11 +1034,13 @@ function handlePointerUp(event) {
 }
 
 function handleKeydown(event) {
-  if (!document.getElementById('blockGridPanel')?.classList.contains('is-active')) return;
+  const panel=document.getElementById('blockGridPanel');
+  if(event.defaultPrevented || event.isComposing || !panel || panel.hidden || !panel.classList.contains('is-active')
+    || document.documentElement.getAttribute('data-game-extension-open')!=='block-grid') return;
   const key=String(event.key||'').toLowerCase();
   if(event.altKey && !event.ctrlKey && !event.metaKey && !event.isComposing){
     if(key==='n'){ event.preventDefault(); startNewGame(); return; }
-    if(key==='f'){ event.preventDefault(); toggleFullscreen(); return; }
+    if(key==='f' && !event.shiftKey){ event.preventDefault(); if(!event.repeat) toggleFullscreen(); return; }
   }
   if (event.key === 'Escape' && document.fullscreenElement === document.getElementById('blockGridGameCard')) return;
   if (event.key === 'Escape') shell.close();

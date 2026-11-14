@@ -1,4 +1,4 @@
-import {mountSequenceGame} from '../../../js/sequence-recall-core.mjs?v=RECREATION_COHERENCE_20261114_1';
+import {mountSequenceGame} from '../../../js/sequence-recall-core.mjs?v=RECREATION_SEQUENCE_PALETTE_AND_PACE_20261114_1&altf=game-only-20261114';
 mountSequenceGame({
   id:'combat-sequence',app:'combatsequence',kind:'combat',name:'Combat Sequence',order:7,
   art:'/systems/baseline-recreation/games/overview-art/combat-sequence.svg?v=SEQUENCE_CORE_20261112_1',
