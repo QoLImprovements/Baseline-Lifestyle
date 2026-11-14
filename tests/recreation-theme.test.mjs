@@ -102,9 +102,9 @@ test('Block Grid and Colour Sort overview art use the Recreation frame palette',
   ];
   for(const file of art){
     const source = await read(file);
-    assert.match(source,/#2A0B16/i,file);
-    assert.match(source,/#9E4D38/i,file);
-    assert.match(source,/#B86A50/i,file);
+    assert.match(source,/#240b18/i,file);
+    assert.match(source,/#904a4d/i,file);
+    assert.match(source,/#d88c63/i,file);
     assert.doesNotMatch(source,retiredThemeBlue,file);
   }
 });
@@ -132,12 +132,12 @@ test('Block Grid and Colour Sort asset URLs are versioned for the new palette',a
   const [hub,blockJs,colourJs] = await Promise.all([
     read(files.hub),read(files.blockJs),read(files.colourJs)
   ]);
-  assert.match(blockJs,/block-grid-overview\.svg\?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2/);
-  assert.match(blockJs,/block-grid\.css\?v=RECREATION_UNIFIED_20261104_1/);
+  assert.match(blockJs,/block-grid-overview\.svg\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(blockJs,/block-grid\.css\?v=RECREATION_COHERENCE_20261114_1/);
   assert.match(colourJs,/colour-sort-overview\.svg\?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2/);
   assert.match(colourJs,/colour-sort\.css\?v=RECREATION_UNIFIED_20261104_1/);
-  assert.match(hub,/block-grid\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
-  assert.match(hub,/colour-sort\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
+  assert.match(hub,/block-grid\.js\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(hub,/colour-sort\.js\?v=RECREATION_COHERENCE_20261114_1/);
 });
 
 test('normal text passes WCAG AA at every mirror-gradient stop',()=>{
