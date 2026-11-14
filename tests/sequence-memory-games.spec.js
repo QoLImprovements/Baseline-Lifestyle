@@ -212,7 +212,17 @@ test('Account game saving recovers after an API failure and survives a complete 
   const unsaved=await page.evaluate(()=>globalThis.BaselineGameStorage.getProfile('pathrecall'));
   expect(unsaved.roundsPlayed).toBe(1);
   await page.locator('#pathRecallPanel [data-save-status-icon]').first().click();
-  await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='ready'&&globalThis.BaselineGameStorage.getUnsavedCount()===0,null,{timeout:12000});
+  await page.waitForTimeout(350);
+  const afterIcon=await page.evaluate(()=>({
+    status:globalThis.BaselineGameStorage.getStatus(),
+    authed:globalThis.BaselineGameStorage.isAuthenticated(),
+    error:globalThis.BaselineGameStorage.getLastError(),
+    unsaved:globalThis.BaselineGameStorage.getUnsavedCount(),
+    ui:document.querySelector('#pathRecallPanel [data-save-status-icon]')?.getAttribute('aria-label')
+  }));
+  console.log('GAME SAVE RETRY DIAGNOSTIC',JSON.stringify({afterIcon,successfulPathWrites,failedPathWrite}));
+  expect(afterIcon.status).toBe('ready');
+  expect(afterIcon.unsaved).toBe(0);
   expect(successfulPathWrites).toBeGreaterThanOrEqual(1);
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY&&globalThis.BaselineGameStorage?.canSave());
