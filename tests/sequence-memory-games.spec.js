@@ -218,7 +218,16 @@ test('Account game saving recovers after an API failure and survives a complete 
   const unsaved=await page.evaluate(()=>globalThis.BaselineGameStorage.getProfile('pathrecall'));
   expect(unsaved.roundsPlayed).toBe(1);
   await page.locator('#pathRecallPanel [data-save-status-icon]').first().click();
-  await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='ready'&&globalThis.BaselineGameStorage.getUnsavedCount()===0,null,{timeout:12000});
+  await page.waitForTimeout(500);
+  const diagnostic=await page.evaluate(()=>({
+    status:globalThis.BaselineGameStorage.getStatus(),
+    lastError:globalThis.BaselineGameStorage.getLastError(),
+    unsavedApps:globalThis.BaselineGameStorage.getUnsavedApps(),
+    canSave:globalThis.BaselineGameStorage.canSave()
+  }));
+  console.log('SAVED GAME DIAGNOSTIC',JSON.stringify({diagnostic,successfulPathWrites,failedPathWrite}));
+  expect(diagnostic.status).toBe('ready');
+  expect(diagnostic.unsavedApps).not.toContain('pathrecall');
   expect(successfulPathWrites).toBeGreaterThanOrEqual(1);
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY&&globalThis.BaselineGameStorage?.canSave());
