@@ -421,7 +421,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   }
   function injectMobileGameControls(gameId){
     ensureGamePlayContract();
-    if(gameId === 'detectword' && refs.wordBoard && document.getElementById('wordGuessInput') && !q('.mobile-game-keypad[data-keypad="detectword"]', refs.wordBoard)){
+    if(gameId === 'detectword' && refs.wordBoard && !q('.mobile-game-keypad[data-keypad="detectword"]', refs.wordBoard)){
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(function(letter){ return keypadButton('detectword', letter.toLowerCase(), letter, 'mobile-game-key--letter'); }).join('');
       refs.wordBoard.insertAdjacentHTML('beforeend', '<div class="mobile-game-keypad mobile-word-keypad" data-keypad="detectword" aria-label="Word input keyboard">' + letters + keypadButton('detectword','backspace','⌫','mobile-game-key--utility') + keypadButton('detectword','clear','Clear','mobile-game-key--utility') + keypadButton('detectword','submit','Submit','mobile-game-key--submit') + '</div>');
     }
@@ -430,7 +430,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       if(duplicateKeypad) duplicateKeypad.remove();
       return;
     }
-    if(gameId === 'make24' && refs.make24Board && document.getElementById('make24ExpressionInput') && !q('.mobile-game-keypad[data-keypad="make24"]', refs.make24Board)){
+    if(gameId === 'make24' && refs.make24Board && !q('.mobile-game-keypad[data-keypad="make24"]', refs.make24Board)){
       const keys = ['7','8','9','(','4','5','6',')','1','2','3','+','0','-','*','/'];
       const symbols = { '*':'×', '/':'÷', '-':'−' };
       const keysHtml = keys.map(function(key){ return keypadButton('make24', key, symbols[key] || key, /[0-9]/.test(key) ? 'mobile-game-key--number' : 'mobile-game-key--operator'); }).join('');
@@ -4069,7 +4069,9 @@ if(ruleShiftState.finished){
   }
 
 function activeRecreationFullscreenRoot(){
-    return document.fullscreenElement || document.querySelector('.recreation-mobile-pseudo-fullscreen');
+    const native = document.fullscreenElement;
+    if(native && (native.classList?.contains('game-play-root') || native.matches?.('[data-sequence-view="game"]'))) return native;
+    return document.querySelector('.recreation-mobile-pseudo-fullscreen');
   }
 function toggleGameFullscreen(gameId){
     const id=normaliseGameId(gameId);
@@ -4203,7 +4205,7 @@ function toggleGameFullscreen(gameId){
       if(fullBtn && windowActions && fullBtn.parentElement!==windowActions) windowActions.appendChild(fullBtn);
       if(isDesktopKeypadGame(id) && gameRoot){
         let keyboardBtn = gameRoot.querySelector('[data-desktop-keypad-toggle="' + id + '"]');
-        let keypadHost = specificActions;
+        let keypadHost = windowActions || specificActions;
         if(!keypadHost){
           keypadHost = document.createElement('div');
           keypadHost.className = 'game-specific-actions';
