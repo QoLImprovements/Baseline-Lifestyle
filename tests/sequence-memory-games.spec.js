@@ -135,3 +135,39 @@ test('Alt+F can fullscreen only the visible game window, never the Recreation pa
   await altF('#blockGridGameCard');
   expect(await page.evaluate(()=>window.__recreationAltFFullscreenTargets)).toEqual(['pairsGameCard','pathRecallGameCard','blockGridGameCard']);
 });
+
+
+test('Both sequence games use the canonical bottom dock: plus over A, Settings over Music/Fullscreen',async({page})=>{
+  await openHub(page);
+  for(const slug of ['path-recall','combat-sequence']){
+    await page.locator('[data-open-game-extension="'+slug+'"]:visible').first().click();
+    const panel=page.locator('#'+(slug==='path-recall'?'pathRecall':'combatSequence')+'Panel');
+    const dock=panel.locator('.sequence-game-actions.recreation-unified-controls');
+    await expect(dock.locator('.games-settings-trigger')).toHaveCount(1);
+    await expect(dock.locator('.games-music-quick-toggle')).toHaveCount(1);
+    await expect(dock.locator('.start-new-game-toggle')).toHaveCount(1);
+    await expect(dock.locator('.auto-next-toggle')).toHaveCount(1);
+    const positions=await panel.evaluate(el=>{
+      const rect=selector=>el.querySelector(selector).getBoundingClientRect();
+      return {
+        play:rect('[data-sequence-board]').bottom,
+        dock:rect('.sequence-game-actions').top,
+        new:rect('.start-new-game-toggle'),
+        auto:rect('.auto-next-toggle'),
+        settings:rect('.games-settings-trigger'),
+        music:rect('.games-music-quick-toggle'),
+        fullscreen:rect('.game-fullscreen-toggle'),
+        specific:rect('.sequence-specific-actions')
+      };
+    });
+    expect(positions.dock).toBeGreaterThanOrEqual(positions.play-2);
+    expect(positions.specific.top).toBeGreaterThanOrEqual(positions.play-2);
+    expect(positions.new.top).toBeLessThan(positions.auto.top);
+    expect(Math.abs(positions.new.left-positions.auto.left)).toBeLessThan(4);
+    expect(positions.settings.top).toBeLessThan(positions.music.top);
+    expect(positions.music.top).toBeCloseTo(positions.fullscreen.top,0);
+    expect(positions.music.left).toBeLessThan(positions.fullscreen.left);
+    await expect(dock.locator('.game-fullscreen-toggle svg path')).toHaveAttribute('d','M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5');
+    await panel.locator('[data-close-game-extension]').first().click();
+  }
+});
