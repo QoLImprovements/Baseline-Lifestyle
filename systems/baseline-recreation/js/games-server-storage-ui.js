@@ -50,7 +50,7 @@ function saveStatusLabel(state){
   if(state.canSave && state.unsavedCount>0)return 'Saving in progress: '+state.unsavedCount+' game profile(s) await server confirmation.';
   if(state.canSave)return 'Account saving is available. No unsaved changes are pending.';
   if(state.status==='conflict')return 'Save conflict. Unsaved progress is held in this tab; do not refresh.';
-  if(state.authenticated && state.unsavedCount>0)return 'Save failed. Unsaved progress remains in this tab; select Retry saving in the account panel.';
+  if(state.authenticated && state.unsavedCount>0)return 'Save failed. Unsaved progress remains in this tab. Click this icon to retry saving.';
   if(state.status==='signed-out')return 'Sign in to save progress to your Baseline Lifestyle account.';
   return 'Server saving is currently unavailable. Progress from this page session is temporary.';
 }
@@ -186,12 +186,17 @@ function installSaveTooltipEvents(){
       if(retry.disabled)return;
       retry.disabled=true;
       retry.textContent='Retrying…';
-      Promise.resolve(globalThis.BaselineGameStorage?.retryFailedSaves?.()).finally(update);
+      Promise.resolve(globalThis.BaselineGameStorage?.retryFailedSaves?.()).catch(()=>false).finally(update);
       return;
     }
     const button=event.target instanceof Element ? event.target.closest('[data-save-status-icon]') : null;
     if(button){
       event.preventDefault();
+      const state=storageState();
+      if(state.authenticated && !state.canSave && state.status!=='conflict' && state.unsavedCount>0){
+        Promise.resolve(globalThis.BaselineGameStorage?.retryFailedSaves?.()).catch(()=>false).finally(update);
+        return;
+      }
       showSaveTooltip(button);
       return;
     }
