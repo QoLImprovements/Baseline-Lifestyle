@@ -51,7 +51,7 @@
     return {
       app:'ruleshift', bank:0, xp:0, level:1, skillPoints:1,
       gamesPlayed:0, correctAnswers:0, wrongAnswers:0, currentStreak:0, bestStreak:0, cleanWinStreak:0, lastRoundXp:0,
-      selectedTier:'starter', skills:{ focus:0, banker:0, recovery:0, adapt:0 }, activeRound:null
+      selectedTier:'starter', selectedGameType:'classic', skills:{ focus:0, banker:0, recovery:0, adapt:0 }, activeRound:null
     };
   }
 
@@ -176,6 +176,8 @@
     reconcileSkillPoints(merged, RULESHIFT_SKILLS);
     const unlocked = RULESHIFT_TIERS.filter(t => merged.level >= t.unlockLevel);
     if(!unlocked.some(t => t.id === merged.selectedTier)) merged.selectedTier = unlocked.slice(-1)[0].id;
+    const gameTypes={classic:1,inverse:9,hybrid:16};
+    if(!gameTypes[merged.selectedGameType] || merged.level<gameTypes[merged.selectedGameType]) merged.selectedGameType='classic';
     return merged;
   }
 

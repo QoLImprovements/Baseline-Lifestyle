@@ -137,7 +137,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     detectword:{ panels:['wordGameCard','wordRoundCard','wordSkillCard','wordTierCard','wordProgressCard'], defaultPanel:'wordGameCard', get:function(){ return wordOpenPanel; }, set:function(value){ wordOpenPanel = value; } },
     make24:{ panels:['make24GameCard','make24RoundCard','make24SkillCard','make24TierCard','make24ProgressCard'], defaultPanel:'make24GameCard', get:function(){ return make24OpenPanel; }, set:function(value){ make24OpenPanel = value; } },
     trackcoin:{ panels:['trackCoinGamePanel','trackCoinRoundPanel','trackCoinSkillPanel','trackCoinTierPanel','trackCoinProgressPanel'], defaultPanel:'trackCoinGamePanel', get:function(){ return trackCoinOpenPanel; }, set:function(value){ trackCoinOpenPanel = value; } },
-    ruleshift:{ panels:['ruleShiftGameCard','ruleShiftRoundCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftProgressCard'], defaultPanel:'ruleShiftGameCard', get:function(){ return ruleShiftOpenPanel; }, set:function(value){ ruleShiftOpenPanel = value; } },
+    ruleshift:{ panels:['ruleShiftGameCard','ruleShiftRoundCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftGameTypeCard','ruleShiftProgressCard'], defaultPanel:'ruleShiftGameCard', get:function(){ return ruleShiftOpenPanel; }, set:function(value){ ruleShiftOpenPanel = value; } },
     ninja:{ panels:['ninjaGameCard'], defaultPanel:'ninjaGameCard', get:function(){ return ninjaOpenPanel; }, set:function(value){ ninjaOpenPanel = value; } }
   });
 
@@ -421,7 +421,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   }
   function injectMobileGameControls(gameId){
     ensureGamePlayContract();
-    if(gameId === 'detectword' && refs.wordBoard && document.getElementById('wordGuessInput') && !q('.mobile-game-keypad[data-keypad="detectword"]', refs.wordBoard)){
+    if(gameId === 'detectword' && refs.wordBoard && !q('.mobile-game-keypad[data-keypad="detectword"]', refs.wordBoard)){
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(function(letter){ return keypadButton('detectword', letter.toLowerCase(), letter, 'mobile-game-key--letter'); }).join('');
       refs.wordBoard.insertAdjacentHTML('beforeend', '<div class="mobile-game-keypad mobile-word-keypad" data-keypad="detectword" aria-label="Word input keyboard">' + letters + keypadButton('detectword','backspace','⌫','mobile-game-key--utility') + keypadButton('detectword','clear','Clear','mobile-game-key--utility') + keypadButton('detectword','submit','Submit','mobile-game-key--submit') + '</div>');
     }
@@ -430,7 +430,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       if(duplicateKeypad) duplicateKeypad.remove();
       return;
     }
-    if(gameId === 'make24' && refs.make24Board && document.getElementById('make24ExpressionInput') && !q('.mobile-game-keypad[data-keypad="make24"]', refs.make24Board)){
+    if(gameId === 'make24' && refs.make24Board && !q('.mobile-game-keypad[data-keypad="make24"]', refs.make24Board)){
       const keys = ['7','8','9','(','4','5','6',')','1','2','3','+','0','-','*','/'];
       const symbols = { '*':'×', '/':'÷', '-':'−' };
       const keysHtml = keys.map(function(key){ return keypadButton('make24', key, symbols[key] || key, /[0-9]/.test(key) ? 'mobile-game-key--number' : 'mobile-game-key--operator'); }).join('');
@@ -1124,7 +1124,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     detectword:{root:'wordGameCard',tabs:[['game','Game'],['round','Round','wordRoundCard'],['skills','Skills','wordSkillCard'],['tiers','Tiers','wordTierCard'],['progress','Progress','wordProgressCard']]},
     make24:{root:'make24GameCard',tabs:[['game','Game'],['round','Round','make24RoundCard'],['skills','Skills','make24SkillCard'],['tiers','Tiers','make24TierCard'],['progress','Progress','make24ProgressCard']]},
     trackcoin:{root:'trackCoinGamePanel',tabs:[['game','Game'],['round','Round','trackCoinRoundPanel'],['skills','Skills','trackCoinSkillPanel'],['tiers','Tiers','trackCoinTierPanel'],['progress','Progress','trackCoinProgressPanel']]},
-    ruleshift:{root:'ruleShiftGameCard',tabs:[['game','Game'],['round','Round','ruleShiftRoundCard'],['skills','Skills','ruleShiftSkillCard'],['tiers','Tiers','ruleShiftTierCard'],['progress','Progress','ruleShiftProgressCard']]},
+    ruleshift:{root:'ruleShiftGameCard',tabs:[['game','Game'],['round','Round','ruleShiftRoundCard'],['skills','Skills','ruleShiftSkillCard'],['tiers','Tiers','ruleShiftTierCard'],['gametype','Game Type','ruleShiftGameTypeCard'],['progress','Progress','ruleShiftProgressCard']]},
     blockgrid:{root:'blockGridGameCard',tabs:[['game','Game'],['round','Round','blockGridRoundCard'],['skills','Skills','blockGridSkillsCard'],['tiers','Tiers','blockGridModesCard'],['progress','Progress','blockGridProgressCard']]},
     coloursort:{root:'colourSortGameCard',tabs:[['game','Game'],['round','Round','colourSortRoundCard'],['tiers','Tiers','colourSortLevelsCard'],['progress','Progress','colourSortProgressCard']]},
     crossnumber:{root:'crossnumberGamePanel',tabs:[['game','Game'],['round','Round','crossnumberRoundPanel'],['skills','Skills','crossnumberSkillPanel'],['tiers','Tiers','crossnumberTierPanel'],['progress','Progress','crossnumberProgressPanel']]}
@@ -1759,7 +1759,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
 
   function setRuleShiftPanel(panelId, historyMode){
     ruleShiftOpenPanel = normalisePanelId('ruleshift', panelId || 'ruleShiftGameCard');
-    setExclusivePanel(ruleShiftOpenPanel, ['ruleShiftGameCard','ruleShiftRoundCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftProgressCard'], 'data-ruleshift-panel', { id:'ruleShiftSkillCard', ready: profiles.ruleshift && profiles.ruleshift.skillPoints > 0 });
+    setExclusivePanel(ruleShiftOpenPanel, ['ruleShiftGameCard','ruleShiftRoundCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftGameTypeCard','ruleShiftProgressCard'], 'data-ruleshift-panel', { id:'ruleShiftSkillCard', ready: profiles.ruleshift && profiles.ruleshift.skillPoints > 0 });
     syncHashState(historyMode);
   }
 
@@ -3558,7 +3558,11 @@ if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
     return options;
   }
   function buildRuleShiftRule(tier, previousRule){
-    const rules = tier.rules && tier.rules.length ? tier.rules : ['colour','shape'];
+    const tierRules = tier.rules && tier.rules.length ? tier.rules : ['colour','shape'];
+    const gameType = profiles.ruleshift?.selectedGameType || 'classic';
+    const rules = gameType==='inverse' ? ['notColour','notShape']
+      : gameType==='hybrid' ? [...new Set([...tierRules,'notColour','notShape'])]
+      : tierRules.filter(rule => rule!=='notColour' && rule!=='notShape');
     let type = rules[Math.floor(Math.random() * rules.length)];
     if(previousRule && rules.length > 1){
       const tierId=String(tier&&tier.id||'');
@@ -3903,6 +3907,22 @@ if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
       return '<button class="tier-btn' + (active ? ' active' : '') + '" data-ruleshift-tier="' + tier.id + '" type="button"' + (locked ? ' disabled' : '') + '><span>' + escapeHtml(tier.name) + '</span><span>' + escapeHtml(detail) + '</span></button>';
     }).join('');
   }
+  function renderRuleShiftGameTypes(){
+    const root=document.getElementById('ruleShiftGameTypeList');
+    const profile=profiles.ruleshift;
+    if(!root || !profile)return;
+    const types=[
+      {id:'classic',name:'Classic',unlockLevel:1,description:'Match colours, shapes and combinations.'},
+      {id:'inverse',name:'Inverse',unlockLevel:9,description:'Reject forbidden colours and shapes.'},
+      {id:'hybrid',name:'Hybrid',unlockLevel:16,description:'Switch unpredictably between matching and exclusion rules.'}
+    ];
+    root.innerHTML=types.map(type=>{
+      const locked=profile.level<type.unlockLevel;
+      const active=(profile.selectedGameType||'classic')===type.id;
+      const detail=locked?'Unlock at Player Rank '+type.unlockLevel:(active?'Selected · Unlocked':'Unlocked');
+      return '<button type="button" class="tier-btn'+(active?' active':'')+'" data-ruleshift-game-type="'+type.id+'" '+(locked?'disabled aria-disabled="true"':'')+'><span>'+escapeHtml(type.name)+'</span><span>'+escapeHtml(type.description+' · '+detail)+'</span></button>';
+    }).join('');
+  }
   function renderRuleShiftSkillTree(){
     if(!refs.ruleShiftSkillTreeGrid || !refs.ruleShiftSkillSummary) return;
     const profile = profiles.ruleshift;
@@ -3974,6 +3994,7 @@ if(ruleShiftState.finished){
     if(!profiles.ruleshift) return;
     renderRuleShiftProgress();
     renderRuleShiftTierList();
+    renderRuleShiftGameTypes();
     renderRuleShiftSkillTree();
     renderRuleShiftBoard();
     renderRuleShiftStats();
@@ -4069,7 +4090,9 @@ if(ruleShiftState.finished){
   }
 
 function activeRecreationFullscreenRoot(){
-    return document.fullscreenElement || document.querySelector('.recreation-mobile-pseudo-fullscreen');
+    const native = document.fullscreenElement;
+    if(native && (native.classList?.contains('game-play-root') || native.matches?.('[data-sequence-view="game"]'))) return native;
+    return document.querySelector('.recreation-mobile-pseudo-fullscreen');
   }
 function toggleGameFullscreen(gameId){
     const id=normaliseGameId(gameId);
@@ -4203,7 +4226,7 @@ function toggleGameFullscreen(gameId){
       if(fullBtn && windowActions && fullBtn.parentElement!==windowActions) windowActions.appendChild(fullBtn);
       if(isDesktopKeypadGame(id) && gameRoot){
         let keyboardBtn = gameRoot.querySelector('[data-desktop-keypad-toggle="' + id + '"]');
-        let keypadHost = specificActions;
+        let keypadHost = windowActions || specificActions;
         if(!keypadHost){
           keypadHost = document.createElement('div');
           keypadHost.className = 'game-specific-actions';
@@ -4432,6 +4455,20 @@ function toggleGameFullscreen(gameId){
       const trackCoinSkill = event.target.closest('[data-trackcoin-skill]'); if(trackCoinSkill){ spendTrackCoinSkill(trackCoinSkill.getAttribute('data-trackcoin-skill')); return; }
       const trackCoinPanelBtn = event.target.closest('[data-trackcoin-panel]'); if(trackCoinPanelBtn){ setTrackCoinPanel(trackCoinPanelBtn.getAttribute('data-trackcoin-panel'), 'push'); return; }
       const ruleShiftTier = event.target.closest('[data-ruleshift-tier]'); if(ruleShiftTier){ const tier = RULESHIFT_TIERS.find(item => item.id === ruleShiftTier.getAttribute('data-ruleshift-tier')); if(tier && profiles.ruleshift.level >= tier.unlockLevel){ profiles.ruleshift.selectedTier = tier.id; profiles.ruleshift.activeRound = null; clearRuleShiftTimer(); ruleShiftState = null; ruleShiftIdleMessage = tier.name + ' selected. Press New Game when ready.'; scheduleSave('ruleshift'); renderAll(); } return; }
+      const ruleShiftGameType=event.target.closest('[data-ruleshift-game-type]');
+      if(ruleShiftGameType){
+        const type=ruleShiftGameType.getAttribute('data-ruleshift-game-type');
+        const unlock={classic:1,inverse:9,hybrid:16};
+        if(unlock[type] && profiles.ruleshift.level>=unlock[type] && profiles.ruleshift.selectedGameType!==type){
+          profiles.ruleshift.selectedGameType=type;
+          profiles.ruleshift.activeRound=null;
+          clearRuleShiftTimer();
+          ruleShiftState=null;
+          ruleShiftIdleMessage=type.charAt(0).toUpperCase()+type.slice(1)+' Game Type selected. Press New Game when ready.';
+          scheduleSave('ruleshift');renderAll();
+        }
+        return;
+      }
       const ruleShiftSkill = event.target.closest('[data-ruleshift-skill]'); if(ruleShiftSkill){ spendRuleShiftSkill(ruleShiftSkill.getAttribute('data-ruleshift-skill')); return; }
       const ruleShiftPanelBtn = event.target.closest('[data-ruleshift-panel]'); if(ruleShiftPanelBtn){ setRuleShiftPanel(ruleShiftPanelBtn.getAttribute('data-ruleshift-panel'), 'push'); return; }
       const ninjaPanelBtn = event.target.closest('[data-ninja-panel]'); if(ninjaPanelBtn){ setNinjaPanel(ninjaPanelBtn.getAttribute('data-ninja-panel'), 'push'); return; }

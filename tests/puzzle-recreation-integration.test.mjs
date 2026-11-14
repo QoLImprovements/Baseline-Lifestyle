@@ -14,7 +14,7 @@ test('extension games are registered and loaded as isolated Recreation modules',
   assert.match(html, /games\/block-grid\/js\/block-grid\.js/);
   assert.match(html, /games\/colour-sort\/js\/colour-sort\.js/);
   assert.match(support, /`\/baseline-recreation\/games\/\$\{config\.id\}`/);
-  assert.match(htaccess, /rule-shift\|block-grid\|colour-sort\|darts-focused/);
+  assert.match(htaccess, /rule-shift\|path-recall\|combat-sequence\|block-grid\|colour-sort\|darts-focused/);
   assert.doesNotMatch(read('systems/baseline-recreation/games/block-grid/js/block-grid.js'), /baseline-realm|ninjaPanel/);
   assert.doesNotMatch(read('systems/baseline-recreation/games/colour-sort/js/colour-sort.js'), /baseline-realm|ninjaPanel/);
 });

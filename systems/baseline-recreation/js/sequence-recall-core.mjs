@@ -70,6 +70,7 @@ export function makeCombat(moveIds, length, random=Math.random){
 }
 const safeNumber=(value,minimum=0)=>Math.max(minimum,Math.floor(Number(value)||0));
 const tierById=(id)=>SEQUENCE_TIERS.find(t=>t.id===id)||SEQUENCE_TIERS[0];
+export const cleanBonusPct=(streak)=>Math.min(100,Math.max(0,Math.floor(Number(streak)||0))*5);
 
 export function mountSequenceGame(config){
   const {id,app,name,kind,note,benefit}=config;
@@ -77,14 +78,15 @@ export function mountSequenceGame(config){
   const defaultProfile={
     app,level:1,xp:0,bank:0,skillPoints:1,selectedTier:'starter',
     roundsPlayed:0,roundsWon:0,bestStreak:0,streak:0,cleanStreak:0,
-    bestLength:0,totalCorrect:0,totalMistakes:0,lastXp:0,lastBank:0,
+    bestLength:0,totalCorrect:0,totalMistakes:0,lastXp:0,lastBank:0,reverseClears:0,reverseEnabled:false,
     skills:{focus:0,banker:0,rehearsal:0,recovery:0}
   };
   function normalise(value){
     const source=value&&typeof value==='object'?value:{};
     const next={...defaultProfile,...source,app};
-    for(const key of ['xp','bank','skillPoints','roundsPlayed','roundsWon','bestStreak','streak','cleanStreak','bestLength','totalCorrect','totalMistakes','lastXp','lastBank'])next[key]=safeNumber(next[key]);
+    for(const key of ['xp','bank','skillPoints','roundsPlayed','roundsWon','bestStreak','streak','cleanStreak','bestLength','totalCorrect','totalMistakes','lastXp','lastBank','reverseClears'])next[key]=safeNumber(next[key]);
     next.level=safeNumber(next.level,1);
+    next.reverseEnabled=Boolean(source.reverseEnabled)&&next.level>=4;
     next.skills=Object.fromEntries(SEQUENCE_SKILLS.map(skill=>[skill.id,Math.min(skill.max,safeNumber(source.skills?.[skill.id]))]));
     const valid=tierById(next.selectedTier);
     next.selectedTier=valid.unlockLevel<=next.level?valid.id:'starter';
@@ -95,6 +97,8 @@ export function mountSequenceGame(config){
   let previewTimers=[],previewToken=0,storageAuth=null;
   const $=(selector)=>document.getElementById(panelId)?.querySelector(selector);
   const tier=()=>tierById(profile.selectedTier);
+  const answerSequence=()=>round?(round.reverse?round.sequence.slice().reverse():round.sequence):[];
+  const missionName=()=>kind==='path'?'Route Memory Challenge':'Movement Combination Drill';
   function cancelPreview(){
     previewToken++;
     previewTimers.forEach(timer=>clearTimeout(timer));
@@ -117,9 +121,9 @@ export function mountSequenceGame(config){
   function start(){
     cancelPreview();
     const t=tier();
-    round={sequence:currentSequence(),index:0,phase:'preview',lit:null,wrong:null,replays:0,startedTier:t.id};
+    round={sequence:currentSequence(),index:0,phase:'preview',lit:null,wrong:null,replays:0,startedTier:t.id,reverse:profile.reverseEnabled&&profile.level>=4};
     profile.roundsPlayed++;
-    message='Watch the sequence carefully. You will repeat it in the same order.';
+    message=round.reverse?'Observe the sequence, then recall the entire order backwards.':'Observe the sequence, then reproduce it in the same order.';
     persist();
     preview();
   }
@@ -146,7 +150,7 @@ export function mountSequenceGame(config){
     previewTimers.push(setTimeout(()=>{
       if(token!==previewToken||!round)return;
       round.phase='input';round.lit=null;
-      message='Your turn: repeat '+round.sequence.length+' steps in the correct order.';
+      message='Your turn: recall '+round.sequence.length+' steps '+(round.reverse?'in reverse order.':'in the original order.');
       render();
     },round.sequence.length*t.pace+200));
   }
@@ -157,7 +161,7 @@ export function mountSequenceGame(config){
   }
   function select(value){
     if(!round||round.phase!=='input')return;
-    if(String(value)!==String(round.sequence[round.index])){
+    if(String(value)!==String(answerSequence()[round.index])){
       round.wrong=value;profile.totalMistakes++;
       finish(false);
       return;
@@ -175,16 +179,19 @@ export function mountSequenceGame(config){
     if(won){
       const t=tierById(round.startedTier);
       const rehearsalMultiplier=round.replays?0.9:1;
-      const xp=Math.max(1,Math.round(t.xp*(1+profile.skills.focus*.08)*rehearsalMultiplier));
-      const bank=Math.max(1,Math.round(t.bank*(1+profile.skills.banker*.1)*rehearsalMultiplier));
+      const cleanPct=cleanBonusPct(profile.cleanStreak+1);
+      const challengeMultiplier=round.reverse?1.2:1;
+      const xp=Math.max(1,Math.round(t.xp*(1+profile.skills.focus*.08)*(1+cleanPct/100)*challengeMultiplier*rehearsalMultiplier));
+      const bank=Math.max(1,Math.round(t.bank*(1+profile.skills.banker*.1)*(1+cleanPct/100)*challengeMultiplier*rehearsalMultiplier));
       const levelBefore=profile.level;
       awardXp(profile,xp);
       profile.skillPoints+=profile.level-levelBefore;
       profile.bank+=bank;profile.lastXp=xp;profile.lastBank=bank;
       profile.roundsWon++;profile.streak++;profile.cleanStreak++;
+      if(round.reverse)profile.reverseClears++;
       profile.bestStreak=Math.max(profile.bestStreak,profile.streak);
       profile.bestLength=Math.max(profile.bestLength,round.sequence.length);
-      message='Sequence complete · +'+xp+' XP · +'+bank+' Bank.'+(profile.level>levelBefore?' Rank increased!':'');
+      message='Sequence complete · +'+xp+' XP · +'+bank+' Bank · Clean Streak Bonus +'+cleanPct+'%'+(round.reverse?' · Reverse +20%':'')+'.'+(profile.level>levelBefore?' Rank increased!':'');
     }else{
       const penalty=Math.max(0,2-profile.skills.recovery);
       profile.bank=Math.max(0,profile.bank-penalty);
@@ -206,6 +213,12 @@ export function mountSequenceGame(config){
     if(!next||next.unlockLevel>profile.level)return;
     cancelPreview();round=null;profile.selectedTier=next.id;
     message='Tier changed to '+next.name+'. Select New Game to begin.';
+    persist();render();
+  }
+  function toggleReverseChallenge(){
+    if(profile.level<4 || (round && (round.phase==='preview'||round.phase==='input')))return;
+    profile.reverseEnabled=!profile.reverseEnabled;
+    message=profile.reverseEnabled?'Reverse Recall enabled. Observe forward, answer backwards.':'Standard recall enabled. Repeat the original order.';
     persist();render();
   }
   function showTab(next){
@@ -248,7 +261,7 @@ export function mountSequenceGame(config){
   }
   function gridHtml(t,active){
     const cells=Array.from({length:t.grid*t.grid},(_,i)=>{
-      const lit=round?.lit===i,done=round?.phase==='input'&&round.sequence.slice(0,round.index).includes(i);
+      const lit=round?.lit===i,done=round?.phase==='input'&&answerSequence().slice(0,round.index).includes(i);
       const wrong=round?.phase==='finished'&&round.wrong===i;
       return '<button class="sequence-cell'+(lit?' is-lit':'')+(done?' is-done':'')+(wrong?' is-wrong':'')+'" type="button" data-sequence-choice="'+i+'" aria-label="Row '+(Math.floor(i/t.grid)+1)+', column '+(i%t.grid+1)+'" '+(!active?'disabled':'')+'><span aria-hidden="true">'+(lit?'●':done?'✓':'')+'</span></button>';
     }).join('');
@@ -263,8 +276,9 @@ export function mountSequenceGame(config){
     const cue=round?.phase==='preview'&&round.lit!==null
       ?(kind==='path'?'Row '+(Math.floor(round.lit/t.grid)+1)+', column '+(round.lit%t.grid+1):COMBAT_MOVES.find(move=>move.id===round.lit)?.name||'')
       :'';
-    el.innerHTML='<div class="sequence-round-counter"><strong>'+escapeHtml(phase)+'</strong><span>'+(round?round.index+' / '+round.sequence.length+' recalled':t.length+' steps')+'</span></div>'+
-      '<div class="sequence-status" role="status" aria-live="polite">'+escapeHtml(message)+'</div><span class="sr-only" role="status" aria-live="polite">'+escapeHtml(cue)+'</span>'+board+
+    el.innerHTML='<div class="sequence-mission"><span>'+escapeHtml(missionName())+'</span><strong>'+escapeHtml(t.name)+' · '+t.length+' cues</strong></div>'+
+      '<div class="sequence-round-counter"><strong>'+escapeHtml(phase)+'</strong><span>'+(round?round.index+' / '+round.sequence.length+' recalled':t.length+' steps')+'</span></div>'+
+      '<div class="sequence-status" role="status" aria-live="polite">'+escapeHtml(message)+'</div><div class="sequence-challenge"><span>Clean Streak <strong>'+profile.cleanStreak+'</strong></span><span>Clean Bonus <strong>+'+cleanBonusPct(profile.cleanStreak)+'%</strong></span><button type="button" class="action secondary" data-sequence-reverse aria-pressed="'+String(profile.reverseEnabled)+'" '+(profile.level<4 || (round && (round.phase==='preview'||round.phase==='input'))?'disabled':'')+'>'+(kind==='path'?'Reverse Trail':'Counter Sequence')+' · '+(profile.level<4?'Unlock Rank 4':profile.reverseEnabled?'ON':'OFF')+'</button></div><span class="sr-only" role="status" aria-live="polite">'+escapeHtml(cue)+'</span>'+board+
       (round&&round.phase==='input'&&profile.skills.rehearsal?
       '<button class="action ghost" data-sequence-replay type="button" '+(round.replays?'disabled':'')+'>↻ Replay demonstration'+(round.replays?' (used)':'')+'</button>':'')+
       (round&&round.phase==='finished'?'<p class="inline-note">Use New Game for a new sequence. The Round tab shows the completed demonstration.</p>':'');
@@ -275,11 +289,11 @@ export function mountSequenceGame(config){
     let content='';
     if(round.phase==='finished'){
       content=kind==='path'
-       ?'<div class="sequence-answer">'+round.sequence.map(n=>'R'+(Math.floor(n/tierById(round.startedTier).grid)+1)+' C'+(n%tierById(round.startedTier).grid+1)).map(escapeHtml).join(' → ')+'</div>'
-       :'<div class="sequence-answer">'+round.sequence.map(id=>escapeHtml(COMBAT_MOVES.find(m=>m.id===id)?.name||id)).join(' → ')+'</div>';
+       ?'<div class="sequence-answer">'+answerSequence().map(n=>'R'+(Math.floor(n/tierById(round.startedTier).grid)+1)+' C'+(n%tierById(round.startedTier).grid+1)).map(escapeHtml).join(' → ')+'</div>'
+       :'<div class="sequence-answer">'+answerSequence().map(id=>escapeHtml(COMBAT_MOVES.find(m=>m.id===id)?.name||id)).join(' → ')+'</div>';
     }else content='<p class="inline-note">The answer is revealed after the round is finished.</p>';
     el.innerHTML='<h3>Round</h3><p>'+round.index+' of '+round.sequence.length+' steps correct · '+escapeHtml(round.phase)+'</p>'+content+
-      '<p class="inline-note">Last reward: +'+profile.lastXp+' XP · +'+profile.lastBank+' Bank</p>';
+      '<p class="inline-note">'+(round.reverse?'Reverse challenge · ':'Standard recall · ')+'Clean Streak Bonus +'+cleanBonusPct(profile.cleanStreak)+'% · Last reward: +'+profile.lastXp+' XP · +'+profile.lastBank+' Bank</p>';
   }
   function renderSkills(){
     const el=$('[data-sequence-skills]');if(!el)return;
@@ -299,14 +313,14 @@ export function mountSequenceGame(config){
   }
   function renderProgress(){
     const el=$('[data-sequence-progress]');if(!el)return;
-    const items=[['Player Rank',profile.level],['XP',profile.xp+' / '+xpNeededForLevel(profile.level)],['Bank',profile.bank],['Rounds played',profile.roundsPlayed],['Rounds completed',profile.roundsWon],['Best streak',profile.bestStreak],['Current streak',profile.streak],['Longest sequence',profile.bestLength],['Correct inputs',profile.totalCorrect],['Incorrect inputs',profile.totalMistakes]];
+    const items=[['Player Rank',profile.level],['XP',profile.xp+' / '+xpNeededForLevel(profile.level)],['Bank',profile.bank],['Rounds played',profile.roundsPlayed],['Rounds completed',profile.roundsWon],['Clean streak',profile.cleanStreak],['Clean Streak Bonus','+'+cleanBonusPct(profile.cleanStreak)+'%'],['Reverse challenge clears',profile.reverseClears],['Best streak',profile.bestStreak],['Current streak',profile.streak],['Longest sequence',profile.bestLength],['Correct inputs',profile.totalCorrect],['Incorrect inputs',profile.totalMistakes]];
     el.innerHTML='<h3>Progress</h3><div class="sequence-stats">'+items.map(([label,value])=>'<div><span>'+escapeHtml(label)+'</span><strong>'+escapeHtml(value)+'</strong></div>').join('')+'</div>';
   }
   function render(){
     const p=document.getElementById(panelId);
     if(!p)return;
     const status=$('[data-sequence-profile]');
-    if(status)status.textContent=xpLabel()+' · Bank '+profile.bank+' · Streak '+profile.streak;
+    if(status)status.textContent=xpLabel()+' · Bank '+profile.bank+' · Streak '+profile.streak+' · Clean Bonus +'+cleanBonusPct(profile.cleanStreak)+'%';
     const bar=$('[data-sequence-xp-fill]');
     if(bar){
       const fraction=Math.min(1,profile.xp/xpNeededForLevel(profile.level));
@@ -325,6 +339,7 @@ export function mountSequenceGame(config){
     const button=element.closest('button');if(!button)return;
     if(button.matches('[data-sequence-start]')){start();return;}
     if(button.matches('[data-sequence-replay]')){replay();return;}
+    if(button.matches('[data-sequence-reverse]')){toggleReverseChallenge();return;}
     if(button.matches('[data-sequence-choice]')){select(kind==='path'?Number(button.dataset.sequenceChoice):button.dataset.sequenceChoice);return;}
     if(button.matches('[data-sequence-tab]')){showTab(button.dataset.sequenceTab);return;}
     if(button.matches('[data-sequence-tier]')){changeTier(button.dataset.sequenceTier);return;}
@@ -333,7 +348,7 @@ export function mountSequenceGame(config){
   }
   function panelHtml(){
     return '<section class="card game-panel sequence-game-panel" id="'+panelId+'" hidden aria-hidden="true" aria-labelledby="'+id+'Title">'+
-      '<div class="game-shell"><div class="game-header"><div><h2 tabindex="-1" id="'+id+'Title">'+escapeHtml(name)+'</h2><p class="note">'+escapeHtml(note)+'</p></div>'+
+      '<div class="game-shell" data-sequence-kind="'+kind+'"><div class="game-header"><div><h2 tabindex="-1" id="'+id+'Title">'+escapeHtml(name)+'</h2><p class="note">'+escapeHtml(note)+'</p></div>'+
       '<div class="link-actions game-shell-actions" data-nonrealm-game-toolbar="'+id+'">'+
       '<button class="action secondary game-shell-action" type="button" data-bl-info-button data-bl-info-title="How to Play" data-bl-info-text="'+escapeHtml(kind==='path'?'Watch adjacent tiles light up one at a time, then tap the identical route in order.':'Observe the movement cues in order, then tap the same movements in sequence. Mental recall only; no physical strikes are required.')+'"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>'+
 
@@ -352,7 +367,7 @@ export function mountSequenceGame(config){
   }
   const shell=createGameExtensionShell({
     id,panelId,name,order:config.order,art:config.art,note,benefit,
-    styleUrl:'/systems/baseline-recreation/css/sequence-games.css?v=SEQUENCE_CORE_20261112_1',
+    styleUrl:'/systems/baseline-recreation/css/sequence-games.css?v=RECREATION_COHERENCE_20261114_1',
     progressText,panelHtml,
     onOpen:()=>{globalThis.BaselineGamesMusic?.selectGame?.(id);render();},
     onClose:()=>{try{globalThis.BaselineGamesAutoNext?.clear?.(app);}catch(_){}exitPseudoFullscreen();cancelPreview();if(round&&round.phase==='preview'){round=null;message='Start a new round when ready.';}globalThis.BaselineGamesMusic?.selectGame?.('');}

@@ -100,8 +100,8 @@ test('Cross Number puzzle-only actions remain in the spacious Numbers card in bo
 });
 
 test('all changed runtime assets receive fresh cache keys', () => {
-  assert.match(html, /RECREATION_UNIFIED_20261104_1/);
-  assert.match(html, /RECREATION_UNIFIED_20261104_1/);
-  assert.match(html, /RECREATION_UNIFIED_20261104_1/);
-  assert.match(html, /RECREATION_UNIFIED_20261104_1/);
+  assert.match(html, /RECREATION_COHERENCE_20261114_1/);
+  assert.match(html, /RECREATION_COHERENCE_20261114_1/);
+  assert.match(html, /RECREATION_COHERENCE_20261114_1/);
+  assert.match(html, /RECREATION_COHERENCE_20261114_1/);
 });

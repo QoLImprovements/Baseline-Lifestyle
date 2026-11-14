@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {makePath,makeCombat,SEQUENCE_TIERS,COMBAT_MOVES} from '../systems/baseline-recreation/js/sequence-recall-core.mjs';
+import {makePath,makeCombat,SEQUENCE_TIERS,COMBAT_MOVES,cleanBonusPct} from '../systems/baseline-recreation/js/sequence-recall-core.mjs';
 
 const at=(file)=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const root='systems/baseline-recreation/';
@@ -70,4 +70,16 @@ test('Sequence games keep the common toolbar, accessibility and independent orig
   assert.match(music,/enabled:false/);
   assert.match(runtime,/saveStoredProfile\(app,profile\)/);
   assert.match(runtime,/createGameExtensionShell\(/);
+});
+
+test('sequence games use the shared clean-streak bonus curve and unlock reverse recall',()=>{
+  assert.equal(cleanBonusPct(0),0);
+  assert.equal(cleanBonusPct(1),5);
+  assert.equal(cleanBonusPct(10),50);
+  assert.equal(cleanBonusPct(20),100);
+  assert.equal(cleanBonusPct(99),100);
+  const source=at(root+'js/sequence-recall-core.mjs');
+  assert.match(source,/data-sequence-reverse/);
+  assert.match(source,/profile\.cleanStreak\+1/);
+  assert.match(source,/challengeMultiplier=round\.reverse\?1\.2:1/);
 });

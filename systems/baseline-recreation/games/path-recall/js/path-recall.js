@@ -1,4 +1,4 @@
-import {mountSequenceGame} from '../../../js/sequence-recall-core.mjs?v=SEQUENCE_CORE_20261112_1';
+import {mountSequenceGame} from '../../../js/sequence-recall-core.mjs?v=RECREATION_COHERENCE_20261114_1';
 mountSequenceGame({
   id:'path-recall',app:'pathrecall',kind:'path',name:'Path Recall',order:6,
   art:'/systems/baseline-recreation/games/overview-art/path-recall.svg?v=SEQUENCE_CORE_20261112_1',

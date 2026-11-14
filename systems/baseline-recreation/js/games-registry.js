@@ -6,39 +6,39 @@
   const games = Object.freeze([
     Object.freeze({
       id:'pairs', runtimeId:'pairs', route:'pairs', profileApp:'pairs', core:true, group:'core', name:'Pairs',
-      overview:overview({ order:3, group:'Core Games', art:'/systems/baseline-recreation/games/overview-art/pairs.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'Memory matching with tiered boards, skill gating, and account-bound Bank rewards.', brainBenefit:'Visual memory, pattern recall, short-term memory, and calm concentration.' })
+      overview:overview({ order:3, group:'Core Games', art:'/systems/baseline-recreation/games/overview-art/pairs.svg?v=RECREATION_COHERENCE_20261114_1', note:'Memory matching with tiered boards, skill gating, and account-bound Bank rewards.', brainBenefit:'Visual memory, pattern recall, short-term memory, and calm concentration.' })
     }),
     Object.freeze({
       id:'detect-the-word', runtimeId:'detectword', route:'detect-the-word', profileApp:'detectword', core:true, group:'core', name:'Detect The Word',
-      overview:overview({ order:1, group:'Core Games', art:'/systems/baseline-recreation/games/overview-art/detect-the-word.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'Wordle-style feedback, 3–7 letter tiers, and button or in-game letter keypad submission.', brainBenefit:'Language deduction, spelling, pattern narrowing, and verbal working memory.' })
+      overview:overview({ order:1, group:'Core Games', art:'/systems/baseline-recreation/games/overview-art/detect-the-word.svg?v=RECREATION_COHERENCE_20261114_1', note:'Wordle-style feedback, 3–7 letter tiers, and button or in-game letter keypad submission.', brainBenefit:'Language deduction, spelling, pattern narrowing, and verbal working memory.' })
     }),
     Object.freeze({
       id:'make-the-number', runtimeId:'make24', route:'make-the-number', profileApp:'make24', core:true, group:'core', name:'Make The Number', legacyIds:Object.freeze(['make24']),
-      overview:overview({ order:2, group:'Core Games', art:'/systems/baseline-recreation/games/overview-art/make-the-number.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'Variable target-number puzzles with tiered number sets, hints, rerolls, and in-game number/operator keypad input.', brainBenefit:'Number flexibility, working memory, multi-step problem solving, and planning.' })
+      overview:overview({ order:2, group:'Core Games', art:'/systems/baseline-recreation/games/overview-art/make-the-number.svg?v=RECREATION_COHERENCE_20261114_1', note:'Variable target-number puzzles with tiered number sets, hints, rerolls, and in-game number/operator keypad input.', brainBenefit:'Number flexibility, working memory, multi-step problem solving, and planning.' })
     }),
     Object.freeze({
       id:'track-the-coin', runtimeId:'trackcoin', route:'track-the-coin', profileApp:'trackcoin', core:true, group:'core', name:'Track the Coin',
-      overview:overview({ order:5, group:'Core Games', art:'/systems/baseline-recreation/games/overview-art/track-the-coin.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'Working-memory shuffle tracking with tiers, streak bonuses, and pace progression.', brainBenefit:'Visual tracking, sustained attention, working memory, and focus under movement.' })
+      overview:overview({ order:5, group:'Core Games', art:'/systems/baseline-recreation/games/overview-art/track-the-coin.svg?v=RECREATION_COHERENCE_20261114_1', note:'Working-memory shuffle tracking with tiers, streak bonuses, and pace progression.', brainBenefit:'Visual tracking, sustained attention, working memory, and focus under movement.' })
     }),
     Object.freeze({
       id:'rule-shift', runtimeId:'ruleshift', route:'rule-shift', profileApp:'ruleshift', core:true, group:'core', name:'Rule Shift',
-      overview:overview({ order:4, group:'Core Games', art:'/systems/baseline-recreation/games/overview-art/rule-shift.svg?v=RECREATION_BURGUNDY_ROSE_COPPER_20261022_1', note:'Timed rule-switching challenge for flexible attention, impulse control, and deliberate choices.', brainBenefit:'Mental flexibility, impulse control, working memory, and attention switching.' })
+      overview:overview({ order:4, group:'Core Games', art:'/systems/baseline-recreation/games/overview-art/rule-shift.svg?v=RECREATION_COHERENCE_20261114_1', note:'Timed rule-switching challenge for flexible attention, impulse control, and deliberate choices.', brainBenefit:'Mental flexibility, impulse control, working memory, and attention switching.' })
     }),
     Object.freeze({
       id:'path-recall',runtimeId:'pathrecall',route:'path-recall',profileApp:'pathrecall',core:true,group:'core',runtimeOwner:'module',name:'Path Recall',
-      overview:overview({order:6,group:'Core Games',art:'/systems/baseline-recreation/games/overview-art/path-recall.svg?v=SEQUENCE_CORE_20261112_1',note:'Watch a route appear on a grid, then reproduce each step from memory.',brainBenefit:'Spatial working memory, route recall, sequencing and sustained attention.'})
+      overview:overview({order:6,group:'Core Games',art:'/systems/baseline-recreation/games/overview-art/path-recall.svg?v=RECREATION_COHERENCE_20261114_1',note:'Watch a route appear on a grid, then reproduce each step from memory.',brainBenefit:'Spatial working memory, route recall, sequencing and sustained attention.'})
     }),
     Object.freeze({
       id:'combat-sequence',runtimeId:'combatsequence',route:'combat-sequence',profileApp:'combatsequence',core:true,group:'core',runtimeOwner:'module',name:'Combat Sequence',
-      overview:overview({order:7,group:'Core Games',art:'/systems/baseline-recreation/games/overview-art/combat-sequence.svg?v=SEQUENCE_CORE_20261112_1',note:'Memorise and reproduce ordered MMA movement cues, with longer combinations at higher tiers.',brainBenefit:'Working memory, motor-sequence recall, movement vocabulary and focused attention.'})
+      overview:overview({order:7,group:'Core Games',art:'/systems/baseline-recreation/games/overview-art/combat-sequence.svg?v=RECREATION_COHERENCE_20261114_1',note:'Memorise and reproduce ordered MMA movement cues, with longer combinations at higher tiers.',brainBenefit:'Working memory, motor-sequence recall, movement vocabulary and focused attention.'})
     }),
     Object.freeze({
       id:'block-grid',runtimeId:'block-grid',route:'block-grid',profileApp:'blockgrid',core:true,group:'core',runtimeOwner:'module',name:'Block Grid',
-      overview:overview({order:8,group:'Core Games',art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',note:'Fit geometric pieces on an 8 × 8 board and clear full rows or columns.',brainBenefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.'})
+      overview:overview({order:8,group:'Core Games',art:'/systems/baseline-recreation/games/block-grid/art/block-grid-overview.svg?v=RECREATION_COHERENCE_20261114_1',note:'Fit geometric pieces on an 8 × 8 board and clear full rows or columns.',brainBenefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.'})
     }),
     Object.freeze({
       id:'colour-sort',runtimeId:'colour-sort',route:'colour-sort',profileApp:'coloursort',core:true,group:'core',runtimeOwner:'module',name:'Colour Sort',
-      overview:overview({order:9,group:'Core Games',art:'/systems/baseline-recreation/games/colour-sort/art/colour-sort-overview.svg?v=RECREATION_BURGUNDY_BURNT_COPPER_20261022_2',note:'Move coloured layers between bottles until each bottle contains one colour.',brainBenefit:'Categorisation, planning, inhibition and step-by-step reasoning.'})
+      overview:overview({order:9,group:'Core Games',art:'/systems/baseline-recreation/games/colour-sort/art/colour-sort-overview.svg?v=RECREATION_COHERENCE_20261114_1',note:'Move coloured layers between bottles until each bottle contains one colour.',brainBenefit:'Categorisation, planning, inhibition and step-by-step reasoning.'})
     }),
     Object.freeze({
       id:'baseline-realm', runtimeId:'ninja', route:'baseline-realm', profileApp:'ninja', core:true, group:'realm', name:'Baseline Realm', legacyIds:Object.freeze(['ninja']),

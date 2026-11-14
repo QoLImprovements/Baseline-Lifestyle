@@ -62,7 +62,7 @@ test('Recreation idle start states stay centred and cannot inherit active game c
   assert.match(nonRealmCss,/#blockGridPanel #blockGridGameCard > \.block-grid-empty[\s\S]*?#colourSortPanel #colourSortGameCard > \.colour-sort-empty/);
   assert.match(nonRealmCss,/> :is\(\.block-grid-empty,\.colour-sort-empty\)\{[\s\S]*?grid-column:1\/-1!important[\s\S]*?grid-row:1\/-1!important[\s\S]*?justify-self:stretch!important[\s\S]*?align-self:stretch!important/);
   assert.match(nonRealmCss,/\.game-window-actions\.game-common-actions\{[\s\S]*?justify-self:center!important[\s\S]*?justify-content:center!important/);
-  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_UNIFIED_20261104_1/);
+  assert.match(html,/non-realm-game-refinement\.css\?v=RECREATION_COHERENCE_20261114_1/);
 });
 
 test('non-Realm progression uses Player Rank while Tier remains the difficulty label',()=>{
@@ -104,7 +104,7 @@ test('Detect the Word and Make The Number keep coherent input behavior and activ
   assert.match(nonRealmCss,/> \.game-fullscreen-toggle\{[\s\S]*?grid-column:5!important[\s\S]*?grid-row:2!important/);
   assert.match(html,/game-specific-actions" aria-label="Detect The Word game controls"[\s\S]*?data-desktop-keypad-toggle="detectword"[\s\S]*?game-window-actions game-common-actions/);
   assert.match(html,/game-specific-actions" aria-label="Make The Number game controls"[\s\S]*?data-desktop-keypad-toggle="make24"[\s\S]*?game-window-actions game-common-actions/);
-  assert.match(core,/let keypadHost = specificActions[\s\S]*?if\(keyboardBtn\.parentElement!==keypadHost\) keypadHost\.appendChild\(keyboardBtn\)/);
+  assert.match(core,/let keypadHost = windowActions || specificActions[\s\S]*?if\(keyboardBtn\.parentElement!==keypadHost\) keypadHost\.appendChild\(keyboardBtn\)/);
   assert.match(nonRealmCss,/\.round-status-card\{[\s\S]*?align-content:start!important/);
 });
 
@@ -136,10 +136,10 @@ test('Auto-next has one registered terminal-state authority across all supported
   assert.match(colourSort,/autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextTerminal=true;[\s\S]*?autoNextApi\(\)\?\.complete\?\.\(APP\)/);
   assert.match(crossnumber,/autoNextApi\(\)\?\.register\?\.\([\s\S]*?function\(\)\{return autoNextTerminal;\}/);
-  assert.match(html,/baseline-recreation-core\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
-  assert.match(html,/games-profile-rules\.js\?v=GAMES_PROFILE_PREVIOUS_WORD_20261025_1/);
-  assert.match(html,/block-grid\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
-  assert.match(html,/colour-sort\.js\?v=SEQUENCE_COHERENT_GAMES_20261112_1/);
+  assert.match(html,/baseline-recreation-core\.js\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(html,/games-profile-rules\.js\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(html,/block-grid\.js\?v=RECREATION_COHERENCE_20261114_1/);
+  assert.match(html,/colour-sort\.js\?v=RECREATION_COHERENCE_20261114_1/);
 });
 
 test('Rule Shift uses a true oval and unmistakably separated categorical colours',()=>{
@@ -469,7 +469,7 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.match(blockGrid,/active\.gameOver = !hasAnyPlacement\(active\.board, active\.tray\);[\s\S]*?if\(active\.gameOver\) settleRunXp\(active\)/);
   assert.doesNotMatch(blockGrid,/awardXp\(profile, Math\.max\(1, Math\.ceil\(awardedScore \/ 5\)/);
   assert.doesNotMatch(blockGrid,/Open Space/);
-  assert.match(blockGrid,/BLOCK_TABS = Object\.freeze\(\['game','round','skills','modes','progress'\]\)/);
+  assert.match(blockGrid,/BLOCK_TABS = Object\.freeze\(\['game','round','skills','tiers','progress'\]\)/);
   assert.match(blockGrid,/id="blockGridSkillsCard"/);
   assert.match(blockGrid,/Score-based progression[\s\S]*?10 points = 1 XP/);
   assert.doesNotMatch(blockCss,/Block Grid windowed composition \+ score progression/);
