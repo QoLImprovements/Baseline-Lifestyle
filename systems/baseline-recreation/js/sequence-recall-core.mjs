@@ -245,7 +245,10 @@ export function mountSequenceGame(config){
     const target=fullscreenTarget();
     if(!target)return;
     if(target.classList.contains('recreation-mobile-pseudo-fullscreen')){exitPseudoFullscreen();return;}
-    if(document.fullscreenElement){document.exitFullscreen?.().catch(()=>{});return;}
+    if(document.fullscreenElement){
+      if(document.fullscreenElement===target) document.exitFullscreen?.().catch(()=>{});
+      return; // Fullscreen belongs to this exact game window, never the page.
+    }
     const touch=window.matchMedia?.('(max-width:820px), (hover:none) and (pointer:coarse)').matches;
     if(touch||!document.fullscreenEnabled||!target.requestFullscreen){
       target.classList.add('recreation-mobile-pseudo-fullscreen');
@@ -379,10 +382,13 @@ export function mountSequenceGame(config){
     try{globalThis.BaselineGamesAutoNext?.sync?.();}catch(_){}
     document.addEventListener('click',handleClick);
     document.addEventListener('keydown',event=>{
-      if(!document.getElementById(panelId)?.classList.contains('is-active')||event.ctrlKey||event.metaKey||!event.altKey||event.isComposing)return;
+      const panel=document.getElementById(panelId);
+      if(event.defaultPrevented || !panel || panel.hidden || !panel.classList.contains('is-active')
+        || document.documentElement.getAttribute('data-game-extension-open')!==id
+        || event.ctrlKey||event.metaKey||!event.altKey||event.shiftKey||event.isComposing)return;
       const key=event.key.toLowerCase();
       if(key==='n'){event.preventDefault();start();}
-      if(key==='f'){event.preventDefault();toggleFullscreen();}
+      if(key==='f'){event.preventDefault();if(!event.repeat)toggleFullscreen();}
     });
     document.addEventListener('keydown',event=>{
       if(event.key==='Escape'&&fullscreenTarget()?.classList.contains('recreation-mobile-pseudo-fullscreen'))exitPseudoFullscreen();
