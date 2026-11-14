@@ -111,10 +111,10 @@
   ]);
   const RULESHIFT_TIERS = [
     { id:'starter', name:'Starter', unlockLevel:1, optionCount:6, rounds:8, timeLimitMs:5000, xpReward:18, bankReward:9, penalty:1, sizes:['large'], rules:['colour','shape'] },
-    { id:'switch', name:'Switching', unlockLevel:4, optionCount:8, rounds:10, timeLimitMs:5000, xpReward:26, bankReward:13, penalty:2, sizes:['large'], rules:['colour','shape','colourShape'] },
-    { id:'opposite', name:'Combinations', unlockLevel:9, optionCount:10, rounds:12, timeLimitMs:5000, xpReward:40, bankReward:21, penalty:3, sizes:['large','small'], rules:['colourShape','colourSize','shapeSize','size','notColour','notShape'] },
-    { id:'mixed', name:'Mixed Rules', unlockLevel:16, optionCount:12, rounds:14, timeLimitMs:5000, xpReward:56, bankReward:30, penalty:4, sizes:['large','small'], rules:['colour','shape','size','colourShape','colourSize','shapeSize','notColour','notShape'] },
-    { id:'pressure', name:'Pressure', unlockLevel:26, optionCount:12, rounds:16, timeLimitMs:5000, xpReward:76, bankReward:44, penalty:5, sizes:['large','small'], rules:['colourShape','colourSize','shapeSize','size','colour','shape','notColour','notShape'] }
+    { id:'switch', name:'Field', unlockLevel:4, optionCount:8, rounds:10, timeLimitMs:5000, xpReward:26, bankReward:13, penalty:2, sizes:['large'], rules:['colour','shape','colourShape'] },
+    { id:'opposite', name:'Forge', unlockLevel:9, optionCount:10, rounds:12, timeLimitMs:5000, xpReward:40, bankReward:21, penalty:3, sizes:['large','small'], rules:['colourShape','colourSize','shapeSize','size','notColour','notShape'] },
+    { id:'mixed', name:'Citadel', unlockLevel:16, optionCount:12, rounds:14, timeLimitMs:5000, xpReward:56, bankReward:30, penalty:4, sizes:['large','small'], rules:['colour','shape','size','colourShape','colourSize','shapeSize','notColour','notShape'] },
+    { id:'pressure', name:'Master', unlockLevel:26, optionCount:12, rounds:16, timeLimitMs:5000, xpReward:76, bankReward:44, penalty:5, sizes:['large','small'], rules:['colourShape','colourSize','shapeSize','size','colour','shape','notColour','notShape'] }
   ];
   const RULESHIFT_SKILLS = [
     { id:'focus', name:'Focus', max:5, unlockLevel:1, description:'Gain +8% XP reward per completed run.' },
