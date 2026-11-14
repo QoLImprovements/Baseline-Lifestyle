@@ -201,14 +201,24 @@
     state.lastError='';
     emitStorageState();
     retryPromise=(async()=>{
-      for(const key of Object.keys(unsaved)){
-        if(!state.canSave)return false;
-        const snapshot=clone(unsaved[key]);
-        if(!snapshot)continue;
-        const ok=await postProfile(key,snapshot,false);
-        if(!ok)return false;
+      // Edits made while a retry is in flight must also be acknowledged.
+      // This bounded drain prevents an older successful response from
+      // leaving a newer unsaved snapshot stranded indefinitely.
+      for(let pass=0;pass<6;pass++){
+        const apps=Object.keys(unsaved);
+        if(!apps.length)return true;
+        for(const key of apps){
+          if(!state.canSave)return false;
+          const snapshot=clone(unsaved[key]);
+          if(!snapshot)continue;
+          const ok=await postProfile(key,snapshot,false);
+          if(!ok)return false;
+        }
       }
-      return state.canSave;
+      // Continuous gameplay may still create newer drafts; restore the
+      // ordinary debounced saver rather than silently marking these saved.
+      if(state.canSave)Object.keys(unsaved).forEach(app=>queueProfile(app,unsaved[app]));
+      return false;
     })().finally(()=>{retryPromise=null;});
     return retryPromise;
   }
