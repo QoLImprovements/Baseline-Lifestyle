@@ -10,7 +10,7 @@
   const writeChains=Object.create(null);
   const unsaved=Object.create(null);
   let retryPromise=null;
-  const state={authenticated:false,canSave:false,ready:false,status:'loading',lastError:'',profiles:{},revisions:{}};
+  const state={authenticated:false,accountId:'',canSave:false,ready:false,status:'loading',lastError:'',profiles:{},revisions:{}};
 
   function clone(value){
     try{return value&&typeof value==='object'?JSON.parse(JSON.stringify(value)):null;}
@@ -72,11 +72,30 @@
       setState(result.status===401?'signed-out':'unavailable',result.error,false,false);
       return false;
     }
+    const nextAccount=String(result.data.accountId||'');
+    const previousAccount=state.accountId;
+    const priorRevisions={...state.revisions};
+    // An account switch must never replay another account's unsaved edits.
+    if(previousAccount && previousAccount!==nextAccount){
+      Object.keys(unsaved).forEach(app=>delete unsaved[app]);
+    }
+    state.accountId=nextAccount;
     state.profiles={};
     Object.entries(result.data.profiles&&typeof result.data.profiles==='object'?result.data.profiles:{}).forEach(([app,profile])=>{
       if(validApp(app)&&profile&&typeof profile==='object')state.profiles[app]=clone(profile)||{};
     });
     rememberRevisions(result.data.revisions);
+    if(previousAccount && previousAccount===nextAccount && Object.keys(unsaved).length){
+      const conflict=Object.keys(unsaved).some(app=>revisionFor(app)!==(Number(priorRevisions[app])||0));
+      // Retain local edits after reconnect, but do not silently overwrite a newer save.
+      Object.keys(unsaved).forEach(app=>{state.profiles[app]=clone(unsaved[app])||{};});
+      if(conflict){
+        setState('conflict','revision_conflict',true,false);
+        return false;
+      }
+      setState('unavailable','unsaved_changes',true,false);
+      return false; // User can retry these verified-revision changes explicitly.
+    }
     setState('ready','',true,true);
     return true;
   }
@@ -146,6 +165,7 @@
     pending[key]=clone(profile)||{};
     unsaved[key]=clone(profile)||{};
     global.clearTimeout(timers[key]);
+    emitStorageState();
     timers[key]=global.setTimeout(()=>{
       const latest=pending[key];
       delete pending[key];
@@ -157,9 +177,15 @@
     const key=String(app||'');
     if(!validApp(key)||!profile||typeof profile!=='object')return Promise.resolve(false);
     setTemporaryProfile(key,profile);
-    if(!state.canSave)return Promise.resolve(false);
+    if(!state.canSave){
+      // Signed-in edits remain recoverable for this tab even after a failed POST.
+      if(state.accountId)unsaved[key]=clone(profile)||{};
+      emitStorageState();
+      return Promise.resolve(false);
+    }
     if(immediate){
       unsaved[key]=clone(profile)||{};
+      emitStorageState();
       global.clearTimeout(timers[key]);
       delete pending[key];
       return postProfile(key,profile,keepalive);
