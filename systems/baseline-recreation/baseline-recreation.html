@@ -967,6 +967,7 @@ These Markdown rules are a human reference point, not live runtime config.
             <button class="action ghost game-toggle-btn" data-ruleshift-panel="ruleShiftRoundCard" type="button">Round</button>
             <button class="action ghost game-toggle-btn" data-ruleshift-panel="ruleShiftSkillCard" type="button">Skills</button>
             <button class="action ghost game-toggle-btn" data-ruleshift-panel="ruleShiftTierCard" type="button">Tiers</button>
+            <button class="action ghost game-toggle-btn" data-ruleshift-panel="ruleShiftGameTypeCard" type="button">Game Type</button>
             <button class="action ghost game-toggle-btn" data-ruleshift-panel="ruleShiftProgressCard" type="button">Progress</button>
           </div>
           <div class="game-panel-stack">
@@ -995,8 +996,12 @@ These Markdown rules are a human reference point, not live runtime config.
               <div class="summary-box" id="ruleShiftSkillSummary"></div>
             </section>
             <section class="card game-card" id="ruleShiftTierCard" hidden>
-              <div><h3>Rule Shift Tiers</h3><p class="note">Higher tiers add opposite rules, mixed rules, more cards, and longer runs.</p></div>
+              <div><h3>Rule Shift Tiers</h3><p class="note">Difficulty tiers increase the number of choices, run length and rewards. Rule styles are chosen separately in Game Type.</p></div>
               <div class="board-tier-list" id="ruleShiftTierSelectList"></div>
+            </section>
+            <section class="card game-card" id="ruleShiftGameTypeCard" hidden>
+              <div><h3>Rule Shift Game Type</h3><p class="note">Choose which kind of rule you practise. New types unlock at higher Player Ranks, independently of difficulty tiers.</p></div>
+              <div class="board-tier-list" id="ruleShiftGameTypeList"></div>
             </section>
             <section class="card game-card" id="ruleShiftProgressCard" hidden>
               <div><h3>Rule Shift Progress</h3><p class="note">Structured progression summary for the current save.</p></div>
