@@ -174,6 +174,12 @@ test('Both sequence games use the canonical bottom dock: plus over A, Settings o
 
 
 test('Account game saving recovers after an API failure and survives a complete page reload',async({page})=>{
+  // Keep the mock account session consistent with the mocked Games API.
+  // Otherwise the real /me.php may say signed-out and issue a second bootstrap.
+  await page.route('**/sitewide/api/me.php**',route=>route.fulfill({
+    status:200,contentType:'application/json',
+    body:JSON.stringify({ok:true,authed:true,user:{id:42,name:'Test Account'},name:'Test Account',email:'test@example.invalid'})
+  }));
   const profiles={};
   const revisions={};
   let failedPathWrite=false;
