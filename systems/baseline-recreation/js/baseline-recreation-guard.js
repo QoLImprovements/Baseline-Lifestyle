@@ -228,7 +228,13 @@
   bootstrap();
   global.addEventListener('pagehide',flushPending);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushPending();});
-  document.addEventListener('baseline:auth',()=>bootstrap());
+  document.addEventListener('baseline:auth',event=>{
+    const authed=Boolean(event.detail?.authed);
+    // Refreshing account name/provider metadata is not a new login.
+    // Rebootstrapping on those events used to discard debounced saves.
+    if(state.ready && state.authenticated===authed)return;
+    bootstrap();
+  });
   document.documentElement.setAttribute('data-baseline-recreation-storage',BUILD);
 
   global.BaselineGameStorage=Object.freeze({
