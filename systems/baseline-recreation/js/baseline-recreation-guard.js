@@ -1,13 +1,15 @@
 (function(global){
   'use strict';
 
-  const BUILD='RECREATION_COHERENCE_20261023_2';
+  const BUILD='RECREATION_SAVE_RECOVERY_20261114_1';
   const DATA_API='/systems/baseline-recreation/api/games_data.php';
   const registryApps=global.BASELINE_GAMES_REGISTRY?.persistentApps?.() || [];
   const ALL_APPS=Object.freeze(registryApps.length ? registryApps.slice() : ['pairs','detectword','make24','trackcoin','ruleshift','ninja','crossnumber','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','movedalong','moonbearswitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused','hubsettings']);
   const pending=Object.create(null);
   const timers=Object.create(null);
   const writeChains=Object.create(null);
+  const unsaved=Object.create(null);
+  let retryPromise=null;
   const state={authenticated:false,canSave:false,ready:false,status:'loading',lastError:'',profiles:{},revisions:{}};
 
   function clone(value){
@@ -64,8 +66,9 @@
     Object.keys(pending).forEach(app=>{delete pending[app];global.clearTimeout(timers[app]);});
     const result=syncRequest('GET',DATA_API+'?bootstrap=1');
     if(!result.ok){
-      state.profiles={};
-      rememberRevisions({});
+      // Preserve unsaved edits in this tab if a transient auth/bootstrap request fails.
+      // Never quietly throw away a profile after a network error.
+      if(!Object.keys(unsaved).length){state.profiles={};rememberRevisions({});}
       setState(result.status===401?'signed-out':'unavailable',result.error,false,false);
       return false;
     }
@@ -104,10 +107,13 @@
         emitStorageState();
         return false;
       }
-      if(!response.ok||!data.ok)throw new Error(data.error||'save_failed');
+      if(!response.ok||!data.ok)throw new Error(data.error||('http_'+response.status));
       const revision=Number(data.revision);
       if(Number.isInteger(revision)&&revision>=0)state.revisions[key]=revision;
-      state.profiles[key]=clone(data.profile||snapshot)||{};
+      // A later local edit must not be rolled back by an older server ACK.
+      const current=unsaved[key];
+      const acknowledged=!current || JSON.stringify(current)===JSON.stringify(snapshot);
+      if(acknowledged){delete unsaved[key];state.profiles[key]=clone(data.profile||snapshot)||{};}
       state.lastError='';
       state.status='ready';
       document.documentElement.removeAttribute('data-games-server-save-error');
@@ -138,6 +144,7 @@
     setTemporaryProfile(key,profile);
     if(!state.canSave)return false;
     pending[key]=clone(profile)||{};
+    unsaved[key]=clone(profile)||{};
     global.clearTimeout(timers[key]);
     timers[key]=global.setTimeout(()=>{
       const latest=pending[key];
@@ -152,12 +159,35 @@
     setTemporaryProfile(key,profile);
     if(!state.canSave)return Promise.resolve(false);
     if(immediate){
+      unsaved[key]=clone(profile)||{};
       global.clearTimeout(timers[key]);
       delete pending[key];
       return postProfile(key,profile,keepalive);
     }
     queueProfile(key,profile);
     return Promise.resolve(true);
+  }
+  function unsavedCount(){return Object.keys(unsaved).length;}
+  function retryFailedSaves(){
+    if(retryPromise)return retryPromise;
+    // Never replay a revision conflict: that could overwrite changes from another tab.
+    // Signed-out/unauthenticated sessions require login, not speculative writes.
+    if(state.status==='conflict' || !state.authenticated || !unsavedCount())return Promise.resolve(false);
+    state.canSave=true;
+    state.status='retrying';
+    state.lastError='';
+    emitStorageState();
+    retryPromise=(async()=>{
+      for(const key of Object.keys(unsaved)){
+        if(!state.canSave)return false;
+        const snapshot=clone(unsaved[key]);
+        if(!snapshot)continue;
+        const ok=await postProfile(key,snapshot,false);
+        if(!ok)return false;
+      }
+      return state.canSave;
+    })().finally(()=>{retryPromise=null;});
+    return retryPromise;
   }
   function flushPending(){
     if(!state.canSave)return;
@@ -184,6 +214,8 @@
     isReady:()=>state.ready,
     getStatus:()=>state.status,
     getLastError:()=>state.lastError,
+    getUnsavedCount:unsavedCount,
+    retryFailedSaves,
     getProfile,
     setTemporaryProfile,
     saveProfile,
