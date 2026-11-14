@@ -165,7 +165,6 @@
     pending[key]=clone(profile)||{};
     unsaved[key]=clone(profile)||{};
     global.clearTimeout(timers[key]);
-    emitStorageState();
     timers[key]=global.setTimeout(()=>{
       const latest=pending[key];
       delete pending[key];
@@ -180,12 +179,10 @@
     if(!state.canSave){
       // Signed-in edits remain recoverable for this tab even after a failed POST.
       if(state.accountId)unsaved[key]=clone(profile)||{};
-      emitStorageState();
       return Promise.resolve(false);
     }
     if(immediate){
       unsaved[key]=clone(profile)||{};
-      emitStorageState();
       global.clearTimeout(timers[key]);
       delete pending[key];
       return postProfile(key,profile,keepalive);
