@@ -3949,3 +3949,12 @@ html body[data-app="recreation"] :is(
 )[hidden]{
   display:none!important;
 }
+
+/* 2026-11-14: one consistent game-specific tool alignment and optional keypad dock slot. */
+html body[data-app="recreation"] :is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel,#crossnumberPanel) .game-specific-actions:not(:empty),
+html body[data-app="recreation"] #crossnumberPanel .crossnumber-specific-actions{justify-content:center!important;justify-items:center!important;align-items:center!important;}
+html body[data-app="recreation"] :is(#wordGameCard,#make24GameCard).game-play-root .game-window-actions.game-common-actions.recreation-unified-controls > .desktop-keypad-toggle,
+html body[data-app="recreation"] :is(#wordGameCard,#make24GameCard).game-play-root > .game-play-window > .game-window-actions.game-common-actions.recreation-unified-controls > .desktop-keypad-toggle{grid-column:3!important;grid-row:1!important;justify-self:end!important;align-self:center!important;order:25!important;}
+/* Keypad is attached during idle as well as play; never reserve space without showing its keys. */
+html body[data-app="recreation"] :is(#wordGameCard,#make24GameCard).desktop-keypad-open :is(#wordBoard,#make24Board) > .mobile-game-keypad[aria-hidden="false"]{display:grid!important;visibility:visible!important;opacity:1!important;min-width:0!important;}
+html body[data-app="recreation"] :is(#wordGameCard,#make24GameCard):not(.desktop-keypad-open):not(.is-mobile-game-root) :is(#wordBoard,#make24Board) > .mobile-game-keypad{display:none!important;}
