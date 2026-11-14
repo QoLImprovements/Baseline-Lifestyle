@@ -254,6 +254,7 @@
     getStatus:()=>state.status,
     getLastError:()=>state.lastError,
     getUnsavedCount:unsavedCount,
+    getUnsavedApps:()=>Object.keys(unsaved),
     retryFailedSaves,
     getProfile,
     setTemporaryProfile,
