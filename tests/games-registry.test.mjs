@@ -65,7 +65,7 @@ test('Recreation registry exposes canonical identities with legacy compatibility
   );
   for (const game of overview) {
     assert.equal(typeof game.overview.group, 'string');
-    assert.match(game.overview.art, /RECREATION_BURGUNDY_ROSE_COPPER_20261022_1|RECREATION_BURGUNDY_BURNT_COPPER_20261022_2|SEQUENCE_CORE_20261112_1/);
+    assert.match(game.overview.art, /RECREATION_COHERENCE_20261114_1|RECREATION_BURGUNDY_ROSE_COPPER_20261022_1|RECREATION_BURGUNDY_BURNT_COPPER_20261022_2|SEQUENCE_CORE_20261112_1/);
     assert.ok(game.overview.note.length > 20);
     assert.ok(game.overview.brainBenefit.length > 20);
   }
