@@ -201,12 +201,12 @@ test('Account game saving recovers after an API failure and survives a complete 
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY&&globalThis.BaselinePathRecall);
   await page.locator('[data-open-game-extension="path-recall"]:visible').first().click();
   await page.locator('#pathRecallPanel [data-sequence-start]').click();
-  await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='unavailable',{timeout:12000});
+  await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='unavailable',null,{timeout:12000});
   expect(await page.evaluate(()=>globalThis.BaselineGameStorage.getUnsavedCount())).toBeGreaterThan(0);
   const unsaved=await page.evaluate(()=>globalThis.BaselineGameStorage.getProfile('pathrecall'));
   expect(unsaved.roundsPlayed).toBe(1);
   await page.locator('#pathRecallPanel [data-save-status-icon]').first().click();
-  await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='ready'&&globalThis.BaselineGameStorage.getUnsavedCount()===0,{timeout:12000});
+  await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='ready'&&globalThis.BaselineGameStorage.getUnsavedCount()===0,null,{timeout:12000});
   expect(successfulPathWrites).toBeGreaterThanOrEqual(1);
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY&&globalThis.BaselineGameStorage?.canSave());
