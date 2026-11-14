@@ -1,4 +1,4 @@
-import './games-server-storage-ui.js?v=GAME_SAVE_ICON_AUDIO_20261018_1';
+import './games-server-storage-ui.js?v=GAMES_SAVE_RECOVERY_UI_20261114_1';
 import './baseline-recreation-loader.js?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1';
 
 // Independently preloaded by baseline-recreation.html so a failure in either

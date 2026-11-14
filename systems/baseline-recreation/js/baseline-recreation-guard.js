@@ -1,14 +1,16 @@
 (function(global){
   'use strict';
 
-  const BUILD='RECREATION_COHERENCE_20261023_2';
+  const BUILD='RECREATION_SAVE_RECOVERY_20261114_1';
   const DATA_API='/systems/baseline-recreation/api/games_data.php';
   const registryApps=global.BASELINE_GAMES_REGISTRY?.persistentApps?.() || [];
   const ALL_APPS=Object.freeze(registryApps.length ? registryApps.slice() : ['pairs','detectword','make24','trackcoin','ruleshift','ninja','crossnumber','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','movedalong','moonbearswitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused','hubsettings']);
   const pending=Object.create(null);
   const timers=Object.create(null);
   const writeChains=Object.create(null);
-  const state={authenticated:false,canSave:false,ready:false,status:'loading',lastError:'',profiles:{},revisions:{}};
+  const unsaved=Object.create(null);
+  let retryPromise=null;
+  const state={authenticated:false,accountId:'',canSave:false,ready:false,status:'loading',lastError:'',profiles:{},revisions:{}};
 
   function clone(value){
     try{return value&&typeof value==='object'?JSON.parse(JSON.stringify(value)):null;}
@@ -64,16 +66,36 @@
     Object.keys(pending).forEach(app=>{delete pending[app];global.clearTimeout(timers[app]);});
     const result=syncRequest('GET',DATA_API+'?bootstrap=1');
     if(!result.ok){
-      state.profiles={};
-      rememberRevisions({});
+      // Preserve unsaved edits in this tab if a transient auth/bootstrap request fails.
+      // Never quietly throw away a profile after a network error.
+      if(!Object.keys(unsaved).length){state.profiles={};rememberRevisions({});}
       setState(result.status===401?'signed-out':'unavailable',result.error,false,false);
       return false;
     }
+    const nextAccount=String(result.data.accountId||'');
+    const previousAccount=state.accountId;
+    const priorRevisions={...state.revisions};
+    // An account switch must never replay another account's unsaved edits.
+    if(previousAccount && previousAccount!==nextAccount){
+      Object.keys(unsaved).forEach(app=>delete unsaved[app]);
+    }
+    state.accountId=nextAccount;
     state.profiles={};
     Object.entries(result.data.profiles&&typeof result.data.profiles==='object'?result.data.profiles:{}).forEach(([app,profile])=>{
       if(validApp(app)&&profile&&typeof profile==='object')state.profiles[app]=clone(profile)||{};
     });
     rememberRevisions(result.data.revisions);
+    if(previousAccount && previousAccount===nextAccount && Object.keys(unsaved).length){
+      const conflict=Object.keys(unsaved).some(app=>revisionFor(app)!==(Number(priorRevisions[app])||0));
+      // Retain local edits after reconnect, but do not silently overwrite a newer save.
+      Object.keys(unsaved).forEach(app=>{state.profiles[app]=clone(unsaved[app])||{};});
+      if(conflict){
+        setState('conflict','revision_conflict',true,false);
+        return false;
+      }
+      setState('unavailable','unsaved_changes',true,false);
+      return false; // User can retry these verified-revision changes explicitly.
+    }
     setState('ready','',true,true);
     return true;
   }
@@ -104,10 +126,13 @@
         emitStorageState();
         return false;
       }
-      if(!response.ok||!data.ok)throw new Error(data.error||'save_failed');
+      if(!response.ok||!data.ok)throw new Error(data.error||('http_'+response.status));
       const revision=Number(data.revision);
       if(Number.isInteger(revision)&&revision>=0)state.revisions[key]=revision;
-      state.profiles[key]=clone(data.profile||snapshot)||{};
+      // A later local edit must not be rolled back by an older server ACK.
+      const current=unsaved[key];
+      const acknowledged=!current || JSON.stringify(current)===JSON.stringify(snapshot);
+      if(acknowledged){delete unsaved[key];state.profiles[key]=clone(data.profile||snapshot)||{};}
       state.lastError='';
       state.status='ready';
       document.documentElement.removeAttribute('data-games-server-save-error');
@@ -138,6 +163,7 @@
     setTemporaryProfile(key,profile);
     if(!state.canSave)return false;
     pending[key]=clone(profile)||{};
+    unsaved[key]=clone(profile)||{};
     global.clearTimeout(timers[key]);
     timers[key]=global.setTimeout(()=>{
       const latest=pending[key];
@@ -150,14 +176,51 @@
     const key=String(app||'');
     if(!validApp(key)||!profile||typeof profile!=='object')return Promise.resolve(false);
     setTemporaryProfile(key,profile);
-    if(!state.canSave)return Promise.resolve(false);
+    if(!state.canSave){
+      // Signed-in edits remain recoverable for this tab even after a failed POST.
+      if(state.accountId)unsaved[key]=clone(profile)||{};
+      return Promise.resolve(false);
+    }
     if(immediate){
+      unsaved[key]=clone(profile)||{};
       global.clearTimeout(timers[key]);
       delete pending[key];
       return postProfile(key,profile,keepalive);
     }
     queueProfile(key,profile);
     return Promise.resolve(true);
+  }
+  function unsavedCount(){return Object.keys(unsaved).length;}
+  function retryFailedSaves(){
+    if(retryPromise)return retryPromise;
+    // Never replay a revision conflict: that could overwrite changes from another tab.
+    // Signed-out/unauthenticated sessions require login, not speculative writes.
+    if(state.status==='conflict' || !state.authenticated || !unsavedCount())return Promise.resolve(false);
+    state.canSave=true;
+    state.status='retrying';
+    state.lastError='';
+    emitStorageState();
+    retryPromise=(async()=>{
+      // Edits made while a retry is in flight must also be acknowledged.
+      // This bounded drain prevents an older successful response from
+      // leaving a newer unsaved snapshot stranded indefinitely.
+      for(let pass=0;pass<6;pass++){
+        const apps=Object.keys(unsaved);
+        if(!apps.length)return true;
+        for(const key of apps){
+          if(!state.canSave)return false;
+          const snapshot=clone(unsaved[key]);
+          if(!snapshot)continue;
+          const ok=await postProfile(key,snapshot,false);
+          if(!ok)return false;
+        }
+      }
+      // Continuous gameplay may still create newer drafts; restore the
+      // ordinary debounced saver rather than silently marking these saved.
+      if(state.canSave)Object.keys(unsaved).forEach(app=>queueProfile(app,unsaved[app]));
+      return false;
+    })().finally(()=>{retryPromise=null;});
+    return retryPromise;
   }
   function flushPending(){
     if(!state.canSave)return;
@@ -172,7 +235,13 @@
   bootstrap();
   global.addEventListener('pagehide',flushPending);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushPending();});
-  document.addEventListener('baseline:auth',()=>bootstrap());
+  document.addEventListener('baseline:auth',event=>{
+    const authed=Boolean(event.detail?.authed);
+    // Refreshing account name/provider metadata is not a new login.
+    // Rebootstrapping on those events used to discard debounced saves.
+    if(state.ready && state.authenticated===authed)return;
+    bootstrap();
+  });
   document.documentElement.setAttribute('data-baseline-recreation-storage',BUILD);
 
   global.BaselineGameStorage=Object.freeze({
@@ -184,6 +253,9 @@
     isReady:()=>state.ready,
     getStatus:()=>state.status,
     getLastError:()=>state.lastError,
+    getUnsavedCount:unsavedCount,
+    getUnsavedApps:()=>Object.keys(unsaved),
+    retryFailedSaves,
     getProfile,
     setTemporaryProfile,
     saveProfile,

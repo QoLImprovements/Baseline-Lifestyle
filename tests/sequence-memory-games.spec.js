@@ -171,3 +171,66 @@ test('Both sequence games use the canonical bottom dock: plus over A, Settings o
     await panel.locator('[data-close-game-extension]').first().click();
   }
 });
+
+
+test('Account game saving recovers after an API failure and survives a complete page reload',async({page})=>{
+  // Keep the mock account session consistent with the mocked Games API.
+  // Otherwise the real /me.php may say signed-out and issue a second bootstrap.
+  await page.route('**/sitewide/api/me.php**',route=>route.fulfill({
+    status:200,contentType:'application/json',
+    body:JSON.stringify({ok:true,authed:true,user:{id:42,name:'Test Account'},name:'Test Account',email:'test@example.invalid'})
+  }));
+  const profiles={};
+  const revisions={};
+  let failedPathWrite=false;
+  let successfulPathWrites=0;
+  await page.route('**/systems/baseline-recreation/api/games_data.php**',async route=>{
+    const request=route.request();
+    const send=(status,data)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)});
+    if(request.method()==='GET')return send(200,{
+      ok:true,authed:true,accountId:42,profiles,revisions
+    });
+    const data=request.postDataJSON();
+    if(data?.action!=='save')return send(400,{ok:false,error:'invalid_action'});
+    if(data.app==='pathrecall'&&!failedPathWrite){
+      failedPathWrite=true;
+      return send(503,{ok:false,error:'temporary_unavailable'});
+    }
+    const current=revisions[data.app]||0;
+    if(data.expectedRevision!==current)return send(409,{ok:false,error:'revision_conflict'});
+    revisions[data.app]=current+1;
+    profiles[data.app]=data.profile;
+    if(data.app==='pathrecall')successfulPathWrites++;
+    return send(200,{ok:true,app:data.app,profile:data.profile,revision:revisions[data.app]});
+  });
+  await page.goto('/baseline-recreation/games',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY&&globalThis.BaselinePathRecall);
+  await page.locator('[data-open-game-extension="path-recall"]:visible').first().click();
+  await page.locator('#pathRecallPanel [data-sequence-start]').click();
+  // Trigger an explicit immediate write as well as the game-side debounced save.
+  // This deterministically awaits the mocked failure before checking recovery.
+  await page.evaluate(async()=>{
+    const profile=globalThis.BaselinePathRecall.getProfile();
+    await globalThis.BaselineGameStorage.saveProfile('pathrecall',profile,{immediate:true});
+  });
+  await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='unavailable',null,{timeout:12000});
+  expect(await page.evaluate(()=>globalThis.BaselineGameStorage.getUnsavedCount())).toBeGreaterThan(0);
+  const unsaved=await page.evaluate(()=>globalThis.BaselineGameStorage.getProfile('pathrecall'));
+  expect(unsaved.roundsPlayed).toBe(1);
+  await page.locator('#pathRecallPanel [data-save-status-icon]').first().click();
+  await page.waitForTimeout(500);
+  const diagnostic=await page.evaluate(()=>({
+    status:globalThis.BaselineGameStorage.getStatus(),
+    lastError:globalThis.BaselineGameStorage.getLastError(),
+    unsavedApps:globalThis.BaselineGameStorage.getUnsavedApps(),
+    canSave:globalThis.BaselineGameStorage.canSave()
+  }));
+  console.log('SAVED GAME DIAGNOSTIC',JSON.stringify({diagnostic,successfulPathWrites,failedPathWrite}));
+  expect(diagnostic.status).toBe('ready');
+  expect(diagnostic.unsavedApps).not.toContain('pathrecall');
+  expect(successfulPathWrites).toBeGreaterThanOrEqual(1);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY&&globalThis.BaselineGameStorage?.canSave());
+  const restored=await page.evaluate(()=>globalThis.BaselineGameStorage.getProfile('pathrecall'));
+  expect(restored.roundsPlayed).toBe(1);
+});
