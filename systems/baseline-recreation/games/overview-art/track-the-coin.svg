@@ -11,7 +11,6 @@
 <rect width="240" height="240" rx="32" fill="url(#bg)"/>
 <circle cx="120" cy="118" r="86" fill="#cb7658" opacity=".19" filter="url(#glow)"/>
 <rect x="10" y="10" width="220" height="220" rx="25" fill="none" stroke="#e59f7d" stroke-opacity=".44" stroke-width="2"/>
-<path d="M27 54Q120 1 214 53" fill="none" stroke="#ffd5a6" stroke-opacity=".24" stroke-width="2"/>
 <g filter="url(#shadow)">
 <g transform="translate(13 51)">
 <ellipse cx="107" cy="139" rx="92" ry="21" fill="#170a14" opacity=".55"/>
@@ -23,6 +22,4 @@
 <ellipse cx="44" cy="114" rx="31" ry="11" fill="#9a4a40" stroke="#ffd4ad" stroke-width="2"/><ellipse cx="118" cy="114" rx="31" ry="11" fill="#6b2941" stroke="#ffd4ad" stroke-width="2"/><ellipse cx="192" cy="114" rx="31" ry="11" fill="#9a4a40" stroke="#ffd4ad" stroke-width="2"/>
 <circle cx="118" cy="143" r="23" fill="#edba60" stroke="#ffe9b7" stroke-width="4"/><circle cx="118" cy="143" r="14" fill="none" stroke="#ac702e" stroke-width="2"/><text x="118" y="151" font-family="system-ui,sans-serif" font-weight="900" text-anchor="middle" font-size="25" fill="#925029">★</text>
 </g></g>
-<path d="M79 214H161" stroke="#e8b08a" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"/>
-<circle cx="67" cy="214" r="3" fill="#f3bc8d"/><circle cx="173" cy="214" r="3" fill="#f3bc8d"/>
 </svg>
