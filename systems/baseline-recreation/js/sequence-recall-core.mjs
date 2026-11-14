@@ -140,7 +140,7 @@ export function mountSequenceGame(config){
     const token=previewToken;
     const t=tierById(round.startedTier),pace=round.paceMs||t.pace;
     round.phase='preview';round.index=0;round.lit=null;round.wrong=null;
-    message='Watch the sequence, then reproduce it from memory.';
+    message=round.reverse?'Watch the cues, then recall them backwards.':(kind==='path'?'Watch the route, including the jumps, then recall the locations in order.':'Watch the movement cues, then recall them in order.');
     render();
     round.sequence.forEach((step,i)=>{
       previewTimers.push(setTimeout(()=>{
