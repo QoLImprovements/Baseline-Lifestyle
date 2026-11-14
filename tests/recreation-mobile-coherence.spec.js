@@ -223,7 +223,7 @@ test('all eight standard Recreation games share one five-button dock and a disti
     ['detectword','/baseline-recreation/games/detect-the-word','#wordGameCard','[data-word-panel="wordRoundCard"]','[data-word-panel="wordGameCard"]','#wordRoundSummary',5],
     ['make24','/baseline-recreation/games/make-the-number','#make24GameCard','[data-make24-panel="make24RoundCard"]','[data-make24-panel="make24GameCard"]','#make24RoundSummary',5],
     ['trackcoin','/baseline-recreation/games/track-the-coin','#trackCoinGamePanel','[data-trackcoin-panel="trackCoinRoundPanel"]','[data-trackcoin-panel="trackCoinGamePanel"]','#trackCoinSummary',5],
-    ['ruleshift','/baseline-recreation/games/rule-shift','#ruleShiftGameCard','[data-ruleshift-panel="ruleShiftRoundCard"]','[data-ruleshift-panel="ruleShiftGameCard"]','#ruleShiftRoundSummary',5],
+    ['ruleshift','/baseline-recreation/games/rule-shift','#ruleShiftGameCard','[data-ruleshift-panel="ruleShiftRoundCard"]','[data-ruleshift-panel="ruleShiftGameCard"]','#ruleShiftRoundSummary',6],
     ['blockgrid','/baseline-recreation/games/block-grid','#blockGridGameCard','[data-block-tab="round"]','[data-block-tab="game"]','#blockGridStatus',5],
     ['coloursort','/baseline-recreation/games/colour-sort','#colourSortGameCard','[data-colour-tab="round"]','[data-colour-tab="game"]','#colourSortRoundCard .round-status-card',4],
     ['crossnumber','/baseline-recreation/puzzles/crossnumber','#crossnumberGamePanel','[data-crossnumber-panel="crossnumberRoundPanel"]','[data-crossnumber-panel="crossnumberGamePanel"]','#crossnumberRoundPanel [data-crossnumber-status]',5]
