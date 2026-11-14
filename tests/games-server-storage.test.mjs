@@ -203,3 +203,75 @@ test('per-app server writes are serialised and immediate saves replace stale que
   assert.match(guard,/previous\.catch\(\(\)=>false\)\.then\(\(\)=>postProfileNow\(key,snapshot,keepalive\)\)/);
   assert.match(guard,/global\.clearTimeout\(timers\[key\]\);\s*delete pending\[key\];\s*return postProfile\(key,profile,keepalive\)/);
 });
+
+
+test('failed authenticated writes retain the latest local progress and retry with the original revision',async()=>{
+  const {context}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{pairs:{level:4}},revisions:{pairs:9}}});
+  const writes=[];
+  context.fetch=async(_url,options)=>{
+    writes.push(JSON.parse(options.body));
+    return writes.length===1
+      ?{ok:false,status:503,json:async()=>({ok:false,error:'games_data_failed'})}
+      :{ok:true,status:200,json:async()=>({ok:true,revision:10,profile:{level:6}})};
+  };
+  assert.equal(await context.BaselineGameStorage.saveProfile('pairs',{level:5},{immediate:true}),false);
+  assert.equal(context.BaselineGameStorage.canSave(),false);
+  assert.equal(context.BaselineGameStorage.getStatus(),'unavailable');
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
+  assert.equal(context.BaselineGameStorage.getProfile('pairs').level,5);
+  // Even while saving is stopped, subsequent play must update the recoverable draft.
+  assert.equal(await context.BaselineGameStorage.saveProfile('pairs',{level:6},{immediate:true}),false);
+  assert.equal(context.BaselineGameStorage.getProfile('pairs').level,6);
+  assert.equal(await context.BaselineGameStorage.retryFailedSaves(),true);
+  assert.equal(context.BaselineGameStorage.getStatus(),'ready');
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),0);
+  assert.equal(context.BaselineGameStorage.canSave(),true);
+  assert.equal(context.BaselineGameStorage.getProfile('pairs').level,6);
+  assert.equal(writes.length,2);
+  assert.equal(writes[0].expectedRevision,9);
+  assert.equal(writes[1].expectedRevision,9);
+  assert.equal(writes[1].profile.level,6);
+});
+
+test('conflicted writes stay unsaved and cannot overwrite another session on retry',async()=>{
+  const {context}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{pairs:{level:4}},revisions:{pairs:9}}});
+  let posted=0;
+  context.fetch=async()=>{posted++;return{ok:false,status:409,json:async()=>({ok:false,error:'revision_conflict'})};};
+  assert.equal(await context.BaselineGameStorage.saveProfile('pairs',{level:7},{immediate:true}),false);
+  assert.equal(context.BaselineGameStorage.getStatus(),'conflict');
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
+  assert.equal(context.BaselineGameStorage.getProfile('pairs').level,7);
+  assert.equal(await context.BaselineGameStorage.retryFailedSaves(),false);
+  assert.equal(posted,1,'retry must not silently overwrite a newer server revision');
+});
+
+test('older save acknowledgements never rewind newer in-memory game progress',async()=>{
+  const {context}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{pairs:{level:4}},revisions:{pairs:9}}});
+  let replyFirst,posted=0;
+  context.fetch=async(_url,options)=>{
+    posted++;
+    if(posted===1)return new Promise(resolve=>{replyFirst=resolve;});
+    return{ok:true,status:200,json:async()=>({ok:true,revision:11,profile:JSON.parse(options.body).profile})};
+  };
+  const first=context.BaselineGameStorage.saveProfile('pairs',{level:5},{immediate:true});
+  const second=context.BaselineGameStorage.saveProfile('pairs',{level:6},{immediate:true});
+  await Promise.resolve();await Promise.resolve();
+  assert.equal(context.BaselineGameStorage.getProfile('pairs').level,6);
+  assert.equal(typeof replyFirst,'function');
+  replyFirst({ok:true,status:200,json:async()=>({ok:true,revision:10,profile:{level:5}})});
+  await first;
+  assert.equal(context.BaselineGameStorage.getProfile('pairs').level,6);
+  await second;
+  assert.equal(context.BaselineGameStorage.getProfile('pairs').level,6);
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),0);
+  assert.equal(posted,2);
+});
+
+test('save status describes unconfirmed writes and exposes an in-page retry, not false success',()=>{
+  assert.match(storageUi,/Saving game progress/);
+  assert.match(storageUi,/Saving paused: another version exists/);
+  assert.match(storageUi,/data-games-retry-save/);
+  assert.match(storageUi,/retryFailedSaves/);
+  assert.match(storageUi,/No unsaved changes are pending/);
+  assert.match(guard,/getUnsavedCount:unsavedCount/);
+});
