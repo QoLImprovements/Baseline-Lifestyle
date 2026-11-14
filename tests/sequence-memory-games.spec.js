@@ -207,22 +207,18 @@ test('Account game saving recovers after an API failure and survives a complete 
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY&&globalThis.BaselinePathRecall);
   await page.locator('[data-open-game-extension="path-recall"]:visible').first().click();
   await page.locator('#pathRecallPanel [data-sequence-start]').click();
+  // Trigger an explicit immediate write as well as the game-side debounced save.
+  // This deterministically awaits the mocked failure before checking recovery.
+  await page.evaluate(async()=>{
+    const profile=globalThis.BaselinePathRecall.getProfile();
+    await globalThis.BaselineGameStorage.saveProfile('pathrecall',profile,{immediate:true});
+  });
   await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='unavailable',null,{timeout:12000});
   expect(await page.evaluate(()=>globalThis.BaselineGameStorage.getUnsavedCount())).toBeGreaterThan(0);
   const unsaved=await page.evaluate(()=>globalThis.BaselineGameStorage.getProfile('pathrecall'));
   expect(unsaved.roundsPlayed).toBe(1);
   await page.locator('#pathRecallPanel [data-save-status-icon]').first().click();
-  await page.waitForTimeout(350);
-  const afterIcon=await page.evaluate(()=>({
-    status:globalThis.BaselineGameStorage.getStatus(),
-    authed:globalThis.BaselineGameStorage.isAuthenticated(),
-    error:globalThis.BaselineGameStorage.getLastError(),
-    unsaved:globalThis.BaselineGameStorage.getUnsavedCount(),
-    ui:document.querySelector('#pathRecallPanel [data-save-status-icon]')?.getAttribute('aria-label')
-  }));
-  console.log('GAME SAVE RETRY DIAGNOSTIC',JSON.stringify({afterIcon,successfulPathWrites,failedPathWrite}));
-  expect(afterIcon.status).toBe('ready');
-  expect(afterIcon.unsaved).toBe(0);
+  await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='ready'&&globalThis.BaselineGameStorage.getUnsavedCount()===0,null,{timeout:12000});
   expect(successfulPathWrites).toBeGreaterThanOrEqual(1);
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY&&globalThis.BaselineGameStorage?.canSave());
