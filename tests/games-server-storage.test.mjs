@@ -352,3 +352,32 @@ test('save icon requests an acknowledged server write rather than acting only as
   assert.match(storageUi,/BaselineGameStorage\?\.saveNow\?\.\(app\)/);
   assert.match(guard,/recoverConnection/);
 });
+
+test('manual Save identifies the actual clean-route game and its clicked panel',()=>{
+  const declaration=storageUi.match(/function saveAppForButton\\(button\\)\\{[\\s\\S]*?\\n\\}/)?.[0];
+  assert.ok(declaration,'save target resolver exists');
+  const context={
+    URLSearchParams,
+    location:{pathname:'/baseline-recreation/games/detect-the-word',hash:''},
+    BASELINE_GAMES_REGISTRY:{
+      resolve(slug){
+        return {'detect-the-word':{profileApp:'detectword'},'pairs':{profileApp:'pairs'},'combat-sequence':{profileApp:'combatsequence'}}[slug]||null;
+      }
+    }
+  };
+  context.globalThis=context;
+  vm.runInNewContext(declaration,context);
+  const button={closest(selector){return selector==='.game-panel'?null:null;}};
+  assert.equal(context.saveAppForButton(button),'detectword','clean-path Save cannot depend on a hash');
+  context.location.pathname='/baseline-recreation/games/combat-sequence';
+  assert.equal(context.saveAppForButton(button),'combatsequence');
+  context.location.pathname='/baseline-recreation/games';
+  const panelButton={closest(selector){return selector==='.game-panel'?{id:'pairsPanel'}:null;}};
+  assert.equal(context.saveAppForButton(panelButton),'pairs','button must save its own game panel');
+  const crossButton={closest(selector){return selector==='#crossnumberPanel'?{}:null;}};
+  assert.equal(context.saveAppForButton(crossButton),'crossnumber');
+  context.BaselinePuzzlesLibrary={getJigsaw:()=> 'black-panther'};
+  context.BaselinePuzzlesRegistry={findJigsaw:()=>({app:'pantherjigsaw'})};
+  const jigsawButton={closest(selector){return selector==='#jigsawPlayerCard'?{}:null;}};
+  assert.equal(context.saveAppForButton(jigsawButton),'pantherjigsaw');
+});
