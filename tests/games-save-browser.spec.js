@@ -39,10 +39,10 @@ test('logged-in Save button writes and reads back the selected game profile, the
   const save=page.locator('#pairsPanel [data-save-status-icon]');
   await expect(save).toHaveCount(1);
   await expect(save).toHaveAttribute('data-save-status-app','pairs');
-  // Even without any queued automatic change, clicking Save must POST.
-  await expect.poll(()=>page.evaluate(()=>globalThis.BaselineGameStorage?.getUnsavedCount?.())).toBe(0);
+  // The Save click must write Pairs even if another game has a queued auto-save.
+  const pairsWritesBefore=writes.filter(write=>write.app==='pairs').length;
   await save.click();
-  await expect.poll(()=>writes.length).toBeGreaterThan(0);
+  await expect.poll(()=>writes.filter(write=>write.app==='pairs').length).toBeGreaterThan(pairsWritesBefore);
   await expect.poll(()=>readbacks.filter(app=>app==='pairs').length).toBeGreaterThan(0);
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselineGameStorage?.lastSavedAt?.('pairs')||0)).toBeGreaterThan(0);
   expect(profiles.pairs).toBeTruthy();
