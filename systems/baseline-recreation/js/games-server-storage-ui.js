@@ -1,4 +1,4 @@
-const BUILD='GAMES_SAVE_RECOVERY_UI_20261114_1';
+const BUILD='GAMES_SAVE_STATUS_RELIABLE_20261115_1';
 // 2026-07-10: refined save-state icon, custom caption tooltip, and lighter shared popup styling.
 
 function storageState(){
@@ -20,7 +20,7 @@ function accountCopy(state){
     description:'Your changes are awaiting confirmation from the server.'
   }:{
     html:'<strong>Account saving is available.</strong><span class="inline-note">Game and puzzle progress is stored on the server and linked to your Baseline Lifestyle login.</span>',
-    description:'Your game and puzzle data is loaded from your Baseline Lifestyle account.'
+    description:'Progress is saved server-side to your Baseline Lifestyle account.'
   };
   if(state.status==='conflict')return{
     html:'<strong>Saving paused: another version exists.</strong><span class="inline-note">Unsaved progress is still in this tab. Do not refresh or close it before resolving the save conflict.</span>',
@@ -28,7 +28,7 @@ function accountCopy(state){
   };
   if(state.authenticated && state.unsavedCount>0)return{
     html:'<strong>Account saving failed.</strong><span class="inline-note">Your latest changes remain in this open tab but are not yet stored on the server.</span> <button type="button" class="action secondary" data-games-retry-save>Retry saving</button>',
-    description:'Saving stopped after a server or network error. Retry without refreshing the page.'
+    description:'The site retries automatically after connection failures. You can also retry now; wait for server confirmation before refreshing.'
   };
   if(!state.authenticated && state.unsavedCount>0)return{
     html:'<strong>Account connection interrupted.</strong><span class="inline-note">Unsaved progress is still in this open tab. Sign back into the same account without closing this page.</span>',
@@ -51,7 +51,7 @@ function enforceAccountCopy(){
   if(description&&description.textContent!==expected.description)description.textContent=expected.description;
 }
 function saveStatusLabel(state){
-  if(state.canSave && state.unsavedCount>0)return 'Saving in progress: '+state.unsavedCount+' game profile(s) await server confirmation.';
+  if(state.canSave && state.unsavedCount>0)return 'Saving in progress: '+state.unsavedCount+' game profile(s) await server confirmation. Select to send pending changes now.';
   if(state.canSave)return 'Account saving is available. No unsaved changes are pending.';
   if(state.status==='conflict')return 'Save conflict. Unsaved progress is held in this tab; do not refresh.';
   if(state.authenticated && state.unsavedCount>0)return 'Save failed. Unsaved progress remains in this tab. Click this icon to retry saving.';
@@ -71,7 +71,7 @@ function saveIconSvg(saved){
   '</svg>';
 }
 function saveIconMarkup(state, realm=false){
-  const saved=Boolean(state.canSave);
+  const saved=Boolean(state.canSave && state.unsavedCount===0);
   const label=saveStatusLabel(state);
   const cls=realm?'realm-save-status':'game-save-status';
   return '<button class="'+cls+(saved?' is-saving':' is-unsaved')+'" type="button" aria-label="'+label+'" data-save-status-icon data-save-tooltip="'+label+'">'+saveIconSvg(saved)+'</button>';
@@ -138,7 +138,7 @@ function refreshActiveSaveTooltip(){
 }
 function placeSaveIcon(container,state,{realm=false,position='afterbegin'}={}){
   if(!container) return;
-  const expectedState=state.canSave?'saving':'unsaved';
+  const expectedState=state.canSave?(state.unsavedCount?'saving':'saved'):'unsaved';
   const icon=container.querySelector('[data-save-status-icon]');
   if(!icon) container.insertAdjacentHTML(position,saveIconMarkup(state,realm));
   else if(icon.dataset.saveState!==expectedState) icon.outerHTML=saveIconMarkup(state,realm);
@@ -200,6 +200,11 @@ function installSaveTooltipEvents(){
       const state=storageState();
       if(state.authenticated && !state.canSave && state.status!=='conflict' && state.unsavedCount>0){
         Promise.resolve(globalThis.BaselineGameStorage?.retryFailedSaves?.()).catch(()=>false).finally(update);
+        return;
+      }
+      if(state.authenticated && state.canSave && state.unsavedCount>0){
+        globalThis.BaselineGameStorage?.flush?.();
+        showSaveTooltip(button);
         return;
       }
       showSaveTooltip(button);

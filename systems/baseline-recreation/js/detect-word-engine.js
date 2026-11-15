@@ -23,6 +23,13 @@
       return chosen;
     }
 
+    function isDictionaryReady(){ return Boolean(global.BASELINE_UK_WORDS && typeof global.BASELINE_UK_WORDS.has==='function'); }
+    function isValidWord(word){
+      const candidate=String(word||'').trim().toLowerCase();
+      if(!/^[a-z]{3,7}$/.test(candidate))return false;
+      return Boolean(global.BASELINE_UK_WORDS?.has(candidate) || (WORD_BANK[candidate.length]||[]).includes(candidate));
+    }
+
     function evaluateWordGuess(guess,secret){
       const result=Array.from({length:guess.length},(_,idx)=>({letter:guess[idx],state:'absent'}));
       const secretPool=secret.split('');
@@ -63,6 +70,8 @@
 
     return Object.freeze({
       chooseRandomWord:chooseRandomWord,
+      isValidWord:isValidWord,
+      isDictionaryReady:isDictionaryReady,
       evaluateWordGuess:evaluateWordGuess,
       computeWordRewardMultiplier:computeWordRewardMultiplier,
       letterKnowledge:letterKnowledge

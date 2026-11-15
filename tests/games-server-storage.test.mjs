@@ -287,3 +287,53 @@ test('unchanged authenticated account events do not cancel queued game saves',as
   assert.equal(context.BaselineGameStorage.getProfile('pairs').level,5);
   assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
 });
+
+
+test('failed account writes schedule automatic recovery and online resumption without weakening conflicts',()=>{
+  assert.match(guard,/function scheduleRecovery\(\)/);
+  assert.match(guard,/global\.addEventListener\('online'/);
+  assert.match(guard,/global\.addEventListener\('pageshow'/);
+  assert.match(guard,/retryDelayMs=Math\.min\(30000/);
+  assert.match(storageUi,/const saved=Boolean\(state\.canSave && state\.unsavedCount===0\)/);
+  assert.match(storageUi,/BaselineGameStorage\?\.flush\?\.\(\)/);
+});
+
+
+test('authenticated save retries automatically when connectivity resumes, preserving the latest draft',async()=>{
+  const {context,listeners}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{pairs:{level:4}},revisions:{pairs:9}}});
+  const requests=[];
+  context.fetch=async(_url,options)=>{
+    const payload=JSON.parse(options.body);
+    requests.push(payload);
+    if(requests.length===1){
+      return{ok:false,status:503,json:async()=>({ok:false,error:'temporarily_unavailable'})};
+    }
+    return{ok:true,status:200,json:async()=>({ok:true,revision:10,profile:payload.profile})};
+  };
+  assert.equal(await context.BaselineGameStorage.saveProfile('pairs',{level:5},{immediate:true}),false);
+  assert.equal(context.BaselineGameStorage.getStatus(),'unavailable');
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
+  // A new gameplay change while the server is down must become the version retried.
+  assert.equal(await context.BaselineGameStorage.saveProfile('pairs',{level:6},{immediate:true}),false);
+  listeners.window.online[0]();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(context.BaselineGameStorage.getStatus(),'ready');
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),0);
+  assert.equal(context.BaselineGameStorage.canSave(),true);
+  assert.equal(context.BaselineGameStorage.getProfile('pairs').level,6);
+  assert.equal(requests.length,2);
+  assert.equal(requests[1].expectedRevision,9);
+  assert.equal(requests[1].profile.level,6);
+});
+
+
+test('expired login pauses retries and protects unacknowledged game progress',async()=>{
+  const {context}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{pairs:{level:4}},revisions:{pairs:9}}});
+  let calls=0;
+  context.fetch=async()=>{calls++;return{ok:false,status:401,json:async()=>({ok:false,error:'signed_out'})};};
+  assert.equal(await context.BaselineGameStorage.saveProfile('pairs',{level:5},{immediate:true}),false);
+  assert.equal(calls,1);
+  assert.equal(context.BaselineGameStorage.getStatus(),'signed-out');
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
+  assert.equal(context.BaselineGameStorage.isAuthenticated(),false);
+});

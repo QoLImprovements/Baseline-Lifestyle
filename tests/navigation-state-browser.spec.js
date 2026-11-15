@@ -241,3 +241,39 @@ test('Baseline Realm exact scene survives refresh',async({page})=>{
   await page.waitForFunction(()=>Boolean(globalThis.BaselineRealmHost?.sceneRouter));
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('workshop');
 });
+
+
+test('all Games Hub game routes refresh in place without a different-page history hop',async({page})=>{
+  test.setTimeout(180000);
+  await stubGames(page);
+  await page.addInitScript(()=>{
+    globalThis.__recreationRouteWrites=[];
+    for(const method of ['pushState','replaceState']){
+      const original=history[method];
+      history[method]=function(state,title,url){
+        if(url!=null){
+          globalThis.__recreationRouteWrites.push({method,path:new URL(url,location.href).pathname});
+        }
+        return original.apply(this,arguments);
+      };
+    }
+  });
+  const slugs=[
+    'pairs','detect-the-word','make-the-number','track-the-coin','rule-shift',
+    'path-recall','combat-sequence','block-grid','colour-sort',
+    'darts-focused','badminton-focused','baseline-realm'
+  ];
+  for(const slug of slugs){
+    const pathname='/baseline-recreation/games/'+slug;
+    await page.goto(pathname,{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
+    expect(new URL(page.url()).pathname).toBe(pathname);
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
+    expect(new URL(page.url()).pathname).toBe(pathname);
+    const detours=await page.evaluate(expected=>(
+      globalThis.__recreationRouteWrites||[]
+    ).filter(entry=>entry.path!==expected),pathname);
+    expect(detours,slug+' navigated through a different page before restoring').toEqual([]);
+  }
+});

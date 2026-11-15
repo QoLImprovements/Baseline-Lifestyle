@@ -104,6 +104,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   let ninjaOpenPanel = 'ninjaGameCard';
   const openSummaryIds = new Set();
   let suspendHashSync = false;
+  let renderingAll = false;
   let autoNextSettings = readAutoNextSettings();
   const autoNextTimers = Object.create(null);
   const autoNextRegistrations = Object.create(null);
@@ -1010,7 +1011,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
     return params.toString();
   }
   function syncHashState(mode){
-    if(suspendHashSync || typeof window === 'undefined') return;
+    if(suspendHashSync || renderingAll || typeof window === 'undefined') return;
     const nextUrl = recreationCleanRouteForState();
     const currentUrl = window.location.pathname + window.location.search;
     if(currentUrl === nextUrl && !(window.location.hash || '')) return;
@@ -2681,7 +2682,7 @@ injectMobileGameControls('make24');
     return {
       tierId:tier.id,
       secret:String(wordState.secret || ''),
-      guesses:(wordState.guesses || []).map(entry => ({ word:entry.word })),
+      guesses:(wordState.guesses || []).map(entry => ({ word:entry.word, invalid:Boolean(entry.invalid) })),
       maxGuesses:wordState.maxGuesses,
       roundBank:wordState.roundBank,
       draftGuess:String(wordState.draftGuess || '').slice(0, tier.letters),
@@ -2703,7 +2704,7 @@ injectMobileGameControls('make24');
     wordState = {
       tierId:tier.id,
       secret:saved.secret,
-      guesses:(saved.guesses || []).map(entry => ({ word:entry.word, evaluation:evaluateWordGuess(entry.word, saved.secret) })),
+      guesses:(saved.guesses || []).map(entry => ({ word:entry.word, invalid:Boolean(entry.invalid), evaluation:entry.invalid?[]:evaluateWordGuess(entry.word, saved.secret) })),
       maxGuesses:saved.maxGuesses,
       roundBank:saved.roundBank,
       draftGuess:saved.draftGuess || '',
@@ -2775,10 +2776,17 @@ injectMobileGameControls('make24');
     if(guess.length !== tier.letters){ wordState.lastMessage = 'Enter a ' + tier.letters + '-letter word.'; persistWordRound(); renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     if(!/^[a-z]+$/.test(guess)){ wordState.lastMessage = 'Use letters only.'; persistWordRound(); renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     if(wordState.guesses.some(entry => entry.word === guess)){ wordState.lastMessage = 'That guess was already used in this round.'; persistWordRound(); renderWordBoard(); focusGameInput('wordGuessInput'); return; }
-    const evaluation = evaluateWordGuess(guess, wordState.secret);
-    wordState.guesses.push({ word:guess, evaluation });
+    if(!DETECT_WORD_ENGINE.isDictionaryReady()){
+      wordState.lastMessage = 'The UK English dictionary could not load. No turn has been lost.';
+      persistWordRound();
+      renderWordBoard();
+      return;
+    }
+    const validWord = DETECT_WORD_ENGINE.isValidWord(guess);
+    const evaluation = validWord ? evaluateWordGuess(guess, wordState.secret) : [];
+    wordState.guesses.push({ word:guess, evaluation, invalid:!validWord });
     wordState.draftGuess = '';
-    if(guess === wordState.secret){
+    if(validWord && guess === wordState.secret){
       const profile = profiles.detectword;
       profile.wordsSolved += 1;
       profile.currentStreak += 1;
@@ -2809,14 +2817,14 @@ injectMobileGameControls('make24');
       profiles.detectword.cleanWinStreak = 0;
       profiles.detectword.lastRoundXp = 0;
       profiles.detectword.lastRoundWord = String(wordState.secret || '').toUpperCase();
-      wordState.lastMessage = 'Round ended. Word was ' + wordState.secret.toUpperCase() + '.';
+      wordState.lastMessage = (validWord ? 'Round ended. ' : 'Not in the UK English dictionary — turn lost. Round ended. ') + 'Word was ' + wordState.secret.toUpperCase() + '.';
       profiles.detectword.activeRound = null;
       scheduleSave('detectword');
       renderAll();
       completeAutoNext('detectword');
       return;
     }
-    wordState.lastMessage = 'Guess logged. Keep reading the pattern.';
+    wordState.lastMessage = validWord ? 'Guess logged. Keep reading the pattern.' : 'Not in the UK English dictionary — one turn lost.';
     persistWordRound();
     renderAll();
     focusGameInput('wordGuessInput');
@@ -2903,11 +2911,15 @@ return;
       const guess = wordState.guesses[i];
       const cells = [];
       if(guess){
-        guess.evaluation.forEach(entry => cells.push('<div class="letter-cell ' + entry.state + '">' + entry.letter.toUpperCase() + '</div>'));
+        if(guess.invalid){
+          guess.word.split('').forEach(letter => cells.push('<div class="letter-cell invalid">' + escapeHtml(letter.toUpperCase()) + '</div>'));
+        }else{
+          guess.evaluation.forEach(entry => cells.push('<div class="letter-cell ' + entry.state + '">' + entry.letter.toUpperCase() + '</div>'));
+        }
       }else{
         for(let j = 0; j < tier.letters; j += 1){ cells.push('<div class="letter-cell">&nbsp;</div>'); }
       }
-      rows.push('<div class="word-row" style="--letters:' + tier.letters + '">' + cells.join('') + '</div>');
+      rows.push('<div class="word-row' + (guess?.invalid ? ' word-row--invalid' : '') + '" style="--letters:' + tier.letters + '">' + cells.join('') + '</div>');
     }
     const solved = wordState.guesses.some(entry => entry.word === wordState.secret);
     const ended = solved || wordState.guesses.length >= wordState.maxGuesses;
@@ -4025,9 +4037,10 @@ if(ruleShiftState.finished){
 
   function renderAll(){
     if(!profiles.pairs || !profiles.make24 || !profiles.detectword || !profiles.trackcoin || !profiles.ruleshift || !profiles.ninja) return;
+    renderingAll=true;
+    try{
     reconcileAllSkillProfiles();
     renderGamesList();
-    syncHashState();
     renderPairsProgress();
     renderPairsTierList();
     renderPairsSkillTree();
@@ -4052,6 +4065,7 @@ if(ruleShiftState.finished){
     syncGameButtonLabels();
     renderAutoNextControls();
     syncFullscreenWindowTabs();
+    }finally{ renderingAll=false; }
   }
 
   function activateTab(target, options){
@@ -4644,6 +4658,9 @@ function toggleGameFullscreen(gameId){
 
   function init(){
     cacheRefs();
+    // Select the requested URL before any account hydration; never paint System first.
+    applyHashState();
+    activateTab(currentTab,{sync:false});
     publishAutoNextApi();
     const coreDependencies = {
       profiles:profiles, refs:refs, q:q, qsa:qsa, clamp:clamp, sum:sum, formatInt:formatInt, formatCompact:formatCompact,
