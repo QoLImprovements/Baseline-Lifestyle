@@ -208,7 +208,7 @@ function installSaveTooltipEvents(){
         return;
       }
       if(state.authenticated && state.canSave){
-        const route=decodeURIComponent(String(location.hash||'').replace(/^#\\/?/,'').split(/[/?]/).filter(Boolean).pop()||'');
+        const route=decodeURIComponent(String(location.hash||'').replace(/^#/, '').split(/[/?]/).filter(Boolean).pop()||'');
         const game=globalThis.BASELINE_GAMES_REGISTRY?.resolve?.(route);
         const app=game?.profileApp || (route==='crossnumber'?'crossnumber':'');
         if(app){
