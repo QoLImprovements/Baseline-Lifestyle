@@ -352,3 +352,45 @@ test('save icon requests an acknowledged server write rather than acting only as
   assert.match(storageUi,/BaselineGameStorage\?\.saveNow\?\.\(app\)/);
   assert.match(guard,/recoverConnection/);
 });
+
+test('manual Save identifies the actual clean-route game and its clicked panel',()=>{
+  const start=storageUi.indexOf('function saveAppForButton(');
+  const declaration=storageUi.slice(start,storageUi.indexOf('\nfunction saveIconSvg',start));
+  assert.ok(declaration,'save target resolver exists');
+  const context={
+    URLSearchParams,
+    location:{pathname:'/baseline-recreation/games/detect-the-word',hash:''},
+    BASELINE_GAMES_REGISTRY:{
+      resolve(slug){
+        return {'detect-the-word':{profileApp:'detectword'},'pairs':{profileApp:'pairs'},'combat-sequence':{profileApp:'combatsequence'}}[slug]||null;
+      }
+    }
+  };
+  context.globalThis=context;
+  vm.runInNewContext(declaration,context);
+  const button={closest(selector){return selector==='.game-panel'?null:null;}};
+  assert.equal(context.saveAppForButton(button),'detectword','clean-path Save cannot depend on a hash');
+  context.location.pathname='/baseline-recreation/games/combat-sequence';
+  assert.equal(context.saveAppForButton(button),'combatsequence');
+  context.location.pathname='/baseline-recreation/games';
+  const panelButton={closest(selector){return selector==='.game-panel'?{id:'pairsPanel'}:null;}};
+  assert.equal(context.saveAppForButton(panelButton),'pairs','button must save its own game panel');
+  const crossButton={closest(selector){return selector==='#crossnumberPanel'?{}:null;}};
+  assert.equal(context.saveAppForButton(crossButton),'crossnumber');
+  context.BaselinePuzzlesLibrary={getJigsaw:()=> 'black-panther'};
+  context.BaselinePuzzlesRegistry={findJigsaw:()=>({app:'pantherjigsaw'})};
+  const jigsawButton={closest(selector){return selector==='#jigsawPlayerCard'?{}:null;}};
+  assert.equal(context.saveAppForButton(jigsawButton),'pantherjigsaw');
+});
+
+test('all 24 games accepted by the PHP API have real file-backed save mappings',()=>{
+  const apiStart=gamesApi.indexOf('function bl_game_data_file_apps()');
+  const mapStart=savedData.indexOf('function bl_saved_game_files()');
+  assert.ok(apiStart>=0&&mapStart>=0,'both game authority lists must be present');
+  const declared=gamesApi.slice(apiStart,gamesApi.indexOf('}',apiStart));
+  const mapped=savedData.slice(mapStart,savedData.indexOf('];',mapStart));
+  const apps=[...declared.matchAll(/'([^']+)'/g)].map(match=>match[1]);
+  const savedApps=new Set([...mapped.matchAll(/'([^']+)'[ \\t]*=>/g)].map(match=>match[1]));
+  for(const app of apps)assert.ok(savedApps.has(app),app+' breaks the entire file-backed Games bootstrap when missing');
+  assert.ok(apps.includes('pathrecall')&&apps.includes('combatsequence'));
+});

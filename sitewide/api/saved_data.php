@@ -126,6 +126,8 @@ function bl_saved_game_files(): array {
     'trackcoin' => 'track-coin.json',
     'track-coin' => 'track-coin.json',
     'ruleshift' => 'rule-shift.json',
+    'pathrecall' => 'path-recall.json',
+    'combatsequence' => 'combat-sequence.json',
     'crossnumber' => 'crossnumber.json',
     'rule-shift' => 'rule-shift.json',
     'blockgrid' => 'block-grid.json',

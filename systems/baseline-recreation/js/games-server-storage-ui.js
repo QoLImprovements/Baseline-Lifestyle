@@ -1,4 +1,4 @@
-const BUILD='GAMES_SAVE_ACTION_20261115_2';
+const BUILD='GAMES_SAVE_ROUTE_20261115_3';
 // 2026-07-10: refined save-state icon, custom caption tooltip, and lighter shared popup styling.
 
 function storageState(){
@@ -58,6 +58,28 @@ function saveStatusLabel(state){
   if(state.status==='signed-out' && state.unsavedCount>0)return 'Account session interrupted. Unsaved changes are still in this open tab; sign back into the same account.';
   if(state.status==='signed-out')return 'Sign in to save progress to your Baseline Lifestyle account.';
   return 'Server saving is currently unavailable. Progress from this page session is temporary.';
+}
+function saveAppForButton(button){
+  const panel=button?.closest?.('.game-panel');
+  const panelApps={
+    pairsPanel:'pairs',detectwordPanel:'detectword',make24Panel:'make24',
+    trackcoinPanel:'trackcoin',ruleshiftPanel:'ruleshift',ninjaPanel:'ninja',
+    pathRecallPanel:'pathrecall',combatSequencePanel:'combatsequence',
+    blockGridPanel:'blockgrid',colourSortPanel:'coloursort'
+  };
+  if(panel && panelApps[panel.id])return panelApps[panel.id];
+  if(button?.closest?.('#crossnumberPanel'))return 'crossnumber';
+  if(button?.closest?.('#realmTrainingBar'))return 'ninja';
+  if(button?.closest?.('#jigsawPlayerCard')){
+    const selected=globalThis.BaselinePuzzlesLibrary?.getJigsaw?.();
+    return globalThis.BaselinePuzzlesRegistry?.findJigsaw?.(selected)?.app||'';
+  }
+  // Most Games Hub links use a clean pathname, not a hash fragment.
+  const match=String(location.pathname||'').match(/^\/baseline-recreation\/games\/([^/?#]+)/i);
+  const slug=match?decodeURIComponent(match[1]):'';
+  const hash=String(location.hash||'').replace(/^#/,'');
+  const fromHash=new URLSearchParams(hash).get('game')||hash;
+  return globalThis.BASELINE_GAMES_REGISTRY?.resolve?.(slug||fromHash)?.profileApp||'';
 }
 function saveIconSvg(saved){
   const cross=saved?'':'<path class="game-save-icon__cross" d="M6.8 6.8l10.4 10.4M17.2 6.8L6.8 17.2"/>';
@@ -198,9 +220,7 @@ function installSaveTooltipEvents(){
     if(button){
       event.preventDefault();
       const state=storageState();
-      const route=decodeURIComponent(String(location.hash||'').replace(/^#/, '').split(/[/?]/).filter(Boolean).pop()||'');
-      const game=globalThis.BASELINE_GAMES_REGISTRY?.resolve?.(route);
-      const app=game?.profileApp || (route==='crossnumber'?'crossnumber':'');
+      const app=saveAppForButton(button);
       if(state.status==='conflict'){
         showSaveTooltip(button);
         return;
