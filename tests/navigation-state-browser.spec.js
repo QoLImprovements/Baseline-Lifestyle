@@ -369,4 +369,13 @@ test('nested puzzle refresh never paints its overview before the selected puzzle
   await expect(page.locator('#puzzlesOverviewCard')).toBeHidden();
   await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id','black-panther');
   expect(new URL(page.url()).pathname).toBe(path);
+  // An unrecognised puzzle URL must fall back to Jigsaws, not a masked blank screen.
+  await page.goto('/baseline-recreation/puzzles/jigsaws/not-a-registered-jigsaw',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#jigsawsPanel')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveAttribute('data-route-booting','true');
+  await expect(page).toHaveURL(/\/baseline-recreation\/puzzles\/jigsaws$/);
+  await page.goto('/baseline-recreation/puzzles/crossnumber',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#crossnumberPanel')).toBeVisible();
+  await expect(page.locator('#puzzlesOverviewCard')).toBeHidden();
+  await expect(page.locator('html')).not.toHaveAttribute('data-route-booting','true');
 });
