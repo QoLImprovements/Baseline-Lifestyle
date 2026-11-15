@@ -379,3 +379,16 @@ test('all rendered game Save controls are actionable with an explicit game targe
   assert.match(guard,/function saveNow\(app\)/);
   assert.match(guard,/method:'GET',credentials:'same-origin',cache:'no-store'/);
 });
+
+
+test('every server accepted game app has an actual Saved Data file mapping',()=>{
+  const match=gamesApi.match(/function bl_game_data_file_apps\(\): array \{\s*return \[([^\]]+)\];/);
+  assert.ok(match,'Games API persistent app list must be discoverable');
+  const apps=Array.from(match[1].matchAll(/'([^']+)'/g),match=>match[1]);
+  assert.ok(apps.length>=20,'complete game inventory is checked');
+  for(const app of apps){
+    assert.match(savedData,new RegExp("'"+app+"'\\s*=>"),app+' is accepted by the API but lacks a Saved Data filename');
+  }
+  assert.match(savedData,/'pathrecall'\s*=>\s*'path-recall\.json'/);
+  assert.match(savedData,/'combatsequence'\s*=>\s*'combat-sequence\.json'/);
+});
