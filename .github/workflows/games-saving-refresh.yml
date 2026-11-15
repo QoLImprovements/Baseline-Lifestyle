@@ -1,0 +1,38 @@
+name: Games save and refresh reliability
+
+on:
+  pull_request:
+    paths:
+      - 'systems/baseline-recreation/**'
+      - 'tests/games-server-storage.test.mjs'
+      - 'tests/detect-word-engine.test.mjs'
+      - 'tests/navigation-state-browser.spec.js'
+      - '.github/workflows/games-saving-refresh.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'systems/baseline-recreation/**'
+      - 'tests/games-server-storage.test.mjs'
+      - 'tests/detect-word-engine.test.mjs'
+      - 'tests/navigation-state-browser.spec.js'
+      - '.github/workflows/games-saving-refresh.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  games-reliability:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Validate account saving and British word dictionary
+        run: node --test tests/games-server-storage.test.mjs tests/detect-word-engine.test.mjs tests/navigation-state-contract.test.mjs
+      - run: npx playwright install --with-deps chromium
+      - name: Direct refresh must never change the requested game URL
+        run: npx playwright test tests/navigation-state-browser.spec.js --grep "all Games Hub game routes refresh in place" --workers=1 --reporter=line
