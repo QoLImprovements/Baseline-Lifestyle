@@ -4001,3 +4001,8 @@ html body[data-app="recreation"] #detectwordPanel .mobile-word-keypad > .mobile-
     font-size:11px!important;
   }
 }
+
+/* A non-dictionary guess consumes one turn and is crossed out, without letter hints. */
+body[data-app="recreation"] #detectwordPanel .word-row--invalid{position:relative}
+body[data-app="recreation"] #detectwordPanel .word-row--invalid::after{content:"";position:absolute;left:0;right:0;top:50%;height:3px;border-radius:3px;background:#e8a0a0;transform:translateY(-50%);pointer-events:none;z-index:2}
+body[data-app="recreation"] #detectwordPanel .word-row--invalid .letter-cell{opacity:.74}
