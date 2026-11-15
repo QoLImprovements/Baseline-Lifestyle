@@ -1,7 +1,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='RECREATION_AUTO_SAVE_RETRY_20261115_1';
+  const BUILD='RECREATION_MANUAL_SAVE_RECOVERY_20261115_2';
   const DATA_API='/systems/baseline-recreation/api/games_data.php';
   const registryApps=global.BASELINE_GAMES_REGISTRY?.persistentApps?.() || [];
   const ALL_APPS=Object.freeze(registryApps.length ? registryApps.slice() : ['pairs','detectword','make24','trackcoin','ruleshift','ninja','crossnumber','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','movedalong','moonbearswitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused','hubsettings']);
@@ -17,13 +17,13 @@
     recoveryTimer=0;
   }
   function scheduleRecovery(){
-    if(recoveryTimer || state.status==='conflict' || state.status==='signed-out')return;
+    if(recoveryTimer || state.status==='conflict' || (state.status==='signed-out' && !global.BASELINE_auth?.get?.().authed))return;
     // A transient HTTP/network failure must not permanently disable account saving.
     const delay=retryDelayMs;
     retryDelayMs=Math.min(30000,Math.round(retryDelayMs*1.8));
     recoveryTimer=global.setTimeout(()=>{
       recoveryTimer=0;
-      if(state.status==='conflict'||state.status==='signed-out')return;
+      if(state.status==='conflict'||(state.status==='signed-out'&&!global.BASELINE_auth?.get?.().authed))return;
       if(!state.authenticated){
         if(bootstrap()&&unsavedCount())retryFailedSaves();
       }else if(unsavedCount()){
@@ -91,7 +91,7 @@
       // Never quietly throw away a profile after a network error.
       if(!Object.keys(unsaved).length){state.profiles={};rememberRevisions({});}
       setState(result.status===401?'signed-out':'unavailable',result.error,false,false);
-      if(result.status!==401)scheduleRecovery();
+      if(result.status!==401 || global.BASELINE_auth?.get?.().authed)scheduleRecovery();
       return false;
     }
     const nextAccount=String(result.data.accountId||'');
@@ -203,7 +203,7 @@
     if(!validApp(key)||!profile||typeof profile!=='object')return false;
     setTemporaryProfile(key,profile);
     if(!state.canSave){
-      if(state.accountId)unsaved[key]=clone(profile)||{};
+      if(state.accountId || global.BASELINE_auth?.get?.().authed)unsaved[key]=clone(profile)||{};
       scheduleRecovery();
       return false;
     }
@@ -221,6 +221,7 @@
     const key=String(app||'');
     if(!validApp(key)||!profile||typeof profile!=='object')return Promise.resolve(false);
     setTemporaryProfile(key,profile);
+    if(!state.canSave && global.BASELINE_auth?.get?.().authed && state.status!=='conflict')bootstrap();
     if(!state.canSave){
       // Signed-in edits remain recoverable for this tab even after a failed POST.
       if(state.accountId)unsaved[key]=clone(profile)||{};
@@ -235,6 +236,17 @@
     }
     queueProfile(key,profile);
     return Promise.resolve(true);
+  }
+  function saveNow(app){
+    const key=String(app||'');
+    const profile=getProfile(key);
+    if(!validApp(key)||!profile)return Promise.resolve(false);
+    return saveProfile(key,profile,{immediate:true});
+  }
+  function recoverConnection(){
+    if(state.status==='conflict')return Promise.resolve(false);
+    if(!state.authenticated && !bootstrap())return Promise.resolve(false);
+    return unsavedCount()?retryFailedSaves():Promise.resolve(state.canSave);
   }
   function unsavedCount(){return Object.keys(unsaved).length;}
   function retryFailedSaves(){
@@ -292,7 +304,7 @@
     }
   });
   global.addEventListener('pageshow',()=>{
-    if(state.status==='unavailable')scheduleRecovery();
+    if(state.status==='unavailable'||(state.status==='signed-out'&&global.BASELINE_auth?.get?.().authed))scheduleRecovery();
     else if(state.canSave&&unsavedCount())retryFailedSaves();
   });
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushPending();});
@@ -323,9 +335,11 @@
     getUnsavedCount:unsavedCount,
     getUnsavedApps:()=>Object.keys(unsaved),
     retryFailedSaves,
+    recoverConnection,
     getProfile,
     setTemporaryProfile,
     saveProfile,
+    saveNow,
     flush:flushPending
   });
 })(window);

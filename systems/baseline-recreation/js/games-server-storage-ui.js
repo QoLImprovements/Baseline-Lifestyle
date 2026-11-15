@@ -1,4 +1,4 @@
-const BUILD='GAMES_SAVE_STATUS_RELIABLE_20261115_1';
+const BUILD='GAMES_SAVE_ACTION_20261115_2';
 // 2026-07-10: refined save-state icon, custom caption tooltip, and lighter shared popup styling.
 
 function storageState(){
@@ -52,7 +52,7 @@ function enforceAccountCopy(){
 }
 function saveStatusLabel(state){
   if(state.canSave && state.unsavedCount>0)return 'Saving in progress: '+state.unsavedCount+' game profile(s) await server confirmation. Select to send pending changes now.';
-  if(state.canSave)return 'Account saving is available. No unsaved changes are pending.';
+  if(state.canSave)return 'Account saving available. Click to save the current game now; confirmation is required from the server.';
   if(state.status==='conflict')return 'Save conflict. Unsaved progress is held in this tab; do not refresh.';
   if(state.authenticated && state.unsavedCount>0)return 'Save failed. Unsaved progress remains in this tab. Click this icon to retry saving.';
   if(state.status==='signed-out' && state.unsavedCount>0)return 'Account session interrupted. Unsaved changes are still in this open tab; sign back into the same account.';
@@ -191,22 +191,33 @@ function installSaveTooltipEvents(){
       if(retry.disabled)return;
       retry.disabled=true;
       retry.textContent='Retrying…';
-      Promise.resolve(globalThis.BaselineGameStorage?.retryFailedSaves?.()).catch(()=>false).finally(update);
+      Promise.resolve(globalThis.BaselineGameStorage?.recoverConnection?.()).catch(()=>false).finally(update);
       return;
     }
     const button=event.target instanceof Element ? event.target.closest('[data-save-status-icon]') : null;
     if(button){
       event.preventDefault();
       const state=storageState();
-      if(state.authenticated && !state.canSave && state.status!=='conflict' && state.unsavedCount>0){
-        Promise.resolve(globalThis.BaselineGameStorage?.retryFailedSaves?.()).catch(()=>false).finally(update);
-        return;
-      }
-      if(state.authenticated && state.canSave && state.unsavedCount>0){
-        globalThis.BaselineGameStorage?.flush?.();
+      const route=decodeURIComponent(String(location.hash||'').replace(/^#/, '').split(/[/?]/).filter(Boolean).pop()||'');
+      const game=globalThis.BASELINE_GAMES_REGISTRY?.resolve?.(route);
+      const app=game?.profileApp || (route==='crossnumber'?'crossnumber':'');
+      if(state.status==='conflict'){
         showSaveTooltip(button);
         return;
       }
+      if(!state.canSave && !globalThis.BASELINE_auth?.get?.().authed){
+        showSaveTooltip(button);
+        return;
+      }
+      button.disabled=true;
+      const reconnect=state.canSave ? Promise.resolve(true) : Promise.resolve(globalThis.BaselineGameStorage?.recoverConnection?.());
+      reconnect.then(ready=>{
+        if(!ready)return false;
+        globalThis.BaselineGameStorage?.flush?.();
+        return app?globalThis.BaselineGameStorage?.saveNow?.(app):false;
+      }).then(ok=>{
+        if(ok){button.setAttribute('data-save-tooltip','Save confirmed by server.');}
+      }).catch(()=>false).finally(()=>{button.disabled=false;update();});
       showSaveTooltip(button);
       return;
     }

@@ -271,8 +271,8 @@ test('save status describes unconfirmed writes and exposes an in-page retry, not
   assert.match(storageUi,/Saving game progress/);
   assert.match(storageUi,/Saving paused: another version exists/);
   assert.match(storageUi,/data-games-retry-save/);
-  assert.match(storageUi,/retryFailedSaves/);
-  assert.match(storageUi,/No unsaved changes are pending/);
+  assert.match(storageUi,/recoverConnection/);
+  assert.match(storageUi,/Click to save the current game now/);
   assert.match(guard,/getUnsavedCount:unsavedCount/);
 });
 
@@ -336,4 +336,19 @@ test('expired login pauses retries and protects unacknowledged game progress',as
   assert.equal(context.BaselineGameStorage.getStatus(),'signed-out');
   assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
   assert.equal(context.BaselineGameStorage.isAuthenticated(),false);
+});
+
+
+test('save icon requests an acknowledged server write rather than acting only as a status indicator',async()=>{
+  const {context}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{pairs:{level:4}},revisions:{pairs:9}}});
+  const writes=[];
+  context.fetch=async(_url,options)=>{const payload=JSON.parse(options.body);writes.push(payload);return{ok:true,status:200,json:async()=>({ok:true,revision:10,profile:payload.profile})};};
+  assert.equal(await context.BaselineGameStorage.saveNow('pairs'),true);
+  assert.equal(writes.length,1);
+  assert.equal(writes[0].app,'pairs');
+  assert.equal(writes[0].profile.level,4);
+  assert.equal(writes[0].expectedRevision,9);
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),0);
+  assert.match(storageUi,/BaselineGameStorage\?\.saveNow\?\.\(app\)/);
+  assert.match(guard,/recoverConnection/);
 });
