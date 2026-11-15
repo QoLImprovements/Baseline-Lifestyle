@@ -191,7 +191,7 @@ function installSaveTooltipEvents(){
       if(retry.disabled)return;
       retry.disabled=true;
       retry.textContent='Retrying…';
-      Promise.resolve(globalThis.BaselineGameStorage?.retryFailedSaves?.()).catch(()=>false).finally(update);
+      Promise.resolve(globalThis.BaselineGameStorage?.recoverConnection?.()).catch(()=>false).finally(update);
       return;
     }
     const button=event.target instanceof Element ? event.target.closest('[data-save-status-icon]') : null;
@@ -199,7 +199,7 @@ function installSaveTooltipEvents(){
       event.preventDefault();
       const state=storageState();
       if(globalThis.BASELINE_auth?.get?.().authed && !state.canSave && state.status!=='conflict'){
-        Promise.resolve(globalThis.BaselineGameStorage?.retryFailedSaves?.()).catch(()=>false).finally(update);
+        Promise.resolve(globalThis.BaselineGameStorage?.recoverConnection?.()).catch(()=>false).finally(update);
         return;
       }
       if(state.canSave && state.unsavedCount>0){
