@@ -325,3 +325,15 @@ test('authenticated save retries automatically when connectivity resumes, preser
   assert.equal(requests[1].expectedRevision,9);
   assert.equal(requests[1].profile.level,6);
 });
+
+
+test('expired login pauses retries and protects unacknowledged game progress',async()=>{
+  const {context}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{pairs:{level:4}},revisions:{pairs:9}}});
+  let calls=0;
+  context.fetch=async()=>{calls++;return{ok:false,status:401,json:async()=>({ok:false,error:'signed_out'})};};
+  assert.equal(await context.BaselineGameStorage.saveProfile('pairs',{level:5},{immediate:true}),false);
+  assert.equal(calls,1);
+  assert.equal(context.BaselineGameStorage.getStatus(),'signed-out');
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
+  assert.equal(context.BaselineGameStorage.isAuthenticated(),false);
+});
