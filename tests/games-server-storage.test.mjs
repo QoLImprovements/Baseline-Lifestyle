@@ -382,3 +382,13 @@ test('manual Save identifies the actual clean-route game and its clicked panel',
   const jigsawButton={closest(selector){return selector==='#jigsawPlayerCard'?{}:null;}};
   assert.equal(context.saveAppForButton(jigsawButton),'pantherjigsaw');
 });
+
+test('all 24 games accepted by the PHP API have real file-backed save mappings',()=>{
+  const declared=gamesApi.match(/function bl_game_data_file_apps\\(\\): array \\{[\\s\\S]*?return \\[([^\\]]+)\\]/);
+  const mapped=savedData.match(/function bl_saved_game_files\\(\\): array \\{[\\s\\S]*?return \\[([\\s\\S]*?)\\n  \\];/);
+  assert.ok(declared&&mapped,'both game authority lists must be present');
+  const apps=[...declared[1].matchAll(/'([^']+)'/g)].map(match=>match[1]);
+  const savedApps=new Set([...mapped[1].matchAll(/'([^']+)'\\s*=>/g)].map(match=>match[1]));
+  for(const app of apps)assert.ok(savedApps.has(app),app+' breaks the entire file-backed Games bootstrap when missing');
+  assert.ok(apps.includes('pathrecall')&&apps.includes('combatsequence'));
+});
