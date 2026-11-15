@@ -384,11 +384,13 @@ test('manual Save identifies the actual clean-route game and its clicked panel',
 });
 
 test('all 24 games accepted by the PHP API have real file-backed save mappings',()=>{
-  const declared=gamesApi.match(/function bl_game_data_file_apps\\(\\): array \\{[\\s\\S]*?return \\[([^\\]]+)\\]/);
-  const mapped=savedData.match(/function bl_saved_game_files\\(\\): array \\{[\\s\\S]*?return \\[([\\s\\S]*?)\\n  \\];/);
-  assert.ok(declared&&mapped,'both game authority lists must be present');
-  const apps=[...declared[1].matchAll(/'([^']+)'/g)].map(match=>match[1]);
-  const savedApps=new Set([...mapped[1].matchAll(/'([^']+)'\\s*=>/g)].map(match=>match[1]));
+  const apiStart=gamesApi.indexOf('function bl_game_data_file_apps()');
+  const mapStart=savedData.indexOf('function bl_saved_game_files()');
+  assert.ok(apiStart>=0&&mapStart>=0,'both game authority lists must be present');
+  const declared=gamesApi.slice(apiStart,gamesApi.indexOf('}',apiStart));
+  const mapped=savedData.slice(mapStart,savedData.indexOf('];',mapStart));
+  const apps=[...declared.matchAll(/'([^']+)'/g)].map(match=>match[1]);
+  const savedApps=new Set([...mapped.matchAll(/'([^']+)'[ \\t]*=>/g)].map(match=>match[1]));
   for(const app of apps)assert.ok(savedApps.has(app),app+' breaks the entire file-backed Games bootstrap when missing');
   assert.ok(apps.includes('pathrecall')&&apps.includes('combatsequence'));
 });
