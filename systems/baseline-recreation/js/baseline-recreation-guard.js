@@ -144,6 +144,17 @@
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({action:'save',app:key,profile:snapshot,expectedRevision:revisionFor(key)})
     }).then(response=>response.json().catch(()=>({})).then(data=>{
+      if(response.status===401){
+        // An expired login cannot be fixed by repeatedly posting the same draft.
+        // Keep the unsaved account draft in this tab until the same account logs in.
+        state.lastError='signed_out';
+        state.status='signed-out';
+        state.authenticated=false;
+        state.canSave=false;
+        cancelRecovery();
+        emitStorageState();
+        return false;
+      }
       if(response.status===409&&data.error==='revision_conflict'){
         state.lastError='revision_conflict';
         state.status='conflict';
