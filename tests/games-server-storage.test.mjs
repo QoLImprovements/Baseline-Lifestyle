@@ -354,7 +354,8 @@ test('save icon requests an acknowledged server write rather than acting only as
 });
 
 test('manual Save identifies the actual clean-route game and its clicked panel',()=>{
-  const declaration=storageUi.match(/function saveAppForButton\\(button\\)\\{[\\s\\S]*?\\n\\}/)?.[0];
+  const start=storageUi.indexOf('function saveAppForButton(');
+  const declaration=storageUi.slice(start,storageUi.indexOf('\nfunction saveIconSvg',start));
   assert.ok(declaration,'save target resolver exists');
   const context={
     URLSearchParams,
