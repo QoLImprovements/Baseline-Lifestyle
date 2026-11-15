@@ -38,6 +38,18 @@ These Markdown rules are a human reference point, not live runtime config.
     function routeReady(){
       if(!coreReady)return false;
       if(String(location.pathname||'').replace(/\/+$/,'')!==path)return true;
+      if(puzzleRoute){
+        const library=window.BaselinePuzzlesLibrary;
+        if(!library)return false;
+        const parts=puzzleRoute[1].split('/');
+        const expectedView=parts[0]==='crossnumber'?'crossnumber'
+          :parts[0]==='jigsaws'?(parts[1]?'player':'jigsaws'):'overview';
+        if(library.getView?.()!==expectedView)return false;
+        if(expectedView==='player'){
+          if(library.getJigsaw?.()!==parts[1])return false;
+          if(!root.hasAttribute('data-weight-of-coherence-jigsaw'))return false;
+        }
+      }
       if(moduleGames.has(requestedGame)){
         return root.getAttribute('data-game-extension-open')===requestedGame;
       }
@@ -54,11 +66,13 @@ These Markdown rules are a human reference point, not live runtime config.
       coreReady=true;
       releaseWhenReady();
     },{once:true});
-    window.addEventListener('baseline:game-extension-open',releaseWhenReady);
-    if(moduleGames.has(requestedGame)||requestedGame==='darts-focused'||requestedGame==='badminton-focused'){
+    document.addEventListener('baseline:recreation:puzzles-ready',releaseWhenReady);
+    document.addEventListener('baseline:game-extension-open',releaseWhenReady);
+    if(puzzleRoute||moduleGames.has(requestedGame)||requestedGame==='darts-focused'||requestedGame==='badminton-focused'){
       watch=new MutationObserver(releaseWhenReady);
       watch.observe(root,{attributes:true,attributeFilter:[
-        'data-game-extension-open','data-darts-focused-open','data-badminton-focused-open'
+        'data-game-extension-open','data-darts-focused-open','data-badminton-focused-open',
+        'data-weight-of-coherence-jigsaw'
       ]});
     }
   }catch(error){
