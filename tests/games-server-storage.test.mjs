@@ -272,7 +272,7 @@ test('save status describes unconfirmed writes and exposes an in-page retry, not
   assert.match(storageUi,/Saving paused: another version exists/);
   assert.match(storageUi,/data-games-retry-save/);
   assert.match(storageUi,/retryFailedSaves/);
-  assert.match(storageUi,/No unsaved changes are pending/);
+  assert.match(storageUi,/Press Save to store and verify this game/);
   assert.match(guard,/getUnsavedCount:unsavedCount/);
 });
 
@@ -295,7 +295,7 @@ test('failed account writes schedule automatic recovery and online resumption wi
   assert.match(guard,/global\.addEventListener\('pageshow'/);
   assert.match(guard,/retryDelayMs=Math\.min\(30000/);
   assert.match(storageUi,/const saved=Boolean\(state\.canSave && state\.unsavedCount===0\)/);
-  assert.match(storageUi,/BaselineGameStorage\?\.flush\?\.\(\)/);
+  assert.match(storageUi,/BaselineGameStorage\?\.saveNow\?\.\(app\)/);
 });
 
 
