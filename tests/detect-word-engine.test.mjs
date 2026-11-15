@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const configPath=new URL('../systems/baseline-recreation/js/games-core-config.js',import.meta.url);
+const dictionaryPath=new URL('../systems/baseline-recreation/js/uk-word-list.js',import.meta.url);
 const enginePath=new URL('../systems/baseline-recreation/js/detect-word-engine.js',import.meta.url);
 const corePath=new URL('../systems/baseline-recreation/js/baseline-recreation-core.js',import.meta.url);
 const htmlPath=new URL('../systems/baseline-recreation/baseline-recreation.html',import.meta.url);
@@ -11,6 +12,7 @@ const htmlPath=new URL('../systems/baseline-recreation/baseline-recreation.html'
 function loadEngine(random=()=>0){
   const sandbox={window:{},Math};
   vm.runInNewContext(fs.readFileSync(configPath,'utf8'),sandbox,{filename:'games-core-config.js'});
+  vm.runInNewContext(fs.readFileSync(dictionaryPath,'utf8'),sandbox,{filename:'uk-word-list.js'});
   vm.runInNewContext(fs.readFileSync(enginePath,'utf8'),sandbox,{filename:'detect-word-engine.js'});
   const factory=sandbox.window.BASELINE_DETECT_WORD_ENGINE;
   return {
@@ -30,6 +32,19 @@ test('Detect The Word engine exposes one isolated authority',()=>{
   assert.equal(typeof engine.evaluateWordGuess,'function');
   assert.equal(typeof engine.computeWordRewardMultiplier,'function');
   assert.equal(typeof engine.letterKnowledge,'function');
+  assert.equal(typeof engine.isValidWord,'function');
+  assert.equal(engine.isDictionaryReady(),true);
+});
+
+test('British dictionary accepts UK words and rejects arbitrary strings',()=>{
+  const {engine}=loadEngine();
+  assert.equal(engine.isValidWord('colour'),true);
+  assert.equal(engine.isValidWord('harbour'),true);
+  assert.equal(engine.isValidWord('cosy'),true);
+  assert.equal(engine.isValidWord('zqxwv'),false);
+  assert.equal(engine.isValidWord('zzzzz'),false);
+  assert.equal(engine.isValidWord('apple'),true);
+  assert.equal(engine.isValidWord('ABCDE1'),false);
 });
 
 test('Detect The Word evaluation handles duplicate letters without over-crediting',()=>{
@@ -97,7 +112,11 @@ test('Recreation core delegates Detect The Word engine logic to one authority',(
   assert.doesNotMatch(source,/addEventListener|createElement|innerHTML|classList|history\./);
 
   const configIndex=html.indexOf('/systems/baseline-recreation/js/games-core-config.js');
-  const engineIndex=html.indexOf('/systems/baseline-recreation/js/detect-word-engine.js?v=DETECT_WORD_ENGINE_AUTHORITY_20261021_1');
+  const dictionaryIndex=html.indexOf('/systems/baseline-recreation/js/uk-word-list.js?v=');
+  const engineIndex=html.indexOf('/systems/baseline-recreation/js/detect-word-engine.js?v=');
   const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js?v=');
-  assert.ok(configIndex>=0 && engineIndex>configIndex && coreIndex>engineIndex);
+  assert.ok(configIndex>=0 && dictionaryIndex>configIndex && engineIndex>dictionaryIndex && coreIndex>engineIndex);
+  assert.match(core,/DETECT_WORD_ENGINE\.isValidWord\(guess\)/);
+  assert.match(core,/invalid:!validWord/);
+  assert.match(core,/word-row--invalid/);
 });
