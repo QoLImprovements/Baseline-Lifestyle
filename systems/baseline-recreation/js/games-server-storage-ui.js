@@ -5,6 +5,7 @@ function storageState(){
   const authority=globalThis.BaselineGameStorage;
   return{
     authenticated:Boolean(authority?.isAuthenticated?.()),
+    siteAuthenticated:Boolean(globalThis.BASELINE_auth?.get?.()?.authed),
     canPlay:authority?.canPlay?.()!==false,
     canSave:Boolean(authority?.canSave?.()),
     ready:Boolean(authority?.isReady?.()),
@@ -34,6 +35,10 @@ function accountCopy(state){
     html:'<strong>Account connection interrupted.</strong><span class="inline-note">Unsaved progress is still in this open tab. Sign back into the same account without closing this page.</span>',
     description:'Pending changes are not on the server yet. Signing back in will check the saved revision before a retry.'
   };
+  if(state.siteAuthenticated)return{
+    html:'<strong>Games account saving is disconnected.</strong><span class="inline-note">Your main account is signed in, but the Games save service has not confirmed its connection. Error: '+String(state.error||state.status).replace(/[^a-zA-Z0-9_:-]/g,'').slice(0,80)+'. Press Save to reconnect.</span>',
+    description:'Games saving is not confirmed even though your site login is active. Press Save to reconnect and verify the saved profile.'
+  };
   if(state.status==='signed-out')return{
     html:'<strong>Temporary play is active.</strong><span class="inline-note">Games and puzzles remain playable. Sign in to save progress to your Baseline Lifestyle account.</span>',
     description:'You can play without signing in. Progress from this temporary session is not saved or written to account data.'
@@ -56,6 +61,7 @@ function saveStatusLabel(state){
   if(state.status==='conflict')return 'Save conflict. Unsaved progress is held in this tab; do not refresh.';
   if(state.authenticated && state.unsavedCount>0)return 'Save failed. Unsaved progress remains in this tab. Click this icon to retry saving.';
   if(state.status==='signed-out' && state.unsavedCount>0)return 'Account session interrupted. Unsaved changes are still in this open tab; sign back into the same account.';
+  if(state.siteAuthenticated)return 'Your account is signed in, but Games saving is disconnected ('+state.error+'). Press Save to retry.';
   if(state.status==='signed-out')return 'Sign in to save progress to your Baseline Lifestyle account.';
   return 'Server saving is currently unavailable. Progress from this page session is temporary.';
 }
