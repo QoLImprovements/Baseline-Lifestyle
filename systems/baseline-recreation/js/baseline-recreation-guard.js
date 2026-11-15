@@ -237,6 +237,23 @@
     queueProfile(key,profile);
     return Promise.resolve(true);
   }
+  // PHP decodes JSON objects into associative arrays. In particular, an empty
+  // object may round-trip as an empty array: compare these forms semantically.
+  function comparableProfile(value){
+    if(Array.isArray(value))return value.length?value.map(comparableProfile):null;
+    if(value && typeof value==='object'){
+      const keys=Object.keys(value).sort();
+      if(!keys.length)return null;
+      const result={};
+      keys.forEach(key=>{result[key]=comparableProfile(value[key]);});
+      return result;
+    }
+    return value;
+  }
+  function profilesMatch(left,right){
+    return JSON.stringify(comparableProfile(left))===JSON.stringify(comparableProfile(right));
+  }
+
   // The visible floppy-disk control is a genuine Save action, not a status-only button.
   // It always sends the selected game profile, even when there is nothing queued.
   async function saveNow(app){
@@ -274,7 +291,7 @@
         headers:{'Accept':'application/json'}
       });
       const data=await response.json().catch(()=>({}));
-      if(!response.ok || !data.ok || !data.found || JSON.stringify(data.profile)!==JSON.stringify(snapshot)){
+      if(!response.ok || !data.ok || !data.found || !profilesMatch(data.profile,snapshot)){
         // Do not tell the player it saved when a read-back cannot confirm the data.
         if(!unsaved[key])unsaved[key]=clone(snapshot);
         state.lastError=response.ok?'save_readback_mismatch':String(data.error||('http_'+response.status));
