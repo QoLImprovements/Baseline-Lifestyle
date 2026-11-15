@@ -36,5 +36,7 @@ jobs:
       - name: Verify live PHP save endpoint in isolated SQLite and Saved Data sessions
         run: node --test tests/games-save-http-integration.test.mjs
       - run: npx playwright install --with-deps chromium
+      - name: Real Save icon must write and restore account progress
+        run: npx playwright test tests/games-save-browser.spec.js --workers=1 --reporter=line
       - name: Direct refresh must never change the requested game URL
         run: npx playwright test tests/navigation-state-browser.spec.js --grep "all Games Hub game routes refresh in place" --workers=1 --reporter=line
