@@ -243,6 +243,11 @@
     if(!validApp(key)||!profile)return Promise.resolve(false);
     return saveProfile(key,profile,{immediate:true});
   }
+  function recoverConnection(){
+    if(state.status==='conflict')return Promise.resolve(false);
+    if(!state.authenticated && !bootstrap())return Promise.resolve(false);
+    return unsavedCount()?retryFailedSaves():Promise.resolve(state.canSave);
+  }
   function unsavedCount(){return Object.keys(unsaved).length;}
   function retryFailedSaves(){
     if(retryPromise)return retryPromise;
@@ -330,6 +335,7 @@
     getUnsavedCount:unsavedCount,
     getUnsavedApps:()=>Object.keys(unsaved),
     retryFailedSaves,
+    recoverConnection,
     getProfile,
     setTemporaryProfile,
     saveProfile,
