@@ -287,3 +287,13 @@ test('unchanged authenticated account events do not cancel queued game saves',as
   assert.equal(context.BaselineGameStorage.getProfile('pairs').level,5);
   assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
 });
+
+
+test('failed account writes schedule automatic recovery and online resumption without weakening conflicts',()=>{
+  assert.match(guard,/function scheduleRecovery\(\)/);
+  assert.match(guard,/global\.addEventListener\('online'/);
+  assert.match(guard,/global\.addEventListener\('pageshow'/);
+  assert.match(guard,/retryDelayMs=Math\.min\(30000/);
+  assert.match(storageUi,/const saved=Boolean\(state\.canSave && state\.unsavedCount===0\)/);
+  assert.match(storageUi,/BaselineGameStorage\?\.flush\?\.\(\)/);
+});
