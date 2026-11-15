@@ -42,11 +42,13 @@ These Markdown rules are a human reference point, not live runtime config.
         const library=window.BaselinePuzzlesLibrary;
         if(!library)return false;
         const parts=puzzleRoute[1].split('/');
+        const selectedId=parts[1]?decodeURIComponent(parts[1]):'';
+        const registered=selectedId&&window.BaselinePuzzlesRegistry?.findJigsaw?.(selectedId);
         const expectedView=parts[0]==='crossnumber'?'crossnumber'
-          :parts[0]==='jigsaws'?(parts[1]?'player':'jigsaws'):'overview';
+          :parts[0]==='jigsaws'?(registered?'player':'jigsaws'):'overview';
         if(library.getView?.()!==expectedView)return false;
         if(expectedView==='player'){
-          if(library.getJigsaw?.()!==parts[1])return false;
+          if(library.getJigsaw?.()!==selectedId)return false;
           if(!root.hasAttribute('data-weight-of-coherence-jigsaw'))return false;
         }
       }
