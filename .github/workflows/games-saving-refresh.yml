@@ -14,6 +14,7 @@ on:
     paths:
       - 'systems/baseline-recreation/**'
       - 'tests/games-server-storage.test.mjs'
+      - 'tests/games-authenticated-persistence-e2e.mjs'
       - 'tests/detect-word-engine.test.mjs'
       - 'tests/navigation-state-browser.spec.js'
       - '.github/workflows/games-saving-refresh.yml'
