@@ -172,7 +172,6 @@
       const current=unsaved[key];
       const acknowledged=!current || JSON.stringify(current)===JSON.stringify(snapshot);
       if(acknowledged){delete unsaved[key];state.profiles[key]=clone(data.profile||snapshot)||{};}
-      confirmedSaveAt[key]=Date.now();
       state.lastError='';
       state.status='ready';
       retryDelayMs=750;
@@ -249,7 +248,12 @@
     }
     if(state.status==='conflict')return false;
     if(!state.canSave){
-      if(!bootstrap())return false;
+      if(state.authenticated && unsavedCount()){
+        if(!await retryFailedSaves())return false;
+      }else if(!bootstrap()){
+        if(state.status==='conflict'||!state.authenticated||!unsavedCount())return false;
+        if(!await retryFailedSaves())return false;
+      }
     }
     const snapshot=clone(unsaved[key] || pending[key] || state.profiles[key]);
     if(!snapshot){
