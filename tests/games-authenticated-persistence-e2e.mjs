@@ -42,7 +42,9 @@ async function call(url,{body,session}={}){
   const text=await response.text();
   let data={};
   try{data=JSON.parse(text);}catch{throw Error('Non-JSON API response '+response.status+': '+text.slice(0,500));}
-  return{status:response.status,data,session:response.headers.get('set-cookie')?.split(';')[0]||''};
+  const issuedCookies=response.headers.getSetCookie?.()||[];
+  const authCookie=issuedCookies.filter(value=>value.startsWith('baseline_session=')).at(-1)||'';
+  return{status:response.status,data,session:authCookie.split(';')[0]};
 }
 async function checkMode(mode){
   logs='';
