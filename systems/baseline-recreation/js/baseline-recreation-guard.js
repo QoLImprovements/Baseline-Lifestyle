@@ -1,7 +1,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='RECREATION_AUTO_SAVE_RETRY_20261115_1';
+  const BUILD='RECREATION_VERIFIED_MANUAL_SAVE_20261115_2';
   const DATA_API='/systems/baseline-recreation/api/games_data.php';
   const registryApps=global.BASELINE_GAMES_REGISTRY?.persistentApps?.() || [];
   const ALL_APPS=Object.freeze(registryApps.length ? registryApps.slice() : ['pairs','detectword','make24','trackcoin','ruleshift','ninja','crossnumber','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','movedalong','moonbearswitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused','hubsettings']);
@@ -9,6 +9,7 @@
   const timers=Object.create(null);
   const writeChains=Object.create(null);
   const unsaved=Object.create(null);
+  const confirmedSaveAt=Object.create(null);
   let retryPromise=null;
   let recoveryTimer=0;
   let retryDelayMs=750;
@@ -171,6 +172,7 @@
       const current=unsaved[key];
       const acknowledged=!current || JSON.stringify(current)===JSON.stringify(snapshot);
       if(acknowledged){delete unsaved[key];state.profiles[key]=clone(data.profile||snapshot)||{};}
+      confirmedSaveAt[key]=Date.now();
       state.lastError='';
       state.status='ready';
       retryDelayMs=750;
@@ -236,6 +238,62 @@
     queueProfile(key,profile);
     return Promise.resolve(true);
   }
+  // The visible floppy-disk control is a genuine Save action, not a status-only button.
+  // It always sends the selected game profile, even when there is nothing queued.
+  async function saveNow(app){
+    const key=String(app||'');
+    if(!validApp(key)){
+      state.lastError='invalid_game_save_target';
+      emitStorageState();
+      return false;
+    }
+    if(state.status==='conflict')return false;
+    if(!state.canSave){
+      if(!bootstrap())return false;
+    }
+    const snapshot=clone(unsaved[key] || pending[key] || state.profiles[key]);
+    if(!snapshot){
+      state.lastError='game_profile_not_loaded';
+      emitStorageState();
+      return false;
+    }
+    global.clearTimeout(timers[key]);
+    delete pending[key];
+    unsaved[key]=clone(snapshot);
+    state.status='saving';
+    emitStorageState();
+    if(!await postProfile(key,snapshot,false))return false;
+    // Validate actual read-after-write with the same authenticated session.
+    try{
+      const response=await fetch(DATA_API+'?app='+encodeURIComponent(key),{
+        method:'GET',credentials:'same-origin',cache:'no-store',
+        headers:{'Accept':'application/json'}
+      });
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok || !data.ok || !data.found || JSON.stringify(data.profile)!==JSON.stringify(snapshot)){
+        // Do not tell the player it saved when a read-back cannot confirm the data.
+        if(!unsaved[key])unsaved[key]=clone(snapshot);
+        state.lastError=response.ok?'save_readback_mismatch':String(data.error||('http_'+response.status));
+        state.status='unavailable';
+        state.canSave=false;
+        emitStorageState();
+        return false;
+      }
+      confirmedSaveAt[key]=Date.now();
+      state.lastError='';
+      state.status='ready';
+      emitStorageState();
+      return true;
+    }catch(error){
+      if(!unsaved[key])unsaved[key]=clone(snapshot);
+      state.lastError=String(error&&error.message||'save_readback_failed');
+      state.status='unavailable';
+      state.canSave=false;
+      emitStorageState();
+      return false;
+    }
+  }
+  function lastSavedAt(app){return Number(confirmedSaveAt[String(app||'')]||0);}
   function unsavedCount(){return Object.keys(unsaved).length;}
   function retryFailedSaves(){
     if(retryPromise)return retryPromise;
@@ -323,6 +381,8 @@
     getUnsavedCount:unsavedCount,
     getUnsavedApps:()=>Object.keys(unsaved),
     retryFailedSaves,
+    saveNow,
+    lastSavedAt,
     getProfile,
     setTemporaryProfile,
     saveProfile,
