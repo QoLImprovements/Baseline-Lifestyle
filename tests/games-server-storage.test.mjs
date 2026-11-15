@@ -272,7 +272,7 @@ test('save status describes unconfirmed writes and exposes an in-page retry, not
   assert.match(storageUi,/Saving paused: another version exists/);
   assert.match(storageUi,/data-games-retry-save/);
   assert.match(storageUi,/retryFailedSaves/);
-  assert.match(storageUi,/No unsaved changes are pending/);
+  assert.match(storageUi,/Press Save to store and verify this game/);
   assert.match(guard,/getUnsavedCount:unsavedCount/);
 });
 
@@ -295,7 +295,7 @@ test('failed account writes schedule automatic recovery and online resumption wi
   assert.match(guard,/global\.addEventListener\('pageshow'/);
   assert.match(guard,/retryDelayMs=Math\.min\(30000/);
   assert.match(storageUi,/const saved=Boolean\(state\.canSave && state\.unsavedCount===0\)/);
-  assert.match(storageUi,/BaselineGameStorage\?\.flush\?\.\(\)/);
+  assert.match(storageUi,/BaselineGameStorage\?\.saveNow\?\.\(app\)/);
 });
 
 
@@ -336,4 +336,59 @@ test('expired login pauses retries and protects unacknowledged game progress',as
   assert.equal(context.BaselineGameStorage.getStatus(),'signed-out');
   assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
   assert.equal(context.BaselineGameStorage.isAuthenticated(),false);
+});
+
+
+test('manual Save always POSTs the current game even without queued changes and verifies GET',async()=>{
+  const {context}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{pairs:{app:'pairs',level:4}},revisions:{pairs:9}}});
+  const calls=[];
+  context.fetch=async(url,options={})=>{
+    calls.push({url,method:options.method});
+    if(options.method==='GET')return{
+      ok:true,status:200,json:async()=>({ok:true,found:true,app:'pairs',profile:{app:'pairs',level:4},revision:10})
+    };
+    const body=JSON.parse(options.body);
+    assert.equal(body.app,'pairs');
+    assert.equal(body.expectedRevision,9);
+    assert.equal(body.profile.level,4);
+    return{ok:true,status:200,json:async()=>({ok:true,app:'pairs',profile:body.profile,revision:10})};
+  };
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),0);
+  assert.equal(await context.BaselineGameStorage.saveNow('pairs'),true);
+  assert.deepEqual(calls.map(c=>c.method),['POST','GET']);
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),0);
+  assert.ok(context.BaselineGameStorage.lastSavedAt('pairs')>0);
+});
+
+test('manual Save refuses false success when server readback does not match',async()=>{
+  const {context}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{pairs:{app:'pairs',level:4}},revisions:{pairs:9}}});
+  context.fetch=async(_url,options={})=>{
+    if(options.method==='GET')return{ok:true,status:200,json:async()=>({ok:true,found:true,profile:{app:'pairs',level:1}})};
+    return{ok:true,status:200,json:async()=>({ok:true,app:'pairs',profile:{app:'pairs',level:4},revision:10})};
+  };
+  assert.equal(await context.BaselineGameStorage.saveNow('pairs'),false);
+  assert.equal(context.BaselineGameStorage.getLastError(),'save_readback_mismatch');
+  assert.equal(context.BaselineGameStorage.getUnsavedCount(),1);
+  assert.equal(context.BaselineGameStorage.lastSavedAt('pairs'),0);
+});
+
+test('all rendered game Save controls are actionable with an explicit game target',()=>{
+  assert.match(storageUi,/function saveAppFor\(container\)/);
+  assert.match(storageUi,/data-save-status-app/);
+  assert.match(storageUi,/BaselineGameStorage\?\.saveNow\?\.\(app\)/);
+  assert.match(guard,/function saveNow\(app\)/);
+  assert.match(guard,/method:'GET',credentials:'same-origin',cache:'no-store'/);
+});
+
+
+test('every server accepted game app has an actual Saved Data file mapping',()=>{
+  const match=gamesApi.match(/function bl_game_data_file_apps\(\): array \{\s*return \[([^\]]+)\];/);
+  assert.ok(match,'Games API persistent app list must be discoverable');
+  const apps=Array.from(match[1].matchAll(/'([^']+)'/g),match=>match[1]);
+  assert.ok(apps.length>=20,'complete game inventory is checked');
+  for(const app of apps){
+    assert.match(savedData,new RegExp("'"+app+"'\\s*=>"),app+' is accepted by the API but lacks a Saved Data filename');
+  }
+  assert.match(savedData,/'pathrecall'\s*=>\s*'path-recall\.json'/);
+  assert.match(savedData,/'combatsequence'\s*=>\s*'combat-sequence\.json'/);
 });

@@ -1,10 +1,11 @@
-const BUILD='GAMES_SAVE_STATUS_RELIABLE_20261115_1';
+const BUILD='GAMES_SAVE_ACTION_20261115_2';
 // 2026-07-10: refined save-state icon, custom caption tooltip, and lighter shared popup styling.
 
 function storageState(){
   const authority=globalThis.BaselineGameStorage;
   return{
     authenticated:Boolean(authority?.isAuthenticated?.()),
+    siteAuthenticated:Boolean(globalThis.BASELINE_auth?.get?.()?.authed),
     canPlay:authority?.canPlay?.()!==false,
     canSave:Boolean(authority?.canSave?.()),
     ready:Boolean(authority?.isReady?.()),
@@ -34,6 +35,10 @@ function accountCopy(state){
     html:'<strong>Account connection interrupted.</strong><span class="inline-note">Unsaved progress is still in this open tab. Sign back into the same account without closing this page.</span>',
     description:'Pending changes are not on the server yet. Signing back in will check the saved revision before a retry.'
   };
+  if(state.siteAuthenticated)return{
+    html:'<strong>Games account saving is disconnected.</strong><span class="inline-note">Your main account is signed in, but the Games save service has not confirmed its connection. Error: '+String(state.error||state.status).replace(/[^a-zA-Z0-9_:-]/g,'').slice(0,80)+'. Press Save to reconnect.</span>',
+    description:'Games saving is not confirmed even though your site login is active. Press Save to reconnect and verify the saved profile.'
+  };
   if(state.status==='signed-out')return{
     html:'<strong>Temporary play is active.</strong><span class="inline-note">Games and puzzles remain playable. Sign in to save progress to your Baseline Lifestyle account.</span>',
     description:'You can play without signing in. Progress from this temporary session is not saved or written to account data.'
@@ -52,10 +57,11 @@ function enforceAccountCopy(){
 }
 function saveStatusLabel(state){
   if(state.canSave && state.unsavedCount>0)return 'Saving in progress: '+state.unsavedCount+' game profile(s) await server confirmation. Select to send pending changes now.';
-  if(state.canSave)return 'Account saving is available. No unsaved changes are pending.';
+  if(state.canSave)return 'Press Save to store and verify this game on your Baseline Lifestyle account.';
   if(state.status==='conflict')return 'Save conflict. Unsaved progress is held in this tab; do not refresh.';
   if(state.authenticated && state.unsavedCount>0)return 'Save failed. Unsaved progress remains in this tab. Click this icon to retry saving.';
   if(state.status==='signed-out' && state.unsavedCount>0)return 'Account session interrupted. Unsaved changes are still in this open tab; sign back into the same account.';
+  if(state.siteAuthenticated)return 'Your account is signed in, but Games saving is disconnected ('+state.error+'). Press Save to retry.';
   if(state.status==='signed-out')return 'Sign in to save progress to your Baseline Lifestyle account.';
   return 'Server saving is currently unavailable. Progress from this page session is temporary.';
 }
@@ -70,11 +76,25 @@ function saveIconSvg(saved){
     cross +
   '</svg>';
 }
-function saveIconMarkup(state, realm=false){
+function saveAppFor(container){
+  if(!container)return '';
+  if(container.closest('#crossnumberPanel'))return 'crossnumber';
+  if(container.closest('#jigsawPlayerCard')){
+    const id=globalThis.BaselinePuzzlesLibrary?.getJigsaw?.();
+    return globalThis.BaselinePuzzlesRegistry?.findJigsaw?.(id)?.app || '';
+  }
+  const root=container.closest('.game-panel')?.querySelector('[data-game-play-root]');
+  const runtimeId=root?.getAttribute('data-game-play-root') ||
+    document.documentElement.getAttribute('data-game-extension-open') || '';
+  const registry=globalThis.BASELINE_GAMES_REGISTRY;
+  const app=registry?.resolve?.(runtimeId)?.profileApp || (runtimeId==='ninja'?'ninja':runtimeId);
+  return String(app||'').replace(/[^a-z0-9]/g,'');
+}
+function saveIconMarkup(state, realm=false, app=''){
   const saved=Boolean(state.canSave && state.unsavedCount===0);
   const label=saveStatusLabel(state);
   const cls=realm?'realm-save-status':'game-save-status';
-  return '<button class="'+cls+(saved?' is-saving':' is-unsaved')+'" type="button" aria-label="'+label+'" data-save-status-icon data-save-tooltip="'+label+'">'+saveIconSvg(saved)+'</button>';
+  return '<button class="'+cls+(saved?' is-saving':' is-unsaved')+'" type="button" aria-label="Save game progress. '+label+'" data-save-status-icon data-save-status-app="'+app+'" data-save-tooltip="'+label+'">'+saveIconSvg(saved)+'</button>';
 }
 function ensureSaveTooltip(){
   let tip=document.getElementById('gamesSaveStatusTooltip');
@@ -138,15 +158,20 @@ function refreshActiveSaveTooltip(){
 }
 function placeSaveIcon(container,state,{realm=false,position='afterbegin'}={}){
   if(!container) return;
+  const app=saveAppFor(container);
   const expectedState=state.canSave?(state.unsavedCount?'saving':'saved'):'unsaved';
   const icon=container.querySelector('[data-save-status-icon]');
-  if(!icon) container.insertAdjacentHTML(position,saveIconMarkup(state,realm));
-  else if(icon.dataset.saveState!==expectedState) icon.outerHTML=saveIconMarkup(state,realm);
+  if(!icon) container.insertAdjacentHTML(position,saveIconMarkup(state,realm,app));
+  else if(icon.dataset.saveState!==expectedState) icon.outerHTML=saveIconMarkup(state,realm,app);
   const current=container.querySelector('[data-save-status-icon]');
   if(current){
     current.dataset.saveState=expectedState;
-    const label=saveStatusLabel(state);
-    current.setAttribute('aria-label',label);
+    const confirmedAt=Number(globalThis.BaselineGameStorage?.lastSavedAt?.(app)||0);
+    const label=state.canSave && !state.unsavedCount && confirmedAt
+      ? 'Saved and confirmed by the server. Press Save to verify again.'
+      : saveStatusLabel(state);
+    current.setAttribute('data-save-status-app',app);
+    current.setAttribute('aria-label','Save game progress. '+label);
     current.setAttribute('data-save-tooltip',label);
   }
 }
@@ -197,17 +222,21 @@ function installSaveTooltipEvents(){
     const button=event.target instanceof Element ? event.target.closest('[data-save-status-icon]') : null;
     if(button){
       event.preventDefault();
-      const state=storageState();
-      if(state.authenticated && !state.canSave && state.status!=='conflict' && state.unsavedCount>0){
-        Promise.resolve(globalThis.BaselineGameStorage?.retryFailedSaves?.()).catch(()=>false).finally(update);
-        return;
-      }
-      if(state.authenticated && state.canSave && state.unsavedCount>0){
-        globalThis.BaselineGameStorage?.flush?.();
-        showSaveTooltip(button);
-        return;
-      }
+      const app=button.getAttribute('data-save-status-app') || saveAppFor(button.parentElement);
+      if(button.disabled)return;
+      button.disabled=true;
+      button.setAttribute('aria-label','Saving game progress to your account…');
+      button.setAttribute('data-save-tooltip','Saving game progress to your account…');
       showSaveTooltip(button);
+      Promise.resolve(globalThis.BaselineGameStorage?.saveNow?.(app))
+        .catch(()=>false)
+        .then(()=>{
+          update();
+          const current=Array.from(document.querySelectorAll('[data-save-status-icon]'))
+            .find(item=>item.getAttribute('data-save-status-app')===app) || button;
+          showSaveTooltip(current);
+        })
+        .finally(()=>{ button.disabled=false; });
       return;
     }
     const tip=document.getElementById('gamesSaveStatusTooltip');
