@@ -65,6 +65,8 @@ try{
     'pairs'=>'pairs.json',
     'detectword'=>'detect-word.json',
     'make24'=>'make-24.json',
+    'pathrecall'=>'path-recall.json',
+    'combatsequence'=>'combat-sequence.json',
     'trackcoin'=>'track-coin.json',
     'ruleshift'=>'rule-shift.json',
     'dartsfocused'=>'darts-focused.json',
