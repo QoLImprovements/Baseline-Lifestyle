@@ -205,4 +205,8 @@
     getView:function(){ return activeView; },
     getJigsaw:function(){ return activeJigsaw; }
   });
+  // The initial URL is not paint-ready until the requested puzzle view is mounted.
+  document.dispatchEvent(new CustomEvent('baseline:recreation:puzzles-ready',{
+    detail:{view:activeView,jigsaw:activeJigsaw}
+  }));
 })();

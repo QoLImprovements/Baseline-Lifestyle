@@ -45,5 +45,5 @@ jobs:
       - name: Prove authenticated PHP game saves survive reads and server restart
         run: node tests/games-authenticated-persistence-e2e.mjs
       - run: npx playwright install --with-deps chromium
-      - name: Direct refresh must never change the requested game URL
-        run: npx playwright test tests/navigation-state-browser.spec.js --grep "all Games Hub game routes refresh in place" --workers=1 --reporter=line
+      - name: Verify every Games route and its first visible frame on reload
+        run: npx playwright test tests/navigation-state-browser.spec.js --grep "all Games Hub game routes refresh in place|nested Recreation game refresh keeps target hidden until its runtime opens|Recreation tabs do not retain the initial route CSS lock|nested puzzle refresh never paints its overview" --workers=1 --reporter=line

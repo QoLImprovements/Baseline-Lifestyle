@@ -268,12 +268,114 @@ test('all Games Hub game routes refresh in place without a different-page histor
     await page.goto(pathname,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
     expect(new URL(page.url()).pathname).toBe(pathname);
+    await expect(page.locator('#gamesOverviewCard')).toBeHidden();
     await page.reload({waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
     expect(new URL(page.url()).pathname).toBe(pathname);
+    await expect(page.locator('#gamesOverviewCard')).toBeHidden();
+    await expect(page.locator('html')).not.toHaveAttribute('data-route-booting','true');
     const detours=await page.evaluate(expected=>(
       globalThis.__recreationRouteWrites||[]
     ).filter(entry=>entry.path!==expected),pathname);
     expect(detours,slug+' navigated through a different page before restoring').toEqual([]);
   }
+});
+
+test('nested Recreation game refresh keeps target hidden until its runtime opens',async({page})=>{
+  test.setTimeout(180000);
+  await stubGames(page);
+  const routedGames=[
+    ['path-recall','pathRecallPanel'],
+    ['combat-sequence','combatSequencePanel'],
+    ['block-grid','blockGridPanel'],
+    ['colour-sort','colourSortPanel'],
+    ['darts-focused','dartsFocusedPanel'],
+    ['badminton-focused','badmintonFocusedPanel']
+  ];
+  for(const [slug,panelId] of routedGames){
+    const path='/baseline-recreation/games/'+slug;
+    await page.goto(path,{waitUntil:'domcontentloaded'});
+    await expect(page.locator('#'+panelId)).toBeVisible();
+    const modulePattern=new RegExp('/games/'+slug+'/js/'+slug+'\\.js(?:\\?|$)');
+    let unblock=null;
+    let requested=null;
+    const pendingRequest=new Promise(resolve=>{requested=resolve;});
+    const interceptor=async route=>{
+      requested();
+      await new Promise(resolve=>{unblock=resolve;});
+      await route.continue();
+    };
+    await page.route(modulePattern,interceptor);
+    try{
+      await page.reload({waitUntil:'commit'});
+      await pendingRequest;
+      await page.waitForFunction(()=>Boolean(document.getElementById('gamesOverviewCard')));
+      await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
+      await expect(page.locator('html')).toHaveAttribute('data-route-booting','true');
+      await expect(page.locator('#gamesOverviewCard')).toBeHidden();
+      await expect(page.locator('#'+panelId)).toBeHidden();
+      const masked=await page.locator('#games > .grid').evaluate(node=>getComputedStyle(node).visibility);
+      expect(masked,slug+' revealed a different game before the routed runtime').toBe('hidden');
+    }finally{
+      unblock?.();
+      await page.unroute(modulePattern,interceptor);
+    }
+    await expect(page.locator('#'+panelId)).toBeVisible();
+    await expect(page.locator('#gamesOverviewCard')).toBeHidden();
+    await expect(page.locator('html')).not.toHaveAttribute('data-route-booting','true');
+    expect(new URL(page.url()).pathname).toBe(path);
+  }
+});
+
+test('Recreation tabs do not retain the initial route CSS lock',async({page})=>{
+  await stubGames(page);
+  await page.goto('/baseline-recreation/games/combat-sequence',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#combatSequencePanel')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveAttribute('data-route-booting','true');
+  await page.locator('.tabs [data-target="puzzles"]').click();
+  await expect(page.locator('#puzzles')).toBeVisible();
+  await expect(page.locator('#games')).toBeHidden();
+  await expect(page).toHaveURL(/\/baseline-recreation\/puzzles$/);
+  await page.locator('.tabs [data-target="system"]').click();
+  await expect(page.locator('#system')).toBeVisible();
+  await expect(page.locator('#puzzles')).toBeHidden();
+  await page.locator('.tabs [data-target="games"]').click();
+  await expect(page.locator('#games')).toBeVisible();
+  await expect(page.locator('#system')).toBeHidden();
+});
+
+test('nested puzzle refresh never paints its overview before the selected puzzle',async({page})=>{
+  await stubGames(page);
+  const path='/baseline-recreation/puzzles/jigsaws/black-panther';
+  await page.goto(path,{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#jigsawPlayerCard')).toBeVisible();
+  const pattern=/\/puzzles\/shared\/js\/puzzles-library\.js(?:\?|$)/;
+  let unblock=null;
+  let requested=null;
+  const pending=new Promise(resolve=>{requested=resolve;});
+  const interceptor=async route=>{requested();await new Promise(resolve=>{unblock=resolve;});await route.continue();};
+  await page.route(pattern,interceptor);
+  try{
+    await page.reload({waitUntil:'commit'});
+    await pending;
+    await page.waitForFunction(()=>Boolean(document.getElementById('puzzlesOverviewCard')));
+    await expect(page.locator('html')).toHaveAttribute('data-route-booting','true');
+    await expect(page.locator('#puzzlesOverviewCard')).toBeHidden();
+  }finally{
+    unblock?.();
+    await page.unroute(pattern,interceptor);
+  }
+  await expect(page.locator('#jigsawPlayerCard')).toBeVisible();
+  await expect(page.locator('#puzzlesOverviewCard')).toBeHidden();
+  await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id','black-panther');
+  expect(new URL(page.url()).pathname).toBe(path);
+  // An unrecognised puzzle URL must fall back to Jigsaws, not a masked blank screen.
+  await page.goto('/baseline-recreation/puzzles/jigsaws/not-a-registered-jigsaw',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#jigsawsPanel')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveAttribute('data-route-booting','true');
+  await expect(page).toHaveURL(/\/baseline-recreation\/puzzles\/jigsaws$/);
+  await page.goto('/baseline-recreation/puzzles/crossnumber',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#crossnumberPanel')).toBeVisible();
+  await expect(page.locator('#puzzlesOverviewCard')).toBeHidden();
+  await expect(page.locator('html')).not.toHaveAttribute('data-route-booting','true');
 });
