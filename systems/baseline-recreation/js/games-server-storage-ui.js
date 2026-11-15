@@ -198,26 +198,26 @@ function installSaveTooltipEvents(){
     if(button){
       event.preventDefault();
       const state=storageState();
-      if(globalThis.BASELINE_auth?.get?.().authed && !state.canSave && state.status!=='conflict'){
-        Promise.resolve(globalThis.BaselineGameStorage?.recoverConnection?.()).catch(()=>false).finally(update);
-        return;
-      }
-      if(state.canSave && state.unsavedCount>0){
-        globalThis.BaselineGameStorage?.flush?.();
+      const route=decodeURIComponent(String(location.hash||'').replace(/^#/, '').split(/[/?]/).filter(Boolean).pop()||'');
+      const game=globalThis.BASELINE_GAMES_REGISTRY?.resolve?.(route);
+      const app=game?.profileApp || (route==='crossnumber'?'crossnumber':'');
+      if(state.status==='conflict'){
         showSaveTooltip(button);
         return;
       }
-      if(state.authenticated && state.canSave){
-        const route=decodeURIComponent(String(location.hash||'').replace(/^#/, '').split(/[/?]/).filter(Boolean).pop()||'');
-        const game=globalThis.BASELINE_GAMES_REGISTRY?.resolve?.(route);
-        const app=game?.profileApp || (route==='crossnumber'?'crossnumber':'');
-        if(app){
-          button.disabled=true;
-          Promise.resolve(globalThis.BaselineGameStorage?.saveNow?.(app)).then(ok=>{
-            if(ok){button.setAttribute('data-save-tooltip','Save confirmed by server.');}
-          }).catch(()=>false).finally(()=>{button.disabled=false;update();});
-        }
+      if(!state.canSave && !globalThis.BASELINE_auth?.get?.().authed){
+        showSaveTooltip(button);
+        return;
       }
+      button.disabled=true;
+      const reconnect=state.canSave ? Promise.resolve(true) : Promise.resolve(globalThis.BaselineGameStorage?.recoverConnection?.());
+      reconnect.then(ready=>{
+        if(!ready)return false;
+        globalThis.BaselineGameStorage?.flush?.();
+        return app?globalThis.BaselineGameStorage?.saveNow?.(app):false;
+      }).then(ok=>{
+        if(ok){button.setAttribute('data-save-tooltip','Save confirmed by server.');}
+      }).catch(()=>false).finally(()=>{button.disabled=false;update();});
       showSaveTooltip(button);
       return;
     }
