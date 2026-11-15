@@ -96,18 +96,39 @@ async function checkMode(mode){
     }
     reread=await call(endpoint+'?bootstrap=1',{session:cookie});
     assert.deepEqual(reread.data.profiles.pairs,profile2,mode+' later progress must win');
+    // Every declared app is loaded on bootstrap: one missing file mapping used
+    // to turn the entire Games Hub into an HTTP 500, not just one failed game.
+    const allApps=['pairs','make24','detectword','ninja','trackcoin','ruleshift',
+      'pathrecall','combatsequence','crossnumber','blockgrid','coloursort',
+      'weightcoherence','unheardsignal','tearswithoutwitness','movedalong',
+      'moonbearswitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw',
+      'dartsfocused','meridiangrove','badmintonfocused','hubsettings'];
+    for(const app of allApps.filter(app=>app!=='pairs')){
+      const saved=await call(endpoint,{session:cookie,body:{
+        action:'save',app,profile:{testMarker:'verified-'+app,level:2},expectedRevision:0
+      }});
+      assert.equal(saved.status,200,mode+' real save failed for '+app+': '+JSON.stringify(saved.data)+' PHP '+logs);
+    }
+    const allLoaded=await call(endpoint+'?bootstrap=1',{session:cookie});
+    assert.equal(allLoaded.status,200,mode+' full game bootstrap after all saves');
+    for(const app of allApps.filter(app=>app!=='pairs')){
+      assert.equal(allLoaded.data.profiles[app]?.testMarker,'verified-'+app,mode+' reload failed for '+app);
+    }
     await stopServer();
     await startServer(env);
     const afterRestart=await call(endpoint+'?bootstrap=1',{session:cookie});
     assert.equal(afterRestart.status,200,mode+' session persists through server restart: '+JSON.stringify(afterRestart.data));
     assert.deepEqual(afterRestart.data.profiles.pairs,profile2,mode+' saved progress survives PHP restart');
+    for(const app of allApps.filter(app=>app!=='pairs')){
+      assert.equal(afterRestart.data.profiles[app]?.testMarker,'verified-'+app,mode+' restart lost '+app);
+    }
     console.log(mode+': real authenticated register → save → bootstrap → update → restart → reload PASSED');
   }finally{
     await stopServer();
   }
 }
 try{
-  for(const mode of ['sqlite','saved-data'])await checkMode(mode);
+  for(const mode of ['sqlite','saved-data','mirror'])await checkMode(mode);
 }finally{
   await stopServer();
   fs.rmSync(temp,{recursive:true,force:true});
