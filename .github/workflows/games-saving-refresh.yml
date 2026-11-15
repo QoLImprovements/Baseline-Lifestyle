@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'systems/baseline-recreation/**'
+      - 'sitewide/api/saved_data.php'
       - 'tests/games-server-storage.test.mjs'
       - 'tests/games-authenticated-persistence-e2e.mjs'
       - 'tests/detect-word-engine.test.mjs'
@@ -13,6 +14,7 @@ on:
     branches: [main]
     paths:
       - 'systems/baseline-recreation/**'
+      - 'sitewide/api/saved_data.php'
       - 'tests/games-server-storage.test.mjs'
       - 'tests/games-authenticated-persistence-e2e.mjs'
       - 'tests/detect-word-engine.test.mjs'
