@@ -136,7 +136,7 @@ test('Block Grid and Colour Sort asset URLs are versioned for the new palette',a
   assert.match(blockJs,/block-grid\.css\?v=RECREATION_COHERENCE_20261114_1/);
   assert.match(colourJs,/colour-sort-overview\.svg\?v=RECREATION_ICON_CLEANUP_20261114_1/);
   assert.match(colourJs,/colour-sort\.css\?v=RECREATION_UNIFIED_20261104_1/);
-  assert.match(hub,/block-grid\.js\?v=RECREATION_ICON_CLEANUP_20261114_1/);
+  assert.match(hub,/block-grid\\.js\\?v=RECREATION_HUB_COHERENCE_20261116_1/);
   assert.match(hub,/colour-sort\.js\?v=RECREATION_ICON_CLEANUP_20261114_1/);
 });
 
