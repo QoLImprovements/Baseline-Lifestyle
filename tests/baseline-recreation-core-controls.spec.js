@@ -105,7 +105,7 @@ test('each core game starts a real board on a touch phone', async ({ browser }) 
     expect(layout.pageWidth).toBeLessThanOrEqual(layout.viewport+1);
     expect(layout.left).toBeGreaterThanOrEqual(-1);
     expect(layout.right).toBeLessThanOrEqual(layout.viewport+1);
-    await page.locator(`${panel} [data-select-game=""]`).first().click();
+    await page.locator('[data-exit-mobile-game-mode]:visible').first().click();
   }
 
   await page.locator('[data-open-darts-focused]').click();
