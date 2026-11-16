@@ -87,14 +87,25 @@
     }
   }
 
+  function puzzleTypeRank(id){
+    if(id==='jigsaws'){
+      // Jigsaws have separate profiles: show the highest earned jigsaw rank, never an invented shared total.
+      return Math.max(1,...registry.jigsaws.map(function(item){return jigsawProgress(item).level;}));
+    }
+    const stored=window.BaselineGameStorage?.getProfile?.(id) || {};
+    const source=stored.progression&&typeof stored.progression==='object'?stored.progression:stored;
+    return Math.max(1,Math.round(Number(source.level)||1));
+  }
+
   function renderTypes(){
     refs.types.innerHTML=registry.types.map(function(type){
       return '<div class="puzzle-library-row-wrap">' +
-        '<button class="puzzle-library-row" data-puzzle-type="' + escapeHtml(type.id) + '" type="button">' +
-          '<img class="puzzle-library-art" src="' + escapeHtml(type.preview) + '" alt="" aria-hidden="true"/>' +
-          '<div class="puzzle-library-copy"><h3>' + escapeHtml(type.name) + '</h3><p>' + escapeHtml(type.note) + '</p></div>' +
-          '<div class="puzzle-library-meta"><strong>' + escapeHtml(type.meta) + '</strong><span class="inline-note">Browse puzzles</span></div>' +
-        '</button>' +
+        '<div class="puzzle-library-row recreation-catalogue-row">' +
+          '<img class="puzzle-library-art recreation-catalogue-art" src="' + escapeHtml(type.preview) + '" alt="" aria-hidden="true"/>' +
+          '<div class="puzzle-library-copy recreation-catalogue-copy"><h3>' + escapeHtml(type.name) + '</h3><p>' + escapeHtml(type.note) + '</p></div>' +
+          '<div class="puzzle-library-meta recreation-catalogue-rank"><strong>Player Rank ' + puzzleTypeRank(type.id) + '</strong></div>' +
+          '<button class="action ghost recreation-catalogue-open" data-puzzle-type="' + escapeHtml(type.id) + '" aria-label="Open '+escapeHtml(type.name)+'" type="button">Open</button>' +
+        '</div>' +
       '</div>';
     }).join('');
   }
@@ -102,8 +113,8 @@
   function renderJigsaws(){
     const groups=[];
     registry.jigsaws.forEach(function(item){
-      let group=groups.find(function(entry){ return entry.name===item.group; });
-      if(!group){ group={name:item.group,items:[]}; groups.push(group); }
+      let group=groups.find(function(entry){return entry.name===item.group;});
+      if(!group){group={name:item.group,items:[]};groups.push(group);}
       group.items.push(item);
     });
     refs.jigsawsList.innerHTML=groups.map(function(group){
@@ -111,11 +122,12 @@
         group.items.map(function(item){
           const progress=jigsawProgress(item);
           return '<div class="puzzle-library-row-wrap">' +
-            '<button class="puzzle-library-row" data-jigsaw-id="' + escapeHtml(item.id) + '" type="button">' +
-              '<img class="puzzle-library-art" src="' + escapeHtml(item.image) + '" alt=""/>' +
-              '<div class="puzzle-library-copy"><h3>' + escapeHtml(item.title) + '</h3><p>' + escapeHtml(item.libraryDescription||item.description) + '</p></div>' +
-              '<div class="puzzle-library-meta puzzle-library-meta--progress"><strong>Level ' + progress.level + '</strong><span class="inline-note">' + progress.xp + ' / ' + progress.needed + ' XP</span><span class="inline-note">' + progress.completions + ' completed</span></div>' +
-            '</button>' +
+            '<div class="puzzle-library-row recreation-catalogue-row">' +
+              '<img class="puzzle-library-art recreation-catalogue-art" src="' + escapeHtml(item.image) + '" alt=""/>' +
+              '<div class="puzzle-library-copy recreation-catalogue-copy"><h3>' + escapeHtml(item.title) + '</h3><p>' + escapeHtml(item.libraryDescription||item.description) + '</p></div>' +
+              '<div class="puzzle-library-meta recreation-catalogue-rank"><strong>Player Rank ' + progress.level + '</strong></div>' +
+              '<button class="action ghost recreation-catalogue-open" data-jigsaw-id="' + escapeHtml(item.id) + '" aria-label="Open '+escapeHtml(item.title)+'" type="button">Open</button>' +
+            '</div>' +
           '</div>';
         }).join('');
     }).join('');
@@ -170,8 +182,9 @@
     }
   });
 
-  document.addEventListener('baseline:jigsaw-progress',function(){ renderJigsaws(); });
-  document.addEventListener('baseline:game-storage',function(){ renderJigsaws(); });
+  document.addEventListener('baseline:jigsaw-progress',function(){ renderTypes(); renderJigsaws(); });
+  document.addEventListener('baseline:game-storage',function(){ renderTypes(); renderJigsaws(); });
+  document.addEventListener('baseline:crossnumber-progress',function(){ renderTypes(); });
 
   renderTypes();
   renderJigsaws();

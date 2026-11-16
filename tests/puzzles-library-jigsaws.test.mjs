@@ -58,7 +58,7 @@ test('Jigsaws are grouped into Symbolic and Animals collections with all nine ar
   assert.match(registry, /bear\.webp\?v=BEAR_JIGSAW_20261018_1/);
 
   assert.match(registry, /the-unheard-signal\.png\?v=THE_UNHEARD_SIGNAL_FULL_20261017_1/);
-  assert.match(registry, /meta:'9 jigsaws · completion XP'/);
+  assert.doesNotMatch(registry, /meta:'9 jigsaws · completion XP'|meta:'Many generated layouts'/);
 
   const moonArt = fs.readFileSync('systems/baseline-recreation/puzzles/the-moon-bears-witness/art/the-moon-bears-witness.png');
   assert.equal(moonArt.length, 2362356);
@@ -95,8 +95,11 @@ test('Puzzles and Jigsaws use the Burgundy Rose Copper Recreation visual languag
 
 test('jigsaw library cards do not repeat the universal piece-count choices', () => {
   assert.doesNotMatch(library, /50 · 100 · 500 · 1,000 pieces/);
-  assert.match(library, /puzzle-library-meta puzzle-library-meta--progress/);
-  assert.match(library, /completed<\/span>/);
+  assert.match(library, /puzzle-library-row recreation-catalogue-row/);
+  assert.match(library, /recreation-catalogue-rank/);
+  assert.match(library, /Player Rank /);
+  assert.match(library, /recreation-catalogue-open/);
+  assert.equal(library.includes('completed</span>'),false);
 });
 
 test('jigsaw library does not persist a last-opened selection highlight', () => {

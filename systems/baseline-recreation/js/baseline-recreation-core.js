@@ -1550,31 +1550,16 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
   function profileOrDefault(app){
     return profiles[app] || defaultProfileForApp(app);
   }
+  // Hub listings show only Player Rank. Full statistics belong in each game's Progress tab.
   function overviewProgress(game){
     const id=String(game && game.runtimeId || '');
-    if(id==='darts-focused'){
-      const darts=dartsFocusedProfile();
-      return 'Player Rank ' + Math.max(1,Number(darts && darts.level || 1)) + ' · 10 games';
-    }
-    if(id==='badminton-focused'){
-      const badminton=badmintonFocusedProfile();
-      return 'Player Rank ' + Math.max(1,Number(badminton && badminton.level || 1)) + ' · 15 games';
-    }
+    if(id==='darts-focused') return 'Player Rank ' + Math.max(1,Number(dartsFocusedProfile()?.level)||1);
+    if(id==='badminton-focused') return 'Player Rank ' + Math.max(1,Number(badmintonFocusedProfile()?.level)||1);
     if(game?.runtimeOwner==='module'){
       const stored=serverStorageAuthority()?.getProfile?.(game.profileApp) || {};
-      const rank='Player Rank '+Math.max(1,Number(stored.level)||1);
-      if(id==='block-grid') return rank+' · Best '+Math.max(0,Number(stored.bestScore)||0);
-      if(id==='colour-sort') return rank+' · '+(Array.isArray(stored.completedLevels)?stored.completedLevels.length:0)+' cleared';
-      return rank+' · '+Math.max(0,Number(stored.roundsWon)||0)+' cleared';
+      return 'Player Rank ' + Math.max(1,Number(stored.level)||1);
     }
-    const profile=profileOrDefault(game && game.profileApp || id);
-    if(id==='detectword') return 'Player Rank ' + profile.level + ' · ' + profile.wordsSolved + ' solved';
-    if(id==='make24') return 'Player Rank ' + profile.level + ' · ' + profile.puzzlesSolved + ' solved';
-    if(id==='pairs') return 'Player Rank ' + profile.level + ' · ' + profile.boardsCleared + ' cleared';
-    if(id==='ruleshift') return 'Player Rank ' + profile.level + ' · Best streak ' + profile.bestStreak;
-    if(id==='trackcoin') return 'Player Rank ' + profile.level + ' · Best streak ' + profile.bestStreak;
-    if(id==='ninja') return 'Player Rank ' + profile.level + ' · Stage ' + profile.stage;
-    return 'Ready';
+    return 'Player Rank ' + Math.max(1,Number(profileOrDefault(game && game.profileApp || id)?.level)||1);
   }
   function gameMeta(){
     return REGISTERED_OVERVIEW_GAMES.map(function(game){
@@ -1593,50 +1578,36 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       };
     });
   }
+  // All hub cards are informational surfaces; only their explicit Open button navigates.
   function renderGamesList(){
-    let currentGroup = '';
-    refs.gamesList.innerHTML = gameMeta().map(meta => {
-      const group = meta.group || 'Games';
-      const heading = group !== currentGroup ? (currentGroup = group, '<div class="games-list-group" role="presentation"><span>' + escapeHtml(group) + '</span></div>') : '';
-      const featured = !!meta.featured;
-      if(meta.externalModule === 'extension'){
-        return heading + '<div class="game-row-wrap game-extension-overview-row" data-game-card="' + escapeHtml(meta.route) + '" data-game-extension-overview-row="' + escapeHtml(meta.route) + '">' +
-          '<button class="game-row" data-open-game-extension="' + escapeHtml(meta.route) + '" type="button">' +
-            '<img class="game-card-art" src="' + escapeHtml(meta.art) + '" alt="">' +
-            '<div class="game-row-copy"><h3>' + escapeHtml(meta.name) + '</h3><p>' + escapeHtml(meta.note) + '</p></div>' +
-            '<div class="game-row-meta"><strong data-game-extension-progress="' + escapeHtml(meta.route) + '">' + escapeHtml(meta.progress()) + '</strong><span class="inline-note">Open game</span></div>' +
-          '</button>' +
-          '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="' + escapeHtml(meta.brainBenefit) + '" type="button" aria-label="What ' + escapeHtml(meta.name) + ' develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
+    let currentGroup='';
+    refs.gamesList.innerHTML=gameMeta().map(function(meta){
+      const group=meta.group||'Games';
+      const heading=group!==currentGroup
+        ? (currentGroup=group,'<div class="games-list-group" role="presentation"><span>'+escapeHtml(group)+'</span></div>')
+        : '';
+      const featured=Boolean(meta.featured);
+      const openAttribute=meta.externalModule==='extension'
+        ? 'data-open-game-extension="'+escapeHtml(meta.route)+'"'
+        : meta.externalModule==='darts-focused'
+          ? 'data-open-darts-focused'
+          : meta.externalModule==='badminton-focused'
+            ? 'data-open-badminton-focused'
+            : 'data-select-game="'+escapeHtml(meta.id)+'"';
+      const extensionAttribute=meta.externalModule==='extension'
+        ? ' data-game-extension-overview-row="'+escapeHtml(meta.route)+'"' : '';
+      const progressAttribute=meta.externalModule==='extension'
+        ? ' data-game-extension-progress="'+escapeHtml(meta.route)+'"' : '';
+      return heading+
+        '<div class="game-row-wrap'+(featured?' game-row-wrap--featured':'')+(selectedGame===meta.id?' is-selected':'')+'" data-game-card="'+escapeHtml(meta.externalModule==='extension'?meta.route:meta.id)+'"'+extensionAttribute+'>'+
+          '<div class="game-row recreation-catalogue-row">'+
+            '<img class="game-card-art recreation-catalogue-art" src="'+escapeHtml(meta.art||'')+'" alt="">'+
+            '<div class="game-row-copy recreation-catalogue-copy"><h3>'+escapeHtml(meta.name)+'</h3><p>'+escapeHtml(meta.note)+'</p></div>'+
+            '<div class="game-row-meta recreation-catalogue-rank"><strong'+progressAttribute+'>'+escapeHtml(meta.progress())+'</strong></div>'+
+            '<button class="action ghost recreation-catalogue-open" type="button" '+openAttribute+' aria-label="Open '+escapeHtml(meta.name)+'">Open</button>'+
+            '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="'+escapeHtml(meta.brainBenefit||'')+'" type="button" aria-label="What '+escapeHtml(meta.name)+' develops" aria-expanded="false"><span aria-hidden="true">i</span></button>'+
+          '</div>'+
         '</div>';
-      }
-      if(meta.externalModule === 'darts-focused'){
-        return heading + '<div class="game-row-wrap game-row-wrap--featured darts-focused-overview-row" data-game-card="darts-focused">' +
-          '<button class="game-row darts-overview-row" data-open-darts-focused type="button">' +
-            '<img class="game-card-art darts-overview-art" src="' + escapeHtml(meta.art) + '" alt="">' +
-            '<div class="game-row-copy"><h3>' + escapeHtml(meta.name) + '</h3><p>' + escapeHtml(meta.note) + '</p></div>' +
-            '<div class="game-row-meta"><strong>' + escapeHtml(meta.progress()) + '</strong><span class="inline-note">Open games</span></div>' +
-          '</button>' +
-          '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="' + escapeHtml(meta.brainBenefit || '') + '" type="button" aria-label="What Darts Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
-        '</div>';
-      }
-      if(meta.externalModule === 'badminton-focused'){
-        return heading + '<div class="game-row-wrap game-row-wrap--featured badminton-focused-overview-row" data-game-card="badminton-focused">' +
-          '<button class="game-row badminton-overview-row" data-open-badminton-focused type="button">' +
-            '<img class="game-card-art badminton-overview-art" src="' + escapeHtml(meta.art) + '" alt="">' +
-            '<div class="game-row-copy"><h3>' + escapeHtml(meta.name) + '</h3><p>' + escapeHtml(meta.note) + '</p></div>' +
-            '<div class="game-row-meta"><strong>' + escapeHtml(meta.progress()) + '</strong><span class="inline-note">Open games</span></div>' +
-          '</button>' +
-          '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="' + escapeHtml(meta.brainBenefit || '') + '" type="button" aria-label="What Badminton Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
-        '</div>';
-      }
-      return heading + '<div class="game-row-wrap' + (featured ? ' game-row-wrap--featured' : '') + (selectedGame === meta.id ? ' is-selected' : '') + '" data-game-card="' + meta.id + '">' +
-        '<button class="game-row" data-select-game="' + meta.id + '" type="button">' +
-          '<img class="game-card-art" src="' + escapeHtml(meta.art || '') + '" alt="">' +
-          '<div class="game-row-copy"><h3>' + escapeHtml(meta.name) + '</h3><p>' + escapeHtml(meta.note) + '</p></div>' +
-          '<div class="game-row-meta"><strong>' + escapeHtml(meta.progress()) + '</strong><span class="inline-note">Open game</span></div>' +
-        '</button>' +
-        '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="' + escapeHtml(meta.brainBenefit || '') + '" type="button" aria-label="What ' + escapeHtml(meta.name) + ' develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
-      '</div>';
     }).join('');
   }
   function requestDartsFocusedOpen(attempt){

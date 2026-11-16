@@ -376,17 +376,15 @@ function renderGame() {
 }
 
 function renderModes() {
-  const root = document.getElementById('blockGridModesCard');
-  if (!root) return;
-  root.innerHTML = `<div class="block-grid-mode-list">${Object.values(MODES).map(mode => {
+  const root=document.getElementById('blockGridModesCard');
+  if(!root) return;
+  // Use the same two-column tier buttons as Detect the Word and the other core games.
+  root.innerHTML='<div class="board-tier-list">'+Object.values(MODES).map(mode=>{
     const locked=profile.level<mode.unlockLevel;
     const active=profile.selectedMode===mode.id;
-    return `<button class="block-grid-mode${active?' is-active':''}" data-block-mode="${mode.id}" type="button" aria-pressed="${active}" ${locked?'disabled aria-disabled="true"':''}>
-      <strong>${escapeHtml(mode.name)}</strong><span>${escapeHtml(mode.description)}</span>
-      <small>${locked?'Unlock at Player Rank '+mode.unlockLevel:active?'Selected · Unlocked':'Unlocked'}</small>
-    </button>`;
-  }).join('')}</div>
-    <div class="summary-box"><strong>Difficulty tiers</strong><span class="inline-note">Five rank-unlocked difficulty tiers share one Block Grid game. Every tier changes the shapes available, not the objective.</span></div>`;
+    const detail=locked?'Unlock '+mode.unlockLevel:(active?'Selected · Unlocked':'Unlocked');
+    return '<button class="tier-btn'+(active?' active':'')+'" data-block-mode="'+escapeHtml(mode.id)+'" type="button" aria-pressed="'+active+'" '+(locked?'disabled aria-disabled="true"':'')+'><span>'+escapeHtml(mode.name)+' · '+escapeHtml(mode.description)+'</span><span>'+escapeHtml(detail)+'</span></button>';
+  }).join('')+'</div>';
 }
 
 function renderSkills() {
@@ -395,7 +393,7 @@ function renderSkills() {
   root.innerHTML = '<div class="block-grid-skill-unlock-list">' + BLOCK_SKILLS.map(skill => {
     const unlocked=profile.level >= skill.unlockLevel;
     return '<article class="skill-item block-grid-skill-unlock' + (unlocked ? ' is-unlocked' : ' is-locked') + '"><div class="skill-meta"><h4>' + skill.icon + ' ' + escapeHtml(skill.name) + '</h4><span>' + (unlocked ? 'Unlocked' : 'Player Rank ' + skill.unlockLevel) + '</span></div><p>' + escapeHtml(skill.description) + '</p></article>';
-  }).join('') + '</div><div class="summary-box"><strong>Score-based progression</strong><span class="inline-note">Each completed run converts score to XP at 10 points = 1 XP. Higher scores therefore advance Player Rank and unlock Specials over time.</span></div>';
+  }).join('') + '</div>';
 }
 
 function renderProgress() {
@@ -410,6 +408,7 @@ function renderProgress() {
       <div class="coherent-progress-xp-meta"><span>${profile.xp} / ${needed} XP</span><span>${Math.round(pct)}%</span></div>
       <div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${needed}" aria-valuenow="${profile.xp}"><span style="width:${pct}%"></span></div>
     </section>
+    <div class="coherent-progress-section-label">Performance &amp; rewards</div>
     <div class="coherent-progress-grid">
       <div class="coherent-progress-stat"><span>Bank Coins</span><strong>${profile.bank}</strong></div>
       <div class="coherent-progress-stat"><span>Last Bank reward</span><strong>${profile.lastRoundBank}</strong></div>
@@ -419,7 +418,8 @@ function renderProgress() {
       <div class="coherent-progress-stat"><span>Pieces placed</span><strong>${profile.totalPieces}</strong></div>
       <div class="coherent-progress-stat"><span>Current tier</span><strong>${escapeHtml(currentMode().name)}</strong></div>
       <div class="coherent-progress-stat"><span>Specials unlocked</span><strong>${BLOCK_SKILLS.filter(skill => profile.level >= skill.unlockLevel).length} / ${BLOCK_SKILLS.length}</strong></div>
-    </div>`;
+    </div>
+    <p class="coherent-progress-explainer">Score-based progression: 10 score points = 1 XP. Completed runs add XP towards your next Player Rank and unlock Specials.</p>`;
 }
 
 const BLOCK_TABS = Object.freeze(['game','round','skills','tiers','progress']);
