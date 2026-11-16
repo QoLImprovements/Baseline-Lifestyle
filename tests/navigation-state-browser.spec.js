@@ -94,6 +94,7 @@ test('Puzzles exact non-default jigsaw survives refresh Back and Forward',async(
 });
 
 test('every registered jigsaw restores its rendered selection after a real refresh',async({page})=>{
+  test.setTimeout(120000); // Multiple full jigsaw images and real reloads need more than the per-test default.
   await stubGames(page);
   await page.goto('/baseline-recreation/puzzles',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesRegistry?.jigsaws?.length));
@@ -212,10 +213,10 @@ test('Block Grid and Colour Sort nested tabs survive refresh',async({page})=>{
   await page.goto('/baseline-recreation/games/block-grid',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselineBlockGrid) && globalThis.BASELINE_RECREATION_CORE_READY===true);
   await expect(page.locator('#blockGridPanel')).toHaveClass(/is-active/);
-  const blockTiers=page.locator('[data-block-tab="modes"]');
+  const blockTiers=page.locator('[data-block-tab="tiers"]');
   await expect(blockTiers).toBeVisible();
   await blockTiers.click();
-  await expect(page).toHaveURL(/[?&]view=modes/);
+  await expect(page).toHaveURL(/[?&]view=tiers/);
   await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('#blockGridModesCard')).toBeVisible();
 
