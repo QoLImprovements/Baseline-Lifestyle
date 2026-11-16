@@ -418,7 +418,8 @@ function renderProgress() {
       <div class="coherent-progress-stat"><span>Pieces placed</span><strong>${profile.totalPieces}</strong></div>
       <div class="coherent-progress-stat"><span>Current tier</span><strong>${escapeHtml(currentMode().name)}</strong></div>
       <div class="coherent-progress-stat"><span>Specials unlocked</span><strong>${BLOCK_SKILLS.filter(skill => profile.level >= skill.unlockLevel).length} / ${BLOCK_SKILLS.length}</strong></div>
-    </div>`;
+    </div>
+    <p class="coherent-progress-explainer">Score-based progression: 10 score points = 1 XP. Completed runs add XP towards your next Player Rank and unlock Specials.</p>`;
 }
 
 const BLOCK_TABS = Object.freeze(['game','round','skills','tiers','progress']);
