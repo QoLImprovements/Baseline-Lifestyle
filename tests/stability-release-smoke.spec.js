@@ -703,8 +703,9 @@ test('Recreation restores account progress and keeps a game playable', async ({ 
   await page.goto('/baseline-recreation/system', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => globalThis.BASELINE_RECREATION_CORE_READY === true);
   await page.getByRole('button', { name: 'Games', exact: true }).click();
-  await expect(page.locator('[data-select-game="pairs"]:visible').first()).toContainText('Player Rank 4 · 7 cleared');
-  await expect(page.locator('[data-select-game="ninja"]:visible').first()).toContainText('Player Rank 3 · Stage 4');
+  await expect(page.locator('#gamesList [data-game-card="pairs"] .recreation-catalogue-rank')).toHaveText('Player Rank 4');
+  await expect(page.locator('#gamesList [data-game-card="ninja"] .recreation-catalogue-rank')).toHaveText('Player Rank 3');
+  await expect(page.locator('#gamesList [data-game-card="pairs"] .recreation-catalogue-open')).toHaveText('Open');
   await page.locator('[data-select-game="pairs"]:visible').first().click();
   await expect(page.locator('#pairsPanel')).toHaveClass(/is-active/);
   await page.locator('#newPairsBoardBtn').click();
