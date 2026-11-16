@@ -74,7 +74,7 @@ function saveAppForButton(button){
     const selected=globalThis.BaselinePuzzlesLibrary?.getJigsaw?.();
     return globalThis.BaselinePuzzlesRegistry?.findJigsaw?.(selected)?.app||'';
   }
-  // Most Games Hub links use a clean pathname, not a hash fragment.
+  // Most Recreation game links use a clean pathname, not a hash fragment.
   const match=String(location.pathname||'').match(/^\/baseline-recreation\/games\/([^/?#]+)/i);
   const slug=match?decodeURIComponent(match[1]):'';
   const hash=String(location.hash||'').replace(/^#/,'');
