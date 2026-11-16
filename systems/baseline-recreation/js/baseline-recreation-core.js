@@ -1599,7 +1599,7 @@ const BASELINE_RECREATION_BUILD = 'RECREATION_FULLSCREEN_WINDOW_TABS_20261025_1'
       const progressAttribute=meta.externalModule==='extension'
         ? ' data-game-extension-progress="'+escapeHtml(meta.route)+'"' : '';
       return heading+
-        '<div class="game-row-wrap'+(featured?' game-row-wrap--featured':'')+(selectedGame===meta.id?' is-selected':'')+'" data-game-card="'+escapeHtml(meta.route||meta.id)+'"'+extensionAttribute+'>'+
+        '<div class="game-row-wrap'+(featured?' game-row-wrap--featured':'')+(selectedGame===meta.id?' is-selected':'')+'" data-game-card="'+escapeHtml(meta.externalModule==='extension'?meta.route:meta.id)+'"'+extensionAttribute+'>'+
           '<div class="game-row recreation-catalogue-row">'+
             '<img class="game-card-art recreation-catalogue-art" src="'+escapeHtml(meta.art||'')+'" alt="">'+
             '<div class="game-row-copy recreation-catalogue-copy"><h3>'+escapeHtml(meta.name)+'</h3><p>'+escapeHtml(meta.note)+'</p></div>'+
