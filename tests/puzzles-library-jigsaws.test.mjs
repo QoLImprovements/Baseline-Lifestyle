@@ -99,7 +99,7 @@ test('jigsaw library cards do not repeat the universal piece-count choices', () 
   assert.match(library, /recreation-catalogue-rank/);
   assert.match(library, /Player Rank /);
   assert.match(library, /recreation-catalogue-open/);
-  assert.doesNotMatch(library, /completed<\\/span>/);
+  assert.equal(library.includes('completed</span>'),false);
 });
 
 test('jigsaw library does not persist a last-opened selection highlight', () => {
