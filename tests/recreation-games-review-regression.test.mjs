@@ -471,7 +471,9 @@ test('Block Grid lands from the exact grabbed piece cell and exposes charged spe
   assert.doesNotMatch(blockGrid,/Open Space/);
   assert.match(blockGrid,/BLOCK_TABS = Object\.freeze\(\['game','round','skills','tiers','progress'\]\)/);
   assert.match(blockGrid,/id="blockGridSkillsCard"/);
-  assert.match(blockGrid,/Score-based progression[\s\S]*?10 points = 1 XP/);
+  assert.match(blockGrid,/function renderProgress\(\)[\s\S]*?Score-based progression:[\s\S]*?10 score points = 1 XP/);
+  assert.doesNotMatch(blockGrid.slice(blockGrid.indexOf('function renderSkills()'),blockGrid.indexOf('function renderProgress()')),/Score-based progression/);
+  assert.match(blockGrid,/function renderModes\(\)[\s\S]*?board-tier-list[\s\S]*?tier-btn/);
   assert.doesNotMatch(blockCss,/Block Grid windowed composition \+ score progression/);
   assert.doesNotMatch(blockCss,/#blockGridGameCard:not\(:fullscreen\)>\.round-status-card[\s\S]{0,180}?grid-column:1\/-1!important/);
   assert.match(nonRealmCss,/#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel[\s\S]*?:fullscreen > :is\(\.game-specific-actions,\.game-window-actions,\.crossnumber-actions\)[\s\S]*?display:flex!important[\s\S]*?flex-wrap:wrap!important/);
