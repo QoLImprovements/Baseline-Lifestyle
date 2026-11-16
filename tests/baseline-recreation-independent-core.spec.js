@@ -28,6 +28,8 @@ async function expectBannerAndTabs(page) {
   await expect(toggle).toHaveAttribute('aria-expanded','true');
   await expect(menu).toBeVisible();
   await expect(menu.getByRole('menuitem',{name:'Baseline Recreation',exact:true})).toBeVisible();
+  await toggle.click(); // Close overlay before it intercepts the Games tab.
+  await expect(menu).toBeHidden();
   await page.getByRole('button',{name:'Games',exact:true}).click();
   await expect(page.locator('#games')).toHaveClass(/active/);
   const pairs=page.locator('[data-select-game="pairs"]:visible').first();
