@@ -224,6 +224,7 @@ test('Account game saving recovers after an API failure and survives a complete 
   allowPathRecovery=true;
   await page.locator('#pathRecallPanel [data-save-status-icon]').first().click();
   await expect.poll(()=>successfulPathWrites,{timeout:12000}).toBeGreaterThanOrEqual(1);
+  await page.waitForFunction(()=>globalThis.BaselineGameStorage.getStatus()==='ready' && !globalThis.BaselineGameStorage.getUnsavedApps().includes('pathrecall'),null,{timeout:12000});
   const diagnostic=await page.evaluate(()=>({
     status:globalThis.BaselineGameStorage.getStatus(),
     lastError:globalThis.BaselineGameStorage.getLastError(),
