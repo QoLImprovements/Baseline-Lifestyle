@@ -78,7 +78,11 @@ async function openRealm(page, { mobile = false } = {}) {
   }, { mobile });
   await expect(page.locator('#realmSceneFrame')).toBeVisible();
   await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
-  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
+  // Portrait mobile screens deliberately gate the Basecamp behind a landscape notice.
+  const viewport=page.viewportSize();
+  if(!(mobile && viewport && viewport.height>viewport.width)){
+    await expect(page.locator('#realmBasecampScreen')).toBeVisible();
+  }
   await page.evaluate(() => globalThis.BaselineRealmHost.whenAssetsReady());
   return profiles;
 }
