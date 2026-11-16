@@ -48,9 +48,14 @@ test('games and real controls remain usable when account saving is unavailable',
     await expect(row).toBeEnabled();
     await row.click();
     await expect(page.locator(`#${gameId}Panel`)).toHaveClass(/is-active/);
-    const back=page.locator(`#${gameId}Panel [data-select-game=""]`).first();
-    await expect(back).toBeEnabled();
-    await back.click();
+    if(gameId==='ninja'){
+      // Realm has its own game shell; the shared Games tab is its overview exit.
+      await page.getByRole('button',{name:'Games',exact:true}).click();
+    }else{
+      const back=page.locator(`#${gameId}Panel [data-select-game=""]`).first();
+      await expect(back).toBeEnabled();
+      await back.click();
+    }
     await expect(page.locator('#gamesOverviewCard')).toBeVisible();
   }
 
