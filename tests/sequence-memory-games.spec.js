@@ -183,6 +183,7 @@ test('Account game saving recovers after an API failure and survives a complete 
   const profiles={};
   const revisions={};
   let failedPathWrite=false;
+  let allowPathRecovery=false;
   let successfulPathWrites=0;
   await page.route('**/systems/baseline-recreation/api/games_data.php**',async route=>{
     const request=route.request();
@@ -192,7 +193,9 @@ test('Account game saving recovers after an API failure and survives a complete 
     });
     const data=request.postDataJSON();
     if(data?.action!=='save')return send(400,{ok:false,error:'invalid_action'});
-    if(data.app==='pathrecall'&&!failedPathWrite){
+    // Hold the simulated outage until the test deliberately permits recovery.
+    // Otherwise the automatic retry can succeed before the status assertion polls.
+    if(data.app==='pathrecall'&&!allowPathRecovery){
       failedPathWrite=true;
       return send(503,{ok:false,error:'temporary_unavailable'});
     }
@@ -217,8 +220,10 @@ test('Account game saving recovers after an API failure and survives a complete 
   expect(await page.evaluate(()=>globalThis.BaselineGameStorage.getUnsavedCount())).toBeGreaterThan(0);
   const unsaved=await page.evaluate(()=>globalThis.BaselineGameStorage.getProfile('pathrecall'));
   expect(unsaved.roundsPlayed).toBe(1);
+  expect(failedPathWrite).toBe(true);
+  allowPathRecovery=true;
   await page.locator('#pathRecallPanel [data-save-status-icon]').first().click();
-  await page.waitForTimeout(500);
+  await expect.poll(()=>successfulPathWrites,{timeout:12000}).toBeGreaterThanOrEqual(1);
   const diagnostic=await page.evaluate(()=>({
     status:globalThis.BaselineGameStorage.getStatus(),
     lastError:globalThis.BaselineGameStorage.getLastError(),
