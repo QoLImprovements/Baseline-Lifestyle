@@ -41,7 +41,7 @@ test('games and real controls remain usable when account saving is unavailable',
   expect(storage.canPlay).toBe(true);
   expect(storage.canSave).toBe(false);
   expect(storage.status).toBe('unavailable');
-  await expect(page.locator('#gamesServerLoginNotice')).toContainText('Temporary progress');
+  await expect(page.locator('#authStateNote')).toContainText('Temporary play is active; saving is unavailable.');
 
   for (const gameId of ['detectword','make24','pairs','trackcoin','ruleshift','ninja']) {
     const row=page.locator(`[data-select-game="${gameId}"]:visible`).first();
