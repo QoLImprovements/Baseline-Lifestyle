@@ -84,18 +84,7 @@ These Markdown rules are a human reference point, not live runtime config.
   }
 })();
 </script>
-<style id="recreation-route-first-paint">
-html[data-route-booting="true"] main.wrap > .section{display:none!important}
-html[data-route-booting="true"][data-initial-section="system"] #system,
-html[data-route-booting="true"][data-initial-section="games"] #games,
-html[data-route-booting="true"][data-initial-section="puzzles"] #puzzles,
-html[data-route-booting="true"][data-initial-section="concepts"] #concepts{display:block!important}
-/* Do not paint Games Overview or a different game's default view during a nested-game reload. */
-html[data-route-booting="true"][data-initial-game] #games > .grid{visibility:hidden!important}
-html[data-route-booting="true"][data-initial-puzzle] #puzzlesOverviewCard{display:none!important}
-html[data-route-booting="true"][data-initial-concept="stroop-effect"] #conceptsOverviewCard{display:none!important}
-html[data-route-booting="true"][data-initial-concept="stroop-effect"] #conceptStroopEffect[hidden]{display:block!important}
-</style>
+<link id="recreation-route-first-paint" href="/systems/baseline-recreation/css/recreation-route-first-paint.css?v=RECREATION_ROUTE_CSS_20261116_1" rel="stylesheet"/>
 <meta name="description" content="Baseline Recreation brings games, puzzles, concepts and wider recreational experiences into one bounded Baseline system.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-recreation/system">
 <meta property="og:type" content="website">
