@@ -163,7 +163,7 @@ test('Recreation static page is visible immediately and account label does not c
   await expect(page.getByRole('heading',{name:'Baseline Recreation'})).toBeVisible();
   await expect(page.locator('#bl-pages-toggle')).toBeVisible();
   await expect(page.getByRole('button',{name:'Games',exact:true})).toBeVisible();
-  await expect(page.locator('#hub')).toBeVisible();
+  await expect(page.locator('main.wrap')).toBeVisible();
   await expect(page.locator('#bl-auth-toggle .bl-btn-label')).toHaveText('Account');
   await page.waitForTimeout(550);
   await expect(page.locator('#bl-auth-toggle .bl-btn-label')).toHaveText('Account');
