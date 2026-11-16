@@ -127,7 +127,7 @@ test('puzzle games expose visible gameplay motion and contained Block Grid dragg
   assert.match(block, /perfectBonus = perfectClear \? 100 : 0/);
   assert.match(block, /function nearCompleteCells/);
   assert.doesNotMatch(block, /Open Space/);
-  assert.match(block, /Score-based progression[\s\S]*?10 points = 1 XP/);
+  assert.match(block, /function renderProgress\(\)[\s\S]*?Score-based progression:[\s\S]*?10 score points = 1 XP/);
   assert.match(blockCss, /block-grid-feedback/);
   assert.match(blockCss, /blockGridTrayArrival/);
   assert.match(blockCss, /is-line-opportunity/);
