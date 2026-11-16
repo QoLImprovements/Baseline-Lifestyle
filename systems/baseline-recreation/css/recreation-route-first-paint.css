@@ -1,0 +1,13 @@
+/* Early route-specific paint protection. Loaded synchronously in <head>,
+   after data-initial-* attributes have been assigned. Keeps nested route
+   refreshes from displaying an unrelated game or puzzle while modules mount. */
+html[data-route-booting="true"] main.wrap > .section{display:none!important}
+html[data-route-booting="true"][data-initial-section="system"] #system,
+html[data-route-booting="true"][data-initial-section="games"] #games,
+html[data-route-booting="true"][data-initial-section="puzzles"] #puzzles,
+html[data-route-booting="true"][data-initial-section="concepts"] #concepts{display:block!important}
+/* Do not paint Games Overview or a different game's default view during a nested-game reload. */
+html[data-route-booting="true"][data-initial-game] #games > .grid{visibility:hidden!important}
+html[data-route-booting="true"][data-initial-puzzle] #puzzlesOverviewCard{display:none!important}
+html[data-route-booting="true"][data-initial-concept="stroop-effect"] #conceptsOverviewCard{display:none!important}
+html[data-route-booting="true"][data-initial-concept="stroop-effect"] #conceptStroopEffect[hidden]{display:block!important}
