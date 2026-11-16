@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 const PATH='/baseline-recreation/system';
-const CACHE_COOKIE='baseline_games_hub_epoch=20260630_15';
+const CACHE_COOKIE='baseline_recreation_runtime_epoch=20261022_2';
 
 async function stubProfiles(page) {
   await page.route('**/systems/baseline-recreation/api/games_profile.php**', async (route) => {
@@ -52,7 +52,7 @@ test('public Recreation route keeps games playable while saving is signed out',a
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
   const storage=await page.evaluate(()=>({canPlay:BaselineGameStorage.canPlay(),canSave:BaselineGameStorage.canSave(),status:BaselineGameStorage.getStatus()}));
   expect(storage).toEqual({canPlay:true,canSave:false,status:'signed-out'});
-  await expect(page.locator('#gamesServerLoginNotice')).toContainText('Progress from this temporary session is not saved');
+  await expect(page.locator('#authStateNote')).toContainText('Progress from this temporary session is not saved');
   await expectBannerAndTabs(page);
   await expectBrowsableGame(page,'pairs','#pairsPanel');
   await page.locator('#newPairsBoardBtn').click();
