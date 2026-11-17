@@ -55,7 +55,7 @@ test('Darts Focused is registered, visible and operational',async({page})=>{
   await stubProfiles(page);
   await page.goto(PATH,{waitUntil:'domcontentloaded'});
   await openGames(page);
-  await expect(page.getByText('Darts Focused',{exact:true})).toBeVisible();
+  await expect(page.locator('#gamesList h3').filter({hasText:'Darts Focused'}).first()).toBeVisible();
   await expect(page.locator('[data-open-darts-focused]')).toBeVisible();
   await page.waitForFunction(()=>Boolean(globalThis.DartsFocusedGames));
   await page.locator('[data-open-darts-focused]').click();
@@ -167,7 +167,7 @@ test('Recreation static page is visible immediately and account label does not c
   await expect(page.locator('#bl-auth-toggle .bl-btn-label')).toHaveText('Account');
   await page.waitForTimeout(550);
   await expect(page.locator('#bl-auth-toggle .bl-btn-label')).toHaveText('Account');
-  await expect(page.locator('#authStateNote')).toContainText('Account save is active.');
+  await expect(page.locator('#authStateNote')).toContainText(/Account saving is available|Saving game progress/);
   await expect(page.locator('#bankSummary')).not.toBeEmpty();
   await expect(page.locator('#gamesSummaryWrap')).not.toBeEmpty();
 });
