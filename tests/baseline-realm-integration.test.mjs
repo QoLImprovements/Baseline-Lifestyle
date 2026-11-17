@@ -197,8 +197,8 @@ test('legacy Ninja profile is normalised before the combat runtime is created', 
 
 
 test('Realm scene-frame route state cannot steal Ninja strike clicks',()=>{
-  // The frame itself has data-realm-view. Only a button can issue a navigation.
-  assert.match(inputBindingsSource,/bindPointer\('realm-view', 'button\\[data-realm-view\\]'/);
-  assert.doesNotMatch(inputBindingsSource,/bindPointer\('realm-view', '\\[data-realm-view\\]'/);
-  assert.match(inputBindingsSource,/bindPointer\('ninja-strike', '#ninjaManualStrikeBtn'/);
+  // The frame itself has data-realm-view. Only a button can issue navigation.
+  assert.ok(inputBindingsSource.includes("inputManager.bindPointer('realm-view', 'button[data-realm-view]'"));
+  assert.ok(!inputBindingsSource.includes("inputManager.bindPointer('realm-view', '[data-realm-view]'"));
+  assert.ok(inputBindingsSource.includes("inputManager.bindPointer('ninja-strike', '#ninjaManualStrikeBtn'"));
 });
