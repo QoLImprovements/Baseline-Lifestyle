@@ -4010,7 +4010,7 @@ body[data-app="recreation"] #detectwordPanel .word-row--invalid .letter-cell{opa
 /* Recreation mobile touch targets: coherent minimum across every Pairs action. */
 @media(max-width:760px){
   html body[data-app="recreation"] #pairsPanel button:not([disabled]){
-    min-width:46px!important;
-    min-height:46px!important;
+    min-width:50px!important;
+    min-height:50px!important;
   }
 }
