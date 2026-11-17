@@ -54,7 +54,7 @@ test('public Recreation route keeps games playable while saving is signed out',a
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
   const storage=await page.evaluate(()=>({canPlay:BaselineGameStorage.canPlay(),canSave:BaselineGameStorage.canSave(),status:BaselineGameStorage.getStatus()}));
   expect(storage).toEqual({canPlay:true,canSave:false,status:'signed-out'});
-  await expect(page.locator('#authStateNote')).toContainText('Progress from this temporary session is not saved');
+  await expect(page.locator('#authStateNote')).toContainText('Temporary play is active.');
   await expectBannerAndTabs(page);
   await expectBrowsableGame(page,'pairs','#pairsPanel');
   await page.locator('#newPairsBoardBtn').click();
