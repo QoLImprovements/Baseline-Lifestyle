@@ -75,7 +75,7 @@ test('Puzzles exact non-default jigsaw survives Back and Forward',async({page})=
   expect(new URL(page.url()).pathname).toBe('/baseline-recreation/puzzles/jigsaws/'+id);
   await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',id);
   await expect(page.locator('#weightCoherenceTitle')).toHaveText('Tears Without Witness');
-  // Re-  // A separate test reloads every registered jigsaw directly. This test
+  // A separate test reloads every registered jigsaw directly. This test
   // exercises browser history without a redundant same-URL full navigation.
   await page.goBack();
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('jigsaws');
