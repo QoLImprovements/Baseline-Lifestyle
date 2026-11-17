@@ -339,6 +339,9 @@ function isolateCoreDependencies(dependencies) {
   const isolated = { ...dependencies, __realmIsolatedCore: BUILD };
   isolated.renderGamesList = () => {};
   isolated.syncHashState = () => {};
+  // Ninja Training still requests this legacy callback during strikes and ticks.
+  // Its summary is now owned by the Recreation system summary, not a hub renderer.
+  isolated.renderHubSummary = () => isolated.renderSystemSummary();
   let lastSummaryAt = 0;
   isolated.renderSystemSummary = () => {
     const now = Date.now();
