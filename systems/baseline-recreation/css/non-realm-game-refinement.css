@@ -4041,3 +4041,16 @@ body[data-app="recreation"] #detectwordPanel .word-row--invalid .letter-cell{opa
     max-height:44px!important;
   }
 }
+
+/* Pairs controls are moved between docks by the runtime. Target the owning
+   panel rather than the initial game-card parent, with specificity above
+   legacy 42px important width and max-width declarations. */
+@media(max-width:760px){
+  html body[data-app="recreation"] #pairsPanel#pairsPanel button.action:not([disabled]){
+    box-sizing:border-box!important;
+    min-width:44px!important;
+    max-width:none!important;
+    min-height:44px!important;
+    max-height:none!important;
+  }
+}
