@@ -31,6 +31,10 @@ export class RealmSceneRouter {
     const next = this.scenes.get(id);
     if (!next) throw new Error(`Unknown Baseline Realm scene: ${id}`);
     const previous = this.current;
+    // Navigating to the current scene must not remount it: duplicate route
+    // activations otherwise destroy an open battle command and reset the UI.
+    // Explicit restarts, if introduced, should use a dedicated scene action.
+    if (previous === next) return next;
     const previousContext = this.context;
 
     if (previous && previous !== next && typeof previous.exit === 'function') {
