@@ -28,7 +28,7 @@ import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-traini
 const BUILD = 'REALM_CANONICAL_COMPLETE_20261018_1';
 const STAGE_ONE_READY_BUILD = BUILD;
 const OPTIONAL_MODULE_URLS = Object.freeze({
-  explorationScene: `../../exploration/js/exploration-scene.js?v=${BUILD}`,
+  explorationScene: '../../exploration/js/exploration-scene.js?v=MERIDIAN_AUDIO_INPUT_20261117_1',
   explorationRoster: `../../exploration/data/meridian-grove.js?v=${BUILD}`,
   calorieEscapeScene: `../../calorie-escape/js/calorie-escape-scene.js?v=${BUILD}`,
   tacticalScene: `../../tactical-operations/js/tactical-operations-scene.js?v=${BUILD}`,
