@@ -320,11 +320,18 @@ test('signed-out favourite caption floats without changing recipe layout', async
   await expect(favourite).toBeVisible();
   await expect(batch).toBeVisible();
 
-  const before = await batch.evaluate(node=>node.getBoundingClientRect().top+window.scrollY);
+  // Measure within the recipe card: asynchronous content above this card can
+  // move the entire card while leaving its own layout unchanged.
+  const withinCard=await batch.evaluate(node=>
+    node.getBoundingClientRect().top - node.closest('.recipe-page').getBoundingClientRect().top
+  );
+  const before = withinCard;
   await favourite.click();
   await expect(favourite).toHaveAttribute('data-tip', 'log in required to favorite this recipe.');
   await expect(favourite).toHaveClass(/tip-show/);
-  const after = await batch.evaluate(node=>node.getBoundingClientRect().top+window.scrollY);
+  const after = await batch.evaluate(node=>
+    node.getBoundingClientRect().top - node.closest('.recipe-page').getBoundingClientRect().top
+  );
 
   expect(Math.abs(after - before)).toBeLessThan(1);
 });
