@@ -1,0 +1,42 @@
+name: Targeted Realm and Recipe smoke
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/recreation-targeted-smoke.yml'
+      - 'systems/baseline-recreation/games/baseline-realm/**'
+      - 'tests/baseline-realm-meridian-grove-live.spec.js'
+      - 'tests/universal-recipe-template.spec.js'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-interaction:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Reproduce ATB target selection and recipe tooltip layout
+        run: |
+          npx playwright test tests/baseline-realm-meridian-grove-live.spec.js \
+            tests/universal-recipe-template.spec.js \
+            --grep 'Meridian Grove resumes an ATB battle|signed-out favourite caption floats' \
+            --workers=1 --reporter=line
+      - name: Preserve focused browser failures
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: focused-realm-recipe-failure
+          path: |
+            test-results
+            playwright-results.json
+          if-no-files-found: ignore
+          retention-days: 3
