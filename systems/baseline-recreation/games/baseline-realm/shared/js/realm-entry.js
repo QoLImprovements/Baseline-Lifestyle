@@ -9,7 +9,7 @@ import { bindRealmInputs } from './realm-input-bindings.js?v=REALM_INPUT_ROUTING
 import { RealmInventoryService } from './realm-inventory-service.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { RealmPerformanceMonitor } from './realm-performance.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { RealmRuntimeUi } from './realm-runtime-ui.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
-import { RealmSceneRouter } from './realm-scene-router.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
+import { RealmSceneRouter } from './realm-scene-router.js?v=REALM_IDEMPOTENT_NAV_20261117_1';
 import { RealmStateService } from './realm-state-service.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { createRealmLazySceneManager } from './realm-lazy-scenes.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import {
