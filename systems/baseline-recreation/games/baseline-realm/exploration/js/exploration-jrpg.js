@@ -213,7 +213,9 @@ export class MeridianGroveGame {
     this.root.classList.add('jrpg-mounted');
     document.getElementById('realmSceneFrame')?.classList.add('is-exploration-jrpg');
     this.root.innerHTML = this.shellTemplate();
-    this.root.addEventListener('click', this.boundPointer);
+    // Own game controls in capture phase so outer document handlers or
+    // nested overlays cannot consume a battle command before this game sees it.
+    this.root.addEventListener('click', this.boundPointer, true);
     this.root.addEventListener('change', this.boundChange);
     globalThis.addEventListener('keydown', this.boundKeydown, true);
     document.addEventListener('visibilitychange', this.boundVisibility);
@@ -241,7 +243,7 @@ export class MeridianGroveGame {
     this.save('unmount');
     this.mounted = false;
     cancelAnimationFrame(this.frame);
-    this.root.removeEventListener('click', this.boundPointer);
+    this.root.removeEventListener('click', this.boundPointer, true);
     this.root.removeEventListener('change', this.boundChange);
     globalThis.removeEventListener('keydown', this.boundKeydown, true);
     document.removeEventListener('visibilitychange', this.boundVisibility);
