@@ -194,3 +194,11 @@ test('legacy Ninja profile is normalised before the combat runtime is created', 
   assert.ok(normaliseIndex >= 0, 'Realm entry must normalise the Recreation Ninja profile');
   assert.ok(runtimeIndex > normaliseIndex, 'profile normalisation must happen before Ninja runtime creation');
 });
+
+
+test('Realm scene-frame route state cannot steal Ninja strike clicks',()=>{
+  // The frame itself has data-realm-view. Only a button can issue a navigation.
+  assert.match(inputBindingsSource,/bindPointer\('realm-view', 'button\\[data-realm-view\\]'/);
+  assert.doesNotMatch(inputBindingsSource,/bindPointer\('realm-view', '\\[data-realm-view\\]'/);
+  assert.match(inputBindingsSource,/bindPointer\('ninja-strike', '#ninjaManualStrikeBtn'/);
+});
