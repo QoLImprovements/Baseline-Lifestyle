@@ -85,46 +85,8 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
 
   // Active-mode enemy turns must update battle state without replacing the
   // player's open command/target DOM.
-  const clickErrors=[];
-  page.on('pageerror', error=>clickErrors.push(String(error)));
-  await page.evaluate(()=>{
-    const trace=[];
-    globalThis.__meridianClickTrace=trace;
-    const root=document.getElementById('realmExplorationScreen');
-    const record=(scope,ev)=>{ if(ev.target?.closest?.('[data-battle-command]')) trace.push({scope,phase:ev.eventPhase,type:ev.type,target:ev.target.outerHTML?.slice(0,200)}); };
-    document.addEventListener('pointerdown',ev=>record('document-capture-pointer',ev),true);
-    document.addEventListener('click',ev=>record('document-capture-click',ev),true);
-    document.addEventListener('click',ev=>record('document-bubble-click',ev),false);
-    root.addEventListener('click',ev=>record('root-capture-click',ev),true);
-    root.addEventListener('click',ev=>record('root-bubble-click',ev),false);
-    const inner=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
-    Object.defineProperty(Element.prototype,'innerHTML',{
-      configurable:true,
-      get(){return inner.get.call(this);},
-      set(value){
-        if(this.id==='jrpgBattleLayer'){
-          trace.push({scope:'renderBattle',showTargets:String(value).includes('data-battle-target='),stack:(new Error()).stack?.slice(0,1200)});
-        }
-        return inner.set.call(this,value);
-      }
-    });
-    new MutationObserver(()=>{const node=root.querySelector('.jrpg-command-window');const text=node?.innerText?.slice(0,90);if(trace[trace.length-1]?.currentText!==text)trace.push({scope:'mutation',currentText:text});}).observe(root,{childList:true,subtree:true});
-  });
   await page.getByRole('button', { name: 'Attack', exact: true }).click();
   const targetButton = page.locator('[data-battle-target]').first();
-  const appeared=await targetButton.isVisible().catch(()=>false);
-  if(!appeared){
-    const debug=await page.evaluate(()=>({
-      activeScene:document.getElementById('realmSceneFrame')?.dataset.realmView,
-      battleVisible:!document.getElementById('jrpgBattleLayer')?.hidden,
-      commandWindow:document.querySelector('#jrpgBattleLayer .jrpg-command-window')?.innerText,
-      attackCount:document.querySelectorAll('[data-battle-command="attack"]').length,
-      targetCount:document.querySelectorAll('[data-battle-target]').length,
-      selectedTab:document.querySelector('.jrpg-battle-mode .is-active')?.textContent
-    }));
-    const trace=await page.evaluate(()=>globalThis.__meridianClickTrace||[]);
-    console.log('MERIDIAN_ATTACK_DIAGNOSTIC',JSON.stringify({debug,clickErrors,trace:trace.slice(-35)}));
-  }
   await expect(targetButton).toBeVisible();
   await targetButton.evaluate(node => { node.dataset.stabilityProbe = 'same-node'; });
   const logCount=await page.locator('.jrpg-battle-log li').count();
