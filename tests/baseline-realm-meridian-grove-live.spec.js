@@ -103,7 +103,7 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
       get(){return inner.get.call(this);},
       set(value){
         if(this.id==='jrpgBattleLayer'){
-          trace.push({scope:'renderBattle',showTargets:String(value).includes('data-battle-target='),stack:(new Error()).stack?.split('\\n').slice(1,6).join(' | ')});
+          trace.push({scope:'renderBattle',showTargets:String(value).includes('data-battle-target='),stack:(new Error()).stack?.slice(0,1200)});
         }
         return inner.set.call(this,value);
       }
