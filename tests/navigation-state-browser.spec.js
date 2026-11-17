@@ -77,9 +77,11 @@ test('Puzzles exact non-default jigsaw survives Back and Forward',async({page})=
   await expect(page.locator('#weightCoherenceTitle')).toHaveText('Tears Without Witness');
   // A separate test reloads every registered jigsaw directly. This test
   // exercises browser history without a redundant same-URL full navigation.
-  await page.goBack();
+  await page.evaluate(()=>history.back());
+  await expect(page).toHaveURL(/\/baseline-recreation\/puzzles\/jigsaws$/);
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('jigsaws');
-  await page.goForward();
+  await page.evaluate(()=>history.forward());
+  await expect(page).toHaveURL(/\/baseline-recreation\/puzzles\/jigsaws\/tears-without-witness$/);
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getJigsaw())).toBe(id);
   await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',id);
 });
