@@ -9,6 +9,7 @@ import { RealmGamepadProvider } from '../systems/baseline-recreation/games/basel
 import { RealmInventoryService } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-inventory-service.js';
 import { createDefaultRealmSave, REALM_SAVE_VERSION } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-model.js';
 import { RealmPerformanceMonitor } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-performance.js';
+import { RealmSceneRouter } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-scene-router.js';
 import { RealmSaveAdapter, realmSaveKeys } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-save-adapter.js';
 import { RealmStateService } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-state-service.js';
 import { RealmWorkshopService } from '../systems/baseline-recreation/games/baseline-realm/workshop/js/workshop-service.js';
@@ -210,4 +211,16 @@ test('Realm loader and page share a single entry module URL',()=>{
   const loaderVersion=loader.match(/const REALM_BUILD='([^']+)'/)?.[1];
   assert.ok(entryUrl,'Recreation page must load Realm entry');
   assert.equal(loaderVersion,entryUrl,'Realm loader must import the exact same entry module version');
+});
+
+
+test('Realm navigation to the active scene does not remount its game state',async()=>{
+  const router=new RealmSceneRouter();
+  let enters=0;
+  let exits=0;
+  router.register({id:'exploration',enter:async()=>{enters++;},exit:async()=>{exits++;}});
+  await router.navigate('exploration');
+  await router.navigate('exploration');
+  assert.equal(enters,1,'Selecting an already active game must preserve its open command and save');
+  assert.equal(exits,0);
 });
