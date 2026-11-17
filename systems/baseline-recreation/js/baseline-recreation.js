@@ -1,5 +1,5 @@
 import './games-server-storage-ui.js?v=GAMES_SAVE_ROUTE_20261115_3';
-import './baseline-recreation-loader.js?v=MERIDIAN_REALM_SINGLETON_20261117_1';
+import './baseline-recreation-loader.js?v=REALM_IDEMPOTENT_NAV_20261117_1';
 
 // Independently preloaded by baseline-recreation.html so a failure in either
 // optional game cannot prevent the Hub bootstrap from running:
