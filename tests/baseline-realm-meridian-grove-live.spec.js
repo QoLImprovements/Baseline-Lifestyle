@@ -97,6 +97,17 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
     document.addEventListener('click',ev=>record('document-bubble-click',ev),false);
     root.addEventListener('click',ev=>record('root-capture-click',ev),true);
     root.addEventListener('click',ev=>record('root-bubble-click',ev),false);
+    const inner=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
+    Object.defineProperty(Element.prototype,'innerHTML',{
+      configurable:true,
+      get(){return inner.get.call(this);},
+      set(value){
+        if(this.id==='jrpgBattleLayer'){
+          trace.push({scope:'renderBattle',showTargets:String(value).includes('data-battle-target='),stack:(new Error()).stack?.split('\\n').slice(1,6).join(' | ')});
+        }
+        return inner.set.call(this,value);
+      }
+    });
     new MutationObserver(()=>{const node=root.querySelector('.jrpg-command-window');const text=node?.innerText?.slice(0,90);if(trace[trace.length-1]?.currentText!==text)trace.push({scope:'mutation',currentText:text});}).observe(root,{childList:true,subtree:true});
   });
   await page.getByRole('button', { name: 'Attack', exact: true }).click();
