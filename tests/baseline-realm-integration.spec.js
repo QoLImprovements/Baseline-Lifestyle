@@ -254,7 +254,8 @@ test('fullscreen, audio controls and reduced-motion state are wired', async ({ b
   await expect(page.locator('html')).toHaveAttribute('data-realm-reduced-motion', 'true');
   await page.locator('#realmSettingsBtn').click();
   await expect(page.locator('#realmSettingsBtn')).toHaveAttribute('aria-expanded', 'true');
-  await page.locator('#realmSettingsBtn').click();
+  await page.locator('[data-realm-settings-close]').click();
+  await expect(page.locator('#realmSettingsBtn')).toHaveAttribute('aria-expanded', 'false');
 
   const supported = await page.evaluate(() => document.fullscreenEnabled);
   if (supported) {
