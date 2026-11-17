@@ -147,11 +147,11 @@ for (const viewport of [
       viewport:innerWidth,
       pageWidth:document.documentElement.scrollWidth,
       panelWidth:document.querySelector('#pairsPanel')?.getBoundingClientRect().width||0,
-      smallestPrimary:Math.min(...Array.from(document.querySelectorAll('#pairsPanel button:not([disabled])')).filter(button=>button.offsetParent!==null).map(button=>Math.min(button.getBoundingClientRect().width,button.getBoundingClientRect().height)))
+      visibleTargets:Array.from(document.querySelectorAll('#pairsPanel button:not([disabled])')).filter(button=>button.offsetParent!==null).map(button=>({id:button.id,className:button.className,ariaLabel:button.getAttribute('aria-label'),width:button.getBoundingClientRect().width,height:button.getBoundingClientRect().height,minWidth:getComputedStyle(button).minWidth,minHeight:getComputedStyle(button).minHeight,transform:getComputedStyle(button).transform})).sort((a,b)=>Math.min(a.width,a.height)-Math.min(b.width,b.height)).slice(0,5)
     }));
     expect(layout.pageWidth).toBeLessThanOrEqual(layout.viewport+1);
     expect(layout.panelWidth).toBeLessThanOrEqual(layout.viewport+1);
-    expect(layout.smallestPrimary).toBeGreaterThanOrEqual(44);
+    expect(Math.min(...layout.visibleTargets.map(button=>Math.min(button.width,button.height))),JSON.stringify(layout.visibleTargets)).toBeGreaterThanOrEqual(44);
     await context.close();
   });
 }
