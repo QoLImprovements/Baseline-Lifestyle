@@ -2,7 +2,7 @@ const BUILD='RECREATION_LOADER_20261022_1';
 const LEGACY_BUILD='RECREATION_LEGACY_DARTS_ACCESS_20260706_1';
 // Import the exact same Realm entry URL as baseline-recreation.html. A different
 // query version creates a second module instance and can race the scene renderer.
-const REALM_BUILD='MERIDIAN_AUDIO_INPUT_20261117_1';
+const REALM_BUILD='REALM_IDEMPOTENT_NAV_20261117_1';
 const REALM='/systems/baseline-recreation/games/baseline-realm/shared/js/realm-entry.js?v='+REALM_BUILD;
 const DARTS='/systems/baseline-recreation/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4';
 const DARTS_CSS='/systems/baseline-recreation/games/darts-focused/css/darts-focused.css?v=DARTS_REBUILD_20260707_4';
