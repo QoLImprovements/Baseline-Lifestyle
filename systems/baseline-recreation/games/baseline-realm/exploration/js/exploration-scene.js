@@ -1,4 +1,4 @@
-import { mountMeridianGrove } from './exploration-jrpg-state-integrity.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
+import { mountMeridianGrove } from './exploration-jrpg-state-integrity.js?v=MERIDIAN_AUDIO_INPUT_20261117_1';
 
 const BUILD = 'REALM_CANONICAL_COMPLETE_20261018_1';
 
