@@ -85,8 +85,22 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
 
   // Active-mode enemy turns must update battle state without replacing the
   // player's open command/target DOM.
+  const clickErrors=[];
+  page.on('pageerror', error=>clickErrors.push(String(error)));
   await page.getByRole('button', { name: 'Attack', exact: true }).click();
   const targetButton = page.locator('[data-battle-target]').first();
+  const appeared=await targetButton.isVisible().catch(()=>false);
+  if(!appeared){
+    const debug=await page.evaluate(()=>({
+      activeScene:document.getElementById('realmSceneFrame')?.dataset.realmView,
+      battleVisible:!document.getElementById('jrpgBattleLayer')?.hidden,
+      commandWindow:document.querySelector('#jrpgBattleLayer .jrpg-command-window')?.innerText,
+      attackCount:document.querySelectorAll('[data-battle-command="attack"]').length,
+      targetCount:document.querySelectorAll('[data-battle-target]').length,
+      selectedTab:document.querySelector('.jrpg-battle-mode .is-active')?.textContent
+    }));
+    console.log('MERIDIAN_ATTACK_DIAGNOSTIC',JSON.stringify({debug,clickErrors}));
+  }
   await expect(targetButton).toBeVisible();
   await targetButton.evaluate(node => { node.dataset.stabilityProbe = 'same-node'; });
   const logCount=await page.locator('.jrpg-battle-log li').count();
