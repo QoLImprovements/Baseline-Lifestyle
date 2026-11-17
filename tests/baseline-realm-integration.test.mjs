@@ -9,6 +9,7 @@ import { RealmGamepadProvider } from '../systems/baseline-recreation/games/basel
 import { RealmInventoryService } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-inventory-service.js';
 import { createDefaultRealmSave, REALM_SAVE_VERSION } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-model.js';
 import { RealmPerformanceMonitor } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-performance.js';
+import { RealmSceneRouter } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-scene-router.js';
 import { RealmSaveAdapter, realmSaveKeys } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-save-adapter.js';
 import { RealmStateService } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-state-service.js';
 import { RealmWorkshopService } from '../systems/baseline-recreation/games/baseline-realm/workshop/js/workshop-service.js';
@@ -193,4 +194,33 @@ test('legacy Ninja profile is normalised before the combat runtime is created', 
   const runtimeIndex = realmEntrySource.indexOf('runtime = createNinjaTrainingRuntime({');
   assert.ok(normaliseIndex >= 0, 'Realm entry must normalise the Recreation Ninja profile');
   assert.ok(runtimeIndex > normaliseIndex, 'profile normalisation must happen before Ninja runtime creation');
+});
+
+
+test('Realm scene-frame route state cannot steal Ninja strike clicks',()=>{
+  // The frame itself has data-realm-view. Only a button can issue navigation.
+  assert.ok(inputBindingsSource.includes("inputManager.bindPointer('realm-view', 'button[data-realm-view]'"));
+  assert.ok(!inputBindingsSource.includes("inputManager.bindPointer('realm-view', '[data-realm-view]'"));
+  assert.ok(inputBindingsSource.includes("inputManager.bindPointer('ninja-strike', '#ninjaManualStrikeBtn'"));
+});
+
+test('Realm loader and page share a single entry module URL',()=>{
+  const html=fs.readFileSync(new URL('../systems/baseline-recreation/baseline-recreation.html',import.meta.url),'utf8');
+  const loader=fs.readFileSync(new URL('../systems/baseline-recreation/js/baseline-recreation-loader.js',import.meta.url),'utf8');
+  const entryUrl=html.match(/realm-entry\.js\?v=([A-Z0-9_]+)/)?.[1];
+  const loaderVersion=loader.match(/const REALM_BUILD='([^']+)'/)?.[1];
+  assert.ok(entryUrl,'Recreation page must load Realm entry');
+  assert.equal(loaderVersion,entryUrl,'Realm loader must import the exact same entry module version');
+});
+
+
+test('Realm navigation to the active scene does not remount its game state',async()=>{
+  const router=new RealmSceneRouter();
+  let enters=0;
+  let exits=0;
+  router.register({id:'exploration',enter:async()=>{enters++;},exit:async()=>{exits++;}});
+  await router.navigate('exploration');
+  await router.navigate('exploration');
+  assert.equal(enters,1,'Selecting an already active game must preserve its open command and save');
+  assert.equal(exits,0);
 });

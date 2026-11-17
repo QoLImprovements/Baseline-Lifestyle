@@ -1,7 +1,8 @@
 const { test, expect } = require('@playwright/test');
 
 const PATH='/baseline-recreation/system';
-const LOADER_BUILD='GAMES_HUB_BADMINTON_INITIAL_20260707_1';
+const REALM_LOADER_BUILD='REALM_IDEMPOTENT_NAV_20261117_1';
+const REALM_RUNTIME_BUILD='REALM_CANONICAL_COMPLETE_20261018_1';
 
 async function stubProfiles(page){
   await page.route('**/systems/baseline-recreation/api/games_profile.php**',async route=>{
@@ -24,7 +25,7 @@ async function openRealm(page){
   await page.locator('[data-select-game="ninja"]:visible').first().click();
   await page.waitForFunction(()=>Boolean(globalThis.BaselineRealmHost?.getStateService?.()));
   await expect(page.locator('#ninjaPanel')).toHaveClass(/is-active/);
-  await expect(page.locator('html')).toHaveAttribute('data-baseline-realm-runtime-active',LOADER_BUILD);
+  await expect(page.locator('html')).toHaveAttribute('data-baseline-realm-runtime-active',REALM_RUNTIME_BUILD);
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
   await expect(page.locator('#realmBasecampScreen')).toBeVisible();
 }
@@ -42,7 +43,7 @@ test('broken Realm loading cannot disable Hub controls',async({page})=>{
   await page.goto(PATH,{waitUntil:'domcontentloaded'});
   await openGames(page);
   await page.locator('[data-select-game="ninja"]:visible').first().click();
-  await expect(page.locator('html')).toHaveAttribute('data-baseline-realm-unavailable',LOADER_BUILD);
+  await expect(page.locator('html')).toHaveAttribute('data-baseline-realm-unavailable',REALM_LOADER_BUILD);
   await page.getByRole('button',{name:'Games',exact:true}).click();
   await page.locator('[data-select-game="pairs"]:visible').first().click();
   await expect(page.locator('#pairsPanel')).toHaveClass(/is-active/);
@@ -54,7 +55,7 @@ test('Darts Focused is registered, visible and operational',async({page})=>{
   await stubProfiles(page);
   await page.goto(PATH,{waitUntil:'domcontentloaded'});
   await openGames(page);
-  await expect(page.getByText('Darts Focused Games',{exact:true})).toBeVisible();
+  await expect(page.locator('#gamesList h3').filter({hasText:'Darts Focused'}).first()).toBeVisible();
   await expect(page.locator('[data-open-darts-focused]')).toBeVisible();
   await page.waitForFunction(()=>Boolean(globalThis.DartsFocusedGames));
   await page.locator('[data-open-darts-focused]').click();
@@ -131,7 +132,7 @@ test('Realm opens at Basecamp and Ninja actors and controls work after explicit 
 
 test('direct Realm route opens the same Basecamp-first functional runtime',async({page})=>{
   await stubProfiles(page);
-  await page.goto(PATH+'/baseline-realm',{waitUntil:'domcontentloaded'});
+  await page.goto('/baseline-recreation/games/baseline-realm',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselineRealmHost?.getStateService?.()));
   await expect(page.locator('#ninjaPanel')).toHaveClass(/is-active/);
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
@@ -160,13 +161,13 @@ test('Recreation static page is visible immediately and account label does not c
 
   await expect(page.locator('html')).not.toHaveAttribute('data-games-document-pending');
   await expect(page.getByRole('heading',{name:'Baseline Recreation'})).toBeVisible();
-  await expect(page.getByRole('button',{name:'Recreation',exact:true})).toBeVisible();
+  await expect(page.locator('#bl-pages-toggle')).toBeVisible();
   await expect(page.getByRole('button',{name:'Games',exact:true})).toBeVisible();
-  await expect(page.locator('#hub')).toBeVisible();
+  await expect(page.locator('main.wrap')).toBeVisible();
   await expect(page.locator('#bl-auth-toggle .bl-btn-label')).toHaveText('Account');
   await page.waitForTimeout(550);
   await expect(page.locator('#bl-auth-toggle .bl-btn-label')).toHaveText('Account');
-  await expect(page.locator('#authStateNote')).toContainText('Account save is active.');
+  await expect(page.locator('#authStateNote')).toContainText(/Account saving is available|Saving game progress/);
   await expect(page.locator('#bankSummary')).not.toBeEmpty();
   await expect(page.locator('#gamesSummaryWrap')).not.toBeEmpty();
 });

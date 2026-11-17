@@ -26,7 +26,9 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
   inputManager.bindPointer('ninja-buy-mode', '[data-ninja-buy-mode]', { payload: (element) => ({ id: element.dataset.ninjaBuyMode || '' }) });
   inputManager.bindPointer('ninja-upgrade', '[data-ninja-upgrade]', { payload: (element) => ({ id: element.dataset.ninjaUpgrade || '' }) });
   inputManager.bindPointer('ninja-spirit-upgrade', '[data-ninja-spirit-upgrade]', { payload: (element) => ({ id: element.dataset.ninjaSpiritUpgrade || '' }) });
-  inputManager.bindPointer('realm-view', '[data-realm-view]', {
+  // The scene frame has data-realm-view for presentation state; it must not
+  // intercept input intended for a nested strike, shuriken or other control.
+  inputManager.bindPointer('realm-view', 'button[data-realm-view]', {
     payload: (element) => ({
       view: element.dataset.realmView || 'training',
       category: element.dataset.workshopCategory || ''

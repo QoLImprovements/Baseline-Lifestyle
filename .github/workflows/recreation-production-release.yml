@@ -1,0 +1,50 @@
+name: Verify Recreation production release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'systems/baseline-recreation/baseline-recreation.html'
+      - 'systems/baseline-recreation/css/recreation-route-first-paint.css'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-readonly-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Verify release asset is deployed before checking routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://baselinelifestyle.org'
+          HTML_FILE="${RUNNER_TEMP}/recreation-production.html"
+          EXPECTED='recreation-route-first-paint.css?v=RECREATION_ROUTE_CSS_20261116_1'
+          observed=0
+          for attempt in $(seq 1 24); do
+            if curl --fail --silent --show-error --location --max-time 20 --output "$HTML_FILE" "$BASE/baseline-recreation/system?release_check=${GITHUB_SHA}" \
+              && grep --fixed-strings --quiet "$EXPECTED" "$HTML_FILE"; then
+              echo "Production contains Recreation release asset: $EXPECTED"
+              observed=1
+              break
+            fi
+            echo "Attempt $attempt/24: release not visible in production yet"
+            if [ "$attempt" -lt 24 ]; then sleep 20; fi
+          done
+          if [ "$observed" -ne 1 ]; then
+            echo "::error::Recreation release not confirmed on production. Inspect Hostinger deployment logs for this main commit."
+            exit 1
+          fi
+          for path in \
+            '/baseline-recreation/system' \
+            '/baseline-recreation/games' \
+            '/baseline-recreation/games/block-grid?view=tiers' \
+            '/baseline-recreation/puzzles' \
+            '/baseline-recreation/concepts' \
+            '/systems/baseline-recreation/css/recreation-route-first-paint.css?v=RECREATION_ROUTE_CSS_20261116_1'; do
+            printf '%s: ' "$path"
+            curl --fail --silent --show-error --location --max-time 20 --output /dev/null --write-out '%{http_code}\n' "$BASE$path"
+          done

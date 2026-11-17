@@ -41,16 +41,21 @@ test('games and real controls remain usable when account saving is unavailable',
   expect(storage.canPlay).toBe(true);
   expect(storage.canSave).toBe(false);
   expect(storage.status).toBe('unavailable');
-  await expect(page.locator('#gamesServerLoginNotice')).toContainText('Temporary progress');
+  await expect(page.locator('#authStateNote')).toContainText('Temporary play is active; saving is unavailable.');
 
   for (const gameId of ['detectword','make24','pairs','trackcoin','ruleshift','ninja']) {
     const row=page.locator(`[data-select-game="${gameId}"]:visible`).first();
     await expect(row).toBeEnabled();
     await row.click();
     await expect(page.locator(`#${gameId}Panel`)).toHaveClass(/is-active/);
-    const back=page.locator(`#${gameId}Panel [data-select-game=""]`).first();
-    await expect(back).toBeEnabled();
-    await back.click();
+    if(gameId==='ninja'){
+      // Realm has its own game shell; the shared Games tab is its overview exit.
+      await page.getByRole('button',{name:'Games',exact:true}).click();
+    }else{
+      const back=page.locator(`#${gameId}Panel [data-select-game=""]`).first();
+      await expect(back).toBeEnabled();
+      await back.click();
+    }
     await expect(page.locator('#gamesOverviewCard')).toBeVisible();
   }
 
@@ -100,7 +105,7 @@ test('each core game starts a real board on a touch phone', async ({ browser }) 
     expect(layout.pageWidth).toBeLessThanOrEqual(layout.viewport+1);
     expect(layout.left).toBeGreaterThanOrEqual(-1);
     expect(layout.right).toBeLessThanOrEqual(layout.viewport+1);
-    await page.locator(`${panel} [data-select-game=""]`).first().click();
+    await page.locator('[data-exit-mobile-game-mode]:visible').first().click();
   }
 
   await page.locator('[data-open-darts-focused]').click();

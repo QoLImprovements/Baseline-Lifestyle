@@ -84,18 +84,7 @@ These Markdown rules are a human reference point, not live runtime config.
   }
 })();
 </script>
-<style id="recreation-route-first-paint">
-html[data-route-booting="true"] main.wrap > .section{display:none!important}
-html[data-route-booting="true"][data-initial-section="system"] #system,
-html[data-route-booting="true"][data-initial-section="games"] #games,
-html[data-route-booting="true"][data-initial-section="puzzles"] #puzzles,
-html[data-route-booting="true"][data-initial-section="concepts"] #concepts{display:block!important}
-/* Do not paint Games Overview or a different game's default view during a nested-game reload. */
-html[data-route-booting="true"][data-initial-game] #games > .grid{visibility:hidden!important}
-html[data-route-booting="true"][data-initial-puzzle] #puzzlesOverviewCard{display:none!important}
-html[data-route-booting="true"][data-initial-concept="stroop-effect"] #conceptsOverviewCard{display:none!important}
-html[data-route-booting="true"][data-initial-concept="stroop-effect"] #conceptStroopEffect[hidden]{display:block!important}
-</style>
+<link id="recreation-route-first-paint" href="/systems/baseline-recreation/css/recreation-route-first-paint.css?v=RECREATION_ROUTE_CSS_20261116_1" rel="stylesheet"/>
 <meta name="description" content="Baseline Recreation brings games, puzzles, concepts and wider recreational experiences into one bounded Baseline system.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-recreation/system">
 <meta property="og:type" content="website">
@@ -133,7 +122,7 @@ html[data-route-booting="true"][data-initial-concept="stroop-effect"] #conceptSt
 <link href="/systems/baseline-recreation/games/baseline-realm/exploration/css/exploration-jrpg.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-style="exploration"/>
 <link href="/systems/baseline-recreation/games/baseline-realm/ninja-training/css/ninja-training.css?v=REALM_DISABLED_CONTROL_20261026_1" rel="stylesheet" data-realm-style="ninja-training"/>
 <link href="/systems/baseline-recreation/games/baseline-realm/shared/css/realm-mobile.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-realm-mobile="true"/>
-<link href="/systems/baseline-recreation/css/non-realm-game-refinement.css?v=INVALID_WORD_STRIKE_20261115_1" rel="stylesheet" data-nonrealm-game-refinement="true"/>
+<link href="/systems/baseline-recreation/css/non-realm-game-refinement.css?v=RECREATION_MOBILE_TOUCH_20261117_1" rel="stylesheet" data-nonrealm-game-refinement="true"/>
 <link href="/systems/baseline-recreation/css/games-music.css?v=RECREATION_MUSIC_PALETTE_20261022_2" rel="stylesheet" data-games-music-style="true"/>
 <link href="/systems/baseline-recreation/css/recreation-hub-coherence.css?v=RECREATION_HUB_COHERENCE_20261116_1" rel="stylesheet"/>
 </head>
@@ -1162,7 +1151,7 @@ html[data-route-booting="true"][data-initial-concept="stroop-effect"] #conceptSt
 <script type="module" src="/systems/baseline-recreation/games/colour-sort/js/colour-sort.js?v=RECREATION_ICON_CLEANUP_20261114_1"></script>
 <script type="module" src="/systems/baseline-recreation/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4"></script>
 <script type="module" src="/systems/baseline-recreation/games/badminton-focused/js/badminton-focused.js?v=BADMINTON_FOCUSED_REFINED_20260707_2"></script>
-<script type="module" src="/systems/baseline-recreation/games/baseline-realm/shared/js/realm-entry.js?v=REALM_RECREATION_ROUTE_20261022_1"></script>
-<script type="module" src="/systems/baseline-recreation/js/baseline-recreation.js?v=GAMES_SAVE_ROUTE_20261115_3"></script>
+<script type="module" src="/systems/baseline-recreation/games/baseline-realm/shared/js/realm-entry.js?v=REALM_IDEMPOTENT_NAV_20261117_1"></script>
+<script type="module" src="/systems/baseline-recreation/js/baseline-recreation.js?v=REALM_IDEMPOTENT_NAV_20261117_1"></script>
 </body>
 </html>

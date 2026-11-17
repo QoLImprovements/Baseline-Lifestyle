@@ -5,11 +5,11 @@ import { RealmAudioService } from './realm-audio-service.js?v=REALM_CANONICAL_CO
 import { RealmEventBus } from './realm-event-bus.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { RealmGamepadProvider } from './realm-gamepad-provider.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { RealmInputManager } from './realm-input-manager.js?v=REALM_COMPOSED_POINTER_20261026_1';
-import { bindRealmInputs } from './realm-input-bindings.js?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1';
+import { bindRealmInputs } from './realm-input-bindings.js?v=REALM_INPUT_ROUTING_FIX_20261117_1';
 import { RealmInventoryService } from './realm-inventory-service.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { RealmPerformanceMonitor } from './realm-performance.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { RealmRuntimeUi } from './realm-runtime-ui.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
-import { RealmSceneRouter } from './realm-scene-router.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
+import { RealmSceneRouter } from './realm-scene-router.js?v=REALM_IDEMPOTENT_NAV_20261117_1';
 import { RealmStateService } from './realm-state-service.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { createRealmLazySceneManager } from './realm-lazy-scenes.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import {
@@ -28,7 +28,7 @@ import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-traini
 const BUILD = 'REALM_CANONICAL_COMPLETE_20261018_1';
 const STAGE_ONE_READY_BUILD = BUILD;
 const OPTIONAL_MODULE_URLS = Object.freeze({
-  explorationScene: `../../exploration/js/exploration-scene.js?v=${BUILD}`,
+  explorationScene: '../../exploration/js/exploration-scene.js?v=MERIDIAN_AUDIO_INPUT_20261117_1',
   explorationRoster: `../../exploration/data/meridian-grove.js?v=${BUILD}`,
   calorieEscapeScene: `../../calorie-escape/js/calorie-escape-scene.js?v=${BUILD}`,
   tacticalScene: `../../tactical-operations/js/tactical-operations-scene.js?v=${BUILD}`,

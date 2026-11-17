@@ -4006,3 +4006,11 @@ html body[data-app="recreation"] #detectwordPanel .mobile-word-keypad > .mobile-
 body[data-app="recreation"] #detectwordPanel .word-row--invalid{position:relative}
 body[data-app="recreation"] #detectwordPanel .word-row--invalid::after{content:"";position:absolute;left:0;right:0;top:50%;height:3px;border-radius:3px;background:#e8a0a0;transform:translateY(-50%);pointer-events:none;z-index:2}
 body[data-app="recreation"] #detectwordPanel .word-row--invalid .letter-cell{opacity:.74}
+
+/* Recreation mobile touch targets: coherent minimum across every Pairs action. */
+@media(max-width:760px){
+  html body[data-app="recreation"] #pairsPanel button:not([disabled]){
+    min-width:46px!important;
+    min-height:46px!important;
+  }
+}

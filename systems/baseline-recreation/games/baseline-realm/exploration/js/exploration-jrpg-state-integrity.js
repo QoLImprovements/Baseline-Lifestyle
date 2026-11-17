@@ -1,6 +1,6 @@
 import { INITIAL_PARTY_IDS, PARTY_BLUEPRINTS } from '../data/meridian-grove.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { chooseRandomEncounter, movePlayer } from './jrpg-engine.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
-import { MeridianGroveGame } from './exploration-jrpg.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
+import { MeridianGroveGame } from './exploration-jrpg.js?v=MERIDIAN_AUDIO_INPUT_20261117_1';
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));

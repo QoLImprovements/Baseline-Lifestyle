@@ -65,7 +65,9 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
     state.party[0].atb = 100;
     state.battle.activeActorIndex = 0;
     state.settings.battleMode = 'active';
-    state.battle.enemies[0].atb = 99;
+    // The ready enemy must take its turn *after* the player opens target
+    // selection. Starting at 99 races the pre-click selection itself.
+    state.battle.enemies[0].atb = 0;
     if(!globalThis.BaselineGameStorage?.setTemporaryProfile?.('meridiangrove', state)){
       throw new Error('Recreation server-storage test authority unavailable');
     }
@@ -87,7 +89,10 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
   const targetButton = page.locator('[data-battle-target]').first();
   await expect(targetButton).toBeVisible();
   await targetButton.evaluate(node => { node.dataset.stabilityProbe = 'same-node'; });
-  await page.waitForTimeout(650);
+  const logCount=await page.locator('.jrpg-battle-log li').count();
+  // In Active mode, wait for a genuine enemy turn and prove its DOM refresh
+  // does not replace the player’s already-open target-selection button.
+  await expect.poll(()=>page.locator('.jrpg-battle-log li').count(),{timeout:15000}).toBeGreaterThan(logCount);
   await expect(page.locator('[data-battle-target][data-stability-probe="same-node"]')).toBeVisible();
 
   await expect(page.getByText('Exploration Route', { exact: true })).toHaveCount(0);

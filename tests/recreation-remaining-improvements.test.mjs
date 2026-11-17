@@ -83,6 +83,12 @@ test('Calorie Escape exposes descriptive module ownership with no opaque aliases
 test('Recreation has no artificial first-paint gate and one primary startup authority',()=>{
   const recreationCss=fs.readFileSync(new URL('../systems/baseline-recreation/css/baseline-recreation.css',import.meta.url),'utf8');
   const loader=fs.readFileSync(new URL('../systems/baseline-recreation/js/baseline-recreation-loader.js',import.meta.url),'utf8');
+  const routePaint=fs.readFileSync(new URL('../systems/baseline-recreation/css/recreation-route-first-paint.css',import.meta.url),'utf8');
+  assert.match(recreationHtml, /id="recreation-route-first-paint" href="\/systems\/baseline-recreation\/css\/recreation-route-first-paint\.css\?v=/);
+  assert.match(routePaint, /data-route-booting="true"/);
+  assert.match(routePaint, /data-initial-game/);
+  assert.match(routePaint, /data-initial-puzzle/);
+  assert.doesNotMatch(recreationHtml, /<style id="recreation-route-first-paint">/);
 
   assert.doesNotMatch(recreationHtml, /data-games-document-pending|visibility:hidden!important|baseline-games-first-paint-release|baseline:games-hub:visual-ready|data-games-hub-boot/);
   assert.doesNotMatch(loader, /baseline:games-hub:visual-ready|signalVisualReady|data-games-hub-boot/);
