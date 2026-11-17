@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 const PATH='/baseline-recreation/system';
-const REALM_LOADER_BUILD='MERIDIAN_AUDIO_INPUT_20261117_1';
+const REALM_LOADER_BUILD='REALM_IDEMPOTENT_NAV_20261117_1';
 const REALM_RUNTIME_BUILD='REALM_CANONICAL_COMPLETE_20261018_1';
 
 async function stubProfiles(page){
