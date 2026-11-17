@@ -87,6 +87,18 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
   // player's open command/target DOM.
   const clickErrors=[];
   page.on('pageerror', error=>clickErrors.push(String(error)));
+  await page.evaluate(()=>{
+    const trace=[];
+    globalThis.__meridianClickTrace=trace;
+    const root=document.getElementById('realmExplorationScreen');
+    const record=(scope,ev)=>{ if(ev.target?.closest?.('[data-battle-command]')) trace.push({scope,phase:ev.eventPhase,type:ev.type,target:ev.target.outerHTML?.slice(0,200)}); };
+    document.addEventListener('pointerdown',ev=>record('document-capture-pointer',ev),true);
+    document.addEventListener('click',ev=>record('document-capture-click',ev),true);
+    document.addEventListener('click',ev=>record('document-bubble-click',ev),false);
+    root.addEventListener('click',ev=>record('root-capture-click',ev),true);
+    root.addEventListener('click',ev=>record('root-bubble-click',ev),false);
+    new MutationObserver(()=>{const node=root.querySelector('.jrpg-command-window');const text=node?.innerText?.slice(0,90);if(trace[trace.length-1]?.currentText!==text)trace.push({scope:'mutation',currentText:text});}).observe(root,{childList:true,subtree:true});
+  });
   await page.getByRole('button', { name: 'Attack', exact: true }).click();
   const targetButton = page.locator('[data-battle-target]').first();
   const appeared=await targetButton.isVisible().catch(()=>false);
@@ -99,7 +111,8 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
       targetCount:document.querySelectorAll('[data-battle-target]').length,
       selectedTab:document.querySelector('.jrpg-battle-mode .is-active')?.textContent
     }));
-    console.log('MERIDIAN_ATTACK_DIAGNOSTIC',JSON.stringify({debug,clickErrors}));
+    const trace=await page.evaluate(()=>globalThis.__meridianClickTrace||[]);
+    console.log('MERIDIAN_ATTACK_DIAGNOSTIC',JSON.stringify({debug,clickErrors,trace:trace.slice(-35)}));
   }
   await expect(targetButton).toBeVisible();
   await targetButton.evaluate(node => { node.dataset.stabilityProbe = 'same-node'; });
