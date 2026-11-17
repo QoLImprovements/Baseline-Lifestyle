@@ -620,7 +620,10 @@ export class MeridianGroveGame {
   handlePointer(event) {
     const button = event.target.closest('button');
     if (!button || button.disabled) return;
-    this.music.ensure();
+    // Audio is optional: an unavailable or rejected AudioContext must never
+    // prevent keyboard, pointer or assistive-technology battle commands.
+    try { this.music.ensure(); }
+    catch (error) { console.warn('Meridian Grove audio could not start; controls remain active.', error); }
     if (button.dataset.move) {
       const [dx, dy] = button.dataset.move.split(',').map(Number);
       this.tryMove(dx, dy);
