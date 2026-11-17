@@ -4014,6 +4014,17 @@ body[data-app="recreation"] #detectwordPanel .word-row--invalid .letter-cell{opa
     min-width:44px!important;
     min-height:44px!important;
   }
+  /* These five controls live in game-window-actions, not the unified dock. */
+  html body[data-app="recreation"] #pairsPanel #pairsGameCard .game-window-actions.game-common-actions > button.action{
+    box-sizing:border-box!important;
+    flex:0 0 44px!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+  }
   html body[data-app="recreation"] #pairsPanel .recreation-unified-controls{
     grid-template-columns:44px minmax(8px,1fr) 44px 44px!important;
     grid-template-rows:44px 44px!important;
