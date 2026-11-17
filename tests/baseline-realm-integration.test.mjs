@@ -206,7 +206,7 @@ test('Realm scene-frame route state cannot steal Ninja strike clicks',()=>{
 test('Realm loader and page share a single entry module URL',()=>{
   const html=fs.readFileSync(new URL('../systems/baseline-recreation/baseline-recreation.html',import.meta.url),'utf8');
   const loader=fs.readFileSync(new URL('../systems/baseline-recreation/js/baseline-recreation-loader.js',import.meta.url),'utf8');
-  const entryUrl=html.match(/realm-entry\\.js\\?v=([A-Z0-9_]+)/)?.[1];
+  const entryUrl=html.match(/realm-entry\.js\?v=([A-Z0-9_]+)/)?.[1];
   const loaderVersion=loader.match(/const REALM_BUILD='([^']+)'/)?.[1];
   assert.ok(entryUrl,'Recreation page must load Realm entry');
   assert.equal(loaderVersion,entryUrl,'Realm loader must import the exact same entry module version');
