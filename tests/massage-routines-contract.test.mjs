@@ -51,21 +51,24 @@ test('all 60 minutes are categorised into ordered, named techniques',()=>{
     const duration=timings[index].to-timings[index].from;
     assert.equal(cues[0][0],0);
     cues.forEach((cue,j)=>{
-      assert.equal(cue.length,4);
+      assert.equal(cue.length,6);
       assert.ok(cue[0]>=0 && cue[0]<duration);
       if(j) assert.ok(cue[0]>cues[j-1][0]);
       assert.ok(allowed.has(cue[1]));
-      assert.ok(cue[2].length>5 && cue[3].length>20);
+      assert.ok(cue[2].length>3 && cue[3].length>12);
+      assert.match(cue[4],/^[0-6]–[1-6]$/);
+      assert.ok(Number(cue[4].split('–')[0])<=Number(cue[4].split('–')[1]));
+      assert.ok(cue[5]===null || /°.*[1-3]–[1-3]\/10/.test(cue[5]));
       assert.doesNotMatch(cue[3],/\b\d+\s*[–-]\s*\d+\s*s\b|first two minutes|next two minutes/i);
     });
   });
   assert.equal(cueLists[2].length,10);
   assert.match(cueLists[2][0][3],/left arm/i);
   assert.match(cueLists[2][5][3],/right arm/i);
-  assert.ok(cueLists[10].some(c=>c[1]==='Compression' && /finger crawling with thumb compression/i.test(c[2])));
+  assert.ok(cueLists[10].some(c=>c[1]==='Compression' && /finger crawling with thumb walking/i.test(c[2])));
   assert.ok(cueLists[10].filter(c=>c[1]==='Tapotement').length>=2);
-  assert.ok(cueLists[10].some(c=>c[2]==='Cupping Tapotement'));
-  assert.ok(cueLists[10].some(c=>c[2]==='Hacking Tapotement'));
+  assert.ok(cueLists[10].some(c=>c[2]==='Cupping'));
+  assert.ok(cueLists[10].some(c=>c[2]==='Hacking'));
   assert.doesNotMatch(js,/relevant muscle bellies|support one arm|0–30s/);
 });
 
@@ -113,10 +116,10 @@ test('procedure and step navigation are paired, with no start dropdowns',()=>{
 
 test('terminology is consistent and labels are legible',()=>{
   const cues=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
-  assert.deepEqual(cues[0].map(c=>c[2]),['Broad Palm Effleurage','Alternating Palm Effleurage']);
+  assert.deepEqual(cues[0].map(c=>c[2]),['Broad Palm','Alternating Palms']);
   for(const cue of cues.flat()){
-    assert.doesNotMatch(cue[2],/\bpalmar\b|\bglides?\b/i);
-    if(cue[1]==='Effleurage') assert.match(cue[2],/Effleurage/);
+    assert.doesNotMatch(cue[2],/\bpalmar\b/i);
+    assert.ok(!cue[2].endsWith(' '+cue[1]), 'category must not repeat in technique');
   }
   assert.match(html,/id="massageRoutinePlanValue"/);
   assert.match(css,/\.routine-select-display\{/);
@@ -141,3 +144,20 @@ test('settings, fullscreen, circular minimal mode and compact player are functio
 });
 
 
+
+test('each procedure has pressure and an optional stretch with the active countdown',()=>{
+  assert.match(js,/pressure:cue\[4\]/);
+  assert.match(js,/stretch:cue\[5\]/);
+  assert.match(js,/minimalPressure\.textContent='Pressure '/);
+  assert.match(js,/minimalStretch\.textContent=section\.stretch/);
+  assert.match(js,/className='routine-section-metrics'/);
+  assert.match(js,/className='routine-section-pressure'/);
+  assert.match(js,/className='routine-section-stretch'/);
+  assert.match(js,/sectionRemaining=Math\.max\(0,section\.end-stepSecond\)/);
+  assert.match(html,/id="massageRoutineMinimalPressure"/);
+  assert.match(html,/id="massageRoutineMinimalStretch"/);
+  assert.match(css,/\.routine-section-instruction\{font-size:17px/);
+  assert.match(css,/\.routine-minimal-active p\{font-size:18px/);
+  assert.match(css,/max-height:calc\(100svh - 132px\)/);
+  assert.doesNotMatch(html,/id="massageRoutineStartStep"|id="massageRoutineStartProcedure"/);
+});
