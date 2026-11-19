@@ -43,7 +43,7 @@ test('all 60 minutes are categorised into ordered, named techniques',()=>{
   const timings=[...js.matchAll(/\{from:(\d+),to:(\d+),phase:'[^']+',title:'[^']+'/g)]
     .map(m=>({from:Number(m[1]),to:Number(m[2])}));
   const cueLists=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
-  const allowed=new Set(['Effleurage','Petrissage','Compression','Tapotement','Assisted Stretching','Passive Movement','Repositioning']);
+  const allowed=new Set(['Effleurage','Petrissage','Compression','Tapotement','Assisted Stretching','Transition']);
   assert.equal(timings.length,12);
   assert.equal(cueLists.length,12);
   assert.ok(cueLists.flat().length>=60);
@@ -116,7 +116,7 @@ test('procedure and step navigation are paired, with no start dropdowns',()=>{
 
 test('terminology is consistent and labels are legible',()=>{
   const cues=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
-  assert.deepEqual(cues[0].slice(0,2).map(c=>c[2]),['Broad Palm','Alternating Palms']);
+  assert.deepEqual(cues[0].slice(0,2).map(c=>c[2]),['Bilateral longitudinal strokes','Alternating hand strokes']);
   for(const cue of cues.flat()){
     assert.doesNotMatch(cue[2],/\bpalmar\b/i);
     assert.ok(!cue[2].endsWith(' '+cue[1]), 'category must not repeat in technique');
@@ -197,7 +197,7 @@ test('consolidated body-area hierarchy preserves all 68 procedures and original 
   assert.equal(steps[4].cues.length,12);
   assert.equal(steps[6].cues.length,10);
   assert.equal(steps[10].cues.length,12);
-  assert.match(steps[0].title,/chest.*shoulders/i);
+  assert.match(steps[0].title,/pectorals.*chest/i);
   assert.match(steps[4].title,/face-up/i);
   assert.match(steps[9].title,/face-down/i);
   assert.match(steps[11].title,/back/i);
@@ -220,4 +220,24 @@ test('step and procedure navigation flank the definitive labels with accessible 
   assert.doesNotMatch(html,/class="routine-navigation"/);
   assert.match(css,/\.routine-minimal-clock-face > strong\{[\s\S]*?font-size:clamp\(68px,16vw,108px\)/);
   assert.match(css,/\.routine-minimal-clock-face > small\{[\s\S]*?font-size:clamp\(15px,3\.1vw,21px\)/);
+});
+
+
+test('Minimal dial fits the window, has no duplicate label, and massage strokes use precise terms',()=>{
+  assert.doesNotMatch(html,/PROCEDURE LEFT|STEP · BODY AREA|PROCEDURE · TECHNIQUE/);
+  assert.match(html,/id="massageRoutineMinimalTime"/);
+  assert.match(css,/routine-minimal-clock-face > strong\{[\s\S]*?font-size:clamp\(39px,11vw,54px\)/);
+  assert.match(css,/routine-minimal-clock-face > small\{[\s\S]*?font-size:clamp\(12px,3\.1vw,15px\)/);
+  const steps=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
+  const names=steps.flat().map(c=>c[2]);
+  assert.equal(steps.length,12);
+  assert.equal(names.length,68);
+  assert.ok(!names.some(n=>/\bglide\b|\bbroad palm\b/i.test(n)));
+  assert.ok(!steps.flat().some(c=>c[1]==='Passive Movement'));
+  assert.ok(!steps.flat().some(c=>c[1]==='Repositioning'));
+  assert.equal(steps[1][0][2],'Circular kneading — left anterior deltoid');
+  assert.equal(steps[1][1][2],'Circular kneading — right anterior deltoid');
+  assert.match(js,/title:'Anterior Shoulders'/);
+  assert.match(js,/title:'Back & Rear Shoulders'/);
+  assert.match(js,/upper trapezius/);
 });
