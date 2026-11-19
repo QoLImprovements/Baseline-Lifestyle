@@ -317,7 +317,7 @@ Options -Indexes
   # Baseline Massage uses the concise public routes selected by its tabs.
   # These are handled here at the site root because /baseline-massage/* is a
   # virtual public path; the physical app lives under /systems/.
-  RewriteRule ^baseline-massage/(system|library|planner)/?$ systems/baseline-massage/baseline-massage.html [L,QSA]
+  RewriteRule ^baseline-massage/(system|library|planner|routines)/?$ systems/baseline-massage/baseline-massage.html [L,QSA]
 
   RewriteRule ^baseline-natural-skincare/(system|recipes|ingredient-library|skin-support-system|my-routine)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
   RewriteRule ^baseline-psychology/(system|paralinguistics)/?$ systems/baseline-psychology/baseline-psychology.php [L,QSA]
