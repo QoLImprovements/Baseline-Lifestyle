@@ -62,6 +62,8 @@
     const minimalFamily=byId('massageRoutineMinimalFamily');
     const minimalName=byId('massageRoutineMinimalName');
     const minimalInstruction=byId('massageRoutineMinimalInstruction');
+    const minimalPressure=byId('massageRoutineMinimalPressure');
+    const minimalStretch=byId('massageRoutineMinimalStretch');
     const fullDetails=byId('massageRoutineFullDetails');
     const fullscreenBtn=byId('massageRoutineFullscreen');
     const fullscreenLabel=byId('massageRoutineFullscreenLabel');
@@ -85,7 +87,7 @@
     const quickPauseBtn=byId('massageRoutineQuickPause');
     const fullList=byId('massageRoutineFullList');
     const stateLabel=byId('massageRoutineStatus');
-    if(!select || !planValue || !minimalSetting || !minimalClock || !minimalTime || !minimalElapsed || !minimalFamily || !minimalName || !minimalInstruction || !fullDetails || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList) return;
+    if(!select || !planValue || !minimalSetting || !minimalClock || !minimalTime || !minimalElapsed || !minimalFamily || !minimalName || !minimalInstruction || !minimalPressure || !minimalStretch || !fullDetails || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList) return;
 
     let elapsedMs=0;
     let startedAt=0;
@@ -172,7 +174,9 @@
         end:index+1<step.cues.length?step.cues[index+1][0]:step.to-step.from,
         family:cue[1],
         technique:cue[2],
-        instruction:cue[3]
+        instruction:cue[3],
+        pressure:cue[4],
+        stretch:cue[5]
       }));
     }
     function currentProcedureIndex(second){
@@ -220,10 +224,13 @@
           const times=document.createElement('span');
           times.className='routine-full-time';
           times.textContent=format(step.from+procedure.start)+'–'+format(step.from+procedure.end);
+          const metrics=document.createElement('span');
+          metrics.className='routine-full-metrics';
+          metrics.textContent='Pressure '+procedure.pressure+'/10'+(procedure.stretch?' · Stretch '+procedure.stretch:'');
           const directions=document.createElement('p');
           directions.textContent=procedure.instruction;
           const startProcedure=makeStartButton('Start here',step.from+procedure.start,'routine-full-start');
-          item.append(label,times,directions,startProcedure);
+          item.append(label,times,metrics,directions,startProcedure);
           list.appendChild(item);
         });
         group.append(heading,startHere,list);
@@ -252,10 +259,22 @@
         name.className='routine-section-name';
         name.textContent=section.technique;
         identity.append(family,name);
+        const metrics=document.createElement('div');
+        metrics.className='routine-section-metrics';
+        const pressure=document.createElement('span');
+        pressure.className='routine-section-pressure';
+        pressure.textContent='Pressure '+section.pressure+'/10';
+        metrics.appendChild(pressure);
+        if(section.stretch){
+          const stretch=document.createElement('span');
+          stretch.className='routine-section-stretch';
+          stretch.textContent='Stretch '+section.stretch;
+          metrics.appendChild(stretch);
+        }
         const instruction=document.createElement('span');
         instruction.className='routine-section-instruction';
         instruction.textContent=section.instruction;
-        content.append(identity,instruction);
+        content.append(identity,metrics,instruction);
         const remaining=document.createElement('span');
         remaining.className='routine-section-remaining';
         remaining.textContent=format(section.end-section.start);
@@ -295,6 +314,9 @@
       minimalFamily.textContent=section.family;
       minimalName.textContent=section.technique;
       minimalInstruction.textContent=section.instruction;
+      minimalPressure.textContent='Pressure '+section.pressure+'/10';
+      minimalStretch.hidden=!section.stretch;
+      minimalStretch.textContent=section.stretch?'Stretch '+section.stretch:'';
       const duration=section.end-section.start;
       const progressed=duration?Math.max(0,Math.min(100,((duration-sectionRemaining)/duration)*100)):0;
       minimalClock.style.setProperty('--routine-clock-progress',progressed+'%');
