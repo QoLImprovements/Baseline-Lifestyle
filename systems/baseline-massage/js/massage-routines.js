@@ -24,6 +24,7 @@
     {from:3540,to:3600,phase:'Face-down',title:'Soothing finishing strokes',detail:'Finish with soothing effleurage, gradually reducing pressure. The timer ends silently.',cues:[[0,"Effleurage","Soothing full-back closing glides","Finish with slow, flowing palm glides across the back, gradually easing pressure to close the session."]]}
   ];
 
+  const PROCEDURE_STARTS = STEPS.flatMap(step=>step.cues.map(cue=>step.from+cue[0]));
   const byId = (id) => document.getElementById(id);
   const format = (seconds) => {
     const whole = Math.max(0,Math.floor(seconds));
@@ -46,6 +47,10 @@
     throw new Error('Massage routine sections must be ordered and within their step');
   }
   if(!validateSchedule()) throw new Error('Massage routine timings must cover exactly 60 minutes');
+  if(!PROCEDURE_STARTS.length || PROCEDURE_STARTS[0]!==0 ||
+    !PROCEDURE_STARTS.every((time,index)=>index===0 || time>PROCEDURE_STARTS[index-1])){
+    throw new Error('Massage procedure boundaries must increase across the session');
+  }
 
   function initialise(){
     const select=byId('massageRoutineSelect');
@@ -66,8 +71,14 @@
     const resetBtn=byId('massageRoutineReset');
     const prevBtn=byId('massageRoutinePrevious');
     const nextBtn=byId('massageRoutineNext');
+    const previousProcedureBtn=byId('massageRoutinePreviousProcedure');
+    const nextProcedureBtn=byId('massageRoutineNextProcedure');
+    const quickPauseBtn=byId('massageRoutineQuickPause');
+    const fullList=byId('massageRoutineFullList');
+    const startStepSelect=byId('massageRoutineStartStep');
+    const startProcedureSelect=byId('massageRoutineStartProcedure');
     const stateLabel=byId('massageRoutineStatus');
-    if(!select || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !startBtn) return;
+    if(!select || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !startBtn || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList || !startStepSelect || !startProcedureSelect) return;
 
     let elapsedMs=0;
     let startedAt=0;
@@ -107,6 +118,12 @@
         instruction:cue[3]
       }));
     }
+    function currentProcedureIndex(second){
+      for(let i=PROCEDURE_STARTS.length-1;i>=0;i--){
+        if(second>=PROCEDURE_STARTS[i]) return i;
+      }
+      return 0;
+    }
     function activeSectionIndex(sections,secondsInStep){
       let index=0;
       for(let i=1;i<sections.length;i++){
@@ -114,6 +131,55 @@
         index=i;
       }
       return index;
+    }
+    function addOption(select,value,label){
+      const option=document.createElement('option');
+      option.value=String(value);
+      option.textContent=label;
+      select.appendChild(option);
+    }
+    function populateProcedureSelect(stepIndex){
+      startProcedureSelect.replaceChildren();
+      sectionsFor(STEPS[stepIndex]).forEach((section,i)=>{
+        addOption(startProcedureSelect,i,(i+1)+'. '+section.family+' — '+section.technique+' ('+format(STEPS[stepIndex].from+section.start)+')');
+      });
+    }
+    function makeStartButton(label,second,className){
+      const button=document.createElement('button');
+      button.type='button';
+      button.className=className;
+      button.textContent=label;
+      button.setAttribute('aria-label',label+' at '+format(second));
+      button.addEventListener('click',()=>{pause();jumpTo(second);});
+      return button;
+    }
+    function buildFullRoutine(){
+      const fragment=document.createDocumentFragment();
+      STEPS.forEach((step,index)=>{
+        const group=document.createElement('section');
+        group.className='routine-full-step';
+        const heading=document.createElement('h4');
+        heading.textContent='Step '+(index+1)+' · '+step.title+' · '+step.phase+' · '+format(step.from)+'–'+format(step.to);
+        const startHere=makeStartButton('Start at this step',step.from,'routine-full-start');
+        const list=document.createElement('ol');
+        list.className='routine-full-procedures';
+        sectionsFor(step).forEach(procedure=>{
+          const item=document.createElement('li');
+          const label=document.createElement('strong');
+          label.textContent=procedure.family+' — '+procedure.technique;
+          const times=document.createElement('span');
+          times.className='routine-full-time';
+          times.textContent=format(step.from+procedure.start)+'–'+format(step.from+procedure.end);
+          const directions=document.createElement('p');
+          directions.textContent=procedure.instruction;
+          const startProcedure=makeStartButton('Start here',step.from+procedure.start,'routine-full-start');
+          item.append(label,times,directions,startProcedure);
+          list.appendChild(item);
+        });
+        group.append(heading,startHere,list);
+        fragment.appendChild(group);
+      });
+      fullList.replaceChildren(fragment);
     }
     function buildSections(step){
       rows=[];
@@ -167,6 +233,11 @@
       const sections=sectionsFor(step);
       const sectionIndex=activeSectionIndex(sections,stepSecond);
       const section=sections[sectionIndex];
+      if(startStepSelect.value!==String(index)){
+        startStepSelect.value=String(index);
+        populateProcedureSelect(index);
+      }
+      startProcedureSelect.value=String(sectionIndex);
       const sectionRemaining=Math.max(0,section.end-stepSecond);
       const changedSection=sectionIndex!==shownSection;
 
@@ -184,6 +255,11 @@
       pauseBtn.disabled=!running;
       prevBtn.disabled=second===0;
       nextBtn.disabled=second>=TOTAL_SECONDS;
+      const procedureIndex=currentProcedureIndex(second);
+      previousProcedureBtn.disabled=procedureIndex===0;
+      nextProcedureBtn.disabled=second>=TOTAL_SECONDS || procedureIndex===PROCEDURE_STARTS.length-1;
+      quickPauseBtn.disabled=second>=TOTAL_SECONDS;
+      quickPauseBtn.textContent=running?'Pause':second===0?'Start':'Resume';
       stateLabel.textContent=second===TOTAL_SECONDS?'Complete — 60:00':running?'In progress':'Paused / ready';
 
       rows.forEach((row,i)=>{
@@ -239,16 +315,34 @@
       if(updateUrl) updateRoute();
       if(select.value===PLAN_ID) reset();
     }
-    select.addEventListener('change',()=>selectPlan(true));
-    startBtn.addEventListener('click',()=>{
+    function startOrResume(){
       if(running || timeMs()>=TOTAL_SECONDS*1000) return;
       startedAt=performance.now()-elapsedMs;
       running=true;
       clearTick();
       timerId=window.setInterval(()=>render(),200);
       render(true);
+    }
+    STEPS.forEach((step,index)=>addOption(startStepSelect,index,(index+1)+'. '+step.title+' ('+format(step.from)+')'));
+    populateProcedureSelect(0);
+    buildFullRoutine();
+    select.addEventListener('change',()=>selectPlan(true));
+    startStepSelect.addEventListener('change',()=>{
+      const index=Number(startStepSelect.value);
+      if(!Number.isInteger(index) || !STEPS[index]) return;
+      pause();
+      jumpTo(STEPS[index].from);
     });
+    startProcedureSelect.addEventListener('change',()=>{
+      const index=Number(startStepSelect.value);
+      const procedure=Number(startProcedureSelect.value);
+      if(!Number.isInteger(index) || !STEPS[index] || !Number.isInteger(procedure) || !STEPS[index].cues[procedure]) return;
+      pause();
+      jumpTo(STEPS[index].from+STEPS[index].cues[procedure][0]);
+    });
+    startBtn.addEventListener('click',startOrResume);
     pauseBtn.addEventListener('click',pause);
+    quickPauseBtn.addEventListener('click',()=>{if(running)pause();else startOrResume();});
     resetBtn.addEventListener('click',reset);
     prevBtn.addEventListener('click',()=>{
       const index=activeStepIndex(Math.floor(timeMs()/1000));
@@ -257,6 +351,14 @@
     nextBtn.addEventListener('click',()=>{
       const index=activeStepIndex(Math.floor(timeMs()/1000));
       jumpTo(STEPS[Math.min(STEPS.length-1,index+1)].from);
+    });
+    previousProcedureBtn.addEventListener('click',()=>{
+      const index=currentProcedureIndex(Math.floor(timeMs()/1000));
+      if(index>0) jumpTo(PROCEDURE_STARTS[index-1]);
+    });
+    nextProcedureBtn.addEventListener('click',()=>{
+      const index=currentProcedureIndex(Math.floor(timeMs()/1000));
+      if(index<PROCEDURE_STARTS.length-1) jumpTo(PROCEDURE_STARTS[index+1]);
     });
     document.addEventListener('visibilitychange',()=>{ if(!document.hidden) render(true); });
     window.addEventListener('pagehide',clearTick);
