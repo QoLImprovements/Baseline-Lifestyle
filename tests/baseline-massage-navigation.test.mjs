@@ -17,7 +17,7 @@ test('Massage has one authoritative four-page navigation structure', () => {
   assert.equal(occurrences(html, /class="tab"[^>]+data-target="routines"/g), 1);
   assert.doesNotMatch(html, /data-target="types"/);
   assert.doesNotMatch(html, /<section[^>]+id="types"/);
-  assert.equal(occurrences(html, /<section class="section(?: active)?" id="(?:system|library|planner)"/g), 3);
+  assert.equal(occurrences(html, /<section class="section(?: active)?" id="(?:system|library|planner|routines)"/g), 4);
 });
 
 test('Types Of Massage is contained within Massage Library', () => {
