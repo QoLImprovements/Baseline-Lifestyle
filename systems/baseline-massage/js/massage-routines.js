@@ -54,6 +54,11 @@
 
   function initialise(){
     const select=byId('massageRoutineSelect');
+    const planValue=byId('massageRoutinePlanValue');
+    const stepValue=byId('massageRoutineStepValue');
+    const procedureValue=byId('massageRoutineProcedureValue');
+    const fullscreenBtn=byId('massageRoutineFullscreen');
+    const fullscreenLabel=byId('massageRoutineFullscreenLabel');
     const runner=byId('massageRoutineRunner');
     const viewport=byId('massageRoutineTimeline');
     const elapsedLabel=byId('massageRoutineElapsed');
@@ -78,7 +83,7 @@
     const startStepSelect=byId('massageRoutineStartStep');
     const startProcedureSelect=byId('massageRoutineStartProcedure');
     const stateLabel=byId('massageRoutineStatus');
-    if(!select || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !startBtn || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList || !startStepSelect || !startProcedureSelect) return;
+    if(!select || !planValue || !stepValue || !procedureValue || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !startBtn || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList || !startStepSelect || !startProcedureSelect) return;
 
     let elapsedMs=0;
     let startedAt=0;
@@ -90,6 +95,52 @@
     let rows=[];
     const prefersReducedMotion=()=>window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    function showSelectedLabel(control,label){
+      const options=Array.from(control.options||control.children||[]);
+      const selected=options.find(option=>String(option.value)===String(control.value));
+      label.textContent=selected ? selected.textContent : '';
+    }
+    function updateSelectionLabels(){
+      showSelectedLabel(select,planValue);
+      showSelectedLabel(startStepSelect,stepValue);
+      showSelectedLabel(startProcedureSelect,procedureValue);
+    }
+    let focused=false;
+    let nativeFullscreen=false;
+    function setFullscreen(enabled){
+      focused=Boolean(enabled);
+      runner.classList.toggle('routine-fullscreen',focused);
+      document.documentElement.classList.toggle('massage-routine-fullscreen',focused);
+      fullscreenBtn.setAttribute('aria-pressed',focused?'true':'false');
+      fullscreenBtn.setAttribute('aria-label',focused?'Exit fullscreen':'Enter fullscreen');
+      fullscreenLabel.textContent=focused?'Exit fullscreen':'Fullscreen';
+      if(focused) viewport.scrollTop=Math.max(0,(rows[shownSection]?.offsetTop||0)-12);
+    }
+    function exitFullscreen(){
+      setFullscreen(false);
+      if(document.fullscreenElement===runner && typeof document.exitFullscreen==='function'){
+        try{Promise.resolve(document.exitFullscreen()).catch(()=>{});}catch(_e){}
+      }
+      nativeFullscreen=false;
+    }
+    function enterFullscreen(){
+      setFullscreen(true); // CSS fullscreen is the fallback on iOS and browsers without the Fullscreen API.
+      if(typeof runner.requestFullscreen==='function'){
+        try{
+          Promise.resolve(runner.requestFullscreen()).then(()=>{
+            nativeFullscreen=document.fullscreenElement===runner;
+          }).catch(()=>{nativeFullscreen=false;});
+        }catch(_e){nativeFullscreen=false;}
+      }
+    }
+    fullscreenBtn.addEventListener('click',()=>{if(focused)exitFullscreen();else enterFullscreen();});
+    document.addEventListener('fullscreenchange',()=>{
+      if(document.fullscreenElement===runner){nativeFullscreen=true;setFullscreen(true);}
+      else if(nativeFullscreen){nativeFullscreen=false;setFullscreen(false);}
+    });
+    document.addEventListener('keydown',event=>{
+      if(event.key==='Escape' && focused && document.fullscreenElement!==runner) exitFullscreen();
+    });
     function scrollToCurrent(index){
       const row=rows[index];
       if(!row) return;
@@ -143,6 +194,7 @@
       sectionsFor(STEPS[stepIndex]).forEach((section,i)=>{
         addOption(startProcedureSelect,i,(i+1)+'. '+section.family+' — '+section.technique+' ('+format(STEPS[stepIndex].from+section.start)+')');
       });
+      showSelectedLabel(startProcedureSelect,procedureValue);
     }
     function makeStartButton(label,second,className){
       const button=document.createElement('button');
@@ -238,6 +290,7 @@
         populateProcedureSelect(index);
       }
       startProcedureSelect.value=String(sectionIndex);
+      updateSelectionLabels();
       const sectionRemaining=Math.max(0,section.end-stepSecond);
       const changedSection=sectionIndex!==shownSection;
 
@@ -266,6 +319,7 @@
         const current=i===sectionIndex;
         if(changedStep || changedSection || force){
           row.classList.toggle('is-live',current);
+          row.classList.toggle('is-next',i===sectionIndex+1);
           if(current) row.setAttribute('aria-current','step');
           else row.removeAttribute('aria-current');
         }
@@ -314,6 +368,8 @@
       runner.hidden=select.value!==PLAN_ID;
       if(updateUrl) updateRoute();
       if(select.value===PLAN_ID) reset();
+      else if(focused) exitFullscreen();
+      updateSelectionLabels();
     }
     function startOrResume(){
       if(running || timeMs()>=TOTAL_SECONDS*1000) return;
@@ -326,6 +382,7 @@
     STEPS.forEach((step,index)=>addOption(startStepSelect,index,(index+1)+'. '+step.title+' ('+format(step.from)+')'));
     populateProcedureSelect(0);
     buildFullRoutine();
+    updateSelectionLabels();
     select.addEventListener('change',()=>selectPlan(true));
     startStepSelect.addEventListener('change',()=>{
       const index=Number(startStepSelect.value);
