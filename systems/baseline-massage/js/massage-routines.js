@@ -59,7 +59,6 @@
     const minimalClock=byId('massageRoutineMinimalClock');
     const minimalTime=byId('massageRoutineMinimalTime');
     const minimalElapsed=byId('massageRoutineMinimalElapsed');
-    const minimalFamily=byId('massageRoutineMinimalFamily');
     const minimalName=byId('massageRoutineMinimalName');
     const minimalInstruction=byId('massageRoutineMinimalInstruction');
     const fullDetails=byId('massageRoutineFullDetails');
@@ -69,11 +68,7 @@
     const viewport=byId('massageRoutineTimeline');
     const elapsedLabel=byId('massageRoutineElapsed');
     const remainingLabel=byId('massageRoutineRemaining');
-    const stepClock=byId('massageRoutineStepClock');
     const stepTitle=byId('massageRoutineCurrentTitle');
-    const stepDetail=byId('massageRoutineCurrentDetail');
-    const sectionCounter=byId('massageRoutineSectionCounter');
-    const sectionClock=byId('massageRoutineSectionClock');
     const nextTitle=byId('massageRoutineNextTitle');
     const stepCount=byId('massageRoutineStepCount');
     const progress=byId('massageRoutineProgress');
@@ -85,7 +80,7 @@
     const quickPauseBtn=byId('massageRoutineQuickPause');
     const fullList=byId('massageRoutineFullList');
     const stateLabel=byId('massageRoutineStatus');
-    if(!select || !planValue || !minimalSetting || !minimalClock || !minimalTime || !minimalElapsed || !minimalFamily || !minimalName || !minimalInstruction || !fullDetails || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList) return;
+    if(!select || !planValue || !minimalSetting || !minimalClock || !minimalTime || !minimalElapsed || !minimalName || !minimalInstruction || !fullDetails || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !nextTitle || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList) return;
 
     let elapsedMs=0;
     let startedAt=0;
@@ -234,13 +229,10 @@
     function buildSections(step){
       rows=[];
       const fragment=document.createDocumentFragment();
-      sectionsFor(step).forEach((section,index)=>{
+      sectionsFor(step).forEach(section=>{
         const row=document.createElement('article');
         row.className='routine-section-row';
         row.setAttribute('role','listitem');
-        const number=document.createElement('span');
-        number.className='routine-section-number';
-        number.textContent=String(index+1).padStart(2,'0');
         const content=document.createElement('div');
         content.className='routine-section-content';
         const identity=document.createElement('div');
@@ -248,18 +240,22 @@
         const family=document.createElement('span');
         family.className='routine-section-family';
         family.textContent=section.family;
+        const separator=document.createElement('span');
+        separator.className='routine-section-separator';
+        separator.textContent=' — ';
+        separator.setAttribute('aria-hidden','true');
         const name=document.createElement('strong');
         name.className='routine-section-name';
         name.textContent=section.technique;
-        identity.append(family,name);
-        const instruction=document.createElement('span');
+        identity.append(family,separator,name);
+        const remaining=document.createElement('div');
+        remaining.className='routine-section-remaining';
+        remaining.textContent='Procedure time remaining '+format(section.end-section.start);
+        const instruction=document.createElement('p');
         instruction.className='routine-section-instruction';
         instruction.textContent=section.instruction;
-        content.append(identity,instruction);
-        const remaining=document.createElement('span');
-        remaining.className='routine-section-remaining';
-        remaining.textContent=format(section.end-section.start);
-        row.append(number,content,remaining);
+        content.append(identity,remaining,instruction);
+        row.appendChild(content);
         fragment.appendChild(row);
         rows.push(row);
       });
@@ -288,20 +284,15 @@
 
       elapsedLabel.textContent=format(second);
       remainingLabel.textContent=format(TOTAL_SECONDS-second);
-      stepClock.textContent=format(Math.max(0,step.to-second));
-      sectionClock.textContent=format(sectionRemaining);
       minimalTime.textContent=format(sectionRemaining);
       minimalElapsed.textContent=format(second)+' elapsed · '+format(TOTAL_SECONDS-second)+' remaining';
-      minimalFamily.textContent=section.family;
-      minimalName.textContent=section.technique;
+      minimalName.textContent=section.family+' — '+section.technique;
       minimalInstruction.textContent=section.instruction;
       const duration=section.end-section.start;
       const progressed=duration?Math.max(0,Math.min(100,((duration-sectionRemaining)/duration)*100)):0;
       minimalClock.style.setProperty('--routine-clock-progress',progressed+'%');
-      sectionCounter.textContent='Procedure '+(sectionIndex+1)+' of '+sections.length;
       stepTitle.textContent=step.title;
-      stepDetail.textContent=step.detail;
-      stepCount.textContent='Step '+(index+1)+' of '+STEPS.length+' · '+step.phase+' · '+format(step.from)+'–'+format(step.to);
+      stepCount.textContent='Step '+(index+1)+' of '+STEPS.length+' · '+step.phase;
       nextTitle.textContent=STEPS[index+1]?.title || 'Session complete';
       progress.value=second;
       prevBtn.disabled=second===0;
@@ -322,9 +313,9 @@
           else row.removeAttribute('aria-current');
         }
         const remaining=row.querySelector('.routine-section-remaining');
-        if(remaining) remaining.textContent=current
-          ? format(sectionRemaining)+' left'
-          : i<sectionIndex?'Done':format(sections[i].end-sections[i].start);
+        if(remaining) remaining.textContent='Procedure time remaining '+(current
+          ?format(sectionRemaining)
+          :i<sectionIndex?'00:00':format(sections[i].end-sections[i].start));
       });
       if(changedStep || changedSection) scrollToCurrent(sectionIndex);
       shownSection=sectionIndex;
