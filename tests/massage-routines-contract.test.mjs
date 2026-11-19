@@ -133,8 +133,8 @@ test('settings, fullscreen, circular minimal mode and compact player are functio
   assert.match(html,/id="massageRoutineMinimalClock"/);
   assert.match(html,/id="massageRoutineMinimalTime"/);
   assert.match(html,/id="massageRoutineMinimalName"/);
-  assert.match(js,/function setMinimal\(enabled,persist=true\)/);
-  assert.match(js,/localStorage\.setItem\('baselineMassageMinimal'/);
+  assert.match(js,/function setMinimal\(enabled\)/);
+  assert.doesNotMatch(js,/localStorage|sessionStorage|indexedDB/);
   assert.match(js,/minimalClock\.style\.setProperty\('--routine-clock-progress'/);
   assert.match(js,/routine-fullscreen/);
   assert.match(css,/conic-gradient\(/);
