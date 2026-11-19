@@ -57,8 +57,13 @@ test('all 60 minutes are categorised into ordered, named techniques',()=>{
       if(j) assert.ok(cue[0]>cues[j-1][0]);
       assert.ok(allowed.has(cue[1]));
       assert.ok(cue[2].length>3 && cue[3].length>12);
-      assert.match(cue[4],/^[0-6]–[1-6]$/);
-      assert.ok(Number(cue[4].split('–')[0])<=Number(cue[4].split('–')[1]));
+      if(cue[4]===null) assert.ok(['Assisted Stretching','Transition'].includes(cue[1]));
+      else {
+        assert.match(cue[4],/^[1-7]–[1-7]$/);
+        const [lower,upper]=cue[4].split('–').map(Number);
+        assert.ok(lower<=upper && upper<=7);
+        assert.ok(!['Assisted Stretching','Transition'].includes(cue[1]));
+      }
       assert.ok(cue[5]===null || /°.*[1-3]–[1-3]\/10/.test(cue[5]));
       assert.doesNotMatch(cue[3],/\b\d+\s*[–-]\s*\d+\s*s\b|first two minutes|next two minutes/i);
     });
@@ -149,7 +154,7 @@ test('settings, fullscreen, circular minimal mode and compact player are functio
 test('each procedure has pressure and an optional stretch with the active countdown',()=>{
   assert.match(js,/pressure:cue\[4\]/);
   assert.match(js,/stretch:cue\[5\]/);
-  assert.match(js,/minimalPressure\.textContent='Pressure '/);
+  assert.match(js,/minimalPressure\.textContent=section\.pressure\?'Pressure '/);
   assert.match(js,/minimalStretch\.textContent=section\.stretch/);
   assert.match(js,/className='routine-section-metrics'/);
   assert.match(js,/className='routine-section-pressure'/);
@@ -267,4 +272,55 @@ test('full-width responsive card and one active procedure have no repeated categ
   assert.equal(groups[0][5][1],'Effleurage');
   assert.equal(groups[0][5][2],'Longitudinal strokes');
   assert.doesNotMatch(groups[0][5][3],/left pectoral/i);
+});
+
+
+test('body-area pressure levels are reviewed for all procedures, distinct from stretch intensity',()=>{
+  const steps=[...js.matchAll(/\{from:(\d+),to:(\d+),phase:'[^']+',title:'[^']+',detail:'[^']+',cues:(\[\[.*\]\])\}/g)]
+    .map(m=>({from:Number(m[1]),to:Number(m[2]),cues:JSON.parse(m[3])}));
+  assert.equal(steps.length,9);
+  const all=steps.flatMap(st=>st.cues);
+  assert.equal(all.length,68);
+  const familyPressure={};
+  for(const cue of all){
+    familyPressure[cue[1]]??=new Set();
+    familyPressure[cue[1]].add(cue[4]);
+    if(cue[1]==='Petrissage'){
+      assert.ok(['4–6','5–7'].includes(cue[4]),'kneading must have its own appropriately firm range');
+    }
+    if(cue[1]==='Tapotement')assert.ok(['2–4','3–5'].includes(cue[4]));
+    if(cue[1]==='Compression')assert.ok(['3–5','4–6'].includes(cue[4]));
+    if(cue[1]==='Assisted Stretching'||cue[1]==='Transition')assert.equal(cue[4],null);
+    if(cue[5]!==null)assert.match(cue[5],/\/10$/);
+  }
+  assert.deepEqual([...familyPressure.Petrissage].sort(),['4–6','5–7']);
+  assert.ok(familyPressure.Effleurage.has('2–3')&&familyPressure.Effleurage.has('4–5'));
+  assert.match(js,/minimalPressure\.hidden=!section\.pressure/);
+  assert.match(js,/pressure\.hidden=!section\.pressure/);
+  assert.match(js,/metrics\.hidden=!procedure\.pressure&&!procedure\.stretch/);
+});
+
+test('massage continues through gentle stretching; positioning is brief rather than prolonged',()=>{
+  const steps=[...js.matchAll(/\{from:(\d+),to:(\d+),phase:'[^']+',title:'[^']+',detail:'[^']+',cues:(\[\[.*\]\])\}/g)]
+    .map(m=>({from:Number(m[1]),to:Number(m[2]),cues:JSON.parse(m[3])}));
+  let shortPositions=0,longMassageStretch=0;
+  for(const st of steps){
+    st.cues.forEach((cue,index)=>{
+      const end=index+1<st.cues.length?st.cues[index+1][0]:st.to-st.from;
+      const duration=end-cue[0];
+      assert.ok(duration>0,'every segment has positive duration');
+      if(cue[1]==='Assisted Stretching'){
+        assert.ok(duration<=8,'passive positioning and release may not fill 15–30 seconds');
+        shortPositions++;
+      }
+      if(cue[5]!==null&&cue[1]==='Effleurage'&&duration>=20)longMassageStretch++;
+    });
+  }
+  assert.ok(shortPositions>=8);
+  assert.ok(longMassageStretch>=8);
+  const chest=steps[0].cues;
+  assert.deepEqual(chest.slice(4,9).map(c=>c[0]),[360,365,415,420,425]);
+  assert.deepEqual(chest.slice(9,14).map(c=>c[0]),[480,485,535,540,545]);
+  assert.match(chest[4][3],/continuous pectoral strokes/);
+  assert.match(chest[9][3],/continuous pectoral strokes/);
 });
