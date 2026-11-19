@@ -2123,3 +2123,7 @@ body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-sec
     font-size:clamp(16px,4.5vw,20px);
   }
 }
+
+/* Stretch-only movement and turn-over have no massage-pressure rating. */
+body[data-app="massage"] #routines .routine-section-pressure[hidden],
+body[data-app="massage"] #routines .routine-full-metrics[hidden]{display:none!important}
