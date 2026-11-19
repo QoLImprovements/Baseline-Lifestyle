@@ -36,14 +36,14 @@ test('step schedule covers exactly 60 minutes, without gaps, in requested order'
   assert.match(steps[0].title,/chest/i);
   assert.equal(steps[8].phase,'Transition');
   assert.equal(steps[9].phase,'Face-down');
-  assert.match(steps.at(-1).title,/finishing/i);
+  assert.match(steps.at(-1).title,/effleurage/i);
 });
 
 test('all 60 minutes are categorised into ordered, named techniques',()=>{
   const timings=[...js.matchAll(/\{from:(\d+),to:(\d+),phase:'[^']+',title:'[^']+'/g)]
     .map(m=>({from:Number(m[1]),to:Number(m[2])}));
   const cueLists=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
-  const allowed=new Set(['Effleurage','Petrissage','Compression','Tapotement','Assisted stretching','Passive movement','Repositioning']);
+  const allowed=new Set(['Effleurage','Petrissage','Compression','Tapotement','Assisted Stretching','Passive Movement','Repositioning']);
   assert.equal(timings.length,17);
   assert.equal(cueLists.length,17);
   assert.ok(cueLists.flat().length>=60);
@@ -62,10 +62,10 @@ test('all 60 minutes are categorised into ordered, named techniques',()=>{
   assert.equal(cueLists[2].length,10);
   assert.match(cueLists[2][0][3],/left arm/i);
   assert.match(cueLists[2][5][3],/right arm/i);
-  assert.ok(cueLists[10].some(c=>c[1]==='Compression' && /finger crawling with thumb walking/i.test(c[2])));
+  assert.ok(cueLists[10].some(c=>c[1]==='Compression' && /finger crawling with thumb compression/i.test(c[2])));
   assert.ok(cueLists[10].filter(c=>c[1]==='Tapotement').length>=2);
-  assert.ok(cueLists[10].some(c=>c[2]==='Cupping'));
-  assert.ok(cueLists[10].some(c=>c[2]==='Hacking'));
+  assert.ok(cueLists[10].some(c=>c[2]==='Cupping Tapotement'));
+  assert.ok(cueLists[10].some(c=>c[2]==='Hacking Tapotement'));
   assert.doesNotMatch(js,/relevant muscle bellies|support one arm|0–30s/);
 });
 
@@ -83,32 +83,61 @@ test('timer shows exact current-section time and highlights one section silently
   assert.match(html,/id="massageRoutineSectionCounter"/);
   assert.match(html,/id="massageRoutineNextTitle"/);
   assert.doesNotMatch(html,/Massage plan steps/i);
-  assert.match(html,/id="massageRoutinePause"/);
+  assert.match(html,/id="massageRoutineQuickPause"/);
   assert.match(html,/id="massageRoutineReset"/);
   assert.match(html,/id="massageRoutinePrevious"/);
   assert.match(html,/id="massageRoutineNext"/);
   assert.doesNotMatch(js,/(?:new\s+Audio\s*\(|speechSynthesis|\.play\s*\(|\.vibrate\s*\(|AudioContext|OscillatorNode)/);
 });
 
-test('guided procedure navigation, precise start selection, and full routine are present',()=>{
+test('procedure and step navigation are paired, with no start dropdowns',()=>{
   assert.match(js,/const PROCEDURE_STARTS = STEPS\.flatMap/);
   assert.match(js,/previousProcedureBtn\.addEventListener\('click'/);
   assert.match(js,/nextProcedureBtn\.addEventListener\('click'/);
-  assert.match(js,/startStepSelect\.addEventListener\('change'/);
-  assert.match(js,/startProcedureSelect\.addEventListener\('change'/);
   assert.match(js,/quickPauseBtn\.addEventListener\('click'/);
   assert.match(js,/pause\(\);jumpTo\(second\)/);
   assert.match(js,/function buildFullRoutine\(\)/);
   assert.match(js,/section\.family|procedure\.family/);
   assert.match(js,/section\.technique|procedure\.technique/);
-  assert.match(html,/id="massageRoutineStartStep"/);
-  assert.match(html,/id="massageRoutineStartProcedure"/);
   assert.match(html,/id="massageRoutineQuickPause"/);
   assert.match(html,/id="massageRoutinePreviousProcedure"/);
   assert.match(html,/id="massageRoutineNextProcedure"/);
+  assert.match(html,/class="routine-navigation"/);
+  assert.match(html,/class="routine-nav-pair"/);
   assert.match(html,/id="massageRoutineFullDetails"/);
   assert.match(html,/id="massageRoutineFullList"/);
   assert.match(html,/View Full Routine/);
+  assert.doesNotMatch(html,/id="massageRoutineStartStep"|id="massageRoutineStartProcedure"/);
   assert.doesNotMatch(html,/class="routine-safety"|class="routine-silent-note"/);
 });
+
+test('terminology is consistent and labels are legible',()=>{
+  const cues=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
+  assert.deepEqual(cues[0].map(c=>c[2]),['Broad Palm Effleurage','Alternating Palm Effleurage']);
+  for(const cue of cues.flat()){
+    assert.doesNotMatch(cue[2],/\bpalmar\b|\bglides?\b/i);
+    if(cue[1]==='Effleurage') assert.match(cue[2],/Effleurage/);
+  }
+  assert.match(html,/id="massageRoutinePlanValue"/);
+  assert.match(css,/\.routine-select-display\{/);
+  assert.match(css,/overflow-wrap:anywhere/);
+});
+
+test('settings, fullscreen, circular minimal mode and compact player are functional',()=>{
+  assert.match(html,/id="massageRoutineSettings"/);
+  assert.match(html,/id="massageRoutineMinimal"/);
+  assert.match(html,/id="massageRoutineFullscreen"/);
+  assert.match(html,/id="massageRoutineMinimalClock"/);
+  assert.match(html,/id="massageRoutineMinimalTime"/);
+  assert.match(html,/id="massageRoutineMinimalName"/);
+  assert.match(js,/function setMinimal\(enabled\)/);
+  assert.doesNotMatch(js,/localStorage|sessionStorage|indexedDB/);
+  assert.match(js,/minimalClock\.style\.setProperty\('--routine-clock-progress'/);
+  assert.match(js,/routine-fullscreen/);
+  assert.match(css,/conic-gradient\(/);
+  assert.match(css,/\.routine-minimal/);
+  assert.match(css,/@media\(max-width:650px\)/);
+  assert.doesNotMatch(js,/(?:new\s+Audio\s*\(|speechSynthesis|\.play\s*\(|\.vibrate\s*\(|AudioContext|OscillatorNode)/);
+});
+
 

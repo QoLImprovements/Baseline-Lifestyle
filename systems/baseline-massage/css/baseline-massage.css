@@ -1409,3 +1409,178 @@ body[data-app="massage"] #routines .routine-start-picker select:focus-visible{
   body[data-app="massage"] #routines .routine-procedure-controls .planner-btn{flex:1 1 125px;font-size:13px}
   body[data-app="massage"] #routines .routine-start-from{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* 2026-11-19: One-screen mobile massage player, consistent controls and minimal mode. */
+body[data-app="massage"] #routines .routine-visible-select{
+  position:relative;width:100%;min-width:0;min-height:44px;border:1px solid var(--massage-border-strong);
+  background:var(--showall-bg);color:var(--massage-ink);border-radius:10px;box-sizing:border-box
+}
+body[data-app="massage"] #routines .routine-select-display{
+  display:block;min-height:44px;box-sizing:border-box;padding:10px 34px 10px 12px;
+  font-size:14px;line-height:1.35;font-weight:750;white-space:normal;overflow-wrap:anywhere
+}
+body[data-app="massage"] #routines .routine-visible-select::after{
+  content:"⌄";position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  font-size:19px;font-weight:900;pointer-events:none
+}
+body[data-app="massage"] #routines .routine-visible-select > select{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;border:0!important;padding:0!important;
+  opacity:0!important;cursor:pointer!important
+}
+body[data-app="massage"] #routines .routine-visible-select:focus-within{outline:3px solid #3e2617;outline-offset:2px}
+body[data-app="massage"] #routines .routine-player-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px
+}
+body[data-app="massage"] #routines .routine-player-toolbar > strong{font-size:14px}
+body[data-app="massage"] #routines .routine-player-tools{display:flex;align-items:center;gap:7px}
+body[data-app="massage"] #routines .routine-settings{position:relative;z-index:20}
+body[data-app="massage"] #routines .routine-settings summary{
+  display:inline-flex;align-items:center;justify-content:center;min-height:34px;
+  list-style:none;cursor:pointer;border:1px solid var(--massage-border-strong);
+  border-radius:9px;background:var(--showall-bg);padding:5px 10px;
+  font-size:13px;font-weight:850;white-space:nowrap
+}
+body[data-app="massage"] #routines .routine-settings summary::-webkit-details-marker{display:none}
+body[data-app="massage"] #routines .routine-settings[open] .routine-minimal-setting{
+  position:absolute;right:0;top:calc(100% + 5px);min-width:160px;
+  display:flex;align-items:center;gap:9px;padding:12px;border-radius:12px;
+  border:1px solid #66452b;background:#f4d5b0;color:#2c1a10;
+  box-shadow:0 8px 25px rgba(0,0,0,.25);font-weight:800
+}
+body[data-app="massage"] #routines .routine-minimal-setting input{width:18px;height:18px;accent-color:#4f301c}
+body[data-app="massage"] #routines .routine-fullscreen-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:34px;padding:5px 9px;border-radius:9px;
+  border:1px solid var(--massage-border-strong);background:var(--showall-bg);
+  color:var(--massage-ink);font:inherit;font-size:13px;font-weight:850;cursor:pointer
+}
+body[data-app="massage"] #routines .routine-fullscreen-btn .routine-compress-icon{display:none}
+body[data-app="massage"] #routines .routine-fullscreen-btn[aria-pressed="true"] .routine-expand-icon{display:none}
+body[data-app="massage"] #routines .routine-fullscreen-btn[aria-pressed="true"] .routine-compress-icon{display:block}
+body[data-app="massage"] #routines .routine-summary{display:block}
+body[data-app="massage"] #routines .routine-summary .routine-timer{
+  min-width:0;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px
+}
+body[data-app="massage"] #routines .routine-playback-controls{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:8px;margin:9px 0}
+body[data-app="massage"] #routines .routine-navigation{display:grid;gap:7px}
+body[data-app="massage"] #routines .routine-nav-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+body[data-app="massage"] #routines .routine-playback-controls .planner-btn,
+body[data-app="massage"] #routines .routine-nav-pair .planner-btn{
+  min-width:0;min-height:36px;padding:7px 10px;font-size:13px;line-height:1.25;white-space:normal
+}
+body[data-app="massage"] #routines .routine-playback-controls .planner-btn:disabled,
+body[data-app="massage"] #routines .routine-nav-pair .planner-btn:disabled{opacity:.44;cursor:not-allowed}
+body[data-app="massage"] #routines .routine-minimal-clock,
+body[data-app="massage"] #routines .routine-minimal-active{display:none}
+body[data-app="massage"] #routines .routine-settings summary:focus-visible,
+body[data-app="massage"] #routines .routine-fullscreen-btn:focus-visible,
+body[data-app="massage"] #routines .routine-nav-pair .planner-btn:focus-visible{
+  outline:3px solid #382113;outline-offset:2px
+}
+/* In minimal mode the active procedure is the sole content beneath the circular clock. */
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-summary,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal #massageRoutineProgress,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-status,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-current-header,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal #massageRoutineCurrentTitle,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal #massageRoutineCurrentDetail,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-section-top,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-sections,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-next-step,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-full-plan{display:none!important}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-minimal-clock{
+  --routine-clock-progress:0%;display:grid;place-items:center;
+  width:clamp(170px,29svh,242px);aspect-ratio:1;margin:9px auto 15px;border-radius:50%;
+  background:conic-gradient(from -90deg,#50301e var(--routine-clock-progress),#e2c29e var(--routine-clock-progress) 100%);
+  padding:12px;box-sizing:border-box;
+  box-shadow:0 5px 17px rgba(40,20,8,.17)
+}
+body[data-app="massage"] #routines .routine-minimal-clock-face{
+  width:100%;height:100%;border-radius:50%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;text-align:center;
+  background:#f4d9b9;color:#301b0e;padding:10px;box-sizing:border-box
+}
+body[data-app="massage"] #routines .routine-minimal-clock-face span{
+  font-size:10px;font-weight:900;letter-spacing:.1em
+}
+body[data-app="massage"] #routines .routine-minimal-clock-face strong{
+  font-size:clamp(30px,6vw,43px);letter-spacing:-.025em;font-variant-numeric:tabular-nums
+}
+body[data-app="massage"] #routines .routine-minimal-clock-face small{font-size:10px;font-weight:700}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-current-step{
+  border:0;box-shadow:none;padding:0;background:none
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-minimal-active{
+  display:grid;gap:6px;text-align:center;margin:0 auto 8px;
+  padding:8px 12px;max-width:620px
+}
+body[data-app="massage"] #routines .routine-minimal-active span{
+  font-size:12px;font-weight:900;letter-spacing:.05em;text-transform:uppercase
+}
+body[data-app="massage"] #routines .routine-minimal-active strong{font-size:clamp(17px,3vw,23px);line-height:1.25}
+body[data-app="massage"] #routines .routine-minimal-active p{font-size:14px;line-height:1.35;margin:0}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-playback-controls,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-navigation{max-width:620px;margin-left:auto;margin-right:auto}
+/* Fallback is a genuine viewport-sized player on browsers that cannot request native fullscreen. */
+html.massage-routine-fullscreen,html.massage-routine-fullscreen body{overflow:hidden!important}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen{
+  position:fixed!important;inset:0!important;z-index:999999!important;
+  width:100vw!important;max-width:none!important;height:100dvh!important;
+  padding:max(10px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom))!important;
+  box-sizing:border-box;overflow-y:auto;overscroll-behavior:contain;
+  background:#b8855e;color:#2e1b11
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-full-plan{display:none!important}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-current-step{margin-top:8px}
+@media(max-width:650px){
+  body[data-app="massage"] #routines .massage-routines-card{padding:10px!important}
+  body[data-app="massage"] #routines .massage-routines-card > h2{font-size:18px;margin:0 0 5px;line-height:1.15}
+  body[data-app="massage"] #routines .massage-routine-picker{margin:0 0 7px;gap:4px}
+  body[data-app="massage"] #routines .massage-routine-picker label{font-size:11px}
+  body[data-app="massage"] #routines .routine-select-display{font-size:12px;min-height:40px;padding:7px 26px 7px 10px}
+  body[data-app="massage"] #routines .routine-visible-select{min-height:40px}
+  body[data-app="massage"] #routines .routine-player-toolbar{margin:0 0 5px}
+  body[data-app="massage"] #routines .routine-player-toolbar > strong{font-size:13px}
+  body[data-app="massage"] #routines .routine-settings summary,
+  body[data-app="massage"] #routines .routine-fullscreen-btn{min-height:31px;padding:4px 8px;font-size:12px}
+  body[data-app="massage"] #routines .routine-timer{
+    padding:5px 8px;min-height:39px;gap:8px;border-radius:10px
+  }
+  body[data-app="massage"] #routines .routine-timer strong{font-size:25px}
+  body[data-app="massage"] #routines .routine-timer span:last-child{font-size:12px}
+  body[data-app="massage"] #routines .routine-eyebrow{font-size:10px}
+  body[data-app="massage"] #routines #massageRoutineProgress{height:6px;margin:5px 0}
+  body[data-app="massage"] #routines .routine-status{font-size:11px;margin:3px 0}
+  body[data-app="massage"] #routines .routine-current-step{padding:9px}
+  body[data-app="massage"] #routines .routine-current-header{font-size:11px;gap:4px}
+  body[data-app="massage"] #routines .routine-current-step h3{font-size:16px;margin:5px 0}
+  body[data-app="massage"] #routines #massageRoutineCurrentDetail{display:none}
+  body[data-app="massage"] #routines .routine-section-top{font-size:11px;margin:5px 0;gap:6px}
+  body[data-app="massage"] #routines .routine-sections{max-height:148px;min-height:92px;padding:4px}
+  body[data-app="massage"] #routines .routine-section-row{min-height:54px;padding:6px 7px;margin-bottom:4px;gap:5px}
+  body[data-app="massage"] #routines .routine-section-technique{gap:3px 6px}
+  body[data-app="massage"] #routines .routine-section-family{font-size:10px;padding:1px 4px}
+  body[data-app="massage"] #routines .routine-section-name{font-size:12px}
+  body[data-app="massage"] #routines .routine-section-instruction{font-size:12px;line-height:1.28}
+  body[data-app="massage"] #routines .routine-section-remaining{font-size:11px}
+  body[data-app="massage"] #routines .routine-playback-controls{margin:6px 0;gap:6px}
+  body[data-app="massage"] #routines .routine-navigation{gap:5px}
+  body[data-app="massage"] #routines .routine-nav-pair{gap:6px}
+  body[data-app="massage"] #routines .routine-playback-controls .planner-btn,
+  body[data-app="massage"] #routines .routine-nav-pair .planner-btn{
+    min-height:33px;font-size:11px;padding:4px 6px;border-radius:10px
+  }
+  body[data-app="massage"] #routines .routine-next-step{font-size:12px;margin:7px 0 3px}
+  body[data-app="massage"] #routines .routine-full-plan{padding:5px 9px;margin-top:5px}
+  body[data-app="massage"] #routines .routine-full-plan summary{font-size:12px;padding:2px}
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-minimal-clock{width:clamp(155px,26svh,205px);margin:6px auto 9px}
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-minimal-active{padding:5px;gap:4px}
+  body[data-app="massage"] #routines .routine-minimal-active p{font-size:12px}
+}
+@media(max-height:640px) and (max-width:650px){
+  body[data-app="massage"] #routines .routine-sections{max-height:105px;min-height:78px}
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-minimal-clock{width:145px}
+}
