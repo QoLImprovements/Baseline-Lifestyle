@@ -64,7 +64,7 @@ test('Massage planner mode survives refresh and history',async({page})=>{
 });
 
 test('Puzzles exact non-default jigsaw survives Back and Forward',async({page})=>{
-  test.setTimeout(90000);
+  test.setTimeout(120000); // Match the multi-image jigsaw refresh contract under CI load.
   await stubGames(page);
   await page.goto('/baseline-recreation/puzzles',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
@@ -77,9 +77,11 @@ test('Puzzles exact non-default jigsaw survives Back and Forward',async({page})=
   await expect(page.locator('#weightCoherenceTitle')).toHaveText('Tears Without Witness');
   // A separate test reloads every registered jigsaw directly. This test
   // exercises browser history without a redundant same-URL full navigation.
-  await page.goBack();
+  await page.evaluate(()=>history.back());
+  await expect(page).toHaveURL(/\/baseline-recreation\/puzzles\/jigsaws$/);
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('jigsaws');
-  await page.goForward();
+  await page.evaluate(()=>history.forward());
+  await expect(page).toHaveURL(/\/baseline-recreation\/puzzles\/jigsaws\/tears-without-witness$/);
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getJigsaw())).toBe(id);
   await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',id);
 });

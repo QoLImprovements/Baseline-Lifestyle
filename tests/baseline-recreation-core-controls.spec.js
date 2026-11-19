@@ -147,11 +147,33 @@ for (const viewport of [
       viewport:innerWidth,
       pageWidth:document.documentElement.scrollWidth,
       panelWidth:document.querySelector('#pairsPanel')?.getBoundingClientRect().width||0,
-      smallestPrimary:Math.min(...Array.from(document.querySelectorAll('#pairsPanel button:not([disabled])')).filter(button=>button.offsetParent!==null).map(button=>Math.min(button.getBoundingClientRect().width,button.getBoundingClientRect().height)))
+      cssDiagnostic:{
+        innerWidth,
+        media760:matchMedia('(max-width:760px)').matches,
+        refinementHref:document.querySelector('link[data-nonrealm-game-refinement]')?.href||'',
+        refinementLoaded:Boolean(document.querySelector('link[data-nonrealm-game-refinement]')?.sheet),
+        firstButtonParent:document.querySelector('#newPairsBoardBtn')?.parentElement?.outerHTML.slice(0,200),
+        matchesSpecific:document.querySelector('#newPairsBoardBtn')?.matches('html body[data-app="recreation"] #pairsPanel#pairsPanel button.action:not([disabled])')||false,
+        inlineStyle:document.querySelector('#newPairsBoardBtn')?.getAttribute('style')||'',
+        matchingWidthRules:(()=>{
+          const button=document.querySelector('#newPairsBoardBtn'),hits=[];
+          const scan=(rules,href,conditions=[])=>{
+            for(const rule of Array.from(rules||[])){
+              if(rule.selectorText&&rule.style?.cssText&&/width|height/.test(rule.style.cssText)){
+                try{if(button.matches(rule.selectorText))hits.push({href,conditions,selector:rule.selectorText.slice(0,180),style:rule.style.cssText.slice(0,250)})}catch(e){}
+              }
+              if(rule.cssRules)scan(rule.cssRules,href,[...conditions,rule.conditionText||rule.name||'group']);
+            }
+          };
+          for(const sheet of document.styleSheets){try{scan(sheet.cssRules,sheet.href||'inline')}catch(e){}}
+          return hits.slice(-28);
+        })()
+      },
+      visibleTargets:Array.from(document.querySelectorAll('#pairsPanel button:not([disabled])')).filter(button=>button.offsetParent!==null).map(button=>({id:button.id,className:button.className,ariaLabel:button.getAttribute('aria-label'),width:button.getBoundingClientRect().width,height:button.getBoundingClientRect().height,minWidth:getComputedStyle(button).minWidth,minHeight:getComputedStyle(button).minHeight,transform:getComputedStyle(button).transform})).sort((a,b)=>Math.min(a.width,a.height)-Math.min(b.width,b.height)).slice(0,5)
     }));
     expect(layout.pageWidth).toBeLessThanOrEqual(layout.viewport+1);
     expect(layout.panelWidth).toBeLessThanOrEqual(layout.viewport+1);
-    expect(layout.smallestPrimary).toBeGreaterThanOrEqual(44);
+    expect(Math.min(...layout.visibleTargets.map(button=>Math.min(button.width,button.height))),JSON.stringify(layout)).toBeGreaterThanOrEqual(44);
     await context.close();
   });
 }

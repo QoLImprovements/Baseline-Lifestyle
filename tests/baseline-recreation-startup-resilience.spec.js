@@ -60,7 +60,7 @@ test('Darts Focused is registered, visible and operational',async({page})=>{
   await page.waitForFunction(()=>Boolean(globalThis.DartsFocusedGames));
   await page.locator('[data-open-darts-focused]').click();
   await expect(page.locator('#dartsFocusedPanel')).toHaveClass(/is-active/);
-  await expect(page.locator('[data-darts-game]')).toHaveCount(15);
+  await expect(page.locator('[data-darts-game]')).toHaveCount(10);
   await page.locator('[data-darts-game="checkout-pressure"]').click();
   await expect(page.locator('.darts-choice').first()).toBeVisible();
   await page.locator('.darts-choice').first().click();

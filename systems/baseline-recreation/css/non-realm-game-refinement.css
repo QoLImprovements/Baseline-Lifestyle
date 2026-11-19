@@ -4007,10 +4007,50 @@ body[data-app="recreation"] #detectwordPanel .word-row--invalid{position:relativ
 body[data-app="recreation"] #detectwordPanel .word-row--invalid::after{content:"";position:absolute;left:0;right:0;top:50%;height:3px;border-radius:3px;background:#e8a0a0;transform:translateY(-50%);pointer-events:none;z-index:2}
 body[data-app="recreation"] #detectwordPanel .word-row--invalid .letter-cell{opacity:.74}
 
-/* Recreation mobile touch targets: coherent minimum across every Pairs action. */
+/* Coherent accessible mobile dock target sizing. The legacy dock declares
+   42px maximum dimensions, so minimum sizing alone cannot enlarge its controls. */
 @media(max-width:760px){
   html body[data-app="recreation"] #pairsPanel button:not([disabled]){
-    min-width:46px!important;
-    min-height:46px!important;
+    min-width:44px!important;
+    min-height:44px!important;
+  }
+  /* These five controls live in game-window-actions, not the unified dock. */
+  html body[data-app="recreation"] #pairsPanel #pairsGameCard .game-window-actions.game-common-actions > button.action{
+    box-sizing:border-box!important;
+    flex:0 0 44px!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+  }
+  html body[data-app="recreation"] #pairsPanel .recreation-unified-controls{
+    grid-template-columns:44px minmax(8px,1fr) 44px 44px!important;
+    grid-template-rows:44px 44px!important;
+    min-height:96px!important;
+  }
+  html body[data-app="recreation"] #pairsPanel .recreation-unified-controls > button.action{
+    box-sizing:border-box!important;
+    flex:0 0 44px!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+  }
+}
+
+/* Pairs controls are moved between docks by the runtime. Target the owning
+   panel rather than the initial game-card parent, with specificity above
+   legacy 42px important width and max-width declarations. */
+@media(max-width:760px){
+  html body[data-app="recreation"] #pairsPanel#pairsPanel button.action:not([disabled]){
+    box-sizing:border-box!important;
+    min-width:44px!important;
+    max-width:none!important;
+    min-height:44px!important;
+    max-height:none!important;
   }
 }
