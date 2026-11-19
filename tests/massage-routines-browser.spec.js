@@ -236,3 +236,37 @@ test('full list opens as a fullscreen viewer and can start any procedure without
   await details.locator('summary').click();
   await expect(details).not.toHaveAttribute('open','');
 });
+
+
+test('normal mobile page scrolls naturally; Massage Player has no nested scrollbar',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await openRoutine(page);
+  const player=page.locator('#massageRoutineRunner');
+  const timeline=page.locator('#massageRoutineTimeline');
+
+  const original=await player.evaluate(el=>({
+    overflowY:getComputedStyle(el).overflowY,
+    maxHeight:getComputedStyle(el).maxHeight,
+    stickyControls:getComputedStyle(el.querySelector('.routine-navigation')).position,
+    playerScrollHeight:el.scrollHeight,
+    playerClientHeight:el.clientHeight,
+    bodyScrollHeight:document.documentElement.scrollHeight,
+    viewportHeight:window.innerHeight,
+  }));
+  expect(original.overflowY).toBe('visible');
+  expect(original.maxHeight).toBe('none');
+  expect(original.stickyControls).toBe('static');
+  expect(original.playerScrollHeight).toBeLessThanOrEqual(original.playerClientHeight+2);
+  expect(original.bodyScrollHeight).toBeGreaterThan(original.viewportHeight);
+
+  await page.evaluate(()=>window.scrollTo(0,350));
+  await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBeGreaterThan(100);
+  await expect(timeline).toHaveCSS('overflow-y','hidden');
+
+  // Fullscreen remains independent; returning to normal restores document scrolling.
+  await page.locator('#massageRoutineFullscreen').click();
+  await expect(player).toHaveClass(/routine-fullscreen/);
+  await page.locator('#massageRoutineFullscreen').click();
+  await expect(player).not.toHaveClass(/routine-fullscreen/);
+  await expect(player).toHaveCSS('overflow-y','visible');
+});
