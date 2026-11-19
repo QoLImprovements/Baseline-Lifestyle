@@ -10,13 +10,14 @@ function occurrences(source, pattern) {
   return (source.match(pattern) || []).length;
 }
 
-test('Massage has one authoritative three-page navigation structure', () => {
+test('Massage has one authoritative four-page navigation structure', () => {
   assert.equal(occurrences(html, /class="tab"[^>]+data-target="system"/g), 1);
   assert.equal(occurrences(html, /class="tab"[^>]+data-target="library"/g), 1);
   assert.equal(occurrences(html, /class="tab"[^>]+data-target="planner"/g), 1);
+  assert.equal(occurrences(html, /class="tab"[^>]+data-target="routines"/g), 1);
   assert.doesNotMatch(html, /data-target="types"/);
   assert.doesNotMatch(html, /<section[^>]+id="types"/);
-  assert.equal(occurrences(html, /<section class="section(?: active)?" id="(?:system|library|planner)"/g), 3);
+  assert.equal(occurrences(html, /<section class="section(?: active)?" id="(?:system|library|planner|routines)"/g), 4);
 });
 
 test('Types Of Massage is contained within Massage Library', () => {
@@ -53,9 +54,9 @@ test('custom pressure and pace fields remain conditional with provider-led defau
 });
 
 test('clean Massage routes agree across server and the canonical shared router', () => {
-  assert.match(htaccess, /RewriteRule \^baseline-massage\/\(system\|library\|planner\)\/\?\$ systems\/baseline-massage\/baseline-massage\.html \[L,QSA\]/);
+  assert.match(htaccess, /RewriteRule \^baseline-massage\/\(system\|library\|planner\|routines\)\/\?\$ systems\/baseline-massage\/baseline-massage\.html \[L,QSA\]/);
   assert.match(htaccess, /RewriteRule \^baseline-massage\/types\/\?\$ \/baseline-massage\/library \[R=302,L\]/);
-  assert.match(shared, /baseline-massage[^\n]+system[^\n]+library[^\n]+planner/);
+  assert.match(shared, /baseline-massage[^\n]+system[^\n]+library[^\n]+planner[^\n]+routines/);
   assert.doesNotMatch(shared, /baseline-massage[^\n]+types:'types'/);
   assert.doesNotMatch(html, /baseline-tabs\.js/);
   assert.match(html, /function writeMassageRoute\(key,value,mode='push'\)/);

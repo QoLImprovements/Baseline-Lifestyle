@@ -38,7 +38,7 @@ const RECREATION_ROUTE = /^\/baseline-recreation\/(?:system|games(?:\/(?:pairs|d
 const STATIC_ROUTE_RULES = [
   [/^\/home\/(?:1|2)\/?$/, '/index.html'],
   [/^\/baseline-food-approach\/(?:system|recipes|ingredient-library|diet-log)\/?$/, '/systems/baseline-food-approach/baseline-food-approach.html'],
-  [/^\/baseline-massage\/(?:system|library|planner)\/?$/, '/systems/baseline-massage/baseline-massage.html'],
+  [/^\/baseline-massage\/(?:system|library|planner|routines)\/?$/, '/systems/baseline-massage/baseline-massage.html'],
   [/^\/baseline-natural-skincare\/(?:system|recipes|ingredient-library|skin-support-system|my-routine)\/?$/, '/systems/baseline-natural-skincare/baseline-natural-skincare.html'],
   [/^\/baseline-natural-skincare\/my-routine\/(?:log|summary|plan|public)\/?$/, '/systems/baseline-natural-skincare/baseline-natural-skincare.html'],
   [/^\/baseline-badminton-session\/(?:system|game-plan|ratings-standings|players-pairs|session-history)\/?$/, '/systems/baseline-badminton-session/baseline-badminton-session.html'],

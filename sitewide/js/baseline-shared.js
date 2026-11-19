@@ -257,7 +257,7 @@
   // BASELINE-SAFE-NAMED-ROUTES-20260607
   const BASELINE_CLEAN_PAGE_ROUTES = Object.freeze({
     'baseline-food-approach.html': { base:'/baseline-food-approach', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', 'diet-log':'diet-log' } },
-    'baseline-massage.html': { base:'/baseline-massage', defaultTab:'system', tabs:{ system:'system', library:'library', planner:'planner' } },
+    'baseline-massage.html': { base:'/baseline-massage', defaultTab:'system', tabs:{ system:'system', library:'library', planner:'planner', routines:'routines' } },
     'baseline-natural-skincare.html': { base:'/baseline-natural-skincare', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', support:'skin-support-system', routine:'my-routine' } },
     'baseline-psychology.html': { base:'/baseline-psychology', defaultTab:'system', tabs:{ system:'system', paralinguistics:'paralinguistics' } },
     'baseline-badminton-session.html': { base:'/baseline-badminton-session', defaultTab:'system', tabs:{ system:'system', gameplan:'game-plan', standings:'ratings-standings', roster:'players-pairs', history:'session-history' } },
@@ -8131,7 +8131,7 @@ function setupRecipeFavourites(){
           try{
             const routeParams = new URLSearchParams(location.search || '');
             ownedSubviewQuery =
-              (routePageFile === 'baseline-massage.html' && (routeParams.has('planner-mode') || routeParams.has('library-category'))) ||
+              (routePageFile === 'baseline-massage.html' && (routeParams.has('planner-mode') || routeParams.has('library-category') || routeParams.has('massage-plan'))) ||
               (routePageFile === 'baseline-food-approach.html' && (routeParams.has('view') || routeParams.has('date'))) ||
               (routePageFile === 'baseline-badminton-session.html' && routeParams.has('gameplan-view')) ||
               (routePageFile === 'baseline-psychology.html' && routeParams.has('psych-view'));
