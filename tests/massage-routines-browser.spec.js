@@ -16,7 +16,7 @@ test('sixty-minute routine highlights exact timed procedures and pauses without 
   await expect(rows.first()).toContainText('Effleurage');
   await expect(rows.first()).toContainText('Bilateral longitudinal strokes');
   await expect(rows.first()).toContainText('Pressure 2–3/10');
-  await expect(rows.nth(1)).toContainText('Alternating Palms');
+  await expect(rows.nth(1)).toContainText('Alternating hand strokes');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('01:00');
   await expect(page.locator('#massageRoutineNextTitle')).toHaveText('Anterior Shoulders');
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('00:00');
