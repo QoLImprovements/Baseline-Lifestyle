@@ -1837,3 +1837,18 @@ body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .rou
   body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-current-step{flex-basis:220px!important}
   body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-sections{min-height:220px!important}
 }
+
+
+@media(min-height:1000px){
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-sections.routine-few-procedures,
+  body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-sections.routine-few-procedures{
+    display:flex;
+    flex-direction:column;
+    justify-content:stretch;
+  }
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-sections.routine-few-procedures .routine-section-row,
+  body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-sections.routine-few-procedures .routine-section-row{
+    flex:1 1 auto;
+    align-items:center;
+  }
+}
