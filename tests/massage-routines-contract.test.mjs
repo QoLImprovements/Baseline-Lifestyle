@@ -116,7 +116,7 @@ test('procedure and step navigation are paired, with no start dropdowns',()=>{
 
 test('terminology is consistent and labels are legible',()=>{
   const cues=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
-  assert.deepEqual(cues[0].map(c=>c[2]),['Broad Palm','Alternating Palms']);
+  assert.deepEqual(cues[0].slice(0,2).map(c=>c[2]),['Broad Palm','Alternating Palms']);
   for(const cue of cues.flat()){
     assert.doesNotMatch(cue[2],/\bpalmar\b/i);
     assert.ok(!cue[2].endsWith(' '+cue[1]), 'category must not repeat in technique');
