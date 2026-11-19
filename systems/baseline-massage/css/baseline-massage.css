@@ -1343,3 +1343,69 @@ body[data-app="massage"] #routines .routine-silent-note{font-weight:750}
   body[data-app="massage"] #routines .routine-section-remaining{grid-column:2;text-align:left}
   body[data-app="massage"] #routines .routine-control-row .planner-btn{flex:1 1 auto}
 }
+
+/* Guided massage technique taxonomy, procedure controls and full-routine viewer. */
+body[data-app="massage"] #routines .routine-section-content{min-width:0;display:grid;gap:5px}
+body[data-app="massage"] #routines .routine-section-technique{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 9px}
+body[data-app="massage"] #routines .routine-section-family{
+  font-size:11px;font-weight:900;letter-spacing:.025em;text-transform:uppercase;
+  border-radius:7px;border:1px solid rgba(67,34,16,.34);padding:2px 6px;
+  background:rgba(104,61,34,.12)
+}
+body[data-app="massage"] #routines .routine-section-name{font-size:14px;font-weight:900;line-height:1.35}
+body[data-app="massage"] #routines .routine-section-instruction{font-size:14px;font-weight:550;line-height:1.45}
+body[data-app="massage"] #routines .routine-procedure-controls{
+  display:flex;flex-wrap:wrap;gap:8px;margin-top:12px
+}
+body[data-app="massage"] #routines .routine-procedure-controls .planner-btn{
+  flex:1 1 140px;min-width:0;white-space:normal;font-size:14px;padding:9px 10px
+}
+body[data-app="massage"] #routines .routine-procedure-controls .planner-btn:disabled{opacity:.48;cursor:not-allowed}
+body[data-app="massage"] #routines .routine-start-from{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+  background:rgba(53,26,12,.09);border:1px solid var(--massage-border-strong);
+  padding:13px;border-radius:14px;margin:14px 0 12px
+}
+body[data-app="massage"] #routines .routine-start-picker{min-width:0;display:grid;gap:5px}
+body[data-app="massage"] #routines .routine-start-picker label{font-size:13px;font-weight:850}
+body[data-app="massage"] #routines .routine-start-picker select{
+  min-width:0;width:100%;font:inherit;font-size:14px;font-weight:650;min-height:42px;
+  padding:8px;background:var(--showall-bg);color:var(--massage-ink);
+  border-radius:9px;border:1px solid var(--massage-border-strong)
+}
+body[data-app="massage"] #routines .routine-full-plan{
+  border:1px solid var(--massage-border-strong);border-radius:14px;
+  background:rgba(53,26,12,.09);margin-top:14px;padding:10px 14px
+}
+body[data-app="massage"] #routines .routine-full-plan summary{
+  cursor:pointer;font-size:16px;font-weight:850;list-style-position:inside;
+  padding:5px 2px;touch-action:manipulation
+}
+body[data-app="massage"] #routines .routine-full-list{display:grid;gap:12px;margin-top:12px;max-height:62vh;overflow-y:auto;overscroll-behavior:contain;padding-right:5px}
+body[data-app="massage"] #routines .routine-full-step{
+  background:rgba(255,231,195,.35);border-radius:12px;
+  border:1px solid var(--massage-border);padding:12px
+}
+body[data-app="massage"] #routines .routine-full-step h4{margin:0 0 6px;font-size:15px;line-height:1.4}
+body[data-app="massage"] #routines .routine-full-procedures{list-style:decimal;padding-left:23px;margin:10px 0 0;display:grid;gap:8px}
+body[data-app="massage"] #routines .routine-full-procedures li{padding:9px 4px;border-top:1px solid rgba(66,34,17,.19);font-size:14px}
+body[data-app="massage"] #routines .routine-full-procedures li strong{display:block;font-weight:850}
+body[data-app="massage"] #routines .routine-full-time{font-size:13px;font-variant-numeric:tabular-nums}
+body[data-app="massage"] #routines .routine-full-procedures li p{margin:5px 0;line-height:1.45}
+body[data-app="massage"] #routines .routine-full-start{
+  border:1px solid var(--massage-border-strong);border-radius:999px;
+  background:var(--showall-bg);color:var(--massage-ink);padding:7px 12px;
+  font-size:13px;font-weight:850;cursor:pointer
+}
+body[data-app="massage"] #routines .routine-full-start:focus-visible,
+body[data-app="massage"] #routines .routine-procedure-controls .planner-btn:focus-visible,
+body[data-app="massage"] #routines .routine-start-picker select:focus-visible{
+  outline:3px solid #2b1a0c;outline-offset:2px
+}
+@media(max-width:650px){
+  body[data-app="massage"] #routines .routine-section-row{grid-template-columns:24px minmax(0,1fr);gap:5px 8px}
+  body[data-app="massage"] #routines .routine-section-content{grid-column:2}
+  body[data-app="massage"] #routines .routine-section-name{font-size:14px}
+  body[data-app="massage"] #routines .routine-procedure-controls .planner-btn{flex:1 1 125px;font-size:13px}
+  body[data-app="massage"] #routines .routine-start-from{grid-template-columns:minmax(0,1fr)}
+}
