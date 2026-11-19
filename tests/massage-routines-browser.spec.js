@@ -13,8 +13,10 @@ test('sixty-minute routine highlights exact timed procedures and pauses without 
   const rows=timeline.locator('.routine-section-row');
   await expect(rows).toHaveCount(2);
   await expect(rows.first()).toHaveAttribute('aria-current','step');
-  await expect(rows.first()).toContainText('Broad Palm Effleurage');
-  await expect(rows.nth(1)).toContainText('Alternating Palm Effleurage');
+  await expect(rows.first()).toContainText('Effleurage');
+  await expect(rows.first()).toContainText('Broad Palm');
+  await expect(rows.first()).toContainText('Pressure 2–3/10');
+  await expect(rows.nth(1)).toContainText('Alternating Palms');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('01:00');
   await expect(page.locator('#massageRoutineNextTitle')).toHaveText('Pectoral Petrissage');
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('00:00');
@@ -60,14 +62,14 @@ test('full routine is the only start-anywhere picker and procedure controls stay
   await expect(fullSteps).toHaveCount(17);
   await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(68);
   await expect(fullSteps.nth(10)).toContainText('Finger Crawling With Thumb Compression');
-  await expect(fullSteps.nth(10)).toContainText('Cupping Tapotement');
+  await expect(fullSteps.nth(10)).toContainText('Tapotement — Cupping');
   await fullSteps.nth(10).locator('.routine-full-procedures li').nth(3).getByRole('button',{name:/Start here/}).click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('40:00');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:45');
   await expect(page.locator('#massageRoutineFullDetails')).not.toHaveAttribute('open');
   await page.locator('#massageRoutineNextProcedure').click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('40:45');
-  await expect(page.locator('#massageRoutineTimeline .is-live')).toContainText('Hacking Tapotement');
+  await expect(page.locator('#massageRoutineTimeline .is-live')).toContainText('Hacking');
   await page.locator('#massageRoutinePreviousProcedure').click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('40:00');
   await page.locator('#massageRoutineQuickPause').click();
@@ -102,7 +104,8 @@ test('mobile player is compact, plan name wraps, and minimal clock/fullscreen ca
   await expect(player).toHaveClass(/routine-minimal/);
   await expect(page.locator('#massageRoutineMinimalClock')).toBeVisible();
   await expect(page.locator('#massageRoutineMinimalTime')).toHaveText('01:00');
-  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Broad Palm Effleurage');
+  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Broad Palm');
+  await expect(page.locator('#massageRoutineMinimalPressure')).toHaveText('Pressure 2–3/10');
   await expect(page.locator('#massageRoutineTimeline')).toBeHidden();
   await expect(page.locator('#massageRoutineFullDetails')).toBeHidden();
   await expect(page.locator('#massageRoutineQuickPause')).toBeVisible();
@@ -120,8 +123,8 @@ test('mobile player is compact, plan name wraps, and minimal clock/fullscreen ca
   await expect(page.locator('#massageRoutineFullscreen')).toHaveAttribute('aria-pressed','false');
 
   await page.reload({waitUntil:'domcontentloaded'});
-  await expect(page.locator('#massageRoutineRunner')).not.toHaveClass(/routine-minimal/);
-  await expect(page.locator('#massageRoutineTimeline')).toBeVisible();
+  await expect(page.locator('#massageRoutineRunner')).toHaveClass(/routine-minimal/);
+  await expect(page.locator('#massageRoutineMinimalClock')).toBeVisible();
 });
 
 test('massage plan survives refresh and remains independent from planner',async({page})=>{
@@ -134,4 +137,27 @@ test('massage plan survives refresh and remains independent from planner',async(
   await expect(page.locator('#planner')).toHaveClass(/active/);
   await page.locator('.tab[data-target="routines"]').click();
   await expect(page.locator('#routines')).toHaveClass(/active/);
+});
+
+test('precise pressure and stretch readout updates for left and right arm procedures',async({page})=>{
+  await page.clock.install();
+  await openRoutine(page);
+  await page.locator('#massageRoutineFullDetails summary').click();
+  const chestOpening=page.locator('#massageRoutineFullList .routine-full-step').nth(2);
+  await chestOpening.locator('.routine-full-procedures li').first().getByRole('button',{name:/Start here/}).click();
+  const row=page.locator('#massageRoutineTimeline .routine-section-row.is-live');
+  await expect(row).toContainText('Assisted Stretching');
+  await expect(row).toContainText('Pressure 1–2/10');
+  await expect(row).toContainText('Left shoulder outward 30–90°');
+  await expect(row).toContainText('2–3/10');
+  await expect(page.locator('#massageRoutineMinimalStretch')).toContainText('Left shoulder outward 30–90°');
+  await page.locator('#massageRoutineQuickPause').click();
+  await page.clock.fastForward(30000);
+  await expect(page.locator('#massageRoutineTimeline .routine-section-row.is-live')).toContainText('Pectoral Glide Under Stretch — Left');
+  await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:25');
+  await page.locator('#massageRoutineQuickPause').click();
+  await page.locator('#massageRoutineFullDetails summary').click();
+  await chestOpening.locator('.routine-full-procedures li').nth(5).getByRole('button',{name:/Start here/}).click();
+  await expect(page.locator('#massageRoutineTimeline .routine-section-row.is-live')).toContainText('Right shoulder outward 30–90°');
+  await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:30');
 });
