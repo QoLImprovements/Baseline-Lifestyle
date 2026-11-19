@@ -23,7 +23,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_RECREATION_PALETTE_CLEANUP_20261024_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_HEADER_CSS_20261021_1" rel="stylesheet"/>
-<link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_ROUTINES_20261119_1" rel="stylesheet"/>
+<link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_ROUTINES_SECTIONS_20261119_2" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-protected-access.css?v=PROTECTED_ACCESS_CSS_20261021_1" rel="stylesheet" data-protected-access-style="true"/>
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=PROTECTED_KEY_CSS_20261021_1" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=SITEWIDE_UI_FIXES_20261021_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
@@ -746,7 +746,7 @@ These Markdown rules are a human reference point, not live runtime config.
     <div class="focus-stack">
       <article class="card massage-routines-card">
         <h2>Massage Routines</h2>
-        <p class="lead">Choose a massage plan for a silent, guided session. The current step is highlighted automatically, and the compact timeline scrolls with the timer.</p>
+        <p class="lead">Choose a massage plan for a silent, guided session. The current step is highlighted automatically, and the timed sections within each step scroll automatically as the timer progresses.</p>
         <div class="massage-routine-picker">
           <label for="massageRoutineSelect">Massage Plans</label>
           <select id="massageRoutineSelect" aria-label="Massage Plans">
@@ -783,13 +783,13 @@ These Markdown rules are a human reference point, not live runtime config.
             </div>
             <h3 id="massageRoutineCurrentTitle">Warm chest and anterior shoulders</h3>
             <p id="massageRoutineCurrentDetail"></p>
-            <p class="routine-current-cue"><strong>Now:</strong> <span id="massageRoutineCurrentCue"></span></p>
+            <div class="routine-section-top">
+              <strong id="massageRoutineSectionCounter">Section 1 of 2</strong>
+              <span>Section remaining <strong id="massageRoutineSectionClock">01:00</strong></span>
+            </div>
+            <div class="routine-sections" id="massageRoutineTimeline" role="list" tabindex="0" aria-label="Scrollable timed sections within the current massage step"></div>
           </div>
-          <div class="routine-timeline-heading">
-            <h3>Massage plan steps</h3>
-            <span>Scroll to inspect · follows active step</span>
-          </div>
-          <div class="massage-routine-timeline" id="massageRoutineTimeline" role="list" tabindex="0" aria-label="Scrollable timed massage steps"></div>
+          <p class="routine-next-step"><strong>Next Step — </strong><span id="massageRoutineNextTitle">Pectoral kneading and gliding</span></p>
           <p class="routine-safety">Keep assisted stretches mild and supported. Massage muscle tissue during a stretch as comfortable; avoid heavy pressure over taut tendons, ligaments or joints. Check consent and draping for chest and glute work.</p>
           <p class="routine-silent-note">Silent session: no chimes, notifications, vibration or automatic audio.</p>
         </div>
@@ -1313,7 +1313,7 @@ These Markdown rules are a human reference point, not live runtime config.
 })();
 
 </script>
-<script src="/systems/baseline-massage/js/massage-routines.js?v=MASSAGE_ROUTINES_20261119_1"></script>
+<script src="/systems/baseline-massage/js/massage-routines.js?v=MASSAGE_ROUTINES_SECTIONS_20261119_2"></script>
 <script src="/systems/baseline-massage/js/baseline-massage-persistence.js?v=MASSAGE_ACCOUNT_PERSISTENCE_20261004_1"></script>
 </body>
 </html>
