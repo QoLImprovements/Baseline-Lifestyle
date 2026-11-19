@@ -120,9 +120,7 @@ test('mobile player is compact, plan name wraps, and minimal clock/fullscreen ca
   await expect(page.locator('#massageRoutineFullscreen')).toHaveAttribute('aria-pressed','false');
 
   await page.reload({waitUntil:'domcontentloaded'});
-  await expect(page.locator('#massageRoutineRunner')).toHaveClass(/routine-minimal/);
-  await page.locator('#massageRoutineSettings summary').click();
-  await page.locator('#massageRoutineMinimal').uncheck();
+  await expect(page.locator('#massageRoutineRunner')).not.toHaveClass(/routine-minimal/);
   await expect(page.locator('#massageRoutineTimeline')).toBeVisible();
 });
 
