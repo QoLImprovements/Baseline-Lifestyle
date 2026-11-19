@@ -86,6 +86,7 @@ test('full routine is the only start-anywhere picker and procedure controls stay
 });
 
 test('mobile player is compact, plan name wraps, and minimal clock/fullscreen can be toggled',async({page})=>{
+  await page.clock.install();
   await page.setViewportSize({width:390,height:844});
   await openRoutine(page);
   const display=page.locator('#massageRoutinePlanValue');
@@ -107,7 +108,6 @@ test('mobile player is compact, plan name wraps, and minimal clock/fullscreen ca
   await expect(page.locator('#massageRoutineQuickPause')).toBeVisible();
   await page.locator('#massageRoutineSettings summary').click();
   await page.locator('#massageRoutineQuickPause').click();
-  await page.clock.install();
   await page.clock.fastForward(10000);
   await expect(page.locator('#massageRoutineMinimalTime')).toHaveText('00:50');
   await page.locator('#massageRoutineQuickPause').click();
