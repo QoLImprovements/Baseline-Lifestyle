@@ -14,11 +14,11 @@ test('sixty-minute routine highlights exact timed procedures and pauses without 
   await expect(rows).toHaveCount(14);
   await expect(rows.first()).toHaveAttribute('aria-current','step');
   await expect(rows.first()).toContainText('Effleurage');
-  await expect(rows.first()).toContainText('Broad Palm');
+  await expect(rows.first()).toContainText('Bilateral longitudinal strokes');
   await expect(rows.first()).toContainText('Pressure 2–3/10');
   await expect(rows.nth(1)).toContainText('Alternating Palms');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('01:00');
-  await expect(page.locator('#massageRoutineNextTitle')).toHaveText('Neck, Trapezius & Front Shoulders');
+  await expect(page.locator('#massageRoutineNextTitle')).toHaveText('Anterior Shoulders');
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('00:00');
   await page.locator('#massageRoutineFullDetails summary').click();
   await page.locator('#massageRoutineFullList .routine-full-step').first()
@@ -58,8 +58,8 @@ test('full routine is the only start-anywhere picker and procedure controls stay
   await expect(stepNav.locator('#massageRoutineNext')).toBeVisible();
   await expect(procedureNav.locator('#massageRoutinePreviousProcedure')).toBeVisible();
   await expect(procedureNav.locator('#massageRoutineNextProcedure')).toBeVisible();
-  await expect(stepNav).toContainText('Chest & Front Shoulders');
-  await expect(procedureNav).toContainText('Broad Palm');
+  await expect(stepNav).toContainText('Pectorals & Chest Opening');
+  await expect(procedureNav).toContainText('Bilateral longitudinal strokes');
   await page.locator('#massageRoutineFullDetails summary').click();
   const fullSteps=page.locator('#massageRoutineFullList .routine-full-step');
   await expect(fullSteps).toHaveCount(12);
@@ -107,7 +107,7 @@ test('mobile player is compact, plan name wraps, and minimal clock/fullscreen ca
   await expect(player).toHaveClass(/routine-minimal/);
   await expect(page.locator('#massageRoutineMinimalClock')).toBeVisible();
   await expect(page.locator('#massageRoutineMinimalTime')).toHaveText('01:00');
-  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Broad Palm');
+  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Bilateral longitudinal strokes');
   await expect(page.locator('#massageRoutineMinimalPressure')).toHaveText('Pressure 2–3/10');
   await expect(page.locator('#massageRoutineTimeline')).toBeHidden();
   await expect(page.locator('#massageRoutineFullDetails')).toBeHidden();
@@ -156,7 +156,7 @@ test('precise pressure and stretch readout updates for left and right arm proced
   await expect(page.locator('#massageRoutineMinimalStretch')).toContainText('Left shoulder outward 30–90°');
   await page.locator('#massageRoutineQuickPause').click();
   await page.clock.fastForward(30000);
-  await expect(page.locator('#massageRoutineTimeline .routine-section-row.is-live')).toContainText('Pectoral Glide Under Stretch — Left');
+  await expect(page.locator('#massageRoutineTimeline .routine-section-row.is-live')).toContainText('Longitudinal strokes — left pectoral');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:25');
   await page.locator('#massageRoutineQuickPause').click();
   await page.locator('#massageRoutineFullDetails summary').click();
@@ -206,7 +206,7 @@ test('fullscreen player uses viewport, larger typography, and automatically adva
   await expect.poll(()=>timeline.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
   await page.locator('#massageRoutinePreviousProcedure').click();
   await expect(page.locator('#massageRoutineSectionCounter')).toHaveText('Procedure 9 of 14');
-  await expect(timeline.locator('.routine-section-row.is-live')).toContainText('Closing Pectoral Glide — Left');
+  await expect(timeline.locator('.routine-section-row.is-live')).toContainText('Finishing strokes — left pectoral');
 });
 
 test('full list opens as a fullscreen viewer and can start any procedure without exiting fullscreen',async({page})=>{
@@ -302,9 +302,54 @@ test('minimal mode keeps circular size but enlarges text and provides independen
   await page.locator('#massageRoutineNextProcedure').click();
   await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Alternating Palms');
   await page.locator('#massageRoutineNext').click();
-  await expect(page.locator('#massageRoutineCurrentTitle')).toHaveText('Neck, Trapezius & Front Shoulders');
+  await expect(page.locator('#massageRoutineCurrentTitle')).toHaveText('Anterior Shoulders');
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('10:00');
   await page.locator('#massageRoutinePrevious').click();
-  await expect(page.locator('#massageRoutineCurrentTitle')).toHaveText('Chest & Front Shoulders');
+  await expect(page.locator('#massageRoutineCurrentTitle')).toHaveText('Pectorals & Chest Opening');
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('00:00');
+});
+
+
+test('windowed Minimal timer text fits within the unchanged circle without redundant labels',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await openRoutine(page);
+  await page.locator('#massageRoutineSettings summary').click();
+  await page.locator('#massageRoutineMinimal').check();
+  const values=await page.evaluate(()=>{
+    const clock=document.getElementById('massageRoutineMinimalClock');
+    const face=clock.querySelector('.routine-minimal-clock-face');
+    const digits=document.getElementById('massageRoutineMinimalTime');
+    const elapsed=document.getElementById('massageRoutineMinimalElapsed');
+    const cr=clock.getBoundingClientRect(),fr=face.getBoundingClientRect(),dr=digits.getBoundingClientRect(),er=elapsed.getBoundingClientRect();
+    return {
+      clockWidth:cr.width,
+      digitSize:parseFloat(getComputedStyle(digits).fontSize),
+      digitsInside:dr.left>=fr.left-1&&dr.right<=fr.right+1&&dr.top>=fr.top-1&&dr.bottom<=fr.bottom+1,
+      elapsedInside:er.left>=fr.left-1&&er.right<=fr.right+1,
+      redundantCaption:face.querySelector('span')?.textContent || '',
+      headingKickers:document.querySelectorAll('#routines .routine-nav-kicker').length,
+    };
+  });
+  expect(values.clockWidth).toBeGreaterThan(170);
+  expect(values.digitSize).toBeGreaterThanOrEqual(39);
+  expect(values.digitSize).toBeLessThanOrEqual(54);
+  expect(values.digitsInside).toBe(true);
+  expect(values.elapsedInside).toBe(true);
+  expect(values.redundantCaption).toBe('');
+  expect(values.headingKickers).toBe(0);
+});
+
+test('supine second step targets accessible anterior deltoids, not upper trapezius',async({page})=>{
+  await openRoutine(page);
+  await page.locator('#massageRoutineNext').click();
+  await expect(page.locator('#massageRoutineCurrentTitle')).toHaveText('Anterior Shoulders');
+  await expect(page.locator('#massageRoutineElapsed')).toHaveText('10:00');
+  const entries=page.locator('#massageRoutineTimeline .routine-section-row');
+  await expect(entries).toHaveCount(4);
+  for(let i=0;i<4;i++){
+    await expect(entries.nth(i)).toContainText('anterior deltoid');
+    await expect(entries.nth(i)).not.toContainText('trapezius');
+  }
+  await page.locator('#massageRoutineFullDetails summary').click();
+  await expect(page.locator('#massageRoutineFullList .routine-full-step').nth(6)).toContainText('upper trapezius');
 });
