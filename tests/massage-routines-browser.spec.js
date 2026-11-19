@@ -161,3 +161,78 @@ test('precise pressure and stretch readout updates for left and right arm proced
   await expect(page.locator('#massageRoutineTimeline .routine-section-row.is-live')).toContainText('Right shoulder outward 30–90°');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:30');
 });
+
+
+test('fullscreen player uses viewport, larger typography, and automatically advances a non-scrollable procedure card',async({page})=>{
+  await page.clock.install();
+  await page.setViewportSize({width:390,height:844});
+  await openRoutine(page);
+  const player=page.locator('#massageRoutineRunner');
+  const timeline=page.locator('#massageRoutineTimeline');
+  await page.locator('#massageRoutineFullscreen').click();
+  await expect(player).toHaveClass(/routine-fullscreen/);
+  await expect(timeline).toHaveCSS('overflow-y','hidden');
+  await expect(page.locator('#massageRoutineFullDetails summary')).toBeVisible();
+
+  const dimensions=await page.evaluate(()=>{
+    const player=document.getElementById('massageRoutineRunner');
+    const timer=document.getElementById('massageRoutineElapsed');
+    const instruction=document.querySelector('#massageRoutineTimeline .routine-section-row.is-live .routine-section-instruction');
+    return {
+      playerHeight:player.getBoundingClientRect().height,
+      viewportHeight:innerHeight,
+      timerFont:parseFloat(getComputedStyle(timer).fontSize),
+      instructionFont:parseFloat(getComputedStyle(instruction).fontSize),
+      timelineHeight:document.getElementById('massageRoutineTimeline').clientHeight,
+      scrollHeight:document.getElementById('massageRoutineTimeline').scrollHeight,
+    };
+  });
+  expect(dimensions.playerHeight).toBeGreaterThanOrEqual(dimensions.viewportHeight-2);
+  expect(dimensions.timerFont).toBeGreaterThanOrEqual(48);
+  expect(dimensions.instructionFont).toBeGreaterThanOrEqual(19);
+
+  // Long steps are clipped visually but scroll automatically to the active procedure.
+  await page.locator('#massageRoutineNext').click();
+  await page.locator('#massageRoutineNext').click();
+  await expect(timeline.locator('.routine-section-row')).toHaveCount(10);
+  await expect(timeline.locator('.routine-section-row.is-live')).toContainText('Supported Pectoral Stretch');
+  for(let i=0;i<5;i++)await page.locator('#massageRoutineNextProcedure').click();
+  await expect(page.locator('#massageRoutineSectionCounter')).toHaveText('Procedure 6 of 10');
+  await expect(timeline.locator('.routine-section-row.is-live')).toContainText('Supported Pectoral Stretch — Right');
+  await expect.poll(()=>timeline.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+  await page.locator('#massageRoutinePreviousProcedure').click();
+  await expect(page.locator('#massageRoutineSectionCounter')).toHaveText('Procedure 5 of 10');
+  await expect(timeline.locator('.routine-section-row.is-live')).toContainText('Closing Pectoral Glide — Left');
+});
+
+test('full list opens as a fullscreen viewer and can start any procedure without exiting fullscreen',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await openRoutine(page);
+  const player=page.locator('#massageRoutineRunner');
+  const details=page.locator('#massageRoutineFullDetails');
+  await page.locator('#massageRoutineFullscreen').click();
+  await details.locator('summary').click();
+  await expect(details).toHaveAttribute('open','');
+  await expect(details.locator('summary')).toContainText('Back to Massage Player');
+  await expect(details).toHaveCSS('position','absolute');
+  await expect(page.locator('#massageRoutineFullList .routine-full-step')).toHaveCount(17);
+  await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(68);
+  await expect(page.locator('#massageRoutineFullList')).toHaveCSS('overflow-y','auto');
+  await page.locator('#massageRoutineFullList .routine-full-step').nth(10)
+    .locator('.routine-full-procedures li').nth(3).getByRole('button',{name:/Start here/}).click();
+  await expect(details).not.toHaveAttribute('open','');
+  await expect(player).toHaveClass(/routine-fullscreen/);
+  await expect(page.locator('#massageRoutineElapsed')).toHaveText('40:00');
+  await expect(page.locator('#massageRoutineTimeline .routine-section-row.is-live')).toContainText('Cupping');
+
+  // Full list remains accessible in Minimal while fullscreen.
+  await page.locator('#massageRoutineSettings summary').click();
+  await page.locator('#massageRoutineMinimal').check();
+  await expect(player).toHaveClass(/routine-minimal/);
+  await expect(details.locator('summary')).toBeVisible();
+  await details.locator('summary').click();
+  await expect(details).toHaveAttribute('open','');
+  await expect(page.locator('#massageRoutineFullList .routine-full-step')).toHaveCount(17);
+  await details.locator('summary').click();
+  await expect(details).not.toHaveAttribute('open','');
+});
