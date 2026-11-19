@@ -1584,3 +1584,63 @@ body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .rou
   body[data-app="massage"] #routines .routine-sections{max-height:105px;min-height:78px}
   body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-minimal-clock{width:145px}
 }
+
+
+/* Guided procedure typography: three distinct lines, larger type, no duplicate headers. */
+body[data-app="massage"] #routines .routine-current-step{
+  padding:12px;
+}
+body[data-app="massage"] #routines .routine-current-header{font-size:13px;margin-bottom:3px}
+body[data-app="massage"] #routines .routine-current-step h3{font-size:18px;line-height:1.25;margin:4px 0 9px}
+body[data-app="massage"] #routines .routine-sections{max-height:230px;min-height:155px;padding:6px}
+body[data-app="massage"] #routines .routine-section-row{
+  display:block;min-height:0;padding:12px 13px;margin-bottom:7px;
+}
+body[data-app="massage"] #routines .routine-section-content{display:grid;gap:7px;min-width:0}
+body[data-app="massage"] #routines .routine-section-technique{
+  display:flex;flex-wrap:wrap;gap:0 5px;align-items:baseline;
+  font-size:19px;line-height:1.26;font-weight:850;
+}
+body[data-app="massage"] #routines .routine-section-family{
+  display:inline;background:none;border:0;border-radius:0;padding:0;
+  text-transform:none;letter-spacing:0;font-size:inherit;font-weight:900;
+}
+body[data-app="massage"] #routines .routine-section-separator{font-size:inherit;font-weight:700}
+body[data-app="massage"] #routines .routine-section-name{
+  font-size:inherit;font-weight:850;line-height:inherit;
+  overflow-wrap:anywhere;
+}
+body[data-app="massage"] #routines .routine-section-remaining{
+  font-size:17px;font-weight:850;line-height:1.3;text-align:left;
+  white-space:normal;font-variant-numeric:tabular-nums;
+}
+body[data-app="massage"] #routines .routine-section-content .routine-section-instruction{
+  font-size:17px;font-weight:500;line-height:1.38;margin:0;
+  overflow-wrap:break-word;
+}
+body[data-app="massage"] #routines .routine-minimal-active strong{font-size:22px}
+body[data-app="massage"] #routines .routine-minimal-active p{font-size:17px;line-height:1.4}
+@media(max-width:650px){
+  body[data-app="massage"] #routines .routine-current-step{padding:9px}
+  body[data-app="massage"] #routines .routine-current-header{font-size:12px}
+  body[data-app="massage"] #routines .routine-current-step h3{font-size:17px;margin:4px 0 7px}
+  body[data-app="massage"] #routines .routine-sections{max-height:205px;min-height:152px;padding:5px}
+  body[data-app="massage"] #routines .routine-section-row{
+    display:block;padding:10px 11px;margin-bottom:5px;
+  }
+  body[data-app="massage"] #routines .routine-section-content{grid-column:auto;gap:6px}
+  body[data-app="massage"] #routines .routine-section-technique{font-size:18px;line-height:1.28}
+  body[data-app="massage"] #routines .routine-section-family{font-size:inherit;padding:0}
+  body[data-app="massage"] #routines .routine-section-name{font-size:inherit}
+  body[data-app="massage"] #routines .routine-section-remaining{
+    grid-column:auto;font-size:16px;font-weight:850;
+  }
+  body[data-app="massage"] #routines .routine-section-content .routine-section-instruction{
+    font-size:16px;line-height:1.36;margin:0;
+  }
+  body[data-app="massage"] #routines .routine-minimal-active strong{font-size:20px}
+  body[data-app="massage"] #routines .routine-minimal-active p{font-size:16px}
+}
+@media(max-height:640px) and (max-width:650px){
+  body[data-app="massage"] #routines .routine-sections{max-height:155px;min-height:115px}
+}
