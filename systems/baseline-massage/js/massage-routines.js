@@ -318,7 +318,7 @@
       minimalStretch.hidden=!section.stretch;
       minimalStretch.textContent=section.stretch?'Stretch '+section.stretch:'';
       const duration=section.end-section.start;
-      const progressed=duration?Math.max(0,Math.min(100,((duration-sectionRemaining)/duration)*100)):0;
+      const progressed=duration?Math.max(0,Math.min(100,(sectionRemaining/duration)*100)):0;
       minimalClock.style.setProperty('--routine-clock-progress',progressed+'%');
       sectionCounter.textContent='Procedure '+(sectionIndex+1)+' of '+sections.length;
       stepTitle.textContent=step.title;
