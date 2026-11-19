@@ -158,7 +158,9 @@ test('each procedure has pressure and an optional stretch with the active countd
   assert.match(html,/id="massageRoutineMinimalStretch"/);
   assert.match(css,/\.routine-section-instruction\{font-size:17px/);
   assert.match(css,/\.routine-minimal-active p\{font-size:18px/);
-  assert.match(css,/max-height:calc\(100svh - 132px\)/);
+  assert.doesNotMatch(css,/max-height:calc\(100svh - 132px\)/);
+  assert.match(css,/#massageRoutineRunner:not\(\.routine-fullscreen\)\{[\s\S]*?max-height:none;[\s\S]*?overflow:visible;/);
+  assert.match(css,/\.routine-playback-controls,[\s\S]*?\.routine-navigation\{[\s\S]*?position:static;/);
   assert.doesNotMatch(html,/id="massageRoutineStartStep"|id="massageRoutineStartProcedure"/);
 });
 
