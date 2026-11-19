@@ -1855,3 +1855,118 @@ body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .rou
     align-items:center;
   }
 }
+
+
+/* Body-area step / technique procedure architecture. Navigation flanks the live title. */
+body[data-app="massage"] #routines .routine-labelled-nav{
+  display:grid;
+  grid-template-columns:clamp(44px,9vw,58px) minmax(0,1fr) clamp(44px,9vw,58px);
+  align-items:center;
+  gap:8px;
+  width:100%;
+  margin:8px 0;
+}
+body[data-app="massage"] #routines .routine-nav-center{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  min-width:0;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  line-height:1.19;
+}
+body[data-app="massage"] #routines .routine-nav-kicker{
+  font-size:clamp(12px,2.1vw,16px);
+  font-weight:850;
+  letter-spacing:.06em;
+}
+body[data-app="massage"] #routines .routine-step-nav strong{
+  display:block;
+  font-size:clamp(22px,3.8vw,33px);
+  font-weight:900;
+  overflow-wrap:break-word;
+}
+body[data-app="massage"] #routines .routine-procedure-nav strong{
+  display:block;
+  font-size:clamp(23px,4vw,34px);
+  font-weight:900;
+  overflow-wrap:break-word;
+}
+body[data-app="massage"] #routines .routine-procedure-family{
+  font-size:clamp(14px,2.4vw,18px);
+  font-weight:850;
+  text-transform:uppercase;
+  letter-spacing:.025em;
+}
+body[data-app="massage"] #routines .routine-arrow{
+  width:100%;
+  min-height:clamp(48px,7vw,60px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font:inherit;
+  font-size:clamp(25px,4.6vw,34px);
+  color:var(--massage-ink);
+  background:rgba(245,213,176,.5);
+  border:1px solid var(--massage-border-strong);
+  border-radius:13px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+body[data-app="massage"] #routines .routine-arrow:disabled{opacity:.35;cursor:not-allowed}
+body[data-app="massage"] #routines .routine-arrow:focus-visible{outline:3px solid #382113;outline-offset:2px}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-step-nav,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-procedure-nav{display:grid!important}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-step-nav #massageRoutineCurrentTitle{
+  display:block!important;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-minimal-active{
+  padding-top:2px;
+}
+body[data-app="massage"] #routines .routine-minimal-clock-face > span{
+  font-size:clamp(16px,3.5vw,23px);
+  line-height:1.25;
+  font-weight:900;
+}
+body[data-app="massage"] #routines .routine-minimal-clock-face > strong{
+  font-size:clamp(68px,16vw,108px);
+  line-height:1.13;
+  font-variant-numeric:tabular-nums;
+}
+body[data-app="massage"] #routines .routine-minimal-clock-face > small{
+  font-size:clamp(15px,3.1vw,21px);
+  line-height:1.22;
+  max-width:93%;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-minimal-clock-face > strong,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-minimal-clock-face > strong{
+  font-size:clamp(70px,17vw,112px);
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-minimal-clock-face > span,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-minimal-clock-face > span{
+  font-size:clamp(17px,4vw,25px);
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-minimal-clock-face > small,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-minimal-clock-face > small{
+  font-size:clamp(16px,3.6vw,22px);
+}
+@media(max-width:650px){
+  body[data-app="massage"] #routines .routine-labelled-nav{
+    grid-template-columns:44px minmax(0,1fr) 44px;
+    gap:6px;
+    margin:7px 0;
+  }
+  body[data-app="massage"] #routines .routine-step-nav strong{font-size:clamp(20px,5vw,27px)}
+  body[data-app="massage"] #routines .routine-procedure-nav strong{font-size:clamp(21px,5.6vw,28px)}
+  body[data-app="massage"] #routines .routine-nav-kicker{font-size:11px}
+  body[data-app="massage"] #routines .routine-procedure-family{font-size:13px}
+  body[data-app="massage"] #routines .routine-arrow{min-height:48px;font-size:26px}
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-current-step{
+    justify-content:center;
+  }
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-nav-center{gap:3px}
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-minimal-active p{
+    font-size:clamp(16px,4vw,19px);
+  }
+}
