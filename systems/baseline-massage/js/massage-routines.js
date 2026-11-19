@@ -39,7 +39,9 @@
       STEPS.every((step,i) => step.to > step.from && (!i || STEPS[i-1].to === step.from));
   }
   if(!STEPS.every(step=>step.cues.length && step.cues[0][0]===0 &&
-    step.cues.every((cue,index)=>cue[0]>=0 && cue[0]<step.to-step.from &&
+    step.cues.every((cue,index)=>cue.length===4 && cue[0]>=0 && cue[0]<step.to-step.from &&
+      ['Effleurage','Petrissage','Compression','Tapotement','Assisted stretching','Passive movement','Repositioning'].includes(cue[1]) &&
+      cue[2].length>5 && cue[3].length>20 &&
       (index===0 || cue[0]>step.cues[index-1][0])))){
     throw new Error('Massage routine sections must be ordered and within their step');
   }
@@ -100,7 +102,9 @@
       return step.cues.map((cue,index)=>({
         start:cue[0],
         end:index+1<step.cues.length?step.cues[index+1][0]:step.to-step.from,
-        instruction:cue[1]
+        family:cue[1],
+        technique:cue[2],
+        instruction:cue[3]
       }));
     }
     function activeSectionIndex(sections,secondsInStep){
@@ -121,13 +125,25 @@
         const number=document.createElement('span');
         number.className='routine-section-number';
         number.textContent=String(index+1).padStart(2,'0');
+        const content=document.createElement('div');
+        content.className='routine-section-content';
+        const identity=document.createElement('div');
+        identity.className='routine-section-technique';
+        const family=document.createElement('span');
+        family.className='routine-section-family';
+        family.textContent=section.family;
+        const name=document.createElement('strong');
+        name.className='routine-section-name';
+        name.textContent=section.technique;
+        identity.append(family,name);
         const instruction=document.createElement('span');
         instruction.className='routine-section-instruction';
         instruction.textContent=section.instruction;
+        content.append(identity,instruction);
         const remaining=document.createElement('span');
         remaining.className='routine-section-remaining';
         remaining.textContent=format(section.end-section.start);
-        row.append(number,instruction,remaining);
+        row.append(number,content,remaining);
         fragment.appendChild(row);
         rows.push(row);
       });
