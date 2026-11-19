@@ -72,7 +72,7 @@
     function scrollToCurrent(index){
       const row=rows[index];
       if(!row) return;
-      const target=Math.max(0,row.offsetTop - viewport.offsetTop - (viewport.clientHeight-row.offsetHeight)/2);
+      const target=Math.max(0,row.offsetTop - (viewport.clientHeight-row.offsetHeight)/2);
       if(typeof viewport.scrollTo === 'function') viewport.scrollTo({top:target,behavior:prefersReducedMotion()?'instant':'smooth'});
       else viewport.scrollTop=target;
     }
@@ -214,6 +214,10 @@
     const queryPlan=new URLSearchParams(window.location.search).get('massage-plan');
     if(queryPlan===PLAN_ID) select.value=PLAN_ID;
     selectPlan(false);
+    window.addEventListener('popstate',()=>{
+      const wanted=new URLSearchParams(window.location.search).get('massage-plan')===PLAN_ID ? PLAN_ID : '';
+      if(wanted!==select.value){ select.value=wanted; selectPlan(false); }
+    });
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initialise,{once:true});
   else initialise();
