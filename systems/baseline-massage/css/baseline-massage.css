@@ -1641,3 +1641,199 @@ body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routin
   body[data-app="massage"] #routines #massageRoutineRunner.routine-minimal .routine-minimal-clock{width:154px}
   body[data-app="massage"] #routines .routine-minimal-active p{font-size:16px}
 }
+
+
+/* Full-height player: readable from a distance, automatic procedure advance and no manual card scroller. */
+body[data-app="massage"] #routines .routine-sections{
+  overflow:hidden!important;
+  overflow-x:hidden!important;
+  overflow-y:hidden!important;
+  overscroll-behavior:none;
+  scrollbar-width:none!important;
+  touch-action:pan-x;
+  height:clamp(245px,34svh,500px);
+  max-height:none!important;
+  min-height:0;
+  scroll-behavior:auto;
+}
+body[data-app="massage"] #routines .routine-sections::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+body[data-app="massage"] #routines .routine-timer strong{font-size:clamp(44px,8.3vw,72px);line-height:1}
+body[data-app="massage"] #routines .routine-timer .routine-eyebrow,
+body[data-app="massage"] #routines .routine-timer span:last-child{font-size:clamp(15px,2.3vw,20px)}
+body[data-app="massage"] #routines .routine-current-header,
+body[data-app="massage"] #routines .routine-section-top{font-size:clamp(15px,2.4vw,19px);line-height:1.3}
+body[data-app="massage"] #routines .routine-current-step h3{font-size:clamp(22px,4vw,33px);line-height:1.18}
+body[data-app="massage"] #routines .routine-section-family{font-size:clamp(13px,2.2vw,17px)}
+body[data-app="massage"] #routines .routine-section-name{font-size:clamp(22px,3.7vw,29px);line-height:1.16}
+body[data-app="massage"] #routines .routine-section-instruction{font-size:clamp(19px,3.2vw,25px);line-height:1.3}
+body[data-app="massage"] #routines .routine-section-metrics{font-size:clamp(17px,2.9vw,22px);line-height:1.28}
+body[data-app="massage"] #routines .routine-section-remaining{font-size:clamp(17px,2.8vw,23px)}
+body[data-app="massage"] #routines .routine-section-row{padding:14px 12px;gap:10px}
+body[data-app="massage"] #routines .routine-status{font-size:clamp(16px,2.6vw,20px)}
+body[data-app="massage"] #routines .routine-next-step{font-size:clamp(16px,2.6vw,21px)}
+body[data-app="massage"] #routines .routine-player-toolbar > strong{font-size:clamp(17px,2.5vw,22px)}
+body[data-app="massage"] #routines .routine-settings summary,
+body[data-app="massage"] #routines .routine-fullscreen-btn{font-size:clamp(14px,2.1vw,18px);min-height:44px}
+body[data-app="massage"] #routines .routine-playback-controls .planner-btn,
+body[data-app="massage"] #routines .routine-nav-pair .planner-btn{
+  font-size:clamp(16px,2.8vw,20px);
+  min-height:50px;
+  padding:9px 11px;
+  line-height:1.2;
+}
+body[data-app="massage"] #routines .routine-full-plan summary{
+  font-size:clamp(17px,2.7vw,22px);
+  padding:8px 4px;
+}
+
+/* Fullscreen uses the unused height for the current procedure and puts navigation at the bottom. */
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen{
+  display:flex!important;
+  flex-direction:column;
+  gap:clamp(5px,.9svh,12px);
+  overflow-y:auto;
+  min-height:0;
+  padding:max(12px,env(safe-area-inset-top)) clamp(12px,3vw,25px) max(12px,env(safe-area-inset-bottom))!important;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen > *,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen > *{flex-shrink:0}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-current-step,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-current-step{
+  display:flex;
+  flex-direction:column;
+  flex:1 1 300px!important;
+  min-height:0;
+  margin-top:0;
+  padding:clamp(13px,2vw,22px);
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-sections,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-sections{
+  flex:1 1 auto;
+  width:100%;
+  box-sizing:border-box;
+  height:auto!important;
+  min-height:min(230px,29svh)!important;
+  max-height:none!important;
+  padding:10px;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-section-row,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-section-row{
+  padding:clamp(12px,2.3svh,22px) clamp(12px,2vw,20px);
+  margin-bottom:8px;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-summary .routine-timer,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-summary .routine-timer{
+  min-height:clamp(74px,11svh,120px);
+  padding:8px 14px;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-summary .routine-timer strong,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-summary .routine-timer strong{
+  font-size:clamp(51px,9vmin,78px);
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-playback-controls,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-playback-controls{
+  margin:2px 0;
+  position:static;
+  background:transparent;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-navigation,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-navigation{
+  margin:0;
+  position:static;
+  background:transparent;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-next-step,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-next-step{margin:0}
+
+/* The full routine is a real fullscreen option, including in Minimal.
+   Expanding it presents a separate scrollable list without exposing manual scrolling in the active card. */
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-full-plan,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-full-plan,
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen.routine-minimal .routine-full-plan{
+  display:block!important;
+  margin:0;
+  padding:6px 12px;
+  flex:0 0 auto;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-full-plan[open],
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-full-plan[open]{
+  position:absolute!important;
+  z-index:40;
+  top:max(10px,env(safe-area-inset-top));
+  bottom:max(10px,env(safe-area-inset-bottom));
+  left:clamp(10px,3vw,22px);
+  right:clamp(10px,3vw,22px);
+  display:flex!important;
+  flex-direction:column;
+  gap:8px;
+  padding:clamp(12px,2.6vw,22px);
+  background:#c9956e;
+  border:2px solid #603f29;
+  box-shadow:0 16px 45px rgba(35,16,5,.35);
+  border-radius:16px;
+  min-height:0;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-full-plan[open] > summary,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-full-plan[open] > summary{
+  flex:0 0 auto;
+  font-size:clamp(19px,3vw,25px);
+  padding:8px;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-full-plan[open] .routine-full-list,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-full-plan[open] .routine-full-list{
+  flex:1 1 auto;
+  min-height:0;
+  max-height:none!important;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  padding-right:5px;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-full-step h4{font-size:clamp(18px,3vw,25px)}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-full-procedures li{font-size:clamp(16px,2.7vw,20px)}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-full-start{font-size:clamp(15px,2.3vw,18px);min-height:42px}
+
+/* Fullscreen minimal clock also grows to exploit the available screen space. */
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen.routine-minimal .routine-current-step,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen.routine-minimal .routine-current-step{
+  flex:1 1 auto!important;
+  justify-content:center;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen.routine-minimal .routine-minimal-clock,
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen.routine-minimal .routine-minimal-clock{
+  width:min(40svh,78vw,400px);
+  max-width:none;
+  margin:clamp(8px,3svh,24px) auto;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-minimal-clock-face strong{
+  font-size:clamp(44px,8vw,72px);
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-minimal-active strong{font-size:clamp(24px,4.6vw,36px)}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-minimal-active p{font-size:clamp(20px,3.5vw,27px)}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-minimal-metrics{font-size:clamp(18px,3vw,24px)}
+
+@media(max-width:650px){
+  body[data-app="massage"] #routines .routine-timer strong{font-size:clamp(42px,11vw,56px)}
+  body[data-app="massage"] #routines .routine-section-name{font-size:clamp(20px,5.6vw,24px)}
+  body[data-app="massage"] #routines .routine-section-instruction{font-size:clamp(19px,5vw,22px)}
+  body[data-app="massage"] #routines .routine-section-metrics{font-size:clamp(17px,4.4vw,20px)}
+  body[data-app="massage"] #routines .routine-section-remaining{font-size:clamp(17px,4.4vw,20px)}
+  body[data-app="massage"] #routines .routine-section-family{font-size:clamp(13px,3.4vw,16px)}
+  body[data-app="massage"] #routines .routine-current-step h3{font-size:clamp(22px,5.8vw,27px)}
+  body[data-app="massage"] #routines .routine-current-header,
+  body[data-app="massage"] #routines .routine-section-top{font-size:clamp(14px,3.8vw,17px)}
+  body[data-app="massage"] #routines .routine-playback-controls .planner-btn,
+  body[data-app="massage"] #routines .routine-nav-pair .planner-btn{font-size:clamp(15px,4vw,18px);min-height:48px}
+  body[data-app="massage"] #routines .routine-sections{height:clamp(260px,35svh,420px)}
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-sections{min-height:min(238px,31svh)!important}
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-current-step{padding:12px}
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-summary .routine-timer strong{font-size:clamp(49px,13vw,68px)}
+}
+@media(max-height:700px) and (max-width:650px){
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen,
+  body[data-app="massage"] #routines #massageRoutineRunner:fullscreen{gap:4px}
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-summary .routine-timer{min-height:62px}
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-current-step{flex-basis:220px!important}
+  body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-sections{min-height:220px!important}
+}
