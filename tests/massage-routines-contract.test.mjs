@@ -65,7 +65,7 @@ test('all 60 minutes are categorised into ordered, named techniques',()=>{
   assert.equal(cueLists[2].length,10);
   assert.match(cueLists[2][0][3],/left arm/i);
   assert.match(cueLists[2][5][3],/right arm/i);
-  assert.ok(cueLists[10].some(c=>c[1]==='Compression' && /finger crawling with thumb compression/i.test(c[2])));
+  assert.ok(cueLists[10].some(c=>c[1]==='Compression' && /finger crawling with thumb walking/i.test(c[2])));
   assert.ok(cueLists[10].filter(c=>c[1]==='Tapotement').length>=2);
   assert.ok(cueLists[10].some(c=>c[2]==='Cupping'));
   assert.ok(cueLists[10].some(c=>c[2]==='Hacking'));
