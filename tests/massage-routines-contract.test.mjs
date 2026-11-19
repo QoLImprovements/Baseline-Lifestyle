@@ -39,25 +39,33 @@ test('step schedule covers exactly 60 minutes, without gaps, in requested order'
   assert.match(steps.at(-1).title,/finishing/i);
 });
 
-test('every main step has ordered, named timed sections, with clear left/right language',()=>{
+test('all 60 minutes are categorised into ordered, named techniques',()=>{
   const timings=[...js.matchAll(/\{from:(\d+),to:(\d+),phase:'[^']+',title:'[^']+'/g)]
     .map(m=>({from:Number(m[1]),to:Number(m[2])}));
   const cueLists=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
+  const allowed=new Set(['Effleurage','Petrissage','Compression','Tapotement','Assisted stretching','Passive movement','Repositioning']);
   assert.equal(timings.length,17);
   assert.equal(cueLists.length,17);
+  assert.ok(cueLists.flat().length>=60);
   cueLists.forEach((cues,index)=>{
     const duration=timings[index].to-timings[index].from;
     assert.equal(cues[0][0],0);
     cues.forEach((cue,j)=>{
-      assert.ok(cue[0]<duration && cue[0]>=0, 'section belongs to main step');
-      if(j) assert.ok(cue[0]>cues[j-1][0], 'section starts increase');
-      assert.ok(cue[1].length>20, 'section instruction is meaningful');
-      assert.doesNotMatch(cue[1],/\b\d+\s*[–-]\s*\d+\s*s\b|first two minutes|next two minutes/i);
+      assert.equal(cue.length,4);
+      assert.ok(cue[0]>=0 && cue[0]<duration);
+      if(j) assert.ok(cue[0]>cues[j-1][0]);
+      assert.ok(allowed.has(cue[1]));
+      assert.ok(cue[2].length>5 && cue[3].length>20);
+      assert.doesNotMatch(cue[3],/\b\d+\s*[–-]\s*\d+\s*s\b|first two minutes|next two minutes/i);
     });
   });
   assert.equal(cueLists[2].length,10);
-  assert.match(cueLists[2][0][1],/left arm/i);
-  assert.match(cueLists[2][5][1],/right arm/i);
+  assert.match(cueLists[2][0][3],/left arm/i);
+  assert.match(cueLists[2][5][3],/right arm/i);
+  assert.ok(cueLists[10].some(c=>c[1]==='Compression' && /finger crawling with thumb walking/i.test(c[2])));
+  assert.ok(cueLists[10].filter(c=>c[1]==='Tapotement').length>=2);
+  assert.ok(cueLists[10].some(c=>c[2]==='Cupping'));
+  assert.ok(cueLists[10].some(c=>c[2]==='Hacking'));
   assert.doesNotMatch(js,/relevant muscle bellies|support one arm|0–30s/);
 });
 
@@ -81,3 +89,26 @@ test('timer shows exact current-section time and highlights one section silently
   assert.match(html,/id="massageRoutineNext"/);
   assert.doesNotMatch(js,/(?:new\s+Audio\s*\(|speechSynthesis|\.play\s*\(|\.vibrate\s*\(|AudioContext|OscillatorNode)/);
 });
+
+test('guided procedure navigation, precise start selection, and full routine are present',()=>{
+  assert.match(js,/const PROCEDURE_STARTS = STEPS\.flatMap/);
+  assert.match(js,/previousProcedureBtn\.addEventListener\('click'/);
+  assert.match(js,/nextProcedureBtn\.addEventListener\('click'/);
+  assert.match(js,/startStepSelect\.addEventListener\('change'/);
+  assert.match(js,/startProcedureSelect\.addEventListener\('change'/);
+  assert.match(js,/quickPauseBtn\.addEventListener\('click'/);
+  assert.match(js,/pause\(\);jumpTo\(second\)/);
+  assert.match(js,/function buildFullRoutine\(\)/);
+  assert.match(js,/section\.family|procedure\.family/);
+  assert.match(js,/section\.technique|procedure\.technique/);
+  assert.match(html,/id="massageRoutineStartStep"/);
+  assert.match(html,/id="massageRoutineStartProcedure"/);
+  assert.match(html,/id="massageRoutineQuickPause"/);
+  assert.match(html,/id="massageRoutinePreviousProcedure"/);
+  assert.match(html,/id="massageRoutineNextProcedure"/);
+  assert.match(html,/id="massageRoutineFullDetails"/);
+  assert.match(html,/id="massageRoutineFullList"/);
+  assert.match(html,/View Full Routine/);
+  assert.doesNotMatch(html,/class="routine-safety"|class="routine-silent-note"/);
+});
+
