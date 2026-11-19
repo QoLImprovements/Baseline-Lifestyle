@@ -23,7 +23,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_RECREATION_PALETTE_CLEANUP_20261024_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_HEADER_CSS_20261021_1" rel="stylesheet"/>
-<link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_ROUTINES_SECTIONS_20261119_2" rel="stylesheet"/>
+<link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_TECHNIQUES_AND_PROCEDURES_20261119_4" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-protected-access.css?v=PROTECTED_ACCESS_CSS_20261021_1" rel="stylesheet" data-protected-access-style="true"/>
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=PROTECTED_KEY_CSS_20261021_1" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=SITEWIDE_UI_FIXES_20261021_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
@@ -775,6 +775,16 @@ These Markdown rules are a human reference point, not live runtime config.
             <button type="button" class="planner-btn" id="massageRoutinePrevious" disabled>Previous step</button>
             <button type="button" class="planner-btn" id="massageRoutineNext">Next step</button>
           </div>
+          <div class="routine-start-from" aria-label="Choose where to begin or resume the massage">
+            <div class="routine-start-picker">
+              <label for="massageRoutineStartStep">Start From Step</label>
+              <select id="massageRoutineStartStep" aria-label="Select a massage step to start from"></select>
+            </div>
+            <div class="routine-start-picker">
+              <label for="massageRoutineStartProcedure">Start From Procedure</label>
+              <select id="massageRoutineStartProcedure" aria-label="Select a procedure within the chosen step to start from"></select>
+            </div>
+          </div>
           <p class="routine-status" id="massageRoutineStatus">Paused / ready</p>
           <div class="routine-current-step">
             <div class="routine-current-header">
@@ -787,11 +797,18 @@ These Markdown rules are a human reference point, not live runtime config.
               <strong id="massageRoutineSectionCounter">Section 1 of 2</strong>
               <span>Section remaining <strong id="massageRoutineSectionClock">01:00</strong></span>
             </div>
-            <div class="routine-sections" id="massageRoutineTimeline" role="list" tabindex="0" aria-label="Scrollable timed sections within the current massage step"></div>
+            <div class="routine-sections" id="massageRoutineTimeline" role="list" tabindex="0" aria-label="Scrollable timed procedures within the current massage step"></div>
+            <div class="routine-procedure-controls" aria-label="Current procedure controls">
+              <button type="button" class="planner-btn" id="massageRoutinePreviousProcedure" disabled>Previous Procedure</button>
+              <button type="button" class="planner-btn primary" id="massageRoutineQuickPause">Start</button>
+              <button type="button" class="planner-btn" id="massageRoutineNextProcedure">Next Procedure</button>
+            </div>
           </div>
           <p class="routine-next-step"><strong>Next Step — </strong><span id="massageRoutineNextTitle">Pectoral kneading and gliding</span></p>
-          <p class="routine-safety">Keep assisted stretches mild and supported. Massage muscle tissue during a stretch as comfortable; avoid heavy pressure over taut tendons, ligaments or joints. Check consent and draping for chest and glute work.</p>
-          <p class="routine-silent-note">Silent session: no chimes, notifications, vibration or automatic audio.</p>
+          <details class="routine-full-plan" id="massageRoutineFullDetails">
+            <summary>View Full Routine</summary>
+            <div id="massageRoutineFullList" class="routine-full-list" aria-label="All 60-minute massage steps and their timed techniques"></div>
+          </details>
         </div>
       </article>
     </div>
@@ -1313,7 +1330,7 @@ These Markdown rules are a human reference point, not live runtime config.
 })();
 
 </script>
-<script src="/systems/baseline-massage/js/massage-routines.js?v=MASSAGE_ROUTINES_SECTIONS_20261119_2"></script>
+<script src="/systems/baseline-massage/js/massage-routines.js?v=MASSAGE_TECHNIQUES_AND_PROCEDURES_20261119_4"></script>
 <script src="/systems/baseline-massage/js/baseline-massage-persistence.js?v=MASSAGE_ACCOUNT_PERSISTENCE_20261004_1"></script>
 </body>
 </html>
