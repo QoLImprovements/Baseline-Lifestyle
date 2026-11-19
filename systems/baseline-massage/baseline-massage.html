@@ -23,7 +23,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_RECREATION_PALETTE_CLEANUP_20261024_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_HEADER_CSS_20261021_1" rel="stylesheet"/>
-<link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_TECHNIQUES_AND_PROCEDURES_20261119_3" rel="stylesheet"/>
+<link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_TECHNIQUES_AND_PROCEDURES_20261119_4" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-protected-access.css?v=PROTECTED_ACCESS_CSS_20261021_1" rel="stylesheet" data-protected-access-style="true"/>
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=PROTECTED_KEY_CSS_20261021_1" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=SITEWIDE_UI_FIXES_20261021_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
@@ -775,6 +775,16 @@ These Markdown rules are a human reference point, not live runtime config.
             <button type="button" class="planner-btn" id="massageRoutinePrevious" disabled>Previous step</button>
             <button type="button" class="planner-btn" id="massageRoutineNext">Next step</button>
           </div>
+          <div class="routine-start-from" aria-label="Choose where to begin or resume the massage">
+            <div class="routine-start-picker">
+              <label for="massageRoutineStartStep">Start From Step</label>
+              <select id="massageRoutineStartStep" aria-label="Select a massage step to start from"></select>
+            </div>
+            <div class="routine-start-picker">
+              <label for="massageRoutineStartProcedure">Start From Procedure</label>
+              <select id="massageRoutineStartProcedure" aria-label="Select a procedure within the chosen step to start from"></select>
+            </div>
+          </div>
           <p class="routine-status" id="massageRoutineStatus">Paused / ready</p>
           <div class="routine-current-step">
             <div class="routine-current-header">
@@ -1320,7 +1330,7 @@ These Markdown rules are a human reference point, not live runtime config.
 })();
 
 </script>
-<script src="/systems/baseline-massage/js/massage-routines.js?v=MASSAGE_TECHNIQUES_AND_PROCEDURES_20261119_3"></script>
+<script src="/systems/baseline-massage/js/massage-routines.js?v=MASSAGE_TECHNIQUES_AND_PROCEDURES_20261119_4"></script>
 <script src="/systems/baseline-massage/js/baseline-massage-persistence.js?v=MASSAGE_ACCOUNT_PERSISTENCE_20261004_1"></script>
 </body>
 </html>
