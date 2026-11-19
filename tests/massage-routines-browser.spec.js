@@ -1,48 +1,62 @@
 const {test,expect}=require('@playwright/test');
 
-test('sixty-minute partner massage follows current step inside a compact silent timeline',async({page})=>{
+test('silent massage timer highlights and scrolls exact timed sections',async({page})=>{
+  await page.clock.install();
   await page.goto('/baseline-massage/routines?massage-plan=partner-full-body-60',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#routines')).toHaveClass(/active/);
-  await expect(page.locator('#massageRoutineSelect')).toHaveValue('partner-full-body-60');
   await expect(page.locator('#massageRoutineRunner')).toBeVisible();
+  await expect(page.locator('#massageRoutineSelect')).toHaveValue('partner-full-body-60');
+
   const timeline=page.locator('#massageRoutineTimeline');
-  const rows=timeline.locator('.routine-step-row');
-  await expect(rows).toHaveCount(17);
+  const rows=timeline.locator('.routine-section-row');
+  await expect(rows).toHaveCount(2);
   await expect(rows.first()).toHaveAttribute('aria-current','step');
+  await expect(page.locator('#massageRoutineSectionClock')).toHaveText('01:00');
+  await expect(page.locator('#massageRoutineNextTitle')).toHaveText('Pectoral kneading and gliding');
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('00:00');
-  await expect(page.locator('#massageRoutineRemaining')).toHaveText('60:00');
 
-  const metrics=await timeline.evaluate(el=>({height:el.clientHeight,scrollHeight:el.scrollHeight}));
-  expect(metrics.height).toBeLessThan(300);
-  expect(metrics.scrollHeight).toBeGreaterThan(metrics.height*3);
+  // Skip main steps without altering the 60-minute schedule.
+  await page.locator('#massageRoutineNext').click();
+  await page.locator('#massageRoutineNext').click();
+  await expect(page.locator('#massageRoutineCurrentTitle')).toHaveText('Chest opening with pectoral massage');
+  await expect(page.locator('#massageRoutineNextTitle')).toHaveText('Neck, trapezius and front shoulders');
+  await expect(rows).toHaveCount(10);
+  await expect(rows.first()).toHaveAttribute('aria-current','step');
+  await expect(rows.first()).toContainText('left arm');
+  await expect(rows.nth(5)).toContainText('right arm');
+  await expect(page.locator('#massageRoutineSectionCounter')).toHaveText('Section 1 of 10');
+  await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:30');
+  await expect(timeline).toHaveCSS('overflow-y','auto');
 
+  // Fast-forward into the fourth section: 75 seconds into the four-minute step.
   await page.locator('#massageRoutineStart').click();
-  await expect(page.locator('#massageRoutinePause')).toBeEnabled();
-  await expect.poll(async()=>await page.locator('#massageRoutineElapsed').innerText()).not.toBe('00:00');
-  await page.locator('#massageRoutinePause').click();
-  const paused=await page.locator('#massageRoutineElapsed').innerText();
-  await page.waitForTimeout(450);
-  await expect(page.locator('#massageRoutineElapsed')).toHaveText(paused);
-
-  for(let index=0;index<9;index++) await page.locator('#massageRoutineNext').click();
-  await expect(page.locator('#massageRoutineCurrentTitle')).toContainText('Warm the full back');
-  await expect(rows.nth(9)).toHaveAttribute('aria-current','step');
-  await expect.poll(()=>timeline.evaluate(el=>el.scrollTop)).toBeGreaterThan(100);
-  await expect.poll(()=>rows.nth(9).evaluate((row)=>{
-    const timeline=row.closest('.massage-routine-timeline');
-    const box=row.getBoundingClientRect(),view=timeline.getBoundingClientRect();
-    return box.top>=view.top && box.bottom<=view.bottom;
+  await page.clock.fastForward(75000);
+  await expect(page.locator('#massageRoutineElapsed')).toHaveText('07:15');
+  await expect(page.locator('#massageRoutineSectionCounter')).toHaveText('Section 4 of 10');
+  await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:20');
+  await expect(rows.nth(3)).toHaveAttribute('aria-current','step');
+  await expect(rows.nth(3).locator('.routine-section-remaining')).toHaveText('00:20 left');
+  await expect.poll(()=>timeline.evaluate(el=>el.scrollTop)).toBeGreaterThan(30);
+  await expect.poll(()=>rows.nth(3).evaluate(row=>{
+    const container=row.closest('.routine-sections');
+    const a=row.getBoundingClientRect(),b=container.getBoundingClientRect();
+    return a.top>=b.top && a.bottom<=b.bottom;
   })).toBe(true);
 
+  await page.locator('#massageRoutinePause').click();
+  const paused=await page.locator('#massageRoutineElapsed').innerText();
+  await page.clock.fastForward(10000);
+  await expect(page.locator('#massageRoutineElapsed')).toHaveText(paused);
   await page.locator('#massageRoutineReset').click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('00:00');
+  await expect(rows).toHaveCount(2);
   await expect(rows.first()).toHaveAttribute('aria-current','step');
   await page.locator('#massageRoutineSelect').selectOption('');
   await expect(page.locator('#massageRoutineRunner')).toBeHidden();
   await expect(page).not.toHaveURL(/massage-plan=/);
 });
 
-test('routine route and selected plan survive refresh and remain independent from planner',async({page})=>{
+test('massage plan selection survives refresh and remains independent from planner',async({page})=>{
   await page.goto('/baseline-massage/routines',{waitUntil:'domcontentloaded'});
   await page.locator('#massageRoutineSelect').selectOption('partner-full-body-60');
   await expect(page).toHaveURL(/massage-plan=partner-full-body-60/);
