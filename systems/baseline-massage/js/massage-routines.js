@@ -113,6 +113,12 @@
     }
     setMinimal(false);
     minimalSetting.addEventListener('change',()=>setMinimal(minimalSetting.checked));
+    fullDetails.addEventListener('toggle',()=>{
+      const heading=fullDetails.querySelector('summary');
+      if(heading) heading.textContent=fullDetails.open
+        ? '← Back to Massage Player'
+        : 'View Full Routine · Choose where to start';
+    });
     let focused=false;
     let nativeFullscreen=false;
     function setFullscreen(enabled){
@@ -122,7 +128,10 @@
       fullscreenBtn.setAttribute('aria-pressed',focused?'true':'false');
       fullscreenBtn.setAttribute('aria-label',focused?'Exit fullscreen':'Enter fullscreen');
       fullscreenLabel.textContent=focused?'Exit fullscreen':'Fullscreen';
-      if(focused) viewport.scrollTop=Math.max(0,(rows[shownSection]?.offsetTop||0)-12);
+      if(focused && shownSection>=0){
+        if(typeof window.requestAnimationFrame==='function') window.requestAnimationFrame(()=>scrollToCurrent(shownSection));
+        else scrollToCurrent(shownSection);
+      }
     }
     function exitFullscreen(){
       setFullscreen(false);
@@ -152,10 +161,14 @@
     function scrollToCurrent(index){
       const row=rows[index];
       if(!row) return;
-      const target=Math.max(0,row.offsetTop - (viewport.clientHeight-row.offsetHeight)/2);
-      if(typeof viewport.scrollTo === 'function') viewport.scrollTo({top:target,behavior:prefersReducedMotion()?'instant':'smooth'});
+      // Overflow is hidden from manual input, but programmatic scrolling is retained.
+      // Never crop the top of a procedure that exceeds the available viewport.
+      const spareSpace=Math.max(0,viewport.clientHeight-row.offsetHeight);
+      const target=Math.max(0,row.offsetTop-spareSpace/2);
+      if(typeof viewport.scrollTo==='function') viewport.scrollTo({top:target,behavior:prefersReducedMotion()?'instant':'smooth'});
       else viewport.scrollTop=target;
     }
+    window.addEventListener('resize',()=>{if(shownSection>=0) scrollToCurrent(shownSection);});
     function timeMs(){
       return Math.min(TOTAL_SECONDS*1000,Math.max(0,running ? performance.now()-startedAt : elapsedMs));
     }
