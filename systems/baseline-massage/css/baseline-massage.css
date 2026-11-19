@@ -1267,7 +1267,7 @@ html[data-initial-section="library"] body[data-app="massage"] main.wrap > #libra
 html[data-initial-section="planner"] body[data-app="massage"] main.wrap > #planner{display:block!important}
 
 
-/* Massage Routines — compact, self-scrolling and entirely silent. */
+/* Massage Routines — live, silent step sections with an internal scroller. */
 body[data-app="massage"] #routines .massage-routines-card{max-width:1050px;margin-inline:auto}
 body[data-app="massage"] #routines .massage-routine-picker{display:grid;gap:8px;margin:16px 0 20px;max-width:720px}
 body[data-app="massage"] #routines .massage-routine-picker label{font-weight:800}
@@ -1304,31 +1304,32 @@ body[data-app="massage"] #routines .routine-current-step{
 body[data-app="massage"] #routines .routine-current-header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px;font-weight:800}
 body[data-app="massage"] #routines .routine-step-clock{font-variant-numeric:tabular-nums}
 body[data-app="massage"] #routines .routine-current-step h3{font-size:clamp(19px,3vw,24px);margin:10px 0 8px}
-body[data-app="massage"] #routines .routine-current-step p{margin:0 0 8px}
-body[data-app="massage"] #routines .routine-current-cue{background:rgba(95,53,28,.12);border-radius:10px;padding:10px 12px;font-weight:600}
-body[data-app="massage"] #routines .routine-timeline-heading{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:18px}
-body[data-app="massage"] #routines .routine-timeline-heading h3{margin:0 0 8px}
-body[data-app="massage"] #routines .routine-timeline-heading span{font-size:13px;font-weight:600}
-body[data-app="massage"] #routines .massage-routine-timeline{
-  position:relative;max-height:268px;height:268px;overflow-y:auto;overscroll-behavior:contain;
+body[data-app="massage"] #routines .routine-current-step p{margin:0 0 12px}
+body[data-app="massage"] #routines .routine-section-top{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  margin:12px 0 8px;font-size:14px;font-weight:800;
+}
+body[data-app="massage"] #routines .routine-section-top strong{font-variant-numeric:tabular-nums}
+body[data-app="massage"] #routines .routine-sections{
+  position:relative;max-height:228px;overflow-y:auto;overscroll-behavior:contain;
   scrollbar-width:thin;scrollbar-color:#86593b rgba(255,255,255,.12);
-  border:1px solid var(--massage-border-strong);border-radius:16px;padding:9px;
-  background:rgba(53,26,12,.09);
+  border:1px solid var(--massage-border-strong);border-radius:14px;padding:7px;
+  background:rgba(53,26,12,.08);
 }
-body[data-app="massage"] #routines .routine-step-row{
-  min-height:79px;display:grid;grid-template-columns:34px minmax(0,1fr) auto;
-  gap:11px;align-items:center;padding:12px 10px;margin-bottom:7px;
-  background:rgba(255,234,207,.34);border:1px solid rgba(66,34,17,.3);border-radius:12px;
-  transition:background-color .2s ease,border-color .2s ease
+body[data-app="massage"] #routines .routine-section-row{
+  min-height:67px;display:grid;grid-template-columns:24px minmax(0,1fr) 78px;
+  gap:8px;align-items:center;padding:10px;margin-bottom:6px;
+  background:rgba(255,234,207,.34);border:1px solid rgba(66,34,17,.3);border-radius:11px;
 }
-body[data-app="massage"] #routines .routine-step-row:last-child{margin-bottom:0}
-body[data-app="massage"] #routines .routine-step-row.is-live{background:#f3d5b1;border:2px solid #4a2916;box-shadow:inset 5px 0 0 #5f3922}
-body[data-app="massage"] #routines .routine-row-number{font-size:15px;opacity:.78;font-weight:850;font-variant-numeric:tabular-nums}
-body[data-app="massage"] #routines .routine-row-main{display:grid;gap:4px;min-width:0;line-height:1.3}
-body[data-app="massage"] #routines .routine-row-main strong{font-size:15px}
-body[data-app="massage"] #routines .routine-row-main span{font-size:12px;opacity:.9;font-variant-numeric:tabular-nums}
-body[data-app="massage"] #routines .routine-row-status{font-size:10px;font-weight:900;letter-spacing:.05em}
-body[data-app="massage"] #routines .routine-step-row.is-live .routine-row-status{color:#522b17}
+body[data-app="massage"] #routines .routine-section-row:last-child{margin-bottom:0}
+body[data-app="massage"] #routines .routine-section-row.is-live{
+  background:#f3d5b1;border:2px solid #4a2916;box-shadow:inset 5px 0 0 #5f3922;
+}
+body[data-app="massage"] #routines .routine-section-number{font-size:13px;font-weight:850;font-variant-numeric:tabular-nums}
+body[data-app="massage"] #routines .routine-section-instruction{font-size:14px;font-weight:650;line-height:1.4;min-width:0}
+body[data-app="massage"] #routines .routine-section-remaining{font-size:12px;font-weight:850;white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+body[data-app="massage"] #routines .routine-next-step{margin:14px 1px 2px;font-size:16px;font-weight:600;line-height:1.4}
+body[data-app="massage"] #routines .routine-next-step strong{font-weight:900}
 body[data-app="massage"] #routines .routine-safety,
 body[data-app="massage"] #routines .routine-silent-note{font-size:13px;margin:12px 0 0}
 body[data-app="massage"] #routines .routine-silent-note{font-weight:750}
@@ -1337,10 +1338,8 @@ body[data-app="massage"] #routines .routine-silent-note{font-weight:750}
   body[data-app="massage"] #routines .routine-timer{min-width:0;align-self:stretch;grid-template-columns:auto auto auto;align-items:center;justify-items:center}
   body[data-app="massage"] #routines .routine-timer strong{font-size:30px}
   body[data-app="massage"] #routines .routine-current-step{padding:12px}
-  body[data-app="massage"] #routines .routine-step-row{grid-template-columns:24px minmax(0,1fr) auto;gap:7px;padding:10px 7px}
-  body[data-app="massage"] #routines .routine-row-main strong{font-size:14px}
+  body[data-app="massage"] #routines .routine-section-row{grid-template-columns:24px minmax(0,1fr);gap:3px 8px;padding:9px}
+  body[data-app="massage"] #routines .routine-section-number{grid-row:1/3}
+  body[data-app="massage"] #routines .routine-section-remaining{grid-column:2;text-align:left}
   body[data-app="massage"] #routines .routine-control-row .planner-btn{flex:1 1 auto}
-}
-@media(prefers-reduced-motion:reduce){
-  body[data-app="massage"] #routines .routine-step-row{transition:none}
 }
