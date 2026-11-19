@@ -38,6 +38,11 @@
       STEPS[STEPS.length-1].to === TOTAL_SECONDS &&
       STEPS.every((step,i) => step.to > step.from && (!i || STEPS[i-1].to === step.from));
   }
+  if(!STEPS.every(step=>step.cues.length && step.cues[0][0]===0 &&
+    step.cues.every((cue,index)=>cue[0]>=0 && cue[0]<step.to-step.from &&
+      (index===0 || cue[0]>step.cues[index-1][0])))){
+    throw new Error('Massage routine sections must be ordered and within their step');
+  }
   if(!validateSchedule()) throw new Error('Massage routine timings must cover exactly 60 minutes');
 
   function initialise(){
@@ -49,7 +54,9 @@
     const stepClock=byId('massageRoutineStepClock');
     const stepTitle=byId('massageRoutineCurrentTitle');
     const stepDetail=byId('massageRoutineCurrentDetail');
-    const stepCue=byId('massageRoutineCurrentCue');
+    const sectionCounter=byId('massageRoutineSectionCounter');
+    const sectionClock=byId('massageRoutineSectionClock');
+    const nextTitle=byId('massageRoutineNextTitle');
     const stepCount=byId('massageRoutineStepCount');
     const progress=byId('massageRoutineProgress');
     const startBtn=byId('massageRoutineStart');
@@ -58,15 +65,16 @@
     const prevBtn=byId('massageRoutinePrevious');
     const nextBtn=byId('massageRoutineNext');
     const stateLabel=byId('massageRoutineStatus');
-    if(!select || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !startBtn) return;
+    if(!select || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !startBtn) return;
 
     let elapsedMs=0;
     let startedAt=0;
     let running=false;
     let timerId=null;
     let shownStep=-1;
+    let shownSection=-1;
     let shownSecond=-1;
-    const rows=[];
+    let rows=[];
     const prefersReducedMotion=()=>window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function scrollToCurrent(index){
@@ -88,12 +96,44 @@
       running=false;
       clearTick();
     }
-    function cueAt(step,secondsInStep){
-      let latest=step.cues[0][1];
-      for(const cue of step.cues){
-        if(secondsInStep >= cue[0]) latest=cue[1]; else break;
+    function sectionsFor(step){
+      return step.cues.map((cue,index)=>({
+        start:cue[0],
+        end:index+1<step.cues.length?step.cues[index+1][0]:step.to-step.from,
+        instruction:cue[1]
+      }));
+    }
+    function activeSectionIndex(sections,secondsInStep){
+      let index=0;
+      for(let i=1;i<sections.length;i++){
+        if(secondsInStep<sections[i].start) break;
+        index=i;
       }
-      return latest;
+      return index;
+    }
+    function buildSections(step){
+      rows=[];
+      const fragment=document.createDocumentFragment();
+      sectionsFor(step).forEach((section,index)=>{
+        const row=document.createElement('article');
+        row.className='routine-section-row';
+        row.setAttribute('role','listitem');
+        const number=document.createElement('span');
+        number.className='routine-section-number';
+        number.textContent=String(index+1).padStart(2,'0');
+        const instruction=document.createElement('span');
+        instruction.className='routine-section-instruction';
+        instruction.textContent=section.instruction;
+        const remaining=document.createElement('span');
+        remaining.className='routine-section-remaining';
+        remaining.textContent=format(section.end-section.start);
+        row.append(number,instruction,remaining);
+        fragment.appendChild(row);
+        rows.push(row);
+      });
+      viewport.replaceChildren(fragment);
+      viewport.scrollTop=0;
+      shownSection=-1;
     }
     function render(force=false){
       if(select.value !== PLAN_ID) return;
@@ -102,39 +142,55 @@
       const second=Math.floor(ms/1000);
       const index=activeStepIndex(second);
       const step=STEPS[index];
-      const changed=index!==shownStep;
-      if(!force && !changed && second===shownSecond) return;
+      const changedStep=index!==shownStep;
+      if(!force && !changedStep && second===shownSecond) return;
+      if(changedStep) buildSections(step);
       shownSecond=second;
+
+      const stepSecond=Math.max(0,Math.min(step.to-step.from,second-step.from));
+      const sections=sectionsFor(step);
+      const sectionIndex=activeSectionIndex(sections,stepSecond);
+      const section=sections[sectionIndex];
+      const sectionRemaining=Math.max(0,section.end-stepSecond);
+      const changedSection=sectionIndex!==shownSection;
+
       elapsedLabel.textContent=format(second);
       remainingLabel.textContent=format(TOTAL_SECONDS-second);
       stepClock.textContent=format(Math.max(0,step.to-second));
+      sectionClock.textContent=format(sectionRemaining);
+      sectionCounter.textContent='Section '+(sectionIndex+1)+' of '+sections.length;
       stepTitle.textContent=step.title;
       stepDetail.textContent=step.detail;
-      stepCue.textContent=cueAt(step,Math.min(step.to-step.from,second-step.from));
       stepCount.textContent='Step '+(index+1)+' of '+STEPS.length+' · '+step.phase+' · '+format(step.from)+'–'+format(step.to);
+      nextTitle.textContent=STEPS[index+1]?.title || 'Session complete';
       progress.value=second;
       startBtn.disabled=running || second>=TOTAL_SECONDS;
       pauseBtn.disabled=!running;
       prevBtn.disabled=second===0;
       nextBtn.disabled=second>=TOTAL_SECONDS;
       stateLabel.textContent=second===TOTAL_SECONDS?'Complete — 60:00':running?'In progress':'Paused / ready';
-      if(changed || force){
-        rows.forEach((row,i)=>{
-          const current=i===index;
+
+      rows.forEach((row,i)=>{
+        const current=i===sectionIndex;
+        if(changedStep || changedSection || force){
           row.classList.toggle('is-live',current);
           if(current) row.setAttribute('aria-current','step');
           else row.removeAttribute('aria-current');
-          const status=row.querySelector('.routine-row-status');
-          if(status) status.textContent=current?'NOW':step.from>=STEPS[i].to?'DONE':'UPCOMING';
-        });
-        if(changed) scrollToCurrent(index);
-        shownStep=index;
-      }
+        }
+        const remaining=row.querySelector('.routine-section-remaining');
+        if(remaining) remaining.textContent=current
+          ? format(sectionRemaining)+' left'
+          : i<sectionIndex?'Done':format(sections[i].end-sections[i].start);
+      });
+      if(changedStep || changedSection) scrollToCurrent(sectionIndex);
+      shownSection=sectionIndex;
+      shownStep=index;
     }
     function jumpTo(seconds){
       elapsedMs=Math.max(0,Math.min(TOTAL_SECONDS,seconds))*1000;
       if(running) startedAt=performance.now()-elapsedMs;
       shownStep=-1;
+      shownSection=-1;
       render(true);
     }
     function pause(){
@@ -167,28 +223,6 @@
       if(updateUrl) updateRoute();
       if(select.value===PLAN_ID) reset();
     }
-    const fragment=document.createDocumentFragment();
-    STEPS.forEach((step,index)=>{
-      const row=document.createElement('article');
-      row.className='routine-step-row';
-      row.setAttribute('role','listitem');
-      const number=document.createElement('span');
-      number.className='routine-row-number';
-      number.textContent=String(index+1).padStart(2,'0');
-      const main=document.createElement('div');
-      main.className='routine-row-main';
-      const title=document.createElement('strong');
-      title.textContent=step.title;
-      const subtitle=document.createElement('span');
-      subtitle.textContent=step.phase+' · '+format(step.from)+'–'+format(step.to);
-      main.append(title,subtitle);
-      const status=document.createElement('span');
-      status.className='routine-row-status';
-      row.append(number,main,status);
-      fragment.appendChild(row);
-      rows.push(row);
-    });
-    viewport.appendChild(fragment);
     select.addEventListener('change',()=>selectPlan(true));
     startBtn.addEventListener('click',()=>{
       if(running || timeMs()>=TOTAL_SECONDS*1000) return;
