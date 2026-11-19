@@ -296,6 +296,7 @@
         rows.push(row);
       });
       viewport.replaceChildren(fragment);
+      viewport.classList.toggle('routine-few-procedures',rows.length<=2);
       viewport.scrollTop=0;
       shownSection=-1;
     }
