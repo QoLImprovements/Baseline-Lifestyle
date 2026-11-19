@@ -161,3 +161,22 @@ test('each procedure has pressure and an optional stretch with the active countd
   assert.match(css,/max-height:calc\(100svh - 132px\)/);
   assert.doesNotMatch(html,/id="massageRoutineStartStep"|id="massageRoutineStartProcedure"/);
 });
+
+
+test('procedure card is automatic-only while fullscreen has a full routine viewer',()=>{
+  assert.match(html,/id="massageRoutineTimeline" role="list" aria-label="Timed procedures automatically advance/);
+  assert.doesNotMatch(html,/id="massageRoutineTimeline"[^>]*tabindex/);
+  assert.match(js,/viewport\.classList\.toggle\('routine-few-procedures',rows\.length<=2\)/);
+  assert.match(js,/viewport\.scrollTo\(\{top:target,behavior:/);
+  assert.match(js,/const spareSpace=Math\.max\(0,viewport\.clientHeight-row\.offsetHeight\)/);
+  assert.match(js,/fullDetails\.addEventListener\('toggle'/);
+  assert.match(js,/Back to Massage Player/);
+  const recent=css.slice(css.lastIndexOf('/* Full-height player:'));
+  assert.match(recent,/\.routine-sections\{[\s\S]*?overflow:hidden!important/);
+  assert.match(recent,/scrollbar-width:none!important/);
+  assert.match(recent,/\.routine-full-plan\[open\]/);
+  assert.match(recent,/overflow-y:auto/);
+  assert.match(recent,/\.routine-current-step\{[\s\S]*?flex:1 1 300px!important/);
+  assert.match(recent,/\.routine-summary \.routine-timer strong\{[\s\S]*?font-size:clamp\(51px,9vmin,78px\)/);
+  assert.match(recent,/\.routine-section-instruction\{font-size:clamp\(19px/);
+});
