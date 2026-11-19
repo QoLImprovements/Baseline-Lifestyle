@@ -23,7 +23,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_RECREATION_PALETTE_CLEANUP_20261024_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_HEADER_CSS_20261021_1" rel="stylesheet"/>
-<link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_COMPACT_FULLSCREEN_20261119_5" rel="stylesheet"/>
+<link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_COMPACT_MINIMAL_20261119_6" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-protected-access.css?v=PROTECTED_ACCESS_CSS_20261021_1" rel="stylesheet" data-protected-access-style="true"/>
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=PROTECTED_KEY_CSS_20261021_1" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=SITEWIDE_UI_FIXES_20261021_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
@@ -759,79 +759,75 @@ These Markdown rules are a human reference point, not live runtime config.
         <div id="massageRoutineRunner" hidden>
           <div class="routine-player-toolbar">
             <strong>Massage Player</strong>
-            <button type="button" class="routine-fullscreen-btn" id="massageRoutineFullscreen" aria-pressed="false" aria-label="Enter fullscreen">
-              <svg class="routine-expand-icon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>
-              </svg>
-              <svg class="routine-compress-icon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5"/>
-              </svg>
-              <span id="massageRoutineFullscreenLabel">Fullscreen</span>
-            </button>
+            <div class="routine-player-tools">
+              <details id="massageRoutineSettings" class="routine-settings">
+                <summary aria-label="Settings">⚙ Settings</summary>
+                <label class="routine-minimal-setting" for="massageRoutineMinimal">
+                  <input type="checkbox" id="massageRoutineMinimal">
+                  <span>Minimal</span>
+                </label>
+              </details>
+              <button type="button" class="routine-fullscreen-btn" id="massageRoutineFullscreen" aria-pressed="false" aria-label="Enter fullscreen">
+                <svg class="routine-expand-icon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
+                <svg class="routine-compress-icon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5"/></svg>
+                <span id="massageRoutineFullscreenLabel">Fullscreen</span>
+              </button>
+            </div>
           </div>
           <div class="routine-summary">
-            <div>
-              <span class="routine-eyebrow">FULL-BODY PARTNER MASSAGE</span>
-              <h3>60-Minute Guided Routine</h3>
-              <p>Face-up chest and shoulder opening first, then arms and legs; face-down back, glutes, legs and finishing stretches.</p>
-            </div>
-            <div class="routine-timer" role="timer" aria-label="Elapsed session time" aria-live="off">
+            <div class="routine-timer" role="timer" aria-label="Elapsed massage time" aria-live="off">
               <span class="routine-eyebrow">ELAPSED</span>
               <strong id="massageRoutineElapsed">00:00</strong>
               <span>Remaining <b id="massageRoutineRemaining">60:00</b></span>
             </div>
           </div>
           <progress id="massageRoutineProgress" max="3600" value="0" aria-label="Overall massage session progress"></progress>
-          <div class="routine-control-row" aria-label="Massage routine timer controls">
-            <button type="button" class="planner-btn primary" id="massageRoutineStart">Start / Resume</button>
-            <button type="button" class="planner-btn" id="massageRoutinePause" disabled>Pause</button>
-            <button type="button" class="planner-btn" id="massageRoutineReset">Reset</button>
-            <button type="button" class="planner-btn" id="massageRoutinePrevious" disabled>Previous step</button>
-            <button type="button" class="planner-btn" id="massageRoutineNext">Next step</button>
-          </div>
-          <details class="routine-start-details" id="massageRoutineStartingPoint">
-            <summary>Choose starting step or procedure</summary>
-            <div class="routine-start-from" aria-label="Choose where to begin or resume the massage">
-              <div class="routine-start-picker">
-                <label for="massageRoutineStartStep">Start From Step</label>
-                <div class="routine-visible-select">
-                  <span id="massageRoutineStepValue" class="routine-select-display" aria-hidden="true">Step 1</span>
-                  <select id="massageRoutineStartStep" aria-label="Select a massage step to start from"></select>
-                </div>
-              </div>
-              <div class="routine-start-picker">
-                <label for="massageRoutineStartProcedure">Start From Procedure</label>
-                <div class="routine-visible-select">
-                  <span id="massageRoutineProcedureValue" class="routine-select-display" aria-hidden="true">Procedure 1</span>
-                  <select id="massageRoutineStartProcedure" aria-label="Select a procedure within the chosen step to start from"></select>
-                </div>
-              </div>
+          <div class="routine-minimal-clock" id="massageRoutineMinimalClock" role="timer" aria-label="Current procedure countdown" aria-live="off">
+            <div class="routine-minimal-clock-face">
+              <span>PROCEDURE LEFT</span>
+              <strong id="massageRoutineMinimalTime">01:00</strong>
+              <small id="massageRoutineMinimalElapsed">00:00 elapsed</small>
             </div>
-          </details>
+          </div>
           <p class="routine-status" id="massageRoutineStatus">Paused / ready</p>
           <div class="routine-current-step">
             <div class="routine-current-header">
-              <span class="routine-step-count" id="massageRoutineStepCount">Step 1 of 17</span>
-              <span class="routine-step-clock">Step remaining <strong id="massageRoutineStepClock">02:00</strong></span>
+              <span class="routine-step-count" id="massageRoutineStepCount">Step 1 of 17 · Face-up · 00:00–02:00</span>
+              <span class="routine-step-clock">Step left <strong id="massageRoutineStepClock">02:00</strong></span>
             </div>
             <h3 id="massageRoutineCurrentTitle">Warm chest and anterior shoulders</h3>
             <p id="massageRoutineCurrentDetail"></p>
             <div class="routine-section-top">
-              <strong id="massageRoutineSectionCounter">Section 1 of 2</strong>
-              <span>Section remaining <strong id="massageRoutineSectionClock">01:00</strong></span>
+              <strong id="massageRoutineSectionCounter">Procedure 1 of 2</strong>
+              <span>Procedure left <strong id="massageRoutineSectionClock">01:00</strong></span>
             </div>
-            <div class="routine-sections" id="massageRoutineTimeline" role="list" tabindex="0" aria-label="Scrollable timed procedures within the current massage step"></div>
-            <div class="routine-procedure-controls" aria-label="Current procedure controls">
-              <button type="button" class="planner-btn" id="massageRoutinePreviousProcedure" disabled>Previous Procedure</button>
-              <button type="button" class="planner-btn primary" id="massageRoutineQuickPause">Start</button>
-              <button type="button" class="planner-btn" id="massageRoutineNextProcedure">Next Procedure</button>
+            <div class="routine-sections" id="massageRoutineTimeline" role="list" tabindex="0" aria-label="Automatically scrolling timed procedures"></div>
+            <div class="routine-minimal-active" aria-label="Active massage procedure">
+              <span id="massageRoutineMinimalFamily">EFFLEURAGE</span>
+              <strong id="massageRoutineMinimalName">Broad Palm Effleurage</strong>
+              <p id="massageRoutineMinimalInstruction">Apply Broad Palm Effleurage to the upper chest and shoulders.</p>
             </div>
           </div>
-          <p class="routine-next-step"><strong>Next Step — </strong><span id="massageRoutineNextTitle">Pectoral kneading and gliding</span></p>
+          <div class="routine-playback-controls" aria-label="Massage playback">
+            <button type="button" class="planner-btn primary" id="massageRoutineQuickPause">Start</button>
+            <button type="button" class="planner-btn" id="massageRoutineReset">Reset</button>
+          </div>
+          <div class="routine-navigation" aria-label="Massage step and procedure navigation">
+            <div class="routine-nav-pair" aria-label="Step navigation">
+              <button type="button" class="planner-btn" id="massageRoutinePrevious" disabled>← Previous Step</button>
+              <button type="button" class="planner-btn" id="massageRoutineNext">Next Step →</button>
+            </div>
+            <div class="routine-nav-pair" aria-label="Procedure navigation">
+              <button type="button" class="planner-btn" id="massageRoutinePreviousProcedure" disabled>← Previous Procedure</button>
+              <button type="button" class="planner-btn" id="massageRoutineNextProcedure">Next Procedure →</button>
+            </div>
+          </div>
+          <p class="routine-next-step"><strong>Next Step — </strong><span id="massageRoutineNextTitle">Pectoral Petrissage</span></p>
           <details class="routine-full-plan" id="massageRoutineFullDetails">
-            <summary>View Full Routine</summary>
-            <div id="massageRoutineFullList" class="routine-full-list" aria-label="All 60-minute massage steps and their timed techniques"></div>
+            <summary>View Full Routine · Choose where to start</summary>
+            <div id="massageRoutineFullList" class="routine-full-list" aria-label="All timed massage steps and techniques, each with Start Here"></div>
           </details>
+        </div>
         </div>
       </article>
     </div>
@@ -1353,7 +1349,7 @@ These Markdown rules are a human reference point, not live runtime config.
 })();
 
 </script>
-<script src="/systems/baseline-massage/js/massage-routines.js?v=MASSAGE_COMPACT_FULLSCREEN_20261119_5"></script>
+<script src="/systems/baseline-massage/js/massage-routines.js?v=MASSAGE_COMPACT_MINIMAL_20261119_6"></script>
 <script src="/systems/baseline-massage/js/baseline-massage-persistence.js?v=MASSAGE_ACCOUNT_PERSISTENCE_20261004_1"></script>
 </body>
 </html>
