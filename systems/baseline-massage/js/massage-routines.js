@@ -55,8 +55,14 @@
   function initialise(){
     const select=byId('massageRoutineSelect');
     const planValue=byId('massageRoutinePlanValue');
-    const stepValue=byId('massageRoutineStepValue');
-    const procedureValue=byId('massageRoutineProcedureValue');
+    const minimalSetting=byId('massageRoutineMinimal');
+    const minimalClock=byId('massageRoutineMinimalClock');
+    const minimalTime=byId('massageRoutineMinimalTime');
+    const minimalElapsed=byId('massageRoutineMinimalElapsed');
+    const minimalFamily=byId('massageRoutineMinimalFamily');
+    const minimalName=byId('massageRoutineMinimalName');
+    const minimalInstruction=byId('massageRoutineMinimalInstruction');
+    const fullDetails=byId('massageRoutineFullDetails');
     const fullscreenBtn=byId('massageRoutineFullscreen');
     const fullscreenLabel=byId('massageRoutineFullscreenLabel');
     const runner=byId('massageRoutineRunner');
@@ -71,8 +77,6 @@
     const nextTitle=byId('massageRoutineNextTitle');
     const stepCount=byId('massageRoutineStepCount');
     const progress=byId('massageRoutineProgress');
-    const startBtn=byId('massageRoutineStart');
-    const pauseBtn=byId('massageRoutinePause');
     const resetBtn=byId('massageRoutineReset');
     const prevBtn=byId('massageRoutinePrevious');
     const nextBtn=byId('massageRoutineNext');
@@ -80,10 +84,8 @@
     const nextProcedureBtn=byId('massageRoutineNextProcedure');
     const quickPauseBtn=byId('massageRoutineQuickPause');
     const fullList=byId('massageRoutineFullList');
-    const startStepSelect=byId('massageRoutineStartStep');
-    const startProcedureSelect=byId('massageRoutineStartProcedure');
     const stateLabel=byId('massageRoutineStatus');
-    if(!select || !planValue || !stepValue || !procedureValue || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !startBtn || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList || !startStepSelect || !startProcedureSelect) return;
+    if(!select || !planValue || !minimalSetting || !minimalClock || !minimalTime || !minimalElapsed || !minimalFamily || !minimalName || !minimalInstruction || !fullDetails || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList) return;
 
     let elapsedMs=0;
     let startedAt=0;
@@ -100,11 +102,19 @@
       const selected=options.find(option=>String(option.value)===String(control.value));
       label.textContent=selected ? selected.textContent : '';
     }
-    function updateSelectionLabels(){
-      showSelectedLabel(select,planValue);
-      showSelectedLabel(startStepSelect,stepValue);
-      showSelectedLabel(startProcedureSelect,procedureValue);
+    function updateSelectionLabels(){ showSelectedLabel(select,planValue); }
+    function setMinimal(enabled,persist=true){
+      const minimal=Boolean(enabled);
+      runner.classList.toggle('routine-minimal',minimal);
+      minimalSetting.checked=minimal;
+      if(persist){
+        try{window.localStorage.setItem('baselineMassageMinimal',minimal?'1':'0');}catch(_e){}
+      }
+      if(minimal) fullDetails.open=false;
     }
+    try{setMinimal(window.localStorage.getItem('baselineMassageMinimal')==='1',false);}
+    catch(_e){setMinimal(false,false);}
+    minimalSetting.addEventListener('change',()=>setMinimal(minimalSetting.checked));
     let focused=false;
     let nativeFullscreen=false;
     function setFullscreen(enabled){
@@ -183,26 +193,18 @@
       }
       return index;
     }
-    function addOption(select,value,label){
-      const option=document.createElement('option');
-      option.value=String(value);
-      option.textContent=label;
-      select.appendChild(option);
-    }
-    function populateProcedureSelect(stepIndex){
-      startProcedureSelect.replaceChildren();
-      sectionsFor(STEPS[stepIndex]).forEach((section,i)=>{
-        addOption(startProcedureSelect,i,(i+1)+'. '+section.family+' — '+section.technique+' ('+format(STEPS[stepIndex].from+section.start)+')');
-      });
-      showSelectedLabel(startProcedureSelect,procedureValue);
-    }
     function makeStartButton(label,second,className){
       const button=document.createElement('button');
       button.type='button';
       button.className=className;
       button.textContent=label;
       button.setAttribute('aria-label',label+' at '+format(second));
-      button.addEventListener('click',()=>{pause();jumpTo(second);});
+      button.addEventListener('click',()=>{
+        pause();jumpTo(second);
+        fullDetails.open=false;
+        const toolbar=runner.querySelector('.routine-player-toolbar');
+        if(toolbar && typeof toolbar.scrollIntoView==='function') toolbar.scrollIntoView({block:'start',behavior:'instant'});
+      });
       return button;
     }
     function buildFullRoutine(){
@@ -285,12 +287,6 @@
       const sections=sectionsFor(step);
       const sectionIndex=activeSectionIndex(sections,stepSecond);
       const section=sections[sectionIndex];
-      if(startStepSelect.value!==String(index)){
-        startStepSelect.value=String(index);
-        populateProcedureSelect(index);
-      }
-      startProcedureSelect.value=String(sectionIndex);
-      updateSelectionLabels();
       const sectionRemaining=Math.max(0,section.end-stepSecond);
       const changedSection=sectionIndex!==shownSection;
 
@@ -298,14 +294,20 @@
       remainingLabel.textContent=format(TOTAL_SECONDS-second);
       stepClock.textContent=format(Math.max(0,step.to-second));
       sectionClock.textContent=format(sectionRemaining);
-      sectionCounter.textContent='Section '+(sectionIndex+1)+' of '+sections.length;
+      minimalTime.textContent=format(sectionRemaining);
+      minimalElapsed.textContent=format(second)+' elapsed · '+format(TOTAL_SECONDS-second)+' remaining';
+      minimalFamily.textContent=section.family;
+      minimalName.textContent=section.technique;
+      minimalInstruction.textContent=section.instruction;
+      const duration=section.end-section.start;
+      const progressed=duration?Math.max(0,Math.min(100,((duration-sectionRemaining)/duration)*100)):0;
+      minimalClock.style.setProperty('--routine-clock-progress',progressed+'%');
+      sectionCounter.textContent='Procedure '+(sectionIndex+1)+' of '+sections.length;
       stepTitle.textContent=step.title;
       stepDetail.textContent=step.detail;
       stepCount.textContent='Step '+(index+1)+' of '+STEPS.length+' · '+step.phase+' · '+format(step.from)+'–'+format(step.to);
       nextTitle.textContent=STEPS[index+1]?.title || 'Session complete';
       progress.value=second;
-      startBtn.disabled=running || second>=TOTAL_SECONDS;
-      pauseBtn.disabled=!running;
       prevBtn.disabled=second===0;
       nextBtn.disabled=second>=TOTAL_SECONDS;
       const procedureIndex=currentProcedureIndex(second);
@@ -379,26 +381,9 @@
       timerId=window.setInterval(()=>render(),200);
       render(true);
     }
-    STEPS.forEach((step,index)=>addOption(startStepSelect,index,(index+1)+'. '+step.title+' ('+format(step.from)+')'));
-    populateProcedureSelect(0);
     buildFullRoutine();
     updateSelectionLabels();
     select.addEventListener('change',()=>selectPlan(true));
-    startStepSelect.addEventListener('change',()=>{
-      const index=Number(startStepSelect.value);
-      if(!Number.isInteger(index) || !STEPS[index]) return;
-      pause();
-      jumpTo(STEPS[index].from);
-    });
-    startProcedureSelect.addEventListener('change',()=>{
-      const index=Number(startStepSelect.value);
-      const procedure=Number(startProcedureSelect.value);
-      if(!Number.isInteger(index) || !STEPS[index] || !Number.isInteger(procedure) || !STEPS[index].cues[procedure]) return;
-      pause();
-      jumpTo(STEPS[index].from+STEPS[index].cues[procedure][0]);
-    });
-    startBtn.addEventListener('click',startOrResume);
-    pauseBtn.addEventListener('click',pause);
     quickPauseBtn.addEventListener('click',()=>{if(running)pause();else startOrResume();});
     resetBtn.addEventListener('click',reset);
     prevBtn.addEventListener('click',()=>{
