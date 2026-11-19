@@ -50,8 +50,8 @@
     const minimalClock=byId('massageRoutineMinimalClock');
     const minimalTime=byId('massageRoutineMinimalTime');
     const minimalElapsed=byId('massageRoutineMinimalElapsed');
-    const minimalFamily=byId('massageRoutineMinimalFamily');
     const minimalName=byId('massageRoutineMinimalName');
+    const minimalTechnique=byId('massageRoutineMinimalTechnique');
     const minimalInstruction=byId('massageRoutineMinimalInstruction');
     const minimalPressure=byId('massageRoutineMinimalPressure');
     const minimalStretch=byId('massageRoutineMinimalStretch');
@@ -78,7 +78,7 @@
     const quickPauseBtn=byId('massageRoutineQuickPause');
     const fullList=byId('massageRoutineFullList');
     const stateLabel=byId('massageRoutineStatus');
-    if(!select || !planValue || !minimalSetting || !minimalClock || !minimalTime || !minimalElapsed || !minimalFamily || !minimalName || !minimalInstruction || !minimalPressure || !minimalStretch || !fullDetails || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList) return;
+    if(!select || !planValue || !minimalSetting || !minimalClock || !minimalTime || !minimalElapsed || !minimalName || !minimalTechnique || !minimalInstruction || !minimalPressure || !minimalStretch || !fullDetails || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList) return;
 
     let elapsedMs=0;
     let startedAt=0;
@@ -119,10 +119,6 @@
       fullscreenBtn.setAttribute('aria-pressed',focused?'true':'false');
       fullscreenBtn.setAttribute('aria-label',focused?'Exit fullscreen':'Enter fullscreen');
       fullscreenLabel.textContent=focused?'Exit fullscreen':'Fullscreen';
-      if(focused && shownSection>=0){
-        if(typeof window.requestAnimationFrame==='function') window.requestAnimationFrame(()=>scrollToCurrent(shownSection));
-        else scrollToCurrent(shownSection);
-      }
     }
     function exitFullscreen(){
       setFullscreen(false);
@@ -149,17 +145,6 @@
     document.addEventListener('keydown',event=>{
       if(event.key==='Escape' && focused && document.fullscreenElement!==runner) exitFullscreen();
     });
-    function scrollToCurrent(index){
-      const row=rows[index];
-      if(!row) return;
-      // Overflow is hidden from manual input, but programmatic scrolling is retained.
-      // Never crop the top of a procedure that exceeds the available viewport.
-      const spareSpace=Math.max(0,viewport.clientHeight-row.offsetHeight);
-      const target=Math.max(0,row.offsetTop-spareSpace/2);
-      if(typeof viewport.scrollTo==='function') viewport.scrollTo({top:target,behavior:prefersReducedMotion()?'instant':'smooth'});
-      else viewport.scrollTop=target;
-    }
-    window.addEventListener('resize',()=>{if(shownSection>=0) scrollToCurrent(shownSection);});
     function timeMs(){
       return Math.min(TOTAL_SECONDS*1000,Math.max(0,running ? performance.now()-startedAt : elapsedMs));
     }
@@ -180,7 +165,8 @@
         technique:cue[2],
         instruction:cue[3],
         pressure:cue[4],
-        stretch:cue[5]
+        stretch:cue[5],
+        area:cue[6]
       }));
     }
     function currentProcedureIndex(second){
@@ -224,7 +210,7 @@
         sectionsFor(step).forEach(procedure=>{
           const item=document.createElement('li');
           const label=document.createElement('strong');
-          label.textContent=procedure.family+' — '+procedure.technique;
+          label.textContent=procedure.area+' — '+procedure.family;
           const times=document.createElement('span');
           times.className='routine-full-time';
           times.textContent=format(step.from+procedure.start)+'–'+format(step.from+procedure.end);
@@ -234,7 +220,10 @@
           const directions=document.createElement('p');
           directions.textContent=procedure.instruction;
           const startProcedure=makeStartButton('Start here',step.from+procedure.start,'routine-full-start');
-          item.append(label,times,metrics,directions,startProcedure);
+          const variation=document.createElement('span');
+          variation.className='routine-full-variation';
+          variation.textContent=procedure.technique;
+          item.append(label,variation,times,metrics,directions,startProcedure);
           list.appendChild(item);
         });
         group.append(heading,startHere,list);
@@ -242,53 +231,28 @@
       });
       fullList.replaceChildren(fragment);
     }
-    function buildSections(step){
-      rows=[];
-      const fragment=document.createDocumentFragment();
-      sectionsFor(step).forEach((section,index)=>{
-        const row=document.createElement('article');
-        row.className='routine-section-row';
-        row.setAttribute('role','listitem');
-        const number=document.createElement('span');
-        number.className='routine-section-number';
-        number.textContent=String(index+1).padStart(2,'0');
-        const content=document.createElement('div');
-        content.className='routine-section-content';
-        const identity=document.createElement('div');
-        identity.className='routine-section-technique';
-        const family=document.createElement('span');
-        family.className='routine-section-family';
-        family.textContent=section.family;
-        const name=document.createElement('strong');
-        name.className='routine-section-name';
-        name.textContent=section.technique;
-        identity.append(family,name);
-        const metrics=document.createElement('div');
-        metrics.className='routine-section-metrics';
-        const pressure=document.createElement('span');
-        pressure.className='routine-section-pressure';
-        pressure.textContent='Pressure '+section.pressure+'/10';
-        metrics.appendChild(pressure);
-        if(section.stretch){
-          const stretch=document.createElement('span');
-          stretch.className='routine-section-stretch';
-          stretch.textContent='Stretch '+section.stretch;
-          metrics.appendChild(stretch);
-        }
-        const instruction=document.createElement('span');
-        instruction.className='routine-section-instruction';
-        instruction.textContent=section.instruction;
-        content.append(identity,metrics,instruction);
-        const remaining=document.createElement('span');
-        remaining.className='routine-section-remaining';
-        remaining.textContent=format(section.end-section.start);
-        row.append(number,content,remaining);
-        fragment.appendChild(row);
-        rows.push(row);
-      });
-      viewport.replaceChildren(fragment);
-      viewport.classList.toggle('routine-few-procedures',rows.length<=2);
-      viewport.scrollTop=0;
+    function buildSections(){
+      const row=document.createElement('article');
+      row.className='routine-section-row is-live';
+      row.setAttribute('role','listitem');
+      row.setAttribute('aria-current','step');
+      const content=document.createElement('div');
+      content.className='routine-section-content';
+      const variation=document.createElement('strong');
+      variation.className='routine-section-name';
+      const metrics=document.createElement('div');
+      metrics.className='routine-section-metrics';
+      const pressure=document.createElement('span');
+      pressure.className='routine-section-pressure';
+      const stretch=document.createElement('span');
+      stretch.className='routine-section-stretch';
+      metrics.append(pressure,stretch);
+      const instruction=document.createElement('span');
+      instruction.className='routine-section-instruction';
+      content.append(variation,metrics,instruction);
+      row.appendChild(content);
+      viewport.replaceChildren(row);
+      rows=[row];
       shownSection=-1;
     }
     function render(force=false){
@@ -300,7 +264,7 @@
       const step=STEPS[index];
       const changedStep=index!==shownStep;
       if(!force && !changedStep && second===shownSecond) return;
-      if(changedStep) buildSections(step);
+      if(changedStep) buildSections();
       shownSecond=second;
 
       const stepSecond=Math.max(0,Math.min(step.to-step.from,second-step.from));
@@ -316,8 +280,8 @@
       sectionClock.textContent=format(sectionRemaining);
       minimalTime.textContent=format(sectionRemaining);
       minimalElapsed.textContent=format(second)+' elapsed · '+format(TOTAL_SECONDS-second)+' left';
-      minimalFamily.textContent=section.family;
-      minimalName.textContent=section.technique;
+      minimalName.textContent=section.area+' — '+section.family;
+      minimalTechnique.textContent=section.technique;
       minimalInstruction.textContent=section.instruction;
       minimalPressure.textContent='Pressure '+section.pressure+'/10';
       minimalStretch.hidden=!section.stretch;
@@ -340,20 +304,15 @@
       quickPauseBtn.textContent=running?'Pause':second===0?'Start':'Resume';
       stateLabel.textContent=second===TOTAL_SECONDS?'Complete — 60:00':running?'In progress':'Paused / ready';
 
-      rows.forEach((row,i)=>{
-        const current=i===sectionIndex;
-        if(changedStep || changedSection || force){
-          row.classList.toggle('is-live',current);
-          row.classList.toggle('is-next',i===sectionIndex+1);
-          if(current) row.setAttribute('aria-current','step');
-          else row.removeAttribute('aria-current');
-        }
-        const remaining=row.querySelector('.routine-section-remaining');
-        if(remaining) remaining.textContent=current
-          ? format(sectionRemaining)+' left'
-          : i<sectionIndex?'Done':format(sections[i].end-sections[i].start);
-      });
-      if(changedStep || changedSection) scrollToCurrent(sectionIndex);
+      if(changedStep || changedSection || force){
+        const row=rows[0];
+        row.querySelector('.routine-section-name').textContent=section.technique;
+        row.querySelector('.routine-section-pressure').textContent='Pressure '+section.pressure+'/10';
+        const stretch=row.querySelector('.routine-section-stretch');
+        stretch.hidden=!section.stretch;
+        stretch.textContent=section.stretch?'Stretch '+section.stretch:'';
+        row.querySelector('.routine-section-instruction').textContent=section.instruction;
+      }
       shownSection=sectionIndex;
       shownStep=index;
     }
@@ -378,7 +337,6 @@
       startedAt=0;
       shownStep=-1;
       render(true);
-      viewport.scrollTop=0;
     }
     function updateRoute(){
       try{
