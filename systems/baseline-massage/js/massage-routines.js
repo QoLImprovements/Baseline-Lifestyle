@@ -105,17 +105,13 @@
       label.textContent=selected ? selected.textContent : '';
     }
     function updateSelectionLabels(){ showSelectedLabel(select,planValue); }
-    function setMinimal(enabled,persist=true){
+    function setMinimal(enabled){
       const minimal=Boolean(enabled);
       runner.classList.toggle('routine-minimal',minimal);
       minimalSetting.checked=minimal;
       if(minimal) fullDetails.open=false;
-      if(persist){
-        try{window.localStorage.setItem('baselineMassageMinimal',minimal?'1':'0');}catch(_e){}
-      }
     }
-    try{setMinimal(window.localStorage.getItem('baselineMassageMinimal')==='1',false);}
-    catch(_e){setMinimal(false,false);}
+    setMinimal(false);
     minimalSetting.addEventListener('change',()=>setMinimal(minimalSetting.checked));
     let focused=false;
     let nativeFullscreen=false;
