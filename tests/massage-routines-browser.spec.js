@@ -28,12 +28,11 @@ test('sixty-minute partner massage follows current step inside a compact silent 
   await expect(page.locator('#massageRoutineCurrentTitle')).toContainText('Warm the full back');
   await expect(rows.nth(9)).toHaveAttribute('aria-current','step');
   await expect.poll(()=>timeline.evaluate(el=>el.scrollTop)).toBeGreaterThan(100);
-  const isVisibleInsideTimeline=await rows.nth(9).evaluate((row)=>{
+  await expect.poll(()=>rows.nth(9).evaluate((row)=>{
     const timeline=row.closest('.massage-routine-timeline');
     const box=row.getBoundingClientRect(),view=timeline.getBoundingClientRect();
     return box.top>=view.top && box.bottom<=view.bottom;
-  });
-  expect(isVisibleInsideTimeline).toBe(true);
+  })).toBe(true);
 
   await page.locator('#massageRoutineReset').click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('00:00');
