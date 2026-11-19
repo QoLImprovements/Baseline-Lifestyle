@@ -5,18 +5,15 @@
   const TOTAL_SECONDS = 60 * 60;
   const PLAN_ID = 'partner-full-body-60';
   const STEPS = [
-    {from:0,to:600,phase:'Face-up',title:'Pectorals & Chest Opening',detail:'Pectoral effleurage, petrissage and supported chest opening.',cues:[[0,"Effleurage","Bilateral longitudinal strokes","Long strokes across upper pectorals with both hands.","2–3",null],[60,"Effleurage","Alternating hand strokes","Alternate left and right hand strokes over upper pectorals.","2–3",null],[120,"Petrissage","Circular Pectoral Kneading — Left","Knead left pectoral and anterior shoulder.","2–4",null],[240,"Petrissage","Circular Pectoral Kneading — Right","Knead right pectoral and anterior shoulder.","2–4",null],[360,"Assisted Stretching","Supported Pectoral Stretch — Left","Open left arm sideways with support.","1–2","Left shoulder outward 30–90° as comfortable · 2–3/10"],[390,"Effleurage","Longitudinal strokes — left pectoral","Apply strokes across lengthened left pectoral.","2–3","Left shoulder outward 30–90° as comfortable · 2–3/10"],[415,"Assisted Stretching","Gradual arm release — Left","Ease left arm inward.","1–2",null],[430,"Assisted Stretching","Repeat Pectoral Stretch — Left","Repeat left-arm opening.","1–2","Left shoulder outward 30–90° as comfortable · 2–3/10"],[455,"Effleurage","Finishing strokes — left pectoral","Return left arm; finish with palm stroke.","2–3",null],[480,"Assisted Stretching","Supported Pectoral Stretch — Right","Open right arm sideways with support.","1–2","Right shoulder outward 30–90° as comfortable · 2–3/10"],[510,"Effleurage","Longitudinal strokes — right pectoral","Apply strokes across lengthened right pectoral.","2–3","Right shoulder outward 30–90° as comfortable · 2–3/10"],[535,"Assisted Stretching","Gradual arm release — Right","Ease right arm inward.","1–2",null],[550,"Assisted Stretching","Repeat Pectoral Stretch — Right","Repeat right-arm opening.","1–2","Right shoulder outward 30–90° as comfortable · 2–3/10"],[575,"Effleurage","Finishing strokes — right pectoral","Return right arm; finish with palm stroke.","2–3",null]]},
-    {from:600,to:840,phase:'Face-up',title:'Anterior Shoulders',detail:'Supine massage of anterior deltoid muscles; upper trapezius is worked face-down later.',cues:[[0,"Petrissage","Circular kneading — left anterior deltoid","Knead the front of the left shoulder in small circles.","2–4",null],[60,"Petrissage","Circular kneading — right anterior deltoid","Knead the front of the right shoulder in small circles.","2–4",null],[120,"Effleurage","Longitudinal strokes — left anterior deltoid","Apply strokes over left anterior deltoid.","2–3",null],[180,"Effleurage","Longitudinal strokes — right anterior deltoid","Apply strokes over right anterior deltoid.","2–3",null]]},
-    {from:840,to:1200,phase:'Face-up',title:'Arms & Hands',detail:'Upper-arm kneading with forearm, hand and wrist work.',cues:[[0,"Petrissage","Upper-Arm Kneading — Right","Lift and knead right biceps and triceps.","3–5",null],[90,"Effleurage","Longitudinal forearm strokes — right","Apply strokes over right forearm and palm; extend wrist gently.","2–3","Right wrist extension ≤20° as comfortable · 1–2/10"],[180,"Petrissage","Upper-Arm Kneading — Left","Lift and knead left biceps and triceps.","3–5",null],[270,"Effleurage","Longitudinal forearm strokes — left","Apply strokes over left forearm and palm; extend wrist gently.","2–3","Left wrist extension ≤20° as comfortable · 1–2/10"]]},
-    {from:1200,to:1560,phase:'Face-up',title:'Front Thighs & Shins',detail:'Quadriceps kneading and lower-leg gliding.',cues:[[0,"Petrissage","Quadriceps Kneading — Right","Knead right quadriceps using both hands.","3–5",null],[90,"Effleurage","Longitudinal strokes — right lower leg","Apply strokes beside right shinbone.","2–4",null],[180,"Petrissage","Quadriceps Kneading — Left","Knead left quadriceps using both hands.","3–5",null],[270,"Effleurage","Longitudinal strokes — left lower leg","Apply strokes beside left shinbone.","2–4",null]]},
-    {from:1560,to:1980,phase:'Face-up',title:'Hamstrings & Calves — Face-up',detail:'Both legs: massage, strap-supported hamstring and calf stretching.',cues:[[0,"Effleurage","Longitudinal strokes — right posterior leg","Apply strokes over relaxed right hamstring and calf.","2–4",null],[60,"Assisted Stretching","Strap-Assisted Hamstring Stretch — Right","Raise right leg using strap at ball of foot.","1–2","Right hip flexion ≈30–70° as comfortable · 2–3/10"],[90,"Effleurage","Longitudinal strokes under stretch — right","Apply strokes over lengthened right hamstring and calf.","2–3","Right hip flexion ≈30–70° as comfortable · 2–3/10"],[120,"Assisted Stretching","Gradual leg release — Right","Lower right leg to ease stretch.","1–2",null],[140,"Assisted Stretching","Repeat Hamstring Stretch With Effleurage — Right","Repeat right-leg stretch with light effleurage.","1–2","Right hip flexion ≈30–70° as comfortable · 2–3/10"],[170,"Effleurage","Finishing longitudinal strokes — right leg","Lower right leg; finish with palm stroke.","2–4",null],[210,"Effleurage","Longitudinal strokes — left posterior leg","Apply strokes over relaxed left hamstring and calf.","2–4",null],[270,"Assisted Stretching","Strap-Assisted Hamstring Stretch — Left","Raise left leg using strap at ball of foot.","1–2","Left hip flexion ≈30–70° as comfortable · 2–3/10"],[300,"Effleurage","Longitudinal strokes under stretch — left","Apply strokes over lengthened left hamstring and calf.","2–3","Left hip flexion ≈30–70° as comfortable · 2–3/10"],[330,"Assisted Stretching","Gradual leg release — Left","Lower left leg to ease stretch.","1–2",null],[350,"Assisted Stretching","Repeat Hamstring Stretch With Effleurage — Left","Repeat left-leg stretch with light effleurage.","1–2","Left hip flexion ≈30–70° as comfortable · 2–3/10"],[380,"Effleurage","Finishing longitudinal strokes — left leg","Lower left leg; finish with palm stroke.","2–4",null]]},
-    {from:1980,to:2040,phase:'Transition',title:'Turn Face-down',detail:'Turn and readjust supports and draping.',cues:[[0,"Transition","Turn Face-Down","Turn face-down; adjust support and draping.","1–2",null]]},
-    {from:2040,to:2580,phase:'Face-down',title:'Back & Rear Shoulders',detail:'Broad back warming followed by shoulder, trapezius and upper-back techniques.',cues:[[0,"Effleurage","Bilateral longitudinal strokes — back","Apply strokes both palms alongside spine.","3–4",null],[90,"Effleurage","Longitudinal forearm strokes — back","Apply strokes broad forearms across back muscles.","3–4",null],[180,"Effleurage","Bilateral longitudinal strokes — upper back","Apply strokes palms across upper back.","3–4",null],[240,"Petrissage","Lifting and Kneading — Upper Back","Lift and knead upper trapezius.","3–5",null],[300,"Compression","Finger Crawling With Thumb Walking","Crawl fingers and alternate thumb pressure beside spine.","3–5",null],[360,"Tapotement","Cupping","Cup upper-back muscles with hollow palms.","2–3",null],[405,"Tapotement","Hacking","Hack upper-back muscles with relaxed finger edges.","2–3",null],[435,"Effleurage","Finishing forearm strokes — upper back","Finish percussion with forearm stroke.","3–4",null],[480,"Petrissage","Posterior-Deltoid Kneading — Left","Knead left posterior deltoid; support arm.","3–5",null],[510,"Petrissage","Posterior-Deltoid Kneading — Right","Knead right posterior deltoid; support arm.","3–5",null]]},
-    {from:2580,to:2820,phase:'Face-down',title:'Lower Back',detail:'Lumbar muscle effleurage and broad compression.',cues:[[0,"Effleurage","Longitudinal strokes — lumbar","Apply strokes palms beside lumbar spine.","3–4",null],[120,"Compression","Static compression — lumbar muscles","Apply steady palm compression beside the lumbar spine.","2–4",null]]},
-    {from:2820,to:3000,phase:'Face-down',title:'Glutes',detail:'Consented gluteal kneading on both sides.',cues:[[0,"Petrissage","Gluteal Kneading — Right","Knead right gluteal muscles with consent.","3–5",null],[90,"Petrissage","Gluteal Kneading — Left","Knead left gluteal muscles with consent.","3–5",null]]},
-    {from:3000,to:3300,phase:'Face-down',title:'Hamstrings & Calves — Face-down',detail:'Posterior-leg kneading on both sides.',cues:[[0,"Petrissage","Hamstring and Calf Kneading — Right","Knead right hamstring and calf.","3–5",null],[150,"Petrissage","Hamstring and Calf Kneading — Left","Knead left hamstring and calf.","3–5",null]]},
-    {from:3300,to:3540,phase:'Face-down',title:'Quadriceps — Assisted Stretch',detail:'Both quadriceps: kneading and knee-flexion stretches with massage.',cues:[[0,"Petrissage","Outer-Quadriceps Kneading — Right","Knead accessible outer right quadriceps.","3–5",null],[30,"Assisted Stretching","Strap-Assisted Knee Flexion — Right","Bend right knee with ankle strap.","1–2","Right knee flexion ≈45–100° as comfortable · 2–3/10"],[45,"Effleurage","Longitudinal strokes — right lateral thigh","Apply strokes over lengthened outer-right quadriceps.","2–3","Right knee flexion ≈45–100° as comfortable · 2–3/10"],[70,"Assisted Stretching","Gradual quadriceps release — Right","Gently straighten right knee.","1–2",null],[85,"Effleurage","Longitudinal strokes under stretch — right","Repeat right knee bend with thigh stroke.","2–3","Right knee flexion ≈45–100° as comfortable · 2–3/10"],[110,"Assisted Stretching","Final leg release — Right","Release right leg to neutral.","1–2",null],[120,"Petrissage","Outer-Quadriceps Kneading — Left","Knead accessible outer left quadriceps.","3–5",null],[150,"Assisted Stretching","Strap-Assisted Knee Flexion — Left","Bend left knee with ankle strap.","1–2","Left knee flexion ≈45–100° as comfortable · 2–3/10"],[165,"Effleurage","Longitudinal strokes — left lateral thigh","Apply strokes over lengthened outer-left quadriceps.","2–3","Left knee flexion ≈45–100° as comfortable · 2–3/10"],[190,"Assisted Stretching","Gradual quadriceps release — Left","Gently straighten left knee.","1–2",null],[205,"Effleurage","Longitudinal strokes under stretch — left","Repeat left knee bend with thigh stroke.","2–3","Left knee flexion ≈45–100° as comfortable · 2–3/10"],[230,"Assisted Stretching","Final leg release — Left","Release left leg to neutral.","1–2",null]]},
-    {from:3540,to:3600,phase:'Face-down',title:'Closing Back Effleurage',detail:'Slow, gradually softening full-back strokes.',cues:[[0,"Effleurage","Finishing longitudinal strokes — back","Finish with slow, decreasing-pressure palm stroke.","2–4",null]]},
+    {from:0,to:840,phase:'Face-up',title:'Chest & Shoulders',detail:'Pectoral and anterior-shoulder work while face-up',cues:[[0,"Effleurage","Bilateral longitudinal strokes","Long strokes across the upper chest with both hands.","2–3",null,"Upper Pectorals"],[60,"Effleurage","Alternating hand strokes","Alternate strokes with the left and right hand.","2–3",null,"Upper Pectorals"],[120,"Petrissage","Circular kneading","Knead the muscle using small circles.","2–4",null,"Left Pectoral"],[240,"Petrissage","Circular kneading","Knead the muscle using small circles.","2–4",null,"Right Pectoral"],[360,"Assisted Stretching","Supported chest opening","Support the arm; open the chest sideways.","1–2","Left shoulder outward 30–90° as comfortable · 2–3/10","Left Pectoral"],[390,"Effleurage","Longitudinal strokes","Keep the arm supported; stroke the lengthened muscle.","2–3","Left shoulder outward 30–90° as comfortable · 2–3/10","Left Pectoral"],[415,"Assisted Stretching","Gradual release","Ease the arm back towards the body.","1–2",null,"Left Shoulder"],[430,"Assisted Stretching","Repeat chest opening","Open the supported arm again.","1–2","Left shoulder outward 30–90° as comfortable · 2–3/10","Left Pectoral"],[455,"Effleurage","Finishing strokes","Return the arm; finish with lighter strokes.","2–3",null,"Left Pectoral"],[480,"Assisted Stretching","Supported chest opening","Support the arm; open the chest sideways.","1–2","Right shoulder outward 30–90° as comfortable · 2–3/10","Right Pectoral"],[510,"Effleurage","Longitudinal strokes","Keep the arm supported; stroke the lengthened muscle.","2–3","Right shoulder outward 30–90° as comfortable · 2–3/10","Right Pectoral"],[535,"Assisted Stretching","Gradual release","Ease the arm back towards the body.","1–2",null,"Right Shoulder"],[550,"Assisted Stretching","Repeat chest opening","Open the supported arm again.","1–2","Right shoulder outward 30–90° as comfortable · 2–3/10","Right Pectoral"],[575,"Effleurage","Finishing strokes","Return the arm; finish with lighter strokes.","2–3",null,"Right Pectoral"],[600,"Petrissage","Circular kneading","Make small circles over the front shoulder.","2–4",null,"Left Front Shoulder"],[660,"Petrissage","Circular kneading","Make small circles over the front shoulder.","2–4",null,"Right Front Shoulder"],[720,"Effleurage","Longitudinal strokes","Use slow strokes along the front shoulder.","2–3",null,"Left Front Shoulder"],[780,"Effleurage","Longitudinal strokes","Use slow strokes along the front shoulder.","2–3",null,"Right Front Shoulder"]]},
+    {from:840,to:1200,phase:'Face-up',title:'Upper Arms & Forearms',detail:'Upper arms, forearms and hands',cues:[[0,"Petrissage","Lifting and kneading","Knead the upper-arm muscles with both hands.","3–5",null,"Right Upper Arm"],[90,"Effleurage","Longitudinal strokes with wrist extension","Stroke the forearm and palm; extend the wrist gently.","2–3","Right wrist extension ≤20° as comfortable · 1–2/10","Right Forearm & Hand"],[180,"Petrissage","Lifting and kneading","Knead the upper-arm muscles with both hands.","3–5",null,"Left Upper Arm"],[270,"Effleurage","Longitudinal strokes with wrist extension","Stroke the forearm and palm; extend the wrist gently.","2–3","Left wrist extension ≤20° as comfortable · 1–2/10","Left Forearm & Hand"]]},
+    {from:1200,to:1560,phase:'Face-up',title:'Front Thighs & Lower Legs',detail:'Quadriceps and lower legs',cues:[[0,"Petrissage","Kneading","Use both hands to knead the thigh.","3–5",null,"Right Quadriceps"],[90,"Effleurage","Longitudinal strokes","Stroke alongside the shinbone; avoid bone pressure.","2–4",null,"Right Lower Leg"],[180,"Petrissage","Kneading","Use both hands to knead the thigh.","3–5",null,"Left Quadriceps"],[270,"Effleurage","Longitudinal strokes","Stroke alongside the shinbone; avoid bone pressure.","2–4",null,"Left Lower Leg"]]},
+    {from:1560,to:1980,phase:'Face-up',title:'Hamstrings & Calves — Face-up',detail:'Supported hamstring and calf stretching',cues:[[0,"Effleurage","Longitudinal strokes","Stroke the relaxed hamstring and calf.","2–4",null,"Right Hamstring & Calf"],[60,"Assisted Stretching","Strap-assisted stretch","Raise the supported leg with the foot strap.","1–2","Right hip flexion ≈30–70° as comfortable · 2–3/10","Right Hamstring"],[90,"Effleurage","Strokes during stretch","Maintain the stretch; stroke accessible muscle.","2–3","Right hip flexion ≈30–70° as comfortable · 2–3/10","Right Hamstring & Calf"],[120,"Assisted Stretching","Gradual release","Lower the leg slightly to ease tension.","1–2",null,"Right Leg"],[140,"Assisted Stretching","Repeat stretch with strokes","Raise the leg again; continue light strokes.","1–2","Right hip flexion ≈30–70° as comfortable · 2–3/10","Right Hamstring"],[170,"Effleurage","Finishing strokes","Lower the leg; finish with light strokes.","2–4",null,"Right Leg"],[210,"Effleurage","Longitudinal strokes","Stroke the relaxed hamstring and calf.","2–4",null,"Left Hamstring & Calf"],[270,"Assisted Stretching","Strap-assisted stretch","Raise the supported leg with the foot strap.","1–2","Left hip flexion ≈30–70° as comfortable · 2–3/10","Left Hamstring"],[300,"Effleurage","Strokes during stretch","Maintain the stretch; stroke accessible muscle.","2–3","Left hip flexion ≈30–70° as comfortable · 2–3/10","Left Hamstring & Calf"],[330,"Assisted Stretching","Gradual release","Lower the leg slightly to ease tension.","1–2",null,"Left Leg"],[350,"Assisted Stretching","Repeat stretch with strokes","Raise the leg again; continue light strokes.","1–2","Left hip flexion ≈30–70° as comfortable · 2–3/10","Left Hamstring"],[380,"Effleurage","Finishing strokes","Lower the leg; finish with light strokes.","2–4",null,"Left Leg"]]},
+    {from:1980,to:2040,phase:'Transition',title:'Turn Face-down',detail:'Change position and draping',cues:[[0,"Transition","Turn face-down","Allow the client to turn; adjust support and draping.","1–2",null,"Body Position"]]},
+    {from:2040,to:2820,phase:'Face-down',title:'Back & Shoulders',detail:'Back, trapezius, rear shoulders and lumbar muscles',cues:[[0,"Effleurage","Bilateral strokes","Use long strokes either side of the spine.","3–4",null,"Back"],[90,"Effleurage","Forearm strokes","Use broad forearm strokes across the back.","3–4",null,"Back"],[180,"Effleurage","Bilateral strokes","Warm the upper-back muscles with both hands.","3–4",null,"Upper Back"],[240,"Petrissage","Lifting and kneading","Lift and knead the upper trapezius.","3–5",null,"Upper Back"],[300,"Compression","Finger crawling with thumb walking","Crawl fingers and alternate thumb pressure beside the spine.","3–5",null,"Upper Back"],[360,"Tapotement","Cupping","Cup the muscles with hollow palms.","2–3",null,"Upper Back"],[405,"Tapotement","Hacking","Use light, alternating blows with relaxed finger edges.","2–3",null,"Upper Back"],[435,"Effleurage","Finishing forearm strokes","Settle the muscles with slow forearm strokes.","3–4",null,"Upper Back"],[480,"Petrissage","Rear-shoulder kneading","Support the arm while kneading the rear shoulder.","3–5",null,"Left Rear Shoulder"],[510,"Petrissage","Rear-shoulder kneading","Support the arm while kneading the rear shoulder.","3–5",null,"Right Rear Shoulder"],[540,"Effleurage","Longitudinal strokes","Use slow strokes beside the lumbar spine.","3–4",null,"Lower Back"],[660,"Compression","Sustained palm compression","Apply sustained palm pressure beside the spine.","2–4",null,"Lower Back"]]},
+    {from:2820,to:3300,phase:'Face-down',title:'Glutes & Posterior Legs',detail:'Gluteal muscles, hamstrings and calves',cues:[[0,"Petrissage","Kneading","Use broad kneading with consent and draping.","3–5",null,"Right Glute"],[90,"Petrissage","Kneading","Use broad kneading with consent and draping.","3–5",null,"Left Glute"],[180,"Petrissage","Kneading","Knead the hamstring and calf.","3–5",null,"Right Hamstring & Calf"],[330,"Petrissage","Kneading","Knead the hamstring and calf.","3–5",null,"Left Hamstring & Calf"]]},
+    {from:3300,to:3540,phase:'Face-down',title:'Quadriceps — Assisted Stretch',detail:'Strap-assisted quadriceps stretching',cues:[[0,"Petrissage","Outer-thigh kneading","Knead the accessible outer-thigh muscles.","3–5",null,"Right Quadriceps"],[30,"Assisted Stretching","Strap-assisted knee flexion","Bend the knee using the ankle strap.","1–2","Right knee flexion ≈45–100° as comfortable · 2–3/10","Right Quadriceps"],[45,"Effleurage","Strokes during stretch","Maintain mild flexion; stroke the outer thigh.","2–3","Right knee flexion ≈45–100° as comfortable · 2–3/10","Right Quadriceps"],[70,"Assisted Stretching","Gradual release","Gently straighten the knee.","1–2",null,"Right Leg"],[85,"Effleurage","Repeat flexion with strokes","Repeat mild knee flexion with light strokes.","2–3","Right knee flexion ≈45–100° as comfortable · 2–3/10","Right Quadriceps"],[110,"Assisted Stretching","Final release","Return the leg to rest.","1–2",null,"Right Leg"],[120,"Petrissage","Outer-thigh kneading","Knead the accessible outer-thigh muscles.","3–5",null,"Left Quadriceps"],[150,"Assisted Stretching","Strap-assisted knee flexion","Bend the knee using the ankle strap.","1–2","Left knee flexion ≈45–100° as comfortable · 2–3/10","Left Quadriceps"],[165,"Effleurage","Strokes during stretch","Maintain mild flexion; stroke the outer thigh.","2–3","Left knee flexion ≈45–100° as comfortable · 2–3/10","Left Quadriceps"],[190,"Assisted Stretching","Gradual release","Gently straighten the knee.","1–2",null,"Left Leg"],[205,"Effleurage","Repeat flexion with strokes","Repeat mild knee flexion with light strokes.","2–3","Left knee flexion ≈45–100° as comfortable · 2–3/10","Left Quadriceps"],[230,"Assisted Stretching","Final release","Return the leg to rest.","1–2",null,"Left Leg"]]},
+    {from:3540,to:3600,phase:'Face-down',title:'Closing Back Massage',detail:'Finishing strokes',cues:[[0,"Effleurage","Finishing strokes","Finish with slow strokes, gradually reducing pressure.","2–4",null,"Back"]]},
   ];
   const PROCEDURE_STARTS = STEPS.flatMap(step=>step.cues.map(cue=>step.from+cue[0]));
   const byId = (id) => document.getElementById(id);
@@ -34,7 +31,7 @@
       STEPS.every((step,i) => step.to > step.from && (!i || STEPS[i-1].to === step.from));
   }
   if(!STEPS.every(step=>step.cues.length && step.cues[0][0]===0 &&
-    step.cues.every((cue,index)=>cue.length===6 && /^[1-6]–[1-6]$/.test(cue[4]) && (cue[5]===null || (typeof cue[5]==='string' && cue[5].includes('/10'))) && cue[0]>=0 && cue[0]<step.to-step.from &&
+    step.cues.every((cue,index)=>cue.length===7 && typeof cue[6]==='string' && cue[6].length>3 && /^[1-6]–[1-6]$/.test(cue[4]) && (cue[5]===null || (typeof cue[5]==='string' && cue[5].includes('/10'))) && cue[0]>=0 && cue[0]<step.to-step.from &&
       ['Effleurage','Petrissage','Compression','Tapotement','Assisted Stretching','Transition'].includes(cue[1]) &&
       cue[2].length>5 && cue[3].length>20 &&
       (index===0 || cue[0]>step.cues[index-1][0])))){
@@ -53,8 +50,8 @@
     const minimalClock=byId('massageRoutineMinimalClock');
     const minimalTime=byId('massageRoutineMinimalTime');
     const minimalElapsed=byId('massageRoutineMinimalElapsed');
-    const minimalFamily=byId('massageRoutineMinimalFamily');
     const minimalName=byId('massageRoutineMinimalName');
+    const minimalTechnique=byId('massageRoutineMinimalTechnique');
     const minimalInstruction=byId('massageRoutineMinimalInstruction');
     const minimalPressure=byId('massageRoutineMinimalPressure');
     const minimalStretch=byId('massageRoutineMinimalStretch');
@@ -81,7 +78,7 @@
     const quickPauseBtn=byId('massageRoutineQuickPause');
     const fullList=byId('massageRoutineFullList');
     const stateLabel=byId('massageRoutineStatus');
-    if(!select || !planValue || !minimalSetting || !minimalClock || !minimalTime || !minimalElapsed || !minimalFamily || !minimalName || !minimalInstruction || !minimalPressure || !minimalStretch || !fullDetails || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList) return;
+    if(!select || !planValue || !minimalSetting || !minimalClock || !minimalTime || !minimalElapsed || !minimalName || !minimalTechnique || !minimalInstruction || !minimalPressure || !minimalStretch || !fullDetails || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList) return;
 
     let elapsedMs=0;
     let startedAt=0;
@@ -122,10 +119,6 @@
       fullscreenBtn.setAttribute('aria-pressed',focused?'true':'false');
       fullscreenBtn.setAttribute('aria-label',focused?'Exit fullscreen':'Enter fullscreen');
       fullscreenLabel.textContent=focused?'Exit fullscreen':'Fullscreen';
-      if(focused && shownSection>=0){
-        if(typeof window.requestAnimationFrame==='function') window.requestAnimationFrame(()=>scrollToCurrent(shownSection));
-        else scrollToCurrent(shownSection);
-      }
     }
     function exitFullscreen(){
       setFullscreen(false);
@@ -152,17 +145,6 @@
     document.addEventListener('keydown',event=>{
       if(event.key==='Escape' && focused && document.fullscreenElement!==runner) exitFullscreen();
     });
-    function scrollToCurrent(index){
-      const row=rows[index];
-      if(!row) return;
-      // Overflow is hidden from manual input, but programmatic scrolling is retained.
-      // Never crop the top of a procedure that exceeds the available viewport.
-      const spareSpace=Math.max(0,viewport.clientHeight-row.offsetHeight);
-      const target=Math.max(0,row.offsetTop-spareSpace/2);
-      if(typeof viewport.scrollTo==='function') viewport.scrollTo({top:target,behavior:prefersReducedMotion()?'instant':'smooth'});
-      else viewport.scrollTop=target;
-    }
-    window.addEventListener('resize',()=>{if(shownSection>=0) scrollToCurrent(shownSection);});
     function timeMs(){
       return Math.min(TOTAL_SECONDS*1000,Math.max(0,running ? performance.now()-startedAt : elapsedMs));
     }
@@ -183,7 +165,8 @@
         technique:cue[2],
         instruction:cue[3],
         pressure:cue[4],
-        stretch:cue[5]
+        stretch:cue[5],
+        area:cue[6]
       }));
     }
     function currentProcedureIndex(second){
@@ -227,7 +210,7 @@
         sectionsFor(step).forEach(procedure=>{
           const item=document.createElement('li');
           const label=document.createElement('strong');
-          label.textContent=procedure.family+' — '+procedure.technique;
+          label.textContent=procedure.area+' — '+procedure.family;
           const times=document.createElement('span');
           times.className='routine-full-time';
           times.textContent=format(step.from+procedure.start)+'–'+format(step.from+procedure.end);
@@ -237,7 +220,10 @@
           const directions=document.createElement('p');
           directions.textContent=procedure.instruction;
           const startProcedure=makeStartButton('Start here',step.from+procedure.start,'routine-full-start');
-          item.append(label,times,metrics,directions,startProcedure);
+          const variation=document.createElement('span');
+          variation.className='routine-full-variation';
+          variation.textContent=procedure.technique;
+          item.append(label,variation,times,metrics,directions,startProcedure);
           list.appendChild(item);
         });
         group.append(heading,startHere,list);
@@ -245,53 +231,28 @@
       });
       fullList.replaceChildren(fragment);
     }
-    function buildSections(step){
-      rows=[];
-      const fragment=document.createDocumentFragment();
-      sectionsFor(step).forEach((section,index)=>{
-        const row=document.createElement('article');
-        row.className='routine-section-row';
-        row.setAttribute('role','listitem');
-        const number=document.createElement('span');
-        number.className='routine-section-number';
-        number.textContent=String(index+1).padStart(2,'0');
-        const content=document.createElement('div');
-        content.className='routine-section-content';
-        const identity=document.createElement('div');
-        identity.className='routine-section-technique';
-        const family=document.createElement('span');
-        family.className='routine-section-family';
-        family.textContent=section.family;
-        const name=document.createElement('strong');
-        name.className='routine-section-name';
-        name.textContent=section.technique;
-        identity.append(family,name);
-        const metrics=document.createElement('div');
-        metrics.className='routine-section-metrics';
-        const pressure=document.createElement('span');
-        pressure.className='routine-section-pressure';
-        pressure.textContent='Pressure '+section.pressure+'/10';
-        metrics.appendChild(pressure);
-        if(section.stretch){
-          const stretch=document.createElement('span');
-          stretch.className='routine-section-stretch';
-          stretch.textContent='Stretch '+section.stretch;
-          metrics.appendChild(stretch);
-        }
-        const instruction=document.createElement('span');
-        instruction.className='routine-section-instruction';
-        instruction.textContent=section.instruction;
-        content.append(identity,metrics,instruction);
-        const remaining=document.createElement('span');
-        remaining.className='routine-section-remaining';
-        remaining.textContent=format(section.end-section.start);
-        row.append(number,content,remaining);
-        fragment.appendChild(row);
-        rows.push(row);
-      });
-      viewport.replaceChildren(fragment);
-      viewport.classList.toggle('routine-few-procedures',rows.length<=2);
-      viewport.scrollTop=0;
+    function buildSections(){
+      const row=document.createElement('article');
+      row.className='routine-section-row is-live';
+      row.setAttribute('role','listitem');
+      row.setAttribute('aria-current','step');
+      const content=document.createElement('div');
+      content.className='routine-section-content';
+      const variation=document.createElement('strong');
+      variation.className='routine-section-name';
+      const metrics=document.createElement('div');
+      metrics.className='routine-section-metrics';
+      const pressure=document.createElement('span');
+      pressure.className='routine-section-pressure';
+      const stretch=document.createElement('span');
+      stretch.className='routine-section-stretch';
+      metrics.append(pressure,stretch);
+      const instruction=document.createElement('span');
+      instruction.className='routine-section-instruction';
+      content.append(variation,metrics,instruction);
+      row.appendChild(content);
+      viewport.replaceChildren(row);
+      rows=[row];
       shownSection=-1;
     }
     function render(force=false){
@@ -303,7 +264,7 @@
       const step=STEPS[index];
       const changedStep=index!==shownStep;
       if(!force && !changedStep && second===shownSecond) return;
-      if(changedStep) buildSections(step);
+      if(changedStep) buildSections();
       shownSecond=second;
 
       const stepSecond=Math.max(0,Math.min(step.to-step.from,second-step.from));
@@ -319,8 +280,8 @@
       sectionClock.textContent=format(sectionRemaining);
       minimalTime.textContent=format(sectionRemaining);
       minimalElapsed.textContent=format(second)+' elapsed · '+format(TOTAL_SECONDS-second)+' left';
-      minimalFamily.textContent=section.family;
-      minimalName.textContent=section.technique;
+      minimalName.textContent=section.area+' — '+section.family;
+      minimalTechnique.textContent=section.technique;
       minimalInstruction.textContent=section.instruction;
       minimalPressure.textContent='Pressure '+section.pressure+'/10';
       minimalStretch.hidden=!section.stretch;
@@ -343,20 +304,15 @@
       quickPauseBtn.textContent=running?'Pause':second===0?'Start':'Resume';
       stateLabel.textContent=second===TOTAL_SECONDS?'Complete — 60:00':running?'In progress':'Paused / ready';
 
-      rows.forEach((row,i)=>{
-        const current=i===sectionIndex;
-        if(changedStep || changedSection || force){
-          row.classList.toggle('is-live',current);
-          row.classList.toggle('is-next',i===sectionIndex+1);
-          if(current) row.setAttribute('aria-current','step');
-          else row.removeAttribute('aria-current');
-        }
-        const remaining=row.querySelector('.routine-section-remaining');
-        if(remaining) remaining.textContent=current
-          ? format(sectionRemaining)+' left'
-          : i<sectionIndex?'Done':format(sections[i].end-sections[i].start);
-      });
-      if(changedStep || changedSection) scrollToCurrent(sectionIndex);
+      if(changedStep || changedSection || force){
+        const row=rows[0];
+        row.querySelector('.routine-section-name').textContent=section.technique;
+        row.querySelector('.routine-section-pressure').textContent='Pressure '+section.pressure+'/10';
+        const stretch=row.querySelector('.routine-section-stretch');
+        stretch.hidden=!section.stretch;
+        stretch.textContent=section.stretch?'Stretch '+section.stretch:'';
+        row.querySelector('.routine-section-instruction').textContent=section.instruction;
+      }
       shownSection=sectionIndex;
       shownStep=index;
     }
@@ -381,7 +337,6 @@
       startedAt=0;
       shownStep=-1;
       render(true);
-      viewport.scrollTop=0;
     }
     function updateRoute(){
       try{
