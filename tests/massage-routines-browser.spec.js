@@ -289,18 +289,18 @@ test('minimal mode keeps circular size but enlarges text and provides independen
     return {
       dial:document.querySelector('#massageRoutineMinimalClock').getBoundingClientRect().width,
       digits:parseFloat(getComputedStyle(face.querySelector('strong')).fontSize),
-      label:parseFloat(getComputedStyle(face.querySelector('span')).fontSize),
+      labelCount:face.querySelectorAll('span').length,
       elapsed:parseFloat(getComputedStyle(face.querySelector('small')).fontSize),
     };
   });
   expect(type.dial).toBeGreaterThan(250);
   expect(type.digits).toBeGreaterThanOrEqual(68);
-  expect(type.label).toBeGreaterThanOrEqual(17);
+  expect(type.labelCount).toBe(0);
   expect(type.elapsed).toBeGreaterThanOrEqual(16);
   await expect(page.locator('.routine-step-nav #massageRoutineCurrentTitle')).toBeVisible();
   await expect(page.locator('.routine-procedure-nav #massageRoutineMinimalName')).toBeVisible();
   await page.locator('#massageRoutineNextProcedure').click();
-  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Alternating Palms');
+  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Alternating hand strokes');
   await page.locator('#massageRoutineNext').click();
   await expect(page.locator('#massageRoutineCurrentTitle')).toHaveText('Anterior Shoulders');
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('10:00');
