@@ -61,7 +61,7 @@ test('full routine is the only start-anywhere picker and procedure controls stay
   const fullSteps=page.locator('#massageRoutineFullList .routine-full-step');
   await expect(fullSteps).toHaveCount(17);
   await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(68);
-  await expect(fullSteps.nth(10)).toContainText('Finger Crawling With Thumb Compression');
+  await expect(fullSteps.nth(10)).toContainText('Finger Crawling With Thumb Walking');
   await expect(fullSteps.nth(10)).toContainText('Tapotement — Cupping');
   await fullSteps.nth(10).locator('.routine-full-procedures li').nth(3).getByRole('button',{name:/Start here/}).click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('40:00');
