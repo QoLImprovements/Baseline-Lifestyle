@@ -25,7 +25,7 @@ test('Massage Routines has one canonical route, dropdown and runner',()=>{
 test('step schedule covers exactly 60 minutes, without gaps, in requested order',()=>{
   const steps=[...js.matchAll(/\{from:(\d+),to:(\d+),phase:'([^']+)',title:'([^']+)'/g)]
     .map(m=>({from:Number(m[1]),to:Number(m[2]),phase:m[3],title:m[4]}));
-  assert.equal(steps.length,17);
+  assert.equal(steps.length,12);
   assert.equal(steps[0].from,0);
   assert.equal(steps.at(-1).to,3600);
   steps.forEach((step,index)=>{
@@ -34,8 +34,8 @@ test('step schedule covers exactly 60 minutes, without gaps, in requested order'
   });
   assert.equal(steps[0].phase,'Face-up');
   assert.match(steps[0].title,/chest/i);
-  assert.equal(steps[8].phase,'Transition');
-  assert.equal(steps[9].phase,'Face-down');
+  assert.equal(steps[5].phase,'Transition');
+  assert.equal(steps[6].phase,'Face-down');
   assert.match(steps.at(-1).title,/effleurage/i);
 });
 
@@ -44,8 +44,8 @@ test('all 60 minutes are categorised into ordered, named techniques',()=>{
     .map(m=>({from:Number(m[1]),to:Number(m[2])}));
   const cueLists=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
   const allowed=new Set(['Effleurage','Petrissage','Compression','Tapotement','Assisted Stretching','Passive Movement','Repositioning']);
-  assert.equal(timings.length,17);
-  assert.equal(cueLists.length,17);
+  assert.equal(timings.length,12);
+  assert.equal(cueLists.length,12);
   assert.ok(cueLists.flat().length>=60);
   cueLists.forEach((cues,index)=>{
     const duration=timings[index].to-timings[index].from;
@@ -62,13 +62,13 @@ test('all 60 minutes are categorised into ordered, named techniques',()=>{
       assert.doesNotMatch(cue[3],/\b\d+\s*[–-]\s*\d+\s*s\b|first two minutes|next two minutes/i);
     });
   });
-  assert.equal(cueLists[2].length,10);
-  assert.match(cueLists[2][0][3],/left arm/i);
-  assert.match(cueLists[2][5][3],/right arm/i);
-  assert.ok(cueLists[10].some(c=>c[1]==='Compression' && /finger crawling with thumb walking/i.test(c[2])));
-  assert.ok(cueLists[10].filter(c=>c[1]==='Tapotement').length>=2);
-  assert.ok(cueLists[10].some(c=>c[2]==='Cupping'));
-  assert.ok(cueLists[10].some(c=>c[2]==='Hacking'));
+  assert.equal(cueLists[0].length,14);
+  assert.match(cueLists[0][4][3],/left arm/i);
+  assert.match(cueLists[0][9][3],/right arm/i);
+  assert.ok(cueLists[6].some(c=>c[1]==='Compression' && /finger crawling with thumb walking/i.test(c[2])));
+  assert.ok(cueLists[6].filter(c=>c[1]==='Tapotement').length>=2);
+  assert.ok(cueLists[6].some(c=>c[2]==='Cupping'));
+  assert.ok(cueLists[6].some(c=>c[2]==='Hacking'));
   assert.doesNotMatch(js,/relevant muscle bellies|support one arm|0–30s/);
 });
 
@@ -105,8 +105,8 @@ test('procedure and step navigation are paired, with no start dropdowns',()=>{
   assert.match(html,/id="massageRoutineQuickPause"/);
   assert.match(html,/id="massageRoutinePreviousProcedure"/);
   assert.match(html,/id="massageRoutineNextProcedure"/);
-  assert.match(html,/class="routine-navigation"/);
-  assert.match(html,/class="routine-nav-pair"/);
+  assert.match(html,/class="routine-labelled-nav routine-step-nav"/);
+  assert.match(html,/class="routine-labelled-nav routine-procedure-nav"/);
   assert.match(html,/id="massageRoutineFullDetails"/);
   assert.match(html,/id="massageRoutineFullList"/);
   assert.match(html,/View Full Routine/);
@@ -160,7 +160,7 @@ test('each procedure has pressure and an optional stretch with the active countd
   assert.match(css,/\.routine-minimal-active p\{font-size:18px/);
   assert.doesNotMatch(css,/max-height:calc\(100svh - 132px\)/);
   assert.match(css,/#massageRoutineRunner:not\(\.routine-fullscreen\)\{[\s\S]*?max-height:none;[\s\S]*?overflow:visible;/);
-  assert.match(css,/\.routine-playback-controls,[\s\S]*?\.routine-navigation\{[\s\S]*?position:static;/);
+  assert.match(css,/\.routine-labelled-nav\{[\s\S]*?grid-template-columns/);
   assert.doesNotMatch(html,/id="massageRoutineStartStep"|id="massageRoutineStartProcedure"/);
 });
 
@@ -181,4 +181,43 @@ test('procedure card is automatic-only while fullscreen has a full routine viewe
   assert.match(recent,/\.routine-current-step\{[\s\S]*?flex:1 1 300px!important/);
   assert.match(recent,/\.routine-summary \.routine-timer strong\{[\s\S]*?font-size:clamp\(51px,9vmin,78px\)/);
   assert.match(recent,/\.routine-section-instruction\{font-size:clamp\(19px/);
+});
+
+
+test('consolidated body-area hierarchy preserves all 68 procedures and original clock boundaries',()=>{
+  const steps=[...js.matchAll(/\{from:(\d+),to:(\d+),phase:'([^']+)',title:'([^']+)',detail:'[^']+',cues:(\[\[.*\]\])\}/g)]
+    .map(m=>({from:Number(m[1]),to:Number(m[2]),phase:m[3],title:m[4],cues:JSON.parse(m[5])}));
+  assert.equal(steps.length,12);
+  assert.equal(steps.reduce((sum,step)=>sum+step.cues.length,0),68);
+  assert.deepEqual(steps.map(s=>[s.from,s.to]),[
+    [0,600],[600,840],[840,1200],[1200,1560],[1560,1980],[1980,2040],
+    [2040,2580],[2580,2820],[2820,3000],[3000,3300],[3300,3540],[3540,3600]
+  ]);
+  assert.equal(steps[0].cues.length,14);
+  assert.equal(steps[4].cues.length,12);
+  assert.equal(steps[6].cues.length,10);
+  assert.equal(steps[10].cues.length,12);
+  assert.match(steps[0].title,/chest.*shoulders/i);
+  assert.match(steps[4].title,/face-up/i);
+  assert.match(steps[9].title,/face-down/i);
+  assert.match(steps[11].title,/back/i);
+});
+
+test('step and procedure navigation flank the definitive labels with accessible arrows',()=>{
+  const stepBlock=html.match(/<div class="routine-labelled-nav routine-step-nav"[\s\S]*?<\/div>\s*<\/div>/);
+  const procedureBlock=html.match(/<div class="routine-labelled-nav routine-procedure-nav"[\s\S]*?<\/div>\s*<\/div>/);
+  assert.ok(stepBlock);
+  assert.ok(procedureBlock);
+  assert.match(stepBlock[0],/id="massageRoutinePrevious"/);
+  assert.match(stepBlock[0],/id="massageRoutineCurrentTitle"/);
+  assert.match(stepBlock[0],/id="massageRoutineNext"/);
+  assert.match(procedureBlock[0],/id="massageRoutinePreviousProcedure"/);
+  assert.match(procedureBlock[0],/id="massageRoutineMinimalFamily"/);
+  assert.match(procedureBlock[0],/id="massageRoutineMinimalName"/);
+  assert.match(procedureBlock[0],/id="massageRoutineNextProcedure"/);
+  assert.match(html,/aria-label="Previous step"/);
+  assert.match(html,/aria-label="Next procedure"/);
+  assert.doesNotMatch(html,/class="routine-navigation"/);
+  assert.match(css,/\.routine-minimal-clock-face > strong\{[\s\S]*?font-size:clamp\(68px,16vw,108px\)/);
+  assert.match(css,/\.routine-minimal-clock-face > small\{[\s\S]*?font-size:clamp\(15px,3\.1vw,21px\)/);
 });
