@@ -62,10 +62,10 @@ test('all 60 minutes are categorised into ordered, named techniques',()=>{
   assert.equal(cueLists[2].length,10);
   assert.match(cueLists[2][0][3],/left arm/i);
   assert.match(cueLists[2][5][3],/right arm/i);
-  assert.ok(cueLists[10].some(c=>c[1]==='Compression' && /finger crawling with thumb compression/i.test(c[2])));
+  assert.ok(cueLists[10].some(c=>c[1]==='Compression' && /finger crawl with thumb pressure/i.test(c[2])));
   assert.ok(cueLists[10].filter(c=>c[1]==='Tapotement').length>=2);
-  assert.ok(cueLists[10].some(c=>c[2]==='Cupping Tapotement'));
-  assert.ok(cueLists[10].some(c=>c[2]==='Hacking Tapotement'));
+  assert.ok(cueLists[10].some(c=>c[2]==='Cupping'));
+  assert.ok(cueLists[10].some(c=>c[2]==='Hacking'));
   assert.doesNotMatch(js,/relevant muscle bellies|support one arm|0–30s/);
 });
 
@@ -73,14 +73,14 @@ test('timer shows exact current-section time and highlights one section silently
   assert.match(js,/performance\.now\(\)-startedAt/);
   assert.match(js,/window\.setInterval\(\(\)=>render\(\),200\)/);
   assert.match(js,/const sectionRemaining=Math\.max\(0,section\.end-stepSecond\)/);
-  assert.match(js,/sectionClock\.textContent=format\(sectionRemaining\)/);
+  assert.match(js,/remaining\.textContent='Procedure time remaining '/);
   assert.match(js,/classList\.toggle\('is-live',current\)/);
   assert.match(js,/row\.setAttribute\('aria-current','step'\)/);
   assert.match(js,/viewport\.scrollTo\(\{top:target,behavior:/);
   assert.match(css,/\.routine-sections\{[\s\S]*?overflow-y:auto/);
   assert.match(css,/\.routine-section-row\.is-live/);
-  assert.match(html,/id="massageRoutineSectionClock"/);
-  assert.match(html,/id="massageRoutineSectionCounter"/);
+  assert.doesNotMatch(html,/id="massageRoutineSectionClock"|id="massageRoutineSectionCounter"/);
+  assert.doesNotMatch(html,/id="massageRoutineCurrentDetail"|id="massageRoutineStepClock"/);
   assert.match(html,/id="massageRoutineNextTitle"/);
   assert.doesNotMatch(html,/Massage plan steps/i);
   assert.match(html,/id="massageRoutineQuickPause"/);
@@ -113,11 +113,17 @@ test('procedure and step navigation are paired, with no start dropdowns',()=>{
 
 test('terminology is consistent and labels are legible',()=>{
   const cues=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
-  assert.deepEqual(cues[0].map(c=>c[2]),['Broad Palm Effleurage','Alternating Palm Effleurage']);
+  assert.deepEqual(cues[0].map(c=>c[2]),['Broad Palm','Alternating Palms']);
   for(const cue of cues.flat()){
     assert.doesNotMatch(cue[2],/\bpalmar\b|\bglides?\b/i);
-    if(cue[1]==='Effleurage') assert.match(cue[2],/Effleurage/);
+    assert.doesNotMatch(cue[2],new RegExp('\\b'+cue[1]+'\\b','i'));
+    assert.ok(cue[3].length<=135,'brief descriptor under 135 characters');
   }
+  assert.match(js,/identity\.append\(family,separator,name\)/);
+  assert.match(js,/content\.append\(identity,remaining,instruction\)/);
+  assert.match(js,/minimalName\.textContent=section\.family\+' — '\+section\.technique/);
+  assert.match(css,/\.routine-section-technique\{[\s\S]*?font-size:19px/);
+  assert.match(css,/\.routine-section-content \.routine-section-instruction\{[\s\S]*?font-size:17px/);
   assert.match(html,/id="massageRoutinePlanValue"/);
   assert.match(css,/\.routine-select-display\{/);
   assert.match(css,/overflow-wrap:anywhere/);
