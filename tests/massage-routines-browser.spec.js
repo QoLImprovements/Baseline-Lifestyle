@@ -57,16 +57,16 @@ test('select any procedure, exact remaining time, automatic advance, pause and r
   await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(68);
   await list.first().locator('.routine-full-procedures li').nth(5).getByRole('button',{name:/Start here/}).click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('06:05');
-  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Left Pectoral — Effleurage');
+  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Left Pectoral — Petrissage');
   await expect(page.locator('#massageRoutineTimeline .routine-section-row')).toHaveCount(1);
-  await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText('Longitudinal strokes');
+  await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText('Small-circle kneading');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:50');
   await expect(page.locator('#massageRoutineTimeline .routine-section-stretch')).toContainText('Left shoulder outward 30–90°');
   await page.locator('#massageRoutineQuickPause').click();
   await page.clock.fastForward(50000);
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('06:55');
   await expect(page.locator('#massageRoutineSectionCounter')).toHaveText('Procedure 7 of 18');
-  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Left Shoulder — Effleurage');
+  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Left Shoulder — Assisted Stretching');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:05');
   await page.locator('#massageRoutineQuickPause').click();
   await page.clock.fastForward(10000);
@@ -210,20 +210,20 @@ test('firm petrissage and gentler integrated stretches have separate pressure an
   await expect(page.locator('#massageRoutineTimeline .routine-section-stretch')).toContainText('2–3/10');
 });
 
-test('both chest openings and returns are short, with continuous effleurage in stretched positions',async({page})=>{
+test('both chest openings are brief; sustained treatment advances to petrissage and friction',async({page})=>{
   await page.clock.install();
   await openRoutine(page);
   await page.locator('#massageRoutineFullDetails summary').click();
   const chest=page.locator('#massageRoutineFullList .routine-full-step').first();
   await chest.locator('.routine-full-procedures li').nth(4).getByRole('button',{name:/Start here/}).click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('06:00');
-  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Left Pectoral — Effleurage');
+  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Left Pectoral — Assisted Stretching');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:05');
-  await expect(page.locator('#massageRoutineMinimalInstruction')).toContainText('continuous pectoral strokes');
+  await expect(page.locator('#massageRoutineMinimalInstruction')).toContainText('gentle, continuous support');
   await page.locator('#massageRoutineNextProcedure').click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('06:05');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:50');
-  await expect(page.locator('#massageRoutineMinimalInstruction')).toContainText('lengthened pectoral');
+  await expect(page.locator('#massageRoutineMinimalInstruction')).toContainText('lighter pressure than on relaxed tissue');
   await page.locator('#massageRoutineNextProcedure').click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('06:55');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:05');
@@ -233,10 +233,37 @@ test('both chest openings and returns are short, with continuous effleurage in s
   await page.locator('#massageRoutineNextProcedure').click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('07:05');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:55');
+  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Left Pectoral — Friction');
+  await expect(page.locator('#massageRoutineMinimalTechnique')).toHaveText('Localised circular');
+  await expect(page.locator('#massageRoutineTimeline .routine-section-pressure')).toHaveText('Pressure 3–4/10');
+
   await page.locator('#massageRoutineFullDetails summary').click();
   await chest.locator('.routine-full-procedures li').nth(9).getByRole('button',{name:/Start here/}).click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('08:00');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:05');
   await page.locator('#massageRoutineNextProcedure').click();
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:50');
+});
+
+
+test('opening both pectorals avoids repeating already-completed effleurage',async({page})=>{
+  await openRoutine(page);
+  const list=page.locator('#massageRoutineFullDetails');
+  await list.locator('summary').click();
+  const first=page.locator('#massageRoutineFullList .routine-full-step').first();
+  for(const offset of [4,9]){
+    const sequence=first.locator('.routine-full-procedures li');
+    await expect(sequence.nth(offset)).toContainText('Assisted Stretching');
+    await expect(sequence.nth(offset+1)).toContainText('Petrissage');
+    await expect(sequence.nth(offset+4)).toContainText('Friction');
+    for(let p=offset;p<=offset+4;p++){
+      await expect(sequence.nth(p)).not.toContainText('Effleurage');
+    }
+    await sequence.nth(offset+4).getByRole('button',{name:/Start here/}).click();
+    await expect(page.locator('#massageRoutineMinimalName')).toContainText('Friction');
+    await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText('Localised circular');
+    await expect(page.locator('#massageRoutineTimeline .routine-section-stretch')).toContainText('30–90°');
+    await list.locator('summary').click();
+  }
+  await expect(first.locator('.routine-full-procedures li')).toHaveCount(18);
 });
