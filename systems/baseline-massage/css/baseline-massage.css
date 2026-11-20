@@ -2127,3 +2127,20 @@ body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-sec
 /* Stretch-only movement and turn-over have no massage-pressure rating. */
 body[data-app="massage"] #routines .routine-section-pressure[hidden],
 body[data-app="massage"] #routines .routine-full-metrics[hidden]{display:none!important}
+
+
+/* Restore desktop card's content-led width; full-width was intended for mobile only.
+   Restore the shared Massage palette instead of hard-coded pale procedure colours. */
+@media(min-width:651px){
+  body[data-app="massage"] #routines .massage-routines-card{
+    width:auto!important;
+    justify-self:initial;
+    max-width:1050px;
+    margin-inline:auto;
+  }
+}
+body[data-app="massage"] #routines .routine-section-row.is-live{
+  background:linear-gradient(180deg,var(--massage-panel),var(--massage-panel-2));
+  border:2px solid var(--massage-border-strong);
+  box-shadow:inset 5px 0 0 var(--massage-mid);
+}
