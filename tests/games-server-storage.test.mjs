@@ -383,7 +383,7 @@ test('manual Save identifies the actual clean-route game and its clicked panel',
   assert.equal(context.saveAppForButton(jigsawButton),'pantherjigsaw');
 });
 
-test('all 24 games accepted by the PHP API have real file-backed save mappings',()=>{
+test('all games accepted by the PHP API have real file-backed save mappings',()=>{
   const apiStart=gamesApi.indexOf('function bl_game_data_file_apps()');
   const mapStart=savedData.indexOf('function bl_saved_game_files()');
   assert.ok(apiStart>=0&&mapStart>=0,'both game authority lists must be present');
