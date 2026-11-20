@@ -412,7 +412,7 @@ test('player uses System page inner surface colours and shared tab/button palett
     const style=el=>getComputedStyle(el);
     const systemList=document.querySelector('#system .system-list');
     const systemNote=document.querySelector('#system .system-note-block');
-    const systemTab=document.querySelector('.tab[data-target="system"]');
+    const peerButton=document.querySelector('#massageRoutineFullscreen');
     const runner=document.getElementById('massageRoutineRunner');
     const step=document.querySelector('#routines .routine-current-step');
     const procedure=document.querySelector('#routines .routine-section-row.is-live');
@@ -423,7 +423,7 @@ test('player uses System page inner surface colours and shared tab/button palett
       step:style(step).backgroundColor,
       procedure:style(procedure).backgroundColor,
       controls:style(arrow).backgroundImage,
-      systemControls:style(systemTab).backgroundImage,
+      peerControls:style(peerButton).backgroundImage,
       arrowColor:style(arrow).color,
       arrowTextFill:style(arrow).webkitTextFillColor,
       className:runner.className
@@ -431,7 +431,8 @@ test('player uses System page inner surface colours and shared tab/button palett
   });
   expect(actual.step).toBe(actual.systemList);
   expect(actual.procedure).toBe(actual.systemNote);
-  expect(actual.controls).toBe(actual.systemControls);
+  expect(actual.controls).toBe(actual.peerControls);
+  expect(actual.controls).toContain('linear-gradient');
   expect(actual.arrowColor).toBe('rgb(31, 16, 7)');
   expect(actual.arrowTextFill).toBe('rgb(31, 16, 7)');
 });
