@@ -124,6 +124,18 @@
       alt:'An African elephant herd gathered around a shallow watering hole, with adults and calves drinking, wading and interacting.',
       libraryDescription:'Adults and calves gather at a shallow watering hole to drink, cool themselves and remain in close social contact while the herd moves through the savanna.',
       description:'At the watering hole, adults and calves spread across the bank and shallows, drinking, wading and maintaining contact as a family group. Elephant herds are built around enduring social relationships: calves remain close to experienced females, while adults coordinate movement, protection and access to resources. Water is therefore more than a drink; it is also a place for cooling, play, learning and social interaction.'
+    }),
+    Object.freeze({
+      id:'zebras',
+      group:'Animals',
+      title:'Zebras',
+      app:'zebrajigsaw',
+      image:'/systems/baseline-recreation/puzzles/zebras/art/zebras.webp?v=ZEBRAS_JIGSAW_20261120_1',
+      width:1672,
+      height:941,
+      alt:'A zebra and its foal move across a grassy track as other zebras graze and watch from nearby ground in daylight.',
+      libraryDescription:'An adult zebra and its foal cross open grassland while other zebras graze nearby, highlighting the herd\'s social bonds, vigilance and shared protection.',
+      description:'A zebra and its foal move together along a sunlit track as other members of their herd spread across the surrounding grassland. Zebras rely on social relationships and collective vigilance: adults help detect danger, and foals benefit from staying near experienced herd members. The scene captures ordinary movement and alertness within a shared habitat.'
     })
   ]);
 
