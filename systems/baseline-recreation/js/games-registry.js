@@ -64,6 +64,7 @@
     'bearjigsaw',
     'foxjigsaw',
     'elephantsjigsaw',
+    'zebrajigsaw',
     'crossnumber',
     'meridiangrove',
     'hubsettings'
