@@ -30,9 +30,11 @@ test('Puzzles opens as a type library with Jigsaws as a nested selection', () =>
   assert.match(core, /BaselinePuzzlesLibrary\.showOverview\(\)/);
 });
 
-test('Animals appear before Symbolic on the jigsaw catalogue', () => {
+test('jigsaw categories and titles are alphabetically ordered', () => {
   assert.match(library, /groups\.sort\(function\(a,b\)/);
-  assert.match(library, /const order=\{Animals:0,Symbolic:1\}/);
+  assert.match(library, /a\.name\.localeCompare\(b\.name,'en',\{sensitivity:'base'\}\)/);
+  assert.match(library, /group\.items\.sort\(function\(a,b\)/);
+  assert.match(library, /a\.title\.localeCompare\(b\.title,'en',\{sensitivity:'base'\}\)/);
 });
 
 test('Jigsaws are grouped into Symbolic and Animals collections with all nine artworks', () => {
