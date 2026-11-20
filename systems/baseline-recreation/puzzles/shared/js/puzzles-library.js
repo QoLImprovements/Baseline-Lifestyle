@@ -117,10 +117,15 @@
       if(!group){group={name:item.group,items:[]};groups.push(group);}
       group.items.push(item);
     });
-    // Animals lead the jigsaw catalogue; other collections retain their registry order.
+    // Sort both category headings and individual jigsaws alphabetically.
+    // Sorting only the rendered catalogue preserves every jigsaw's stable id and save profile.
     groups.sort(function(a,b){
-      const order={Animals:0,Symbolic:1};
-      return (order[a.name]??99)-(order[b.name]??99);
+      return a.name.localeCompare(b.name,'en',{sensitivity:'base'});
+    });
+    groups.forEach(function(group){
+      group.items.sort(function(a,b){
+        return a.title.localeCompare(b.title,'en',{sensitivity:'base'});
+      });
     });
     refs.jigsawsList.innerHTML=groups.map(function(group){
       return '<div class="puzzle-library-group">' + escapeHtml(group.name) + '</div>' +
