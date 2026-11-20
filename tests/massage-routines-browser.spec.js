@@ -368,3 +368,40 @@ test('gluteal and hamstring percussion is balanced left/right after kneading, no
   await full.locator('summary').click();
   await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(80);
 });
+
+
+test('desktop Massage Routines card follows content width instead of filling the entire desktop grid',async({page})=>{
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto('/baseline-massage/routines',{waitUntil:'domcontentloaded'});
+  const sizes=await page.evaluate(()=>{
+    const card=document.querySelector('#routines .massage-routines-card');
+    const picker=document.querySelector('#routines .massage-routine-picker');
+    const section=document.querySelector('#routines');
+    const c=card.getBoundingClientRect(),p=picker.getBoundingClientRect(),r=section.getBoundingClientRect();
+    return {
+      cardWidth:c.width,pickerWidth:p.width,sectionWidth:r.width,
+      cardLeft:c.left,sectionLeft:r.left,
+      cardRight:c.right,sectionRight:r.right,
+      cardMaxWidth:getComputedStyle(card).maxWidth,
+      cardDeclaredWidth:getComputedStyle(card).width
+    };
+  });
+  expect(sizes.cardWidth).toBeGreaterThan(350);
+  expect(sizes.cardWidth).toBeLessThan(900);
+  expect(sizes.pickerWidth).toBeLessThanOrEqual(720);
+  expect(sizes.cardWidth).toBeGreaterThanOrEqual(sizes.pickerWidth);
+  expect(Math.abs((sizes.cardLeft-sizes.sectionLeft)-(sizes.sectionRight-sizes.cardRight))).toBeLessThan(5);
+});
+
+test('live procedure card uses the same brown Massage colour tokens as the rest of the system',async({page})=>{
+  await openRoutine(page);
+  const colors=await page.evaluate(()=>{
+    const el=document.querySelector('#massageRoutineTimeline .routine-section-row.is-live');
+    const style=getComputedStyle(el);
+    return {background:style.backgroundImage,border:style.borderTopColor,inset:style.boxShadow};
+  });
+  expect(colors.background).toMatch(/rgb\(201,\s*154,\s*114\)/);
+  expect(colors.background).toMatch(/rgb\(183,\s*133,\s*95\)/);
+  expect(colors.border).toMatch(/rgba?\(/);
+  expect(colors.inset).toContain('inset');
+});
