@@ -43,7 +43,7 @@ test('all 60 minutes are categorised into ordered, named techniques',()=>{
   const timings=[...js.matchAll(/\{from:(\d+),to:(\d+),phase:'[^']+',title:'[^']+'/g)]
     .map(m=>({from:Number(m[1]),to:Number(m[2])}));
   const cueLists=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
-  const allowed=new Set(['Effleurage','Petrissage','Compression','Tapotement','Assisted Stretching','Transition']);
+  const allowed=new Set(['Effleurage','Petrissage','Friction','Compression','Tapotement','Assisted Stretching','Transition']);
   assert.equal(timings.length,9);
   assert.equal(cueLists.length,9);
   assert.ok(cueLists.flat().length>=60);
@@ -269,8 +269,8 @@ test('full-width responsive card and one active procedure have no repeated categ
   assert.equal(groups.length,9);
   assert.equal(groups.flat().length,68);
   assert.equal(groups[0][5][6],'Left Pectoral');
-  assert.equal(groups[0][5][1],'Effleurage');
-  assert.equal(groups[0][5][2],'Longitudinal strokes');
+  assert.equal(groups[0][5][1],'Petrissage');
+  assert.equal(groups[0][5][2],'Small-circle kneading');
   assert.doesNotMatch(groups[0][5][3],/left pectoral/i);
 });
 
@@ -286,15 +286,17 @@ test('body-area pressure levels are reviewed for all procedures, distinct from s
     familyPressure[cue[1]]??=new Set();
     familyPressure[cue[1]].add(cue[4]);
     if(cue[1]==='Petrissage'){
-      assert.ok(['4–6','5–7'].includes(cue[4]),'kneading must have its own appropriately firm range');
+      assert.ok(['3–4','4–6','5–7'].includes(cue[4]),'kneading pressure must be appropriate to the muscle position');
+      if(cue[4]==='3–4')assert.ok(cue[5] && /Pectoral/.test(cue[6]));
     }
     if(cue[1]==='Tapotement')assert.ok(['2–4','3–5'].includes(cue[4]));
     if(cue[1]==='Compression')assert.ok(['3–5','4–6'].includes(cue[4]));
     if(cue[1]==='Assisted Stretching'||cue[1]==='Transition')assert.equal(cue[4],null);
     if(cue[5]!==null)assert.match(cue[5],/\/10$/);
   }
-  assert.deepEqual([...familyPressure.Petrissage].sort(),['4–6','5–7']);
+  assert.deepEqual([...familyPressure.Petrissage].sort(),['3–4','4–6','5–7']);
   assert.ok(familyPressure.Effleurage.has('2–3')&&familyPressure.Effleurage.has('4–5'));
+  assert.deepEqual([...familyPressure.Friction],['3–4']);
   assert.match(js,/minimalPressure\.hidden=!section\.pressure/);
   assert.match(js,/pressure\.hidden=!section\.pressure/);
   assert.match(js,/metrics\.hidden=!procedure\.pressure&&!procedure\.stretch/);
@@ -321,6 +323,34 @@ test('massage continues through gentle stretching; positioning is brief rather t
   const chest=steps[0].cues;
   assert.deepEqual(chest.slice(4,9).map(c=>c[0]),[360,365,415,420,425]);
   assert.deepEqual(chest.slice(9,14).map(c=>c[0]),[480,485,535,540,545]);
-  assert.match(chest[4][3],/continuous pectoral strokes/);
-  assert.match(chest[9][3],/continuous pectoral strokes/);
+  assert.equal(chest[4][1],'Assisted Stretching');
+  assert.equal(chest[9][1],'Assisted Stretching');
+  assert.ok(chest.slice(4,14).every(c=>c[1]!=='Effleurage'),'no second effleurage block during pectoral stretching');
+  assert.deepEqual(chest.slice(4,9).map(c=>c[1]),['Assisted Stretching','Petrissage','Assisted Stretching','Assisted Stretching','Friction']);
+  assert.deepEqual(chest.slice(9,14).map(c=>c[1]),['Assisted Stretching','Petrissage','Assisted Stretching','Assisted Stretching','Friction']);
+});
+
+
+test('supported chest opening leads to new techniques rather than repeating effleurage',()=>{
+  const cues=JSON.parse([...js.matchAll(/^\s+\{from:\d+,to:\d+,phase:'[^']+',title:'[^']+',detail:'[^']+',cues:(\[\[.*\]\])\},?$/gm)][0][1]);
+  for(const start of [4,9]){
+    const [open,knead,returnArm,reopen,friction]=cues.slice(start,start+5);
+    assert.equal(open[1],'Assisted Stretching');
+    assert.equal(open[4],null);
+    assert.equal(knead[1],'Petrissage');
+    assert.equal(knead[2],'Small-circle kneading');
+    assert.equal(knead[4],'3–4');
+    assert.match(knead[5],/30–90°/);
+    assert.equal(returnArm[1],'Assisted Stretching');
+    assert.equal(reopen[1],'Assisted Stretching');
+    assert.equal(friction[1],'Friction');
+    assert.equal(friction[2],'Localised circular');
+    assert.equal(friction[4],'3–4');
+    assert.match(friction[5],/30–90°/);
+    assert.ok(cues[start+1][0]-cues[start][0]<=5);
+    assert.ok(cues[start+4][0]-cues[start+3][0]<=5);
+    assert.doesNotMatch(knead[3],/knead|small.circle|left pectoral|right pectoral/i);
+    assert.doesNotMatch(friction[3],/friction|localised circular/i);
+  }
+  assert.equal(cues.length,18);
 });
