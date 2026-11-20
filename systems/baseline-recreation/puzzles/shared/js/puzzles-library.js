@@ -117,6 +117,11 @@
       if(!group){group={name:item.group,items:[]};groups.push(group);}
       group.items.push(item);
     });
+    // Animals lead the jigsaw catalogue; other collections retain their registry order.
+    groups.sort(function(a,b){
+      const order={Animals:0,Symbolic:1};
+      return (order[a.name]??99)-(order[b.name]??99);
+    });
     refs.jigsawsList.innerHTML=groups.map(function(group){
       return '<div class="puzzle-library-group">' + escapeHtml(group.name) + '</div>' +
         group.items.map(function(item){
