@@ -447,21 +447,29 @@ test('tapotement is included for both thighs, both glutes and posterior thighs w
 });
 
 
-test('desktop restores intrinsic Massage Routines width while mobile remains full-width',()=>{
-  const patch=css.slice(css.lastIndexOf('/* Restore desktop card'));
-  assert.match(patch,/@media\(min-width:651px\)/);
-  assert.match(patch,/\.massage-routines-card\{[\s\S]*?width:auto!important/);
-  assert.match(patch,/justify-self:initial/);
-  const mobile=css.slice(css.lastIndexOf('@media(max-width:650px)'));
-  assert.match(mobile,/\.massage-routines-card\{[\s\S]*?width:100%!important/);
-  assert.match(html,/baseline-massage\.css\?v=MASSAGE_DESKTOP_PALETTE_20261120_16/);
+
+
+test('Massage Routines and System use identical full grid-width cards on desktop and mobile',()=>{
+  const fix=css.slice(css.lastIndexOf('/* Match the System page, not the content width'));
+  assert.ok(fix.length>0);
+  assert.match(fix,/\.massage-routines-card\{[\s\S]*?width:100%!important/);
+  assert.match(fix,/\.massage-routines-card\{[\s\S]*?max-width:none!important/);
+  assert.match(fix,/\.massage-routines-card\{[\s\S]*?justify-self:stretch/);
+  assert.match(fix,/\.massage-routines-card\{[\s\S]*?margin:0!important/);
+  assert.doesNotMatch(fix,/width:auto!important/);
+  assert.match(html,/baseline-massage\.css\?v=MASSAGE_SYSTEM_COHERENCE_20261120_17/);
+  assert.match(html,/class="card system-card"/);
+  assert.match(html,/class="card massage-routines-card"/);
 });
 
-test('active Massage procedure inherits the shared palette, not a bespoke beige and brown override',()=>{
-  const patch=css.slice(css.lastIndexOf('/* Restore desktop card'));
-  assert.match(patch,/\.routine-section-row\.is-live\{[\s\S]*?background:linear-gradient\(180deg,var\(--massage-panel\),var\(--massage-panel-2\)\)/);
-  assert.match(patch,/border:2px solid var\(--massage-border-strong\)/);
-  assert.match(patch,/box-shadow:inset 5px 0 0 var\(--massage-mid\)/);
-  assert.match(css,/--massage-panel:#c99a72/);
-  assert.match(css,/--massage-panel-2:#b7855f/);
+test('Massage player surfaces match System list and note palette rather than custom cream',()=>{
+  const fix=css.slice(css.lastIndexOf('/* Match the System page, not the content width'));
+  assert.match(css,/section#system \.system-list\{[\s\S]*?background:rgba\(237,199,164,\.20\)!important/);
+  assert.match(css,/section#system \.system-note-block\{[\s\S]*?background:rgba\(241,208,175,\.26\)!important/);
+  assert.match(fix,/\.routine-current-step\{[\s\S]*?background:rgba\(237,199,164,\.20\)!important/);
+  assert.match(fix,/\.routine-section-row\.is-live\{[\s\S]*?background:rgba\(241,208,175,\.26\)!important/);
+  assert.match(fix,/\.routine-arrow\{[\s\S]*?background:var\(--showall-bg\)!important/);
+  assert.match(fix,/\.routine-arrow\{[\s\S]*?color:#1f1007!important/);
+  assert.match(fix,/\.routine-timer,[\s\S]*?\.routine-full-plan,[\s\S]*?\.routine-start-from\{[\s\S]*?background:rgba\(237,199,164,\.20\)!important/);
+  assert.match(fix,/\.routine-full-step\{[\s\S]*?background:rgba\(241,208,175,\.26\)!important/);
 });

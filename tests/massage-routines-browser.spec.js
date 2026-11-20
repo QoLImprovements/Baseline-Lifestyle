@@ -175,9 +175,18 @@ test('mobile windowed page scrolls naturally and active procedure panel has no i
   expect(stats.overflow).toBe('visible');
   expect(stats.playerOverflow).toBe('visible');
   expect(stats.internalHeight).toBeLessThanOrEqual(stats.clientHeight+2);
-  expect(stats.total).toBeGreaterThan(844);
+  // The actual routine may fit on a tall phone. Test ordinary page scrolling
+  // with additional content rather than requiring artificial overflow.
+  await page.evaluate(()=>{
+    const spacer=document.createElement('div');
+    spacer.id='massage-scroll-regression-spacer';
+    spacer.style.height='520px';
+    document.body.append(spacer);
+  });
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollHeight)).toBeGreaterThan(844);
   await page.evaluate(()=>scrollTo(0,350));
   await expect.poll(()=>page.evaluate(()=>scrollY)).toBeGreaterThan(100);
+  await page.evaluate(()=>document.getElementById('massage-scroll-regression-spacer')?.remove());
 });
 
 test('routine URL selection remains independent of planner after refresh',async({page})=>{
@@ -370,38 +379,60 @@ test('gluteal and hamstring percussion is balanced left/right after kneading, no
 });
 
 
-test('desktop Massage Routines card follows content width instead of filling the entire desktop grid',async({page})=>{
+
+
+for(const viewport of [{width:1440,height:900},{width:1024,height:768},{width:390,height:844}]){
+  test('Massage Routines card equals System card width at '+viewport.width+'px',async({page})=>{
+    await page.setViewportSize(viewport);
+    await page.goto('/baseline-massage/routines',{waitUntil:'domcontentloaded'});
+    await expect(page.locator('#routines')).toHaveClass(/active/);
+    const routine=await page.locator('#routines .massage-routines-card').boundingBox();
+    const dropdown=await page.locator('#routines .routine-visible-select').boundingBox();
+    expect(routine).not.toBeNull();
+    expect(dropdown).not.toBeNull();
+    await page.locator('.tab[data-target="system"]').click();
+    await expect(page.locator('#system')).toHaveClass(/active/);
+    const system=await page.locator('#system .system-card').boundingBox();
+    expect(system).not.toBeNull();
+    expect(Math.abs(routine.width-system.width)).toBeLessThanOrEqual(2);
+    expect(Math.abs(routine.x-system.x)).toBeLessThanOrEqual(2);
+    expect(dropdown.width).toBeGreaterThan(200);
+    expect(routine.width).toBeGreaterThan(dropdown.width);
+    await page.locator('.tab[data-target="routines"]').click();
+    await expect(page.locator('#routines .massage-routines-card')).toBeVisible();
+    const routineAfter=await page.locator('#routines .massage-routines-card').boundingBox();
+    expect(Math.abs(routineAfter.width-system.width)).toBeLessThanOrEqual(2);
+  });
+}
+
+test('player uses System page inner surface colours and shared tab/button palette',async({page})=>{
   await page.setViewportSize({width:1440,height:900});
-  await page.goto('/baseline-massage/routines',{waitUntil:'domcontentloaded'});
-  const sizes=await page.evaluate(()=>{
-    const card=document.querySelector('#routines .massage-routines-card');
-    const picker=document.querySelector('#routines .massage-routine-picker');
-    const section=document.querySelector('#routines');
-    const c=card.getBoundingClientRect(),p=picker.getBoundingClientRect(),r=section.getBoundingClientRect();
+  await openRoutine(page);
+  const actual=await page.evaluate(()=>{
+    const style=el=>getComputedStyle(el);
+    const systemList=document.querySelector('#system .system-list');
+    const systemNote=document.querySelector('#system .system-note-block');
+    const peerButton=document.querySelector('#massageRoutineFullscreen');
+    const runner=document.getElementById('massageRoutineRunner');
+    const step=document.querySelector('#routines .routine-current-step');
+    const procedure=document.querySelector('#routines .routine-section-row.is-live');
+    const arrow=document.querySelector('#massageRoutineNextProcedure');
     return {
-      cardWidth:c.width,pickerWidth:p.width,sectionWidth:r.width,
-      cardLeft:c.left,sectionLeft:r.left,
-      cardRight:c.right,sectionRight:r.right,
-      cardMaxWidth:getComputedStyle(card).maxWidth,
-      cardDeclaredWidth:getComputedStyle(card).width
+      systemList:style(systemList).backgroundColor,
+      systemNote:style(systemNote).backgroundColor,
+      step:style(step).backgroundColor,
+      procedure:style(procedure).backgroundColor,
+      controls:style(arrow).backgroundImage,
+      peerControls:style(peerButton).backgroundImage,
+      arrowColor:style(arrow).color,
+      arrowTextFill:style(arrow).webkitTextFillColor,
+      className:runner.className
     };
   });
-  expect(sizes.cardWidth).toBeGreaterThan(350);
-  expect(sizes.cardWidth).toBeLessThan(900);
-  expect(sizes.pickerWidth).toBeLessThanOrEqual(720);
-  expect(sizes.cardWidth).toBeGreaterThanOrEqual(sizes.pickerWidth);
-  expect(Math.abs((sizes.cardLeft-sizes.sectionLeft)-(sizes.sectionRight-sizes.cardRight))).toBeLessThan(5);
-});
-
-test('live procedure card uses the same brown Massage colour tokens as the rest of the system',async({page})=>{
-  await openRoutine(page);
-  const colors=await page.evaluate(()=>{
-    const el=document.querySelector('#massageRoutineTimeline .routine-section-row.is-live');
-    const style=getComputedStyle(el);
-    return {background:style.backgroundImage,border:style.borderTopColor,inset:style.boxShadow};
-  });
-  expect(colors.background).toMatch(/rgb\(201,\s*154,\s*114\)/);
-  expect(colors.background).toMatch(/rgb\(183,\s*133,\s*95\)/);
-  expect(colors.border).toMatch(/rgba?\(/);
-  expect(colors.inset).toContain('inset');
+  expect(actual.step).toBe(actual.systemList);
+  expect(actual.procedure).toBe(actual.systemNote);
+  expect(actual.controls).toBe(actual.peerControls);
+  expect(actual.controls).toContain('linear-gradient');
+  expect(actual.arrowColor).toBe('rgb(31, 16, 7)');
+  expect(actual.arrowTextFill).toBe('rgb(31, 16, 7)');
 });
