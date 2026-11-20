@@ -43,7 +43,7 @@ test('all 60 minutes are categorised into ordered, named techniques',()=>{
   const timings=[...js.matchAll(/\{from:(\d+),to:(\d+),phase:'[^']+',title:'[^']+'/g)]
     .map(m=>({from:Number(m[1]),to:Number(m[2])}));
   const cueLists=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
-  const allowed=new Set(['Effleurage','Petrissage','Friction','Compression','Tapotement','Assisted Stretching','Transition']);
+  const allowed=new Set(['Effleurage','Petrissage','Friction','Compression','Tapotement','Vibration','Assisted Stretching','Transition']);
   assert.equal(timings.length,9);
   assert.equal(cueLists.length,9);
   assert.ok(cueLists.flat().length>=60);
@@ -72,7 +72,7 @@ test('all 60 minutes are categorised into ordered, named techniques',()=>{
   assert.match(cueLists[0][4][6],/left pectoral/i);
   assert.match(cueLists[0][9][6],/right pectoral/i);
   assert.ok(cueLists[5].some(c=>c[1]==='Compression' && /finger crawling with thumb walking/i.test(c[2])));
-  assert.ok(cueLists[5].filter(c=>c[1]==='Tapotement').length>=2);
+  assert.equal(cueLists[5].filter(c=>c[1]==='Tapotement').length,4);
   assert.ok(cueLists[5].some(c=>c[2]==='Cupping'));
   assert.ok(cueLists[5].some(c=>c[2]==='Hacking'));
   assert.doesNotMatch(js,/relevant muscle bellies|support one arm|0–30s/);
@@ -122,7 +122,7 @@ test('procedure and step navigation are paired, with no start dropdowns',()=>{
 
 test('terminology is consistent and labels are legible',()=>{
   const cues=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
-  assert.deepEqual(cues[0].slice(0,2).map(c=>c[2]),['Bilateral longitudinal strokes','Alternating hand strokes']);
+  assert.deepEqual(cues[0].slice(0,2).map(c=>c[2]),['Bilateral longitudinal palms','Bilateral muscle lifting']);
   for(const cue of cues.flat()){
     assert.doesNotMatch(cue[2],/\bpalmar\b/i);
     assert.ok(!cue[2].endsWith(' '+cue[1]), 'category must not repeat in technique');
@@ -194,14 +194,14 @@ test('consolidated body-area hierarchy preserves all 68 procedures and original 
   const steps=[...js.matchAll(/\{from:(\d+),to:(\d+),phase:'([^']+)',title:'([^']+)',detail:'[^']+',cues:(\[\[.*\]\])\}/g)]
     .map(m=>({from:Number(m[1]),to:Number(m[2]),phase:m[3],title:m[4],cues:JSON.parse(m[5])}));
   assert.equal(steps.length,9);
-  assert.equal(steps.reduce((sum,step)=>sum+step.cues.length,0),68);
+  assert.equal(steps.reduce((sum,step)=>sum+step.cues.length,0),70);
   assert.deepEqual(steps.map(s=>[s.from,s.to]),[
     [0,840],[840,1200],[1200,1560],[1560,1980],[1980,2040],
     [2040,2820],[2820,3300],[3300,3540],[3540,3600]
   ]);
   assert.equal(steps[0].cues.length,18);
   assert.equal(steps[3].cues.length,12);
-  assert.equal(steps[5].cues.length,12);
+  assert.equal(steps[5].cues.length,14);
   assert.equal(steps[7].cues.length,12);
   assert.match(steps[0].title,/chest.*shoulders/i);
   assert.match(steps[3].title,/face-up/i);
@@ -237,13 +237,13 @@ test('Minimal dial fits the window, has no duplicate label, and massage strokes 
   const steps=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
   const names=steps.flat().map(c=>c[2]);
   assert.equal(steps.length,9);
-  assert.equal(names.length,68);
+  assert.equal(names.length,70);
   assert.ok(!names.some(n=>/\bglide\b|\bbroad palm\b/i.test(n)));
   assert.ok(!steps.flat().some(c=>c[1]==='Passive Movement'));
   assert.ok(!steps.flat().some(c=>c[1]==='Repositioning'));
-  assert.equal(steps[0][14][2],'Circular kneading');
+  assert.equal(steps[0][14][2],'Anterior-deltoid lifting');
   assert.equal(steps[0][14][6],'Left Front Shoulder');
-  assert.equal(steps[0][15][2],'Circular kneading');
+  assert.equal(steps[0][15][2],'Anterior-deltoid lifting');
   assert.equal(steps[0][15][6],'Right Front Shoulder');
   assert.match(js,/title:'Chest & Shoulders'/);
   assert.match(js,/title:'Back & Shoulders'/);
@@ -267,7 +267,7 @@ test('full-width responsive card and one active procedure have no repeated categ
   assert.doesNotMatch(js,/scrollToCurrent|\.routine-section-remaining/);
   const groups=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
   assert.equal(groups.length,9);
-  assert.equal(groups.flat().length,68);
+  assert.equal(groups.flat().length,70);
   assert.equal(groups[0][5][6],'Left Pectoral');
   assert.equal(groups[0][5][1],'Petrissage');
   assert.equal(groups[0][5][2],'Small-circle kneading');
@@ -280,21 +280,20 @@ test('body-area pressure levels are reviewed for all procedures, distinct from s
     .map(m=>({from:Number(m[1]),to:Number(m[2]),cues:JSON.parse(m[3])}));
   assert.equal(steps.length,9);
   const all=steps.flatMap(st=>st.cues);
-  assert.equal(all.length,68);
+  assert.equal(all.length,70);
   const familyPressure={};
   for(const cue of all){
     familyPressure[cue[1]]??=new Set();
     familyPressure[cue[1]].add(cue[4]);
     if(cue[1]==='Petrissage'){
-      assert.ok(['3–4','4–6','5–7'].includes(cue[4]),'kneading pressure must be appropriate to the muscle position');
-      if(cue[4]==='3–4')assert.ok(cue[5] && /Pectoral/.test(cue[6]));
+      assert.ok(['3–4','3–5','4–6','5–7'].includes(cue[4]),'kneading pressure must be tailored to region and stretch');
     }
-    if(cue[1]==='Tapotement')assert.ok(['2–4','3–5'].includes(cue[4]));
+    if(cue[1]==='Tapotement')assert.ok(['1–2','2–4','3–5'].includes(cue[4]));
     if(cue[1]==='Compression')assert.ok(['3–5','4–6'].includes(cue[4]));
     if(cue[1]==='Assisted Stretching'||cue[1]==='Transition')assert.equal(cue[4],null);
     if(cue[5]!==null)assert.match(cue[5],/\/10$/);
   }
-  assert.deepEqual([...familyPressure.Petrissage].sort(),['3–4','4–6','5–7']);
+  assert.deepEqual([...familyPressure.Petrissage].sort(),['3–4','3–5','4–6','5–7']);
   assert.ok(familyPressure.Effleurage.has('2–3')&&familyPressure.Effleurage.has('4–5'));
   assert.deepEqual([...familyPressure.Friction],['3–4']);
   assert.match(js,/minimalPressure\.hidden=!section\.pressure/);
@@ -315,7 +314,7 @@ test('massage continues through gentle stretching; positioning is brief rather t
         assert.ok(duration<=8,'passive positioning and release may not fill 15–30 seconds');
         shortPositions++;
       }
-      if(cue[5]!==null&&cue[1]==='Effleurage'&&duration>=20)longMassageStretch++;
+      if(cue[5]!==null&&['Petrissage','Friction'].includes(cue[1])&&duration>=20)longMassageStretch++;
     });
   }
   assert.ok(shortPositions>=8);
@@ -353,4 +352,50 @@ test('supported chest opening leads to new techniques rather than repeating effl
     assert.doesNotMatch(friction[3],/friction|localised circular/i);
   }
   assert.equal(cues.length,18);
+});
+
+
+test('all five Swedish massage categories plus sports compression occur in the full 60-minute plan',()=>{
+  const steps=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
+  const all=steps.flat();
+  assert.equal(steps.length,9);
+  assert.equal(all.length,70);
+  const categories=new Set(all.map(c=>c[1]));
+  for(const category of ['Effleurage','Petrissage','Friction','Tapotement','Vibration','Compression','Assisted Stretching']){
+    assert.ok(categories.has(category),category+' must be represented');
+  }
+  const back=steps[5];
+  assert.deepEqual(back.filter(c=>c[1]==='Tapotement').map(c=>c[2]),[
+    'Cupping','Beating (loose fist)','Hacking','Fingertip tapping'
+  ]);
+  const taps=back.map((c,i)=>({cue:c,index:i})).filter(x=>x.cue[1]==='Tapotement');
+  for(const {cue,index} of taps){
+    const end=index===back.length-1?780:back[index+1][0];
+    const duration=end-cue[0];
+    assert.ok(duration>=10 && duration<=25,'tapotement is brief, not sustained for minutes');
+    assert.equal(cue[6],'Upper Back');
+    assert.ok(/away|clear|never|not bone|not spine/i.test(cue[3]),'percussion requires precise safe location');
+    assert.ok(['1–2','2–4','3–5'].includes(cue[4]));
+  }
+  assert.deepEqual(taps.map(x=>x.cue[0]),[360,380,400,420]);
+  assert.equal(back[9][1],'Vibration');
+  assert.equal(back[9][0],435);
+});
+
+test('full-plan strokes prepare each region once, without consecutive effleurage on the same area',()=>{
+  const steps=[...js.matchAll(/,cues:(\[\[.*\]\])\},?$/gm)].map(m=>JSON.parse(m[1]));
+  for(const [stepIndex,cues] of steps.entries()){
+    for(let i=1;i<cues.length;i++){
+      assert.ok(cues[i-1][1]!=='Effleurage'||cues[i][1]!=='Effleurage',
+        'consecutive effleurage in step '+(stepIndex+1)+' procedure '+(i+1));
+    }
+  }
+  assert.deepEqual(steps[3].filter(c=>c[5]!==null&&c[1]!=='Assisted Stretching').map(c=>c[1]),[
+    'Petrissage','Friction','Petrissage','Friction'
+  ]);
+  assert.deepEqual(steps[7].filter(c=>c[5]!==null&&c[1]!=='Assisted Stretching').map(c=>c[1]),[
+    'Petrissage','Friction','Petrissage','Friction'
+  ]);
+  const instructions=steps.flat().map(c=>c[3]);
+  assert.ok(!instructions.some(x=>/strokes during|relevant muscle bellies|first two minutes/i.test(x)));
 });
