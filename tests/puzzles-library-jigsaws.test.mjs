@@ -37,7 +37,7 @@ test('jigsaw categories and titles are alphabetically ordered', () => {
   assert.match(library, /a\.title\.localeCompare\(b\.title,'en',\{sensitivity:'base'\}\)/);
 });
 
-test('Jigsaws are grouped into Symbolic and Animals collections with all nine artworks', () => {
+test('Jigsaws are grouped into Animals and Symbolic collections with ten artworks', () => {
   assert.match(registry, /group:'Symbolic'/);
   assert.match(registry, /group:'Animals'/);
   assert.doesNotMatch(registry, /Psychological & Symbolic/);
@@ -62,6 +62,10 @@ test('Jigsaws are grouped into Symbolic and Animals collections with all nine ar
   assert.match(registry, /title:'Bear'/);
   assert.match(registry, /id:'fox'/);
   assert.match(registry, /id:'elephants'/);
+  assert.match(registry, /id:'zebras'/);
+  assert.match(registry, /title:'Zebras'/);
+  assert.match(registry, /app:'zebrajigsaw'/);
+  assert.match(registry, /zebras\.webp\?v=ZEBRAS_JIGSAW_20261120_1/);
   assert.match(registry, /bear\.webp\?v=BEAR_JIGSAW_20261018_1/);
 
   assert.match(registry, /the-unheard-signal\.png\?v=THE_UNHEARD_SIGNAL_FULL_20261017_1/);
@@ -79,13 +83,17 @@ test('Jigsaws are grouped into Symbolic and Animals collections with all nine ar
 
   for (const path of [
     'systems/baseline-recreation/puzzles/black-panther/art/black-panther.webp',
-    'systems/baseline-recreation/puzzles/bear/art/bear.webp'
+    'systems/baseline-recreation/puzzles/bear/art/bear.webp',
+    'systems/baseline-recreation/puzzles/zebras/art/zebras.webp'
   ]) {
     const art = fs.readFileSync(path);
     assert.ok(art.length > 50000);
     assert.equal(art.subarray(0,4).toString('ascii'), 'RIFF');
     assert.equal(art.subarray(8,12).toString('ascii'), 'WEBP');
   }
+  const zebraArt = fs.readFileSync('systems/baseline-recreation/puzzles/zebras/art/zebras.webp');
+  assert.equal(zebraArt.length, 520750);
+  assert.equal(crypto.createHash('sha256').update(zebraArt).digest('hex'), '3cffb27c62ee26d2a4c5207052e14bf04ce63ee7ffd4e28a03e8078a76183d56');
 });
 
 
