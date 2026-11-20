@@ -445,3 +445,23 @@ test('tapotement is included for both thighs, both glutes and posterior thighs w
   assert.equal(steps[7].cues.length,12);
   assert.equal(steps[8].to,3600);
 });
+
+
+test('desktop restores intrinsic Massage Routines width while mobile remains full-width',()=>{
+  const patch=css.slice(css.lastIndexOf('/* Restore desktop card'));
+  assert.match(patch,/@media\(min-width:651px\)/);
+  assert.match(patch,/\.massage-routines-card\{[\s\S]*?width:auto!important/);
+  assert.match(patch,/justify-self:initial/);
+  const mobile=css.slice(css.lastIndexOf('@media(max-width:650px)'));
+  assert.match(mobile,/\.massage-routines-card\{[\s\S]*?width:100%!important/);
+  assert.match(html,/baseline-massage\.css\?v=MASSAGE_DESKTOP_PALETTE_20261120_16/);
+});
+
+test('active Massage procedure inherits the shared palette, not a bespoke beige and brown override',()=>{
+  const patch=css.slice(css.lastIndexOf('/* Restore desktop card'));
+  assert.match(patch,/\.routine-section-row\.is-live\{[\s\S]*?background:linear-gradient\(180deg,var\(--massage-panel\),var\(--massage-panel-2\)\)/);
+  assert.match(patch,/border:2px solid var\(--massage-border-strong\)/);
+  assert.match(patch,/box-shadow:inset 5px 0 0 var\(--massage-mid\)/);
+  assert.match(css,/--massage-panel:#c99a72/);
+  assert.match(css,/--massage-panel-2:#b7855f/);
+});
