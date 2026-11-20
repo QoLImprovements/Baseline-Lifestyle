@@ -54,7 +54,7 @@ test('select any procedure, exact remaining time, automatic advance, pause and r
   await page.locator('#massageRoutineFullDetails summary').click();
   const list=page.locator('#massageRoutineFullList .routine-full-step');
   await expect(list).toHaveCount(9);
-  await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(70);
+  await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(80);
   await list.first().locator('.routine-full-procedures li').nth(5).getByRole('button',{name:/Start here/}).click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('06:05');
   await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Left Pectoral — Petrissage');
@@ -298,7 +298,7 @@ test('full routine uses all four brief tapotement methods on upper-back muscle',
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:15');
   await details.locator('summary').click();
   await expect(upperBack).toContainText('Vibration');
-  await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(70);
+  await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(80);
 });
 
 test('supported hamstring and quadriceps work progresses beyond repeated effleurage',async({page})=>{
@@ -317,4 +317,54 @@ test('supported hamstring and quadriceps work progresses beyond repeated effleur
   await expect(back.locator('.routine-full-procedures li').first()).toContainText('Effleurage');
   await expect(back.locator('.routine-full-procedures li').nth(1)).toContainText('Petrissage');
   await expect(back.locator('.routine-full-procedures li').nth(2)).toContainText('Friction');
+});
+
+
+test('quadriceps tapotement progresses from petrissage into cupping and hacking on each side',async({page})=>{
+  await openRoutine(page);
+  const full=page.locator('#massageRoutineFullDetails');
+  await full.locator('summary').click();
+  const thigh=page.locator('#massageRoutineFullList .routine-full-step').nth(2);
+  await expect(thigh.locator('.routine-full-procedures li')).toHaveCount(8);
+  const cases=[
+    {index:1,time:'21:00',area:'Right Quadriceps',type:'Cupping'},
+    {index:2,time:'21:15',area:'Right Quadriceps',type:'Hacking'},
+    {index:5,time:'24:00',area:'Left Quadriceps',type:'Cupping'},
+    {index:6,time:'24:15',area:'Left Quadriceps',type:'Hacking'},
+  ];
+  for(const [i,c] of cases.entries()){
+    await thigh.locator('.routine-full-procedures li').nth(c.index).getByRole('button',{name:/Start here/}).click();
+    await expect(page.locator('#massageRoutineElapsed')).toHaveText(c.time);
+    await expect(page.locator('#massageRoutineMinimalName')).toHaveText(c.area+' — Tapotement');
+    await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText(c.type);
+    await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:15');
+    if(i!==cases.length-1)await full.locator('summary').click();
+  }
+});
+
+test('gluteal and hamstring percussion is balanced left/right after kneading, not during leg stretch',async({page})=>{
+  await openRoutine(page);
+  const full=page.locator('#massageRoutineFullDetails');
+  await full.locator('summary').click();
+  const posterior=page.locator('#massageRoutineFullList .routine-full-step').nth(6);
+  await expect(posterior.locator('.routine-full-procedures li')).toHaveCount(10);
+  const cases=[
+    {index:1,time:'47:55',area:'Right Glute',type:'Cupping',seconds:'00:20'},
+    {index:2,time:'48:15',area:'Right Glute',type:'Beating (loose fist)',seconds:'00:15'},
+    {index:4,time:'49:25',area:'Left Glute',type:'Cupping',seconds:'00:20'},
+    {index:5,time:'49:45',area:'Left Glute',type:'Beating (loose fist)',seconds:'00:15'},
+    {index:7,time:'52:10',area:'Right Hamstring',type:'Cupping',seconds:'00:20'},
+    {index:9,time:'54:40',area:'Left Hamstring',type:'Cupping',seconds:'00:20'}
+  ];
+  for(const [i,c] of cases.entries()){
+    await posterior.locator('.routine-full-procedures li').nth(c.index).getByRole('button',{name:/Start here/}).click();
+    await expect(page.locator('#massageRoutineElapsed')).toHaveText(c.time);
+    await expect(page.locator('#massageRoutineMinimalName')).toHaveText(c.area+' — Tapotement');
+    await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText(c.type);
+    await expect(page.locator('#massageRoutineSectionClock')).toHaveText(c.seconds);
+    await expect(page.locator('#massageRoutineTimeline .routine-section-stretch')).toBeHidden();
+    if(i!==cases.length-1)await full.locator('summary').click();
+  }
+  await full.locator('summary').click();
+  await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(80);
 });
