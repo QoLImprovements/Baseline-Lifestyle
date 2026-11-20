@@ -144,6 +144,7 @@ function bl_saved_game_files(): array {
     'bearjigsaw' => 'bear.json',
     'foxjigsaw' => 'fox.json',
     'elephantsjigsaw' => 'elephants.json',
+    'zebrajigsaw' => 'zebras.json',
     'weight-of-coherence' => 'weight-of-coherence.json',
     'dartsfocused' => 'darts-focused.json',
     'darts-focused' => 'darts-focused.json',
