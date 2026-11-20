@@ -2129,18 +2129,49 @@ body[data-app="massage"] #routines .routine-section-pressure[hidden],
 body[data-app="massage"] #routines .routine-full-metrics[hidden]{display:none!important}
 
 
-/* Restore desktop card's content-led width; full-width was intended for mobile only.
-   Restore the shared Massage palette instead of hard-coded pale procedure colours. */
-@media(min-width:651px){
-  body[data-app="massage"] #routines .massage-routines-card{
-    width:auto!important;
-    justify-self:initial;
-    max-width:1050px;
-    margin-inline:auto;
-  }
+/* Match the System page, not the content width of the plan selector.
+   Both sections use a single-column .focus-stack and a full-width .card.
+   Keep this rule across desktop, tablet and mobile, including the empty state. */
+body[data-app="massage"] #routines .massage-routines-card{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0;
+  margin:0!important;
+  justify-self:stretch;
+}
+
+/* Match the actual System page inner-panel colours: .system-list and
+   .system-note-block. No standalone cream surface or blue controls. */
+body[data-app="massage"] #routines .routine-current-step{
+  background:rgba(237,199,164,.20)!important;
+  border:1px solid rgba(38,20,10,.32)!important;
+  box-shadow:none!important;
 }
 body[data-app="massage"] #routines .routine-section-row.is-live{
-  background:linear-gradient(180deg,var(--massage-panel),var(--massage-panel-2));
-  border:2px solid var(--massage-border-strong);
-  box-shadow:inset 5px 0 0 var(--massage-mid);
+  background:rgba(241,208,175,.26)!important;
+  border:1px solid rgba(38,20,10,.30)!important;
+  box-shadow:none!important;
+}
+body[data-app="massage"] #routines .routine-arrow{
+  -webkit-appearance:none;
+  appearance:none;
+  background:var(--showall-bg)!important;
+  color:#1f1007!important;
+  -webkit-text-fill-color:#1f1007!important;
+  border:1px solid var(--showall-border)!important;
+  box-shadow:0 10px 22px -18px rgba(22,12,7,.38);
+}
+body[data-app="massage"] #routines .routine-timer,
+body[data-app="massage"] #routines .routine-full-plan,
+body[data-app="massage"] #routines .routine-start-from{
+  background:rgba(237,199,164,.20)!important;
+  border-color:rgba(38,20,10,.32)!important;
+}
+body[data-app="massage"] #routines .routine-full-step{
+  background:rgba(241,208,175,.26)!important;
+  border-color:rgba(38,20,10,.30)!important;
+}
+body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .routine-full-plan[open],
+body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-full-plan[open]{
+  background:var(--massage-panel)!important;
 }
