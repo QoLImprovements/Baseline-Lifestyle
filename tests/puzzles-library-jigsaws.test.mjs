@@ -149,13 +149,14 @@ test('symbolic and animal jigsaws have dedicated server save profiles', () => {
   const guard = read('systems/baseline-recreation/js/baseline-recreation-guard.js');
   const api = read('systems/baseline-recreation/api/games_data.php');
   const saved = read('sitewide/api/saved_data.php');
-  for (const app of ['unheardsignal','movedalong','pantherjigsaw','bearjigsaw']) {
+  for (const app of ['unheardsignal','movedalong','pantherjigsaw','bearjigsaw','zebrajigsaw']) {
     for (const source of [guard, api]) assert.ok(source.includes(`'${app}'`));
   }
   assert.match(saved, /'unheardsignal'\s*=>\s*'the-unheard-signal\.json'/);
   assert.match(saved, /'movedalong'\s*=>\s*'moved-along\.json'/);
   assert.match(saved, /'pantherjigsaw'\s*=>\s*'black-panther\.json'/);
   assert.match(saved, /'bearjigsaw'\s*=>\s*'bear\.json'/);
+  assert.match(saved, /'zebrajigsaw'\s*=>\s*'zebras\.json'/);
 });
 
 test('Jigsaws type uses a neutral jigsaw icon rather than choosing one puzzle artwork', () => {
