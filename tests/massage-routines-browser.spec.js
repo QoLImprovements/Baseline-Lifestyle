@@ -32,7 +32,7 @@ test('one active procedure only: area and technique family appear once, variatio
   await expect(rows.first()).toHaveAttribute('aria-current','step');
   await expect(page.locator('#massageRoutineCurrentTitle')).toHaveText('Chest & Shoulders');
   await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Upper Pectorals — Effleurage');
-  await expect(rows.first()).toContainText('Bilateral longitudinal strokes');
+  await expect(rows.first()).toContainText('Bilateral longitudinal palms');
   await expect(rows.first()).toContainText('Pressure 3–4/10');
   await expect(rows.first()).not.toContainText('Effleurage');
   await expect(rows.first()).not.toContainText('Upper Pectorals');
@@ -41,8 +41,8 @@ test('one active procedure only: area and technique family appear once, variatio
   await page.locator('#massageRoutineNextProcedure').click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('01:00');
   await expect(rows).toHaveCount(1);
-  await expect(rows.first()).toContainText('Alternating hand strokes');
-  await expect(rows.first()).not.toContainText('Bilateral longitudinal strokes');
+  await expect(rows.first()).toContainText('Bilateral muscle lifting');
+  await expect(rows.first()).not.toContainText('Bilateral longitudinal palms');
   await expect(page.locator('#massageRoutineSectionCounter')).toHaveText('Procedure 2 of 18');
   await page.locator('#massageRoutinePreviousProcedure').click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('00:00');
@@ -54,7 +54,7 @@ test('select any procedure, exact remaining time, automatic advance, pause and r
   await page.locator('#massageRoutineFullDetails summary').click();
   const list=page.locator('#massageRoutineFullList .routine-full-step');
   await expect(list).toHaveCount(9);
-  await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(68);
+  await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(70);
   await list.first().locator('.routine-full-procedures li').nth(5).getByRole('button',{name:/Start here/}).click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('06:05');
   await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Left Pectoral — Petrissage');
@@ -84,7 +84,7 @@ test('navigation moves among nine anatomical steps and preserves upper-arm/forea
   await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Right Upper Arm — Petrissage');
   await page.locator('#massageRoutineNextProcedure').click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('15:30');
-  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Right Forearm & Hand — Effleurage');
+  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Right Forearm & Hand — Petrissage');
   await page.locator('#massageRoutinePrevious').click();
   await expect(page.locator('#massageRoutineCurrentTitle')).toHaveText('Chest & Shoulders');
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('00:00');
@@ -93,7 +93,7 @@ test('navigation moves among nine anatomical steps and preserves upper-arm/forea
   await step0.locator('.routine-full-procedures li').nth(14).getByRole('button',{name:/Start here/}).click();
   await expect(page.locator('#massageRoutineElapsed')).toHaveText('10:00');
   await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Left Front Shoulder — Petrissage');
-  await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText('Circular kneading');
+  await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText('Anterior-deltoid lifting');
 });
 
 test('face-down back section includes thumb walking and tapotement',async({page})=>{
@@ -108,8 +108,17 @@ test('face-down back section includes thumb walking and tapotement',async({page}
   await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Upper Back — Tapotement');
   await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText('Cupping');
   await page.locator('#massageRoutineNextProcedure').click();
-  await expect(page.locator('#massageRoutineElapsed')).toHaveText('40:45');
+  await expect(page.locator('#massageRoutineElapsed')).toHaveText('40:20');
+  await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText('Beating (loose fist)');
+  await page.locator('#massageRoutineNextProcedure').click();
+  await expect(page.locator('#massageRoutineElapsed')).toHaveText('40:40');
   await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText('Hacking');
+  await page.locator('#massageRoutineNextProcedure').click();
+  await expect(page.locator('#massageRoutineElapsed')).toHaveText('41:00');
+  await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText('Fingertip tapping');
+  await page.locator('#massageRoutineNextProcedure').click();
+  await expect(page.locator('#massageRoutineElapsed')).toHaveText('41:15');
+  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Upper Back — Vibration');
 });
 
 test('minimal fullscreen preserves clock and one concise procedure, full list remains accessible',async({page})=>{
@@ -122,7 +131,7 @@ test('minimal fullscreen preserves clock and one concise procedure, full list re
   await expect(player).toHaveClass(/routine-minimal/);
   await expect(page.locator('#massageRoutineMinimalClock')).toBeVisible();
   await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Upper Pectorals — Effleurage');
-  await expect(page.locator('#massageRoutineMinimalTechnique')).toHaveText('Bilateral longitudinal strokes');
+  await expect(page.locator('#massageRoutineMinimalTechnique')).toHaveText('Bilateral longitudinal palms');
   await expect(page.locator('#massageRoutineMinimalPressure')).toHaveText('Pressure 3–4/10');
   await expect(page.locator('#massageRoutineTimeline')).toBeHidden();
   await page.locator('#massageRoutineSettings summary').click();
@@ -204,9 +213,9 @@ test('firm petrissage and gentler integrated stretches have separate pressure an
   await expect(page.locator('#massageRoutineTimeline .routine-section-stretch')).toContainText('2–3/10');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:08');
   await page.locator('#massageRoutineNextProcedure').click();
-  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Right Hamstring & Calf — Effleurage');
+  await expect(page.locator('#massageRoutineMinimalName')).toHaveText('Right Hamstring & Calf — Petrissage');
   await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:52');
-  await expect(page.locator('#massageRoutineTimeline .routine-section-pressure')).toHaveText('Pressure 2–3/10');
+  await expect(page.locator('#massageRoutineTimeline .routine-section-pressure')).toHaveText('Pressure 3–4/10');
   await expect(page.locator('#massageRoutineTimeline .routine-section-stretch')).toContainText('2–3/10');
 });
 
@@ -266,4 +275,46 @@ test('opening both pectorals avoids repeating already-completed effleurage',asyn
     await list.locator('summary').click();
   }
   await expect(first.locator('.routine-full-procedures li')).toHaveCount(18);
+});
+
+
+test('full routine uses all four brief tapotement methods on upper-back muscle',async({page})=>{
+  await openRoutine(page);
+  const details=page.locator('#massageRoutineFullDetails');
+  await details.locator('summary').click();
+  const upperBack=page.locator('#massageRoutineFullList .routine-full-step').nth(5);
+  const four=upperBack.locator('.routine-full-procedures li').filter({hasText:'Tapotement'});
+  await expect(four).toHaveCount(4);
+  const techniques=['Cupping','Beating (loose fist)','Hacking','Fingertip tapping'];
+  const starts=['40:00','40:20','40:40','41:00'];
+  for(let i=0;i<4;i++){
+    await expect(four.nth(i)).toContainText(techniques[i]);
+    await expect(four.nth(i)).toContainText('Upper Back — Tapotement');
+    await four.nth(i).getByRole('button',{name:/Start here/}).click();
+    await expect(page.locator('#massageRoutineElapsed')).toHaveText(starts[i]);
+    await expect(page.locator('#massageRoutineTimeline .routine-section-name')).toHaveText(techniques[i]);
+    if(i<3)await details.locator('summary').click();
+  }
+  await expect(page.locator('#massageRoutineSectionClock')).toHaveText('00:15');
+  await details.locator('summary').click();
+  await expect(upperBack).toContainText('Vibration');
+  await expect(page.locator('#massageRoutineFullList .routine-full-procedures li')).toHaveCount(70);
+});
+
+test('supported hamstring and quadriceps work progresses beyond repeated effleurage',async({page})=>{
+  await openRoutine(page);
+  const details=page.locator('#massageRoutineFullDetails');
+  await details.locator('summary').click();
+  const list=page.locator('#massageRoutineFullList .routine-full-step');
+  for(const [step,offsets] of [[3,[2,4,8,10]],[7,[2,4,8,10]]]){
+    const items=list.nth(step).locator('.routine-full-procedures li');
+    for(const [i,position] of offsets.entries()){
+      await expect(items.nth(position)).toContainText(i%2===0?'Petrissage':'Friction');
+      await expect(items.nth(position)).not.toContainText('Effleurage');
+    }
+  }
+  const back=list.nth(5);
+  await expect(back.locator('.routine-full-procedures li').first()).toContainText('Effleurage');
+  await expect(back.locator('.routine-full-procedures li').nth(1)).toContainText('Petrissage');
+  await expect(back.locator('.routine-full-procedures li').nth(2)).toContainText('Friction');
 });
