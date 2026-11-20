@@ -23,7 +23,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_RECREATION_PALETTE_CLEANUP_20261024_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_HEADER_CSS_20261021_1" rel="stylesheet"/>
-<link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_SYSTEM_COHERENCE_20261120_17" rel="stylesheet"/>
+<link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_ROUTINE_CONTRAST_20261120_18" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-protected-access.css?v=PROTECTED_ACCESS_CSS_20261021_1" rel="stylesheet" data-protected-access-style="true"/>
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=PROTECTED_KEY_CSS_20261021_1" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=SITEWIDE_UI_FIXES_20261021_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
@@ -748,7 +748,6 @@ These Markdown rules are a human reference point, not live runtime config.
         <h2>Massage Routines</h2>
         <div class="massage-routine-picker">
           <div class="routine-visible-select">
-            <span id="massageRoutinePlanValue" class="routine-select-display" aria-hidden="true">Select a massage plan</span>
             <select id="massageRoutineSelect" aria-label="Select a massage plan">
               <option value="">Select a massage plan</option>
               <option value="partner-full-body-60">60-Minute Full-Body Partner Massage — Swedish, Sports &amp; Assisted Stretching</option>
@@ -794,11 +793,11 @@ These Markdown rules are a human reference point, not live runtime config.
               <span class="routine-step-clock">Step left <strong id="massageRoutineStepClock">14:00</strong></span>
             </div>
             <div class="routine-labelled-nav routine-step-nav" aria-label="Current body area and step navigation">
-              <button type="button" class="routine-arrow" id="massageRoutinePrevious" aria-label="Previous step" title="Previous step" disabled>◀</button>
+              <button type="button" class="routine-arrow" id="massageRoutinePrevious" aria-label="Previous step" title="Previous step" disabled><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
               <div class="routine-nav-center">
                 <strong id="massageRoutineCurrentTitle">Chest &amp; Shoulders</strong>
               </div>
-              <button type="button" class="routine-arrow" id="massageRoutineNext" aria-label="Next step" title="Next step">▶</button>
+              <button type="button" class="routine-arrow" id="massageRoutineNext" aria-label="Next step" title="Next step"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
             </div>
             <p id="massageRoutineCurrentDetail"></p>
             <div class="routine-section-top">
@@ -806,11 +805,11 @@ These Markdown rules are a human reference point, not live runtime config.
               <span>Procedure left <strong id="massageRoutineSectionClock">01:00</strong></span>
             </div>
             <div class="routine-labelled-nav routine-procedure-nav" aria-label="Current technique and procedure navigation">
-              <button type="button" class="routine-arrow" id="massageRoutinePreviousProcedure" aria-label="Previous procedure" title="Previous procedure" disabled>◀</button>
+              <button type="button" class="routine-arrow" id="massageRoutinePreviousProcedure" aria-label="Previous procedure" title="Previous procedure" disabled><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
               <div class="routine-nav-center">
                 <strong id="massageRoutineMinimalName">Upper Pectorals — Effleurage</strong>
               </div>
-              <button type="button" class="routine-arrow" id="massageRoutineNextProcedure" aria-label="Next procedure" title="Next procedure">▶</button>
+              <button type="button" class="routine-arrow" id="massageRoutineNextProcedure" aria-label="Next procedure" title="Next procedure"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
             </div>
             <div class="routine-sections" id="massageRoutineTimeline" role="list" aria-label="Timed procedures automatically advance with the massage session"></div>
             <div class="routine-minimal-active" aria-label="Active massage procedure">
@@ -1352,7 +1351,7 @@ These Markdown rules are a human reference point, not live runtime config.
 })();
 
 </script>
-<script src="/systems/baseline-massage/js/massage-routines.js?v=MASSAGE_THIGH_GLUTE_PERCUSSION_20261120_15"></script>
+<script src="/systems/baseline-massage/js/massage-routines.js?v=MASSAGE_ROUTINE_NATIVE_SELECT_20261120_16"></script>
 <script src="/systems/baseline-massage/js/baseline-massage-persistence.js?v=MASSAGE_ACCOUNT_PERSISTENCE_20261004_1"></script>
 </body>
 </html>

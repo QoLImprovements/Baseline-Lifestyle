@@ -45,7 +45,6 @@
 
   function initialise(){
     const select=byId('massageRoutineSelect');
-    const planValue=byId('massageRoutinePlanValue');
     const minimalSetting=byId('massageRoutineMinimal');
     const minimalClock=byId('massageRoutineMinimalClock');
     const minimalTime=byId('massageRoutineMinimalTime');
@@ -78,7 +77,7 @@
     const quickPauseBtn=byId('massageRoutineQuickPause');
     const fullList=byId('massageRoutineFullList');
     const stateLabel=byId('massageRoutineStatus');
-    if(!select || !planValue || !minimalSetting || !minimalClock || !minimalTime || !minimalElapsed || !minimalName || !minimalTechnique || !minimalInstruction || !minimalPressure || !minimalStretch || !fullDetails || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList) return;
+    if(!select || !minimalSetting || !minimalClock || !minimalTime || !minimalElapsed || !minimalName || !minimalTechnique || !minimalInstruction || !minimalPressure || !minimalStretch || !fullDetails || !fullscreenBtn || !fullscreenLabel || !runner || !viewport || !elapsedLabel || !remainingLabel || !stepClock || !sectionCounter || !sectionClock || !nextTitle || !previousProcedureBtn || !nextProcedureBtn || !quickPauseBtn || !fullList) return;
 
     let elapsedMs=0;
     let startedAt=0;
@@ -90,12 +89,6 @@
     let rows=[];
     const prefersReducedMotion=()=>window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    function showSelectedLabel(control,label){
-      const options=Array.from(control.options||control.children||[]);
-      const selected=options.find(option=>String(option.value)===String(control.value));
-      label.textContent=selected ? selected.textContent : '';
-    }
-    function updateSelectionLabels(){ showSelectedLabel(select,planValue); }
     function setMinimal(enabled){
       const minimal=Boolean(enabled);
       runner.classList.toggle('routine-minimal',minimal);
@@ -356,7 +349,6 @@
       if(updateUrl) updateRoute();
       if(select.value===PLAN_ID) reset();
       else if(focused) exitFullscreen();
-      updateSelectionLabels();
     }
     function startOrResume(){
       if(running || timeMs()>=TOTAL_SECONDS*1000) return;
@@ -367,7 +359,6 @@
       render(true);
     }
     buildFullRoutine();
-    updateSelectionLabels();
     select.addEventListener('change',()=>selectPlan(true));
     quickPauseBtn.addEventListener('click',()=>{if(running)pause();else startOrResume();});
     resetBtn.addEventListener('click',reset);
