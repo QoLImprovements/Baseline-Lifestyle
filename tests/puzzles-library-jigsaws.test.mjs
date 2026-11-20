@@ -30,6 +30,11 @@ test('Puzzles opens as a type library with Jigsaws as a nested selection', () =>
   assert.match(core, /BaselinePuzzlesLibrary\.showOverview\(\)/);
 });
 
+test('Animals appear before Symbolic on the jigsaw catalogue', () => {
+  assert.match(library, /groups\.sort\(function\(a,b\)/);
+  assert.match(library, /const order=\{Animals:0,Symbolic:1\}/);
+});
+
 test('Jigsaws are grouped into Symbolic and Animals collections with all nine artworks', () => {
   assert.match(registry, /group:'Symbolic'/);
   assert.match(registry, /group:'Animals'/);
