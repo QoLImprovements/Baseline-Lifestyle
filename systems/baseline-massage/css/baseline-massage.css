@@ -2175,3 +2175,68 @@ body[data-app="massage"] #routines #massageRoutineRunner.routine-fullscreen .rou
 body[data-app="massage"] #routines #massageRoutineRunner:fullscreen .routine-full-plan[open]{
   background:var(--massage-panel)!important;
 }
+
+/* Native plan selector: one visible value, consistent accessible focus and no overlaid select. */
+body[data-app="massage"] #routines .routine-visible-select{
+  position:relative;
+  min-height:52px;
+  border:1px solid var(--massage-border-strong);
+  border-radius:12px;
+  background:#e8c29c;
+}
+body[data-app="massage"] #routines .routine-visible-select::after{
+  content:"";
+  width:9px;height:9px;right:20px;top:45%;
+  border-right:2px solid #382318;border-bottom:2px solid #382318;
+  transform:rotate(45deg);pointer-events:none;
+}
+body[data-app="massage"] #routines .routine-visible-select > select{
+  position:relative!important;inset:auto!important;
+  display:block!important;width:100%!important;height:auto!important;
+  min-height:52px!important;opacity:1!important;
+  appearance:none!important;-webkit-appearance:none!important;
+  padding:12px 45px 12px 16px!important;
+  background:transparent!important;border:0!important;border-radius:12px!important;
+  color:#24140b!important;-webkit-text-fill-color:#24140b!important;
+  font-size:clamp(15px,1.7vw,19px)!important;font-weight:750!important;
+  white-space:normal;cursor:pointer;
+}
+body[data-app="massage"] #routines .routine-visible-select:focus-within{
+  outline:3px solid #41271a;outline-offset:3px;
+}
+/* Improve the hierarchy of the player without abandoning Baseline Massage's warm palette. */
+body[data-app="massage"] #routines .massage-routines-card{
+  background:linear-gradient(180deg,#bd906d,#b3825c)!important;
+  border:1px solid rgba(52,29,16,.55);
+}
+body[data-app="massage"] #routines .routine-current-step{
+  background:#d7ad86!important;border:1px solid rgba(52,29,16,.50)!important;
+}
+body[data-app="massage"] #routines .routine-section-row.is-live{
+  background:#edccab!important;border:1px solid rgba(52,29,16,.42)!important;
+}
+body[data-app="massage"] #routines .routine-timer{
+  background:#dfb995!important;border:1px solid rgba(52,29,16,.45)!important;
+}
+body[data-app="massage"] #routines .routine-arrow{
+  background:#e8c29c!important;color:#321d11!important;
+  -webkit-text-fill-color:#321d11!important;border-color:rgba(52,29,16,.55)!important;
+}
+body[data-app="massage"] #routines .routine-arrow svg{
+  display:block;width:26px;height:26px;stroke:currentColor;
+}
+body[data-app="massage"] #routines .routine-arrow:disabled{
+  opacity:.45!important;
+}
+body[data-app="massage"] #routines #massageRoutineProgress{
+  color:#63402b;accent-color:#63402b;
+}
+body[data-app="massage"] #routines #massageRoutineProgress::-webkit-progress-bar{
+  background:#e6c09b;border-radius:999px;
+}
+body[data-app="massage"] #routines #massageRoutineProgress::-webkit-progress-value{
+  background:#63402b;border-radius:999px;
+}
+body[data-app="massage"] #routines #massageRoutineProgress::-moz-progress-bar{
+  background:#63402b;border-radius:999px;
+}
